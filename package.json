@@ -12,6 +12,6 @@
     "start": "parcel ./src/index.html",
     "prebuild": "shx rm -rf dist/*",
     "build": "parcel build ./src/index.html --public-url ./",
-    "gh-pages": "yarn gh-pages -d dist"
+    "push": "yarn gh-pages -d dist"
   }
 }

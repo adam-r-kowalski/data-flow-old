@@ -4,13 +4,12 @@
   "license": "MIT",
   "devDependencies": {
     "parcel": "^2.4.1",
-    "push-dir": "^0.4.1",
     "shx": "^0.3.4"
   },
   "scripts": {
     "start": "parcel ./src/index.html",
     "prebuild": "shx rm -rf dist/*",
     "build": "parcel build ./index.html --public-url ./",
-    "push-gh-pages": "push-dir --dir=dist --branch=gh-pages --cleanup --verbose"
+    "push-gh-pages": "git subtree push --prefix dist/ origin gh-pages"
   }
 }

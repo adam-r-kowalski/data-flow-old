@@ -4,16 +4,16 @@ interface Numbers {
   literals: string[]
 }
 
-interface Functions {
+interface Calls {
   xs: number[],
   ys: number[],
   names: string[],
-  parameters: string[][],
+  arguments: string[][],
 }
 
 interface Graph {
   numbers: Numbers,
-  functions: Functions
+  calls: Calls
 }
 
 interface Cursor {
@@ -25,6 +25,7 @@ interface State {
   graph: Graph,
   cursor: Cursor,
   grid: number,
+  repeat: string,
 }
 
 const grid = 50
@@ -36,18 +37,19 @@ const state: State = {
       ys: [],
       literals: [],
     },
-    functions: {
+    calls: {
       xs: [],
       ys: [],
       names: [],
-      parameters: [],
+      arguments: [],
     }
   },
   cursor: {
-    x: Math.round((window.innerWidth / 2) / grid) * grid,
-    y: Math.round((window.innerHeight / 2) / grid) * grid
+    x: Math.round((window.innerWidth / 2) / grid) * grid - grid / 2,
+    y: Math.round((window.innerHeight / 2) / grid) * grid - grid / 2
   },
-  grid
+  grid,
+  repeat: ''
 }
 
 
@@ -236,9 +238,9 @@ const renderNumbers = (numbers: Numbers) => {
   })
 }
 
-const renderFunctions = (functions: Functions) => {
-  functions.xs.map((x, i) => {
-    const y = functions.ys[i]
+const renderCalls = (calls: Calls) => {
+  calls.xs.map((x, i) => {
+    const y = calls.ys[i]
 
     // function name
 
@@ -297,22 +299,20 @@ const mainLoop = () => {
   ctx.clearRect(0, 0, textCanvas.width, textCanvas.height)
 
 
-  for (let x = state.grid; x < textCanvas.width; x += state.grid) {
+  for (let x = state.grid / 2; x < textCanvas.width; x += state.grid) {
     setRectangle(gl, x, 0, 1, textCanvas.height)
     gl.uniform4f(colorLocation, 1, 1, 1, 0.1)
     gl.drawArrays(primitiveType, offset, count)
   }
 
-  for (let y = state.grid; y < textCanvas.height; y += state.grid) {
+  for (let y = state.grid / 2; y < textCanvas.height; y += state.grid) {
     setRectangle(gl, 0, y, textCanvas.width, 1)
     gl.uniform4f(colorLocation, 1, 1, 1, 0.1)
     gl.drawArrays(primitiveType, offset, count)
   }
 
-
-
   renderNumbers(state.graph.numbers)
-  renderFunctions(state.graph.functions)
+  renderCalls(state.graph.calls)
 
 
   // cursor
@@ -333,8 +333,8 @@ const mainLoop = () => {
 requestAnimationFrame(mainLoop)
 
 document.addEventListener('mousemove', event => {
-  state.cursor.x = Math.round(event.clientX / state.grid) * state.grid
-  state.cursor.y = Math.round(event.clientY / state.grid) * state.grid
+  state.cursor.x = Math.round(event.clientX / state.grid) * state.grid - state.grid / 2
+  state.cursor.y = Math.round(event.clientY / state.grid) * state.grid - state.grid / 2
 })
 
 const addNumber = (state: State) => {
@@ -343,17 +343,50 @@ const addNumber = (state: State) => {
   state.graph.numbers.literals.push('')
 }
 
-const addFunction = (state: State) => {
-  state.graph.functions.xs.push(state.cursor.x)
-  state.graph.functions.ys.push(state.cursor.y)
-  state.graph.functions.names.push('Add')
-  state.graph.functions.parameters.push(['x', 'y'])
+const addCall = (state: State) => {
+  state.graph.calls.xs.push(state.cursor.x)
+  state.graph.calls.ys.push(state.cursor.y)
+  state.graph.calls.names.push('Add')
+  state.graph.calls.arguments.push(['x', 'y'])
+}
+
+const repeat = (state: State) => {
+  if (state.repeat.length > 0) {
+    const result = parseInt(state.repeat)
+    state.repeat = ''
+    return result
+  }
+  return 1
 }
 
 document.addEventListener('keypress', event => {
-  switch (event.code) {
-    case 'KeyN': addNumber(state); break
-    case 'KeyF': addFunction(state); break
-    default: console.log(event.code)
+  switch (event.key) {
+    case 'n': addNumber(state); break
+    case 'c': addCall(state); break
+    case 'h': state.cursor.x -= state.grid * repeat(state); break
+    case 'j': state.cursor.y += state.grid * repeat(state); break
+    case 'k': state.cursor.y -= state.grid * repeat(state); break
+    case 'l': state.cursor.x += state.grid * repeat(state); break
+    case '0': state.repeat += '0'; break
+    case '1': state.repeat += '1'; break
+    case '2': state.repeat += '2'; break
+    case '3': state.repeat += '3'; break
+    case '4': state.repeat += '4'; break
+    case '5': state.repeat += '5'; break
+    case '6': state.repeat += '6'; break
+    case '7': state.repeat += '7'; break
+    case '8': state.repeat += '8'; break
+    case '9': state.repeat += '9'; break
+    default: console.log(event.key)
   }
+})
+
+window.addEventListener('resize', () => {
+  gl.canvas.width = window.innerWidth
+  gl.canvas.height = window.innerHeight
+  resizeCanvasToDisplaySize(gl.canvas)
+  gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
+  gl.uniform2f(resoltionUniformLocation, gl.canvas.width, gl.canvas.height)
+  textCanvas.width = window.innerWidth
+  textCanvas.height = window.innerHeight
 })

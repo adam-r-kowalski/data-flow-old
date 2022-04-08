@@ -3,10 +3,14 @@
   "version": "1.0.0",
   "license": "MIT",
   "devDependencies": {
-    "parcel": "^2.4.1"
+    "parcel": "^2.4.1",
+    "push-dir": "^0.4.1",
+    "shx": "^0.3.4"
   },
   "scripts": {
-    "start": "parcel index.html",
-    "build": "parcel build index.html"
+    "start": "parcel ./src/index.html",
+    "prebuild": "shx rm -rf dist/*",
+    "build": "parcel build ./index.html --public-url ./",
+    "push-gh-pages": "push-dir --dir=dist --branch=gh-pages --cleanup --verbose"
   }
 }

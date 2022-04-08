@@ -831,6 +831,7 @@ window.addEventListener('resize', ()=>{
     textCanvas.width = window.innerWidth;
     textCanvas.height = window.innerHeight;
 });
+console.log('helo');
 
 },{}]},["fRL6l","1jwFz"], "1jwFz", "parcelRequire824e")
 

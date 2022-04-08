@@ -391,5 +391,3 @@ window.addEventListener('resize', () => {
   textCanvas.height = window.innerHeight
 })
 
-
-console.log('helo')

@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "license": "MIT",
   "devDependencies": {
+    "gh-pages": "^3.2.3",
     "parcel": "^2.4.1",
     "shx": "^0.3.4"
   },
@@ -11,6 +12,6 @@
     "start": "parcel ./src/index.html",
     "prebuild": "shx rm -rf dist/*",
     "build": "parcel build ./src/index.html --public-url ./",
-    "push": "git subtree push --prefix dist/ origin gh-pages"
+    "gh-pages": "yarn gh-pages -d dist"
   }
 }

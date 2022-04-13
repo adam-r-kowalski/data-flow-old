@@ -1,82 +1,104 @@
-import { WebGL2, Rectangle, Text } from './webgl2'
-import { graph } from './titanic'
-import { Kind, Graph } from './graph'
+const canvas: HTMLCanvasElement = document.querySelector('#webgl_canvas')
+const gl = canvas.getContext('webgl2')
 
-const webgl2 = new WebGL2()
-webgl2.clear()
+const canvasToDisplaySizeMap = new Map([[canvas, [canvas.clientWidth, canvas.clientHeight]]])
 
-interface Graphics {
-  drawRectangle(rectangle: Rectangle): void,
-  drawText(text: Text): void,
-}
-
-const drawGraph = (graph: Graph, graphics: Graphics) => {
-  graph.nodes.forEach((entities, row) => {
-    entities.forEach((entity, column) => {
-      console.assert(entity.kind == Kind.TABLE)
-
-      const x = column * 100 + 100
-      const y = row * 100 + 100
-
-      graphics.drawRectangle({
-        x,
-        y,
-        width: 300,
-        height: 30,
-        red: 0.1,
-        green: 0.46,
-        blue: 0.82,
-        alpha: 1
-      })
-
-      const columns = graph.tables.columns[entity.index]
-      const fontSize = 16
-      graphics.drawRectangle({
-        x,
-        y: y + 30,
-        width: 300,
-        height: columns.length * (fontSize + 10) + 15,
-        red: 0.26,
-        green: 0.26,
-        blue: 0.26,
-        alpha: 1
-      })
-
-      graphics.drawText({
-        message: graph.tables.names[entity.index],
-        x: x + 5,
-        y: y + 5,
-        fontFamily: 'sans-serif',
-        fontSize: 18,
-        textAlign: 'left',
-        fillStyle: 'white'
-      })
-
-      columns.map((column, i) => {
-        graphics.drawText({
-          message: column,
-          x: x + 265,
-          y: y + i * (fontSize + 10) + 40,
-          fontFamily: 'sans-serif',
-          fontSize: fontSize,
-          textAlign: 'right',
-          fillStyle: 'white'
-        })
-
-        graphics.drawRectangle({
-          x: x + 300 - fontSize - 10,
-          y: y + i * (fontSize + 10) + 40,
-          width: fontSize,
-          height: fontSize,
-          red: 0.1,
-          green: 0.46,
-          blue: 0.82,
-          alpha: 1
-        })
-      })
-
-    })
+const onResize = (entries: ResizeObserverEntry[]): void => {
+  entries.map(entry => {
+    if (entry.devicePixelContentBoxSize) {
+      const size = entry.devicePixelContentBoxSize[0]
+      return {
+        entry,
+        width: size.inlineSize,
+        height: size.blockSize,
+        dpr: 1
+      }
+    }
+    if (entry.contentBoxSize[0]) {
+      const size = entry.contentBoxSize[0]
+      return {
+        entry,
+        width: size.inlineSize,
+        height: size.blockSize,
+        dpr: window.devicePixelRatio
+      }
+    }
+    return {
+      entry,
+      width: entry.contentRect.width,
+      height: entry.contentRect.height,
+      dpr: window.devicePixelRatio
+    }
+  }).forEach(({ entry, width, height, dpr }) => {
+    canvasToDisplaySizeMap.set(entry.target as HTMLCanvasElement, [
+      Math.round(width * dpr),
+      Math.round(height * dpr)
+    ])
   })
+  requestAnimationFrame(render)
 }
 
-drawGraph(graph, webgl2)
+const resizeObserver = new ResizeObserver(onResize)
+try {
+  resizeObserver.observe(canvas, { box: 'device-pixel-content-box' })
+} catch (ex) {
+  resizeObserver.observe(canvas, { box: 'content-box' })
+}
+
+const resizeCanvasToDisplaySize = (canvas: HTMLCanvasElement): void => {
+  const [displayWidth, displayHeight] = canvasToDisplaySizeMap.get(canvas)
+  if (canvas.width != displayWidth || canvas.height != displayHeight) {
+    canvas.width = displayWidth
+    canvas.height = displayHeight
+    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
+  }
+}
+
+resizeCanvasToDisplaySize(canvas)
+gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
+
+const program = gl.createProgram()
+
+const vertexShader = gl.createShader(gl.VERTEX_SHADER)
+const vertexShaderSource = `#version 300 es
+
+void main() {
+  gl_Position = vec4(0.0, 0.0, 0.0, 1.0);
+  gl_PointSize = 150.0;
+}
+`
+gl.shaderSource(vertexShader, vertexShaderSource)
+gl.compileShader(vertexShader)
+gl.attachShader(program, vertexShader)
+
+const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER)
+const fragmentShaderSource = `#version 300 es
+
+precision mediump float;
+
+out vec4 fragColor;
+
+void main() {
+  fragColor = vec4(1.0, 0.0, 0.0, 1.0);
+}
+`
+gl.shaderSource(fragmentShader, fragmentShaderSource)
+gl.compileShader(fragmentShader)
+gl.attachShader(program, fragmentShader)
+
+gl.linkProgram(program)
+
+if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+  console.log(gl.getShaderInfoLog(vertexShader))
+  console.log(gl.getShaderInfoLog(fragmentShader))
+}
+
+gl.useProgram(program)
+
+const render = () => {
+  resizeCanvasToDisplaySize(canvas)
+  gl.clear(gl.COLOR_BUFFER_BIT)
+  gl.drawArrays(gl.POINTS, /*first*/ 0, /*count*/ 1)
+}
+
+requestAnimationFrame(render)

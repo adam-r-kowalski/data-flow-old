@@ -1,38 +1,14 @@
-import { Scene } from './scene'
+import { Scene, addNode } from './scene'
 
-export const scene: Scene = {
-  vertices: [
-    [
-      100, 100,
-      300, 100,
-      300, 125,
-      100, 100,
-      100, 125,
-      300, 125,
-
-      100, 125,
-      300, 125,
-      300, 200,
-      100, 125,
-      100, 200,
-      300, 200,
-    ]
-  ],
-  colors: [
-    [
-      255, 0, 0,
-      255, 0, 0,
-      255, 0, 0,
-      255, 0, 0,
-      255, 0, 0,
-      255, 0, 0,
-
-      0, 255, 0,
-      0, 255, 0,
-      0, 255, 0,
-      0, 255, 0,
-      0, 255, 0,
-      0, 255, 0,
-    ]
-  ]
+const initScene = (): Scene => {
+  const scene: Scene = {
+    vertices: [],
+    colors: [],
+    triangles: 0
+  }
+  addNode(scene, { x: 100, y: 100 })
+  addNode(scene, { x: 200, y: 300 })
+  return scene
 }
+
+export const scene: Scene = initScene()

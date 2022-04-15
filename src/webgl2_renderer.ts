@@ -36,7 +36,8 @@ export const initRenderer = (): Renderer => {
   gl.canvas.width = gl.canvas.clientWidth
   gl.canvas.height = gl.canvas.clientHeight
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
-  gl.clearColor(0.0, 0.0, 0.0, 1.0)
+
+  gl.clearColor(33 / 255, 33 / 255, 33 / 255, 1.0)
 
   const vertexShader = gl.createShader(gl.VERTEX_SHADER)
   gl.shaderSource(vertexShader, vertexShaderSource)
@@ -84,12 +85,30 @@ export const render = (renderer: Renderer, scene: Scene): void => {
   gl.clear(gl.COLOR_BUFFER_BIT)
 
   gl.bindBuffer(gl.ARRAY_BUFFER, position.buffer)
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(scene.vertices[0]), gl.STATIC_DRAW)
+  {
+    const data = new Float32Array(scene.triangles * 2)
+    let i = 0
+    for (const vertices of scene.vertices) {
+      for (const vertex of vertices) {
+        data[i++] = vertex
+      }
+    }
+    gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW)
+  }
   gl.vertexAttribPointer(position.location, /*size*/2, /*type*/gl.FLOAT, /*normalize*/false, /*stride*/0, /*offset*/0)
 
   gl.bindBuffer(gl.ARRAY_BUFFER, color.buffer)
-  gl.bufferData(gl.ARRAY_BUFFER, new Uint8Array(scene.colors[0]), gl.STATIC_DRAW)
+  {
+    const data = new Uint8Array(scene.triangles * 3)
+    let i = 0
+    for (const colors of scene.colors) {
+      for (const color of colors) {
+        data[i++] = color
+      }
+    }
+    gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW)
+  }
   gl.vertexAttribPointer(color.location, /*size*/3, /*type*/gl.UNSIGNED_BYTE, /*normalize*/true, /*stride*/0, /*offset*/0)
 
-  gl.drawArrays(gl.TRIANGLES, /*offset*/0, /*count*/scene.vertices[0].length / 2)
+  gl.drawArrays(gl.TRIANGLES, /*offset*/0, /*count*/scene.triangles)
 }

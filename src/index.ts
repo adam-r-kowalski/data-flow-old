@@ -1,5 +1,5 @@
-import { initRenderer, render } from './webgl2_renderer'
-import { scene } from './simple'
+import Renderer from './webgl2_renderer'
+import scene from './simple'
 
-const renderer = initRenderer()
-render(renderer, scene)
+const renderer = new Renderer(scene)
+renderer.render()

@@ -1,11 +1,4 @@
-import { Scene } from './scene'
-
-interface Renderer {
-  gl: WebGL2RenderingContext
-  ctx: CanvasRenderingContext2D
-  position: { buffer: WebGLBuffer, location: number }
-  color: { buffer: WebGLBuffer, location: number }
-}
+import Scene from './scene'
 
 const vertexShaderSource = `#version 300 es
 uniform vec2 uResolution;
@@ -31,105 +24,112 @@ void main() {
 }
 `
 
-export const initRenderer = (): Renderer => {
-  const gl_canvas: HTMLCanvasElement = document.createElement('canvas')
-  gl_canvas.style.width = '100%'
-  gl_canvas.style.height = '100%'
-  gl_canvas.style.position = 'absolute'
-  document.body.appendChild(gl_canvas)
+export default class Renderer {
+  gl: WebGL2RenderingContext
+  ctx: CanvasRenderingContext2D
+  position: { buffer: WebGLBuffer, location: number }
+  color: { buffer: WebGLBuffer, location: number }
 
-  const text_canvas: HTMLCanvasElement = document.createElement('canvas')
-  text_canvas.style.width = '100%'
-  text_canvas.style.height = '100%'
-  text_canvas.style.position = 'absolute'
+  constructor(public scene: Scene) {
+    const gl_canvas: HTMLCanvasElement = document.createElement('canvas')
+    gl_canvas.style.width = '100%'
+    gl_canvas.style.height = '100%'
+    gl_canvas.style.position = 'absolute'
+    document.body.appendChild(gl_canvas)
 
-  const dpr = window.devicePixelRatio;
-  const gl = gl_canvas.getContext('webgl2')
-  gl.canvas.width = Math.round(gl.canvas.clientWidth * dpr)
-  gl.canvas.height = Math.round(gl.canvas.clientHeight * dpr)
-  gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
-  gl.clearColor(33 / 255, 33 / 255, 33 / 255, 1.0)
+    const text_canvas: HTMLCanvasElement = document.createElement('canvas')
+    text_canvas.style.width = '100%'
+    text_canvas.style.height = '100%'
+    text_canvas.style.position = 'absolute'
+    document.body.appendChild(text_canvas)
 
-  const ctx = text_canvas.getContext('2d')
-  ctx.canvas.width = gl.canvas.width
-  ctx.canvas.height = gl.canvas.height
-  document.body.appendChild(text_canvas)
+    const dpr = window.devicePixelRatio;
+    const gl = gl_canvas.getContext('webgl2')
+    gl.canvas.width = Math.round(gl.canvas.clientWidth * dpr)
+    gl.canvas.height = Math.round(gl.canvas.clientHeight * dpr)
+    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
+    gl.clearColor(33 / 255, 33 / 255, 33 / 255, 1.0)
 
-  const vertexShader = gl.createShader(gl.VERTEX_SHADER)
-  gl.shaderSource(vertexShader, vertexShaderSource)
-  gl.compileShader(vertexShader)
+    const ctx = text_canvas.getContext('2d')
+    ctx.canvas.width = gl.canvas.width
+    ctx.canvas.height = gl.canvas.height
 
-  const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER)
-  gl.shaderSource(fragmentShader, fragmentShaderSource)
-  gl.compileShader(fragmentShader)
+    const vertexShader = gl.createShader(gl.VERTEX_SHADER)
+    gl.shaderSource(vertexShader, vertexShaderSource)
+    gl.compileShader(vertexShader)
 
-  const program = gl.createProgram()
-  gl.attachShader(program, vertexShader)
-  gl.attachShader(program, fragmentShader)
-  gl.linkProgram(program)
+    const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER)
+    gl.shaderSource(fragmentShader, fragmentShaderSource)
+    gl.compileShader(fragmentShader)
 
-  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-    console.log(gl.getShaderInfoLog(vertexShader))
-    console.log(gl.getShaderInfoLog(fragmentShader))
-  }
+    const program = gl.createProgram()
+    gl.attachShader(program, vertexShader)
+    gl.attachShader(program, fragmentShader)
+    gl.linkProgram(program)
 
-  gl.useProgram(program)
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+      console.log(gl.getShaderInfoLog(vertexShader))
+      console.log(gl.getShaderInfoLog(fragmentShader))
+    }
 
-  const uResolution = gl.getUniformLocation(program, 'uResolution')
-  const aPosition = gl.getAttribLocation(program, 'aPosition')
-  const aColor = gl.getAttribLocation(program, 'aColor')
+    gl.useProgram(program)
 
-  gl.uniform2f(uResolution, gl.canvas.width, gl.canvas.height)
-  gl.enableVertexAttribArray(aPosition)
-  gl.enableVertexAttribArray(aColor)
+    const uResolution = gl.getUniformLocation(program, 'uResolution')
+    const aPosition = gl.getAttribLocation(program, 'aPosition')
+    const aColor = gl.getAttribLocation(program, 'aColor')
 
-  return {
-    gl,
-    ctx,
-    position: {
+    gl.uniform2f(uResolution, gl.canvas.width, gl.canvas.height)
+    gl.enableVertexAttribArray(aPosition)
+    gl.enableVertexAttribArray(aColor)
+
+    this.gl = gl
+    this.ctx = ctx
+    this.position = {
       location: aPosition,
-      buffer: gl.createBuffer(),
-    },
-    color: {
+      buffer: gl.createBuffer()
+    }
+    this.color = {
       location: aColor,
       buffer: gl.createBuffer(),
     }
   }
-}
 
-export const render = (renderer: Renderer, scene: Scene): void => {
-  const { gl, ctx, position, color } = renderer
-  gl.clear(gl.COLOR_BUFFER_BIT)
+  render(): void {
+    const gl = this.gl
+    const ctx = this.ctx
+    gl.clear(gl.COLOR_BUFFER_BIT)
 
-  gl.bindBuffer(gl.ARRAY_BUFFER, position.buffer)
-  {
-    const data = new Float32Array(scene.triangles * 2)
-    let i = 0
-    for (const vertices of scene.positions) {
-      for (const vertex of vertices) {
-        data[i++] = vertex
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.position.buffer)
+    {
+      const data = new Float32Array(this.scene.triangles * 2)
+      let i = 0
+      for (const vertices of this.scene.positions) {
+        for (const vertex of vertices) {
+          data[i++] = vertex
+        }
       }
+      gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW)
     }
-    gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW)
-  }
-  gl.vertexAttribPointer(position.location, /*size*/2, /*type*/gl.FLOAT, /*normalize*/false, /*stride*/0, /*offset*/0)
+    gl.vertexAttribPointer(this.position.location, /*size*/2, /*type*/gl.FLOAT, /*normalize*/false, /*stride*/0, /*offset*/0)
 
-  gl.bindBuffer(gl.ARRAY_BUFFER, color.buffer)
-  {
-    const data = new Uint8Array(scene.triangles * 3)
-    let i = 0
-    for (const colors of scene.colors) {
-      for (const color of colors) {
-        data[i++] = color
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.color.buffer)
+    {
+      const data = new Uint8Array(this.scene.triangles * 3)
+      let i = 0
+      for (const colors of this.scene.colors) {
+        for (const color of colors) {
+          data[i++] = color
+        }
       }
+      gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW)
     }
-    gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW)
+    gl.vertexAttribPointer(this.color.location, /*size*/3, /*type*/gl.UNSIGNED_BYTE, /*normalize*/true, /*stride*/0, /*offset*/0)
+
+    gl.drawArrays(gl.TRIANGLES, /*offset*/0, /*count*/this.scene.triangles)
+
+    ctx.clearRect(0, 0, gl.canvas.width, gl.canvas.height)
+    ctx.font = `24px sans-serif`
+    ctx.fillStyle = 'white'
+    ctx.fillText('foo', 55, 100 + 24 - 3)
   }
-  gl.vertexAttribPointer(color.location, /*size*/3, /*type*/gl.UNSIGNED_BYTE, /*normalize*/true, /*stride*/0, /*offset*/0)
-
-  gl.drawArrays(gl.TRIANGLES, /*offset*/0, /*count*/scene.triangles)
-
-  ctx.font = `24px sans-serif`
-  ctx.fillStyle = 'white'
-  ctx.fillText('foo', 55, 100 + 24 - 5)
 }

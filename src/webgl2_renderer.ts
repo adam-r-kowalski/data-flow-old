@@ -2,6 +2,7 @@ import { Scene } from './scene'
 
 interface Renderer {
   gl: WebGL2RenderingContext
+  ctx: CanvasRenderingContext2D
   position: { buffer: WebGLBuffer, location: number }
   color: { buffer: WebGLBuffer, location: number }
 }
@@ -31,13 +32,28 @@ void main() {
 `
 
 export const initRenderer = (): Renderer => {
-  const canvas: HTMLCanvasElement = document.querySelector('#gl_canvas')
-  const gl = canvas.getContext('webgl2')
-  gl.canvas.width = gl.canvas.clientWidth
-  gl.canvas.height = gl.canvas.clientHeight
-  gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
+  const gl_canvas: HTMLCanvasElement = document.createElement('canvas')
+  gl_canvas.style.width = '100%'
+  gl_canvas.style.height = '100%'
+  gl_canvas.style.position = 'absolute'
+  document.body.appendChild(gl_canvas)
 
+  const text_canvas: HTMLCanvasElement = document.createElement('canvas')
+  text_canvas.style.width = '100%'
+  text_canvas.style.height = '100%'
+  text_canvas.style.position = 'absolute'
+
+  const dpr = window.devicePixelRatio;
+  const gl = gl_canvas.getContext('webgl2')
+  gl.canvas.width = Math.round(gl.canvas.clientWidth * dpr)
+  gl.canvas.height = Math.round(gl.canvas.clientHeight * dpr)
+  gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
   gl.clearColor(33 / 255, 33 / 255, 33 / 255, 1.0)
+
+  const ctx = text_canvas.getContext('2d')
+  ctx.canvas.width = gl.canvas.width
+  ctx.canvas.height = gl.canvas.height
+  document.body.appendChild(text_canvas)
 
   const vertexShader = gl.createShader(gl.VERTEX_SHADER)
   gl.shaderSource(vertexShader, vertexShaderSource)
@@ -69,6 +85,7 @@ export const initRenderer = (): Renderer => {
 
   return {
     gl,
+    ctx,
     position: {
       location: aPosition,
       buffer: gl.createBuffer(),
@@ -81,7 +98,7 @@ export const initRenderer = (): Renderer => {
 }
 
 export const render = (renderer: Renderer, scene: Scene): void => {
-  const { gl, position, color } = renderer
+  const { gl, ctx, position, color } = renderer
   gl.clear(gl.COLOR_BUFFER_BIT)
 
   gl.bindBuffer(gl.ARRAY_BUFFER, position.buffer)
@@ -111,4 +128,8 @@ export const render = (renderer: Renderer, scene: Scene): void => {
   gl.vertexAttribPointer(color.location, /*size*/3, /*type*/gl.UNSIGNED_BYTE, /*normalize*/true, /*stride*/0, /*offset*/0)
 
   gl.drawArrays(gl.TRIANGLES, /*offset*/0, /*count*/scene.triangles)
+
+  ctx.font = `24px sans-serif`
+  ctx.fillStyle = 'white'
+  ctx.fillText('foo', 55, 100 + 24 - 5)
 }

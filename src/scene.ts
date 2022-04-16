@@ -1,10 +1,19 @@
+import { Color } from './color'
+
 export interface Scene {
-  vertices: number[][]
+  positions: number[][]
   colors: number[][]
   triangles: number
 }
 
-export const addNode = (scene: Scene, { x, y }: { x: number, y: number }) => {
+export interface Node {
+  x: number
+  y: number
+  color: Color
+}
+
+export const addNode = (scene: Scene, { x, y, color }: Node) => {
+  const { r, g, b } = color
   const x2 = x + 200
   const y2 = y + 25
   const y3 = y2 + 1
@@ -31,14 +40,14 @@ export const addNode = (scene: Scene, { x, y }: { x: number, y: number }) => {
     x, y4,
     x2, y4,
   ]
-  scene.vertices.push(vertices)
+  scene.positions.push(vertices)
   scene.colors.push([
-    117, 117, 117,
-    117, 117, 117,
-    117, 117, 117,
-    117, 117, 117,
-    117, 117, 117,
-    117, 117, 117,
+    r, g, b,
+    r, g, b,
+    r, g, b,
+    r, g, b,
+    r, g, b,
+    r, g, b,
 
     0, 0, 0,
     0, 0, 0,

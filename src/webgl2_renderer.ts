@@ -88,7 +88,7 @@ export const render = (renderer: Renderer, scene: Scene): void => {
   {
     const data = new Float32Array(scene.triangles * 2)
     let i = 0
-    for (const vertices of scene.vertices) {
+    for (const vertices of scene.positions) {
       for (const vertex of vertices) {
         data[i++] = vertex
       }

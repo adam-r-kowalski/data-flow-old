@@ -514,117 +514,202 @@ function hmrAcceptRun(bundle, id) {
 }
 
 },{}],"h7u1C":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 var _webgl2Renderer = require("./webgl2_renderer");
+var _webgl2RendererDefault = parcelHelpers.interopDefault(_webgl2Renderer);
 var _simple = require("./simple");
-const renderer = _webgl2Renderer.initRenderer();
-_webgl2Renderer.render(renderer, _simple.scene);
+var _simpleDefault = parcelHelpers.interopDefault(_simple);
+const renderer = new _webgl2RendererDefault.default(_simpleDefault.default);
 
-},{"./webgl2_renderer":"6Lkv5","./simple":"89Mlp"}],"6Lkv5":[function(require,module,exports) {
+},{"./simple":"89Mlp","./webgl2_renderer":"6Lkv5","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"89Mlp":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "initRenderer", ()=>initRenderer
-);
-parcelHelpers.export(exports, "render", ()=>render
-);
-const vertexShaderSource = `#version 300 es
-uniform vec2 uResolution;
-in vec2 aPosition;
-in vec3 aColor;
-out vec3 vColor;
+var _scene = require("./scene");
+var _sceneDefault = parcelHelpers.interopDefault(_scene);
+var _color = require("./color");
+const scene = new _sceneDefault.default();
+scene.addNode({
+    x: 50,
+    y: 100,
+    color: _color.material.red
+});
+scene.addNode({
+    x: 300,
+    y: 100,
+    color: _color.material.pink
+});
+scene.addNode({
+    x: 550,
+    y: 100,
+    color: _color.material.purple
+});
+scene.addNode({
+    x: 800,
+    y: 100,
+    color: _color.material.deepPurple
+});
+scene.addNode({
+    x: 1050,
+    y: 100,
+    color: _color.material.indigo
+});
+scene.addNode({
+    x: 50,
+    y: 250,
+    color: _color.material.blue
+});
+scene.addNode({
+    x: 300,
+    y: 250,
+    color: _color.material.lightBlue
+});
+scene.addNode({
+    x: 550,
+    y: 250,
+    color: _color.material.cyan
+});
+scene.addNode({
+    x: 800,
+    y: 250,
+    color: _color.material.teal
+});
+scene.addNode({
+    x: 1050,
+    y: 250,
+    color: _color.material.green
+});
+scene.addNode({
+    x: 50,
+    y: 400,
+    color: _color.material.brown
+});
+scene.addNode({
+    x: 300,
+    y: 400,
+    color: _color.material.grey
+});
+scene.addNode({
+    x: 550,
+    y: 400,
+    color: _color.material.blueGrey
+});
+exports.default = scene;
 
-void main() {
-  vColor = aColor;
-  vec2 clipSpace = aPosition / uResolution * 2.0 - 1.0;
-  gl_Position = vec4(clipSpace * vec2(1, -1), 0.0, 1.0);
-}
-`;
-const fragmentShaderSource = `#version 300 es
-precision mediump float;
-
-in vec3 vColor;
-out vec4 fragColor;
-
-void main() {
-  fragColor = vec4(vColor, 1.0);
-}
-`;
-const initRenderer = ()=>{
-    const gl_canvas = document.createElement('canvas');
-    gl_canvas.style.width = '100%';
-    gl_canvas.style.height = '100%';
-    gl_canvas.style.position = 'absolute';
-    document.body.appendChild(gl_canvas);
-    const text_canvas = document.createElement('canvas');
-    text_canvas.style.width = '100%';
-    text_canvas.style.height = '100%';
-    text_canvas.style.position = 'absolute';
-    const dpr = window.devicePixelRatio;
-    const gl = gl_canvas.getContext('webgl2');
-    gl.canvas.width = Math.round(gl.canvas.clientWidth * dpr);
-    gl.canvas.height = Math.round(gl.canvas.clientHeight * dpr);
-    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-    gl.clearColor(33 / 255, 33 / 255, 33 / 255, 1);
-    const ctx = text_canvas.getContext('2d');
-    ctx.canvas.width = gl.canvas.width;
-    ctx.canvas.height = gl.canvas.height;
-    document.body.appendChild(text_canvas);
-    const vertexShader = gl.createShader(gl.VERTEX_SHADER);
-    gl.shaderSource(vertexShader, vertexShaderSource);
-    gl.compileShader(vertexShader);
-    const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
-    gl.shaderSource(fragmentShader, fragmentShaderSource);
-    gl.compileShader(fragmentShader);
-    const program = gl.createProgram();
-    gl.attachShader(program, vertexShader);
-    gl.attachShader(program, fragmentShader);
-    gl.linkProgram(program);
-    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-        console.log(gl.getShaderInfoLog(vertexShader));
-        console.log(gl.getShaderInfoLog(fragmentShader));
+},{"./scene":"8XkT2","./color":"cVzcX","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"8XkT2":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+exports.default = class {
+    constructor(){
+        this.positions = [];
+        this.colors = [];
+        this.triangles = 0;
     }
-    gl.useProgram(program);
-    const uResolution = gl.getUniformLocation(program, 'uResolution');
-    const aPosition = gl.getAttribLocation(program, 'aPosition');
-    const aColor = gl.getAttribLocation(program, 'aColor');
-    gl.uniform2f(uResolution, gl.canvas.width, gl.canvas.height);
-    gl.enableVertexAttribArray(aPosition);
-    gl.enableVertexAttribArray(aColor);
-    return {
-        gl,
-        ctx,
-        position: {
-            location: aPosition,
-            buffer: gl.createBuffer()
-        },
-        color: {
-            location: aColor,
-            buffer: gl.createBuffer()
-        }
-    };
-};
-const render = (renderer, scene)=>{
-    const { gl , ctx , position , color  } = renderer;
-    gl.clear(gl.COLOR_BUFFER_BIT);
-    gl.bindBuffer(gl.ARRAY_BUFFER, position.buffer);
-    {
-        const data = new Float32Array(scene.triangles * 2);
-        let i = 0;
-        for (const vertices of scene.positions)for (const vertex of vertices)data[i++] = vertex;
-        gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
+    addNode({ x , y , color  }) {
+        const dpr = window.devicePixelRatio;
+        const x1 = x;
+        const y1 = y;
+        const { r , g , b  } = color;
+        const x2 = x1 + 200;
+        const y2 = y1 + 25;
+        const y3 = y2 + 1;
+        const y4 = y2 + 75;
+        const vertices = [
+            x1,
+            y1,
+            x2,
+            y1,
+            x2,
+            y2,
+            x1,
+            y1,
+            x1,
+            y2,
+            x2,
+            y2,
+            x1,
+            y2,
+            x2,
+            y2,
+            x2,
+            y3,
+            x1,
+            y2,
+            x1,
+            y3,
+            x2,
+            y3,
+            x1,
+            y3,
+            x2,
+            y3,
+            x2,
+            y4,
+            x1,
+            y3,
+            x1,
+            y4,
+            x2,
+            y4, 
+        ];
+        this.positions.push(vertices);
+        this.colors.push([
+            r,
+            g,
+            b,
+            r,
+            g,
+            b,
+            r,
+            g,
+            b,
+            r,
+            g,
+            b,
+            r,
+            g,
+            b,
+            r,
+            g,
+            b,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            66,
+            66,
+            66,
+            66,
+            66,
+            66,
+            66,
+            66,
+            66,
+            66,
+            66,
+            66,
+            66,
+            66,
+            66,
+            66,
+            66,
+            66, 
+        ]);
+        this.triangles += vertices.length / 2;
     }
-    gl.vertexAttribPointer(position.location, /*size*/ 2, /*type*/ gl.FLOAT, /*normalize*/ false, /*stride*/ 0, /*offset*/ 0);
-    gl.bindBuffer(gl.ARRAY_BUFFER, color.buffer);
-    {
-        const data = new Uint8Array(scene.triangles * 3);
-        let i = 0;
-        for (const colors of scene.colors)for (const color of colors)data[i++] = color;
-        gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
-    }
-    gl.vertexAttribPointer(color.location, /*size*/ 3, /*type*/ gl.UNSIGNED_BYTE, /*normalize*/ true, /*stride*/ 0, /*offset*/ 0);
-    gl.drawArrays(gl.TRIANGLES, /*offset*/ 0, /*count*/ scene.triangles);
-    ctx.font = `24px sans-serif`;
-    ctx.fillStyle = 'white';
-    ctx.fillText('foo', 55, 119);
 };
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"gkKU3":[function(require,module,exports) {
@@ -657,201 +742,7 @@ exports.export = function(dest, destName, get) {
     });
 };
 
-},{}],"89Mlp":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "scene", ()=>scene
-);
-var _scene = require("./scene");
-var _color = require("./color");
-const initScene = ()=>{
-    const scene1 = {
-        positions: [],
-        colors: [],
-        triangles: 0
-    };
-    _scene.addNode(scene1, {
-        x: 50,
-        y: 100,
-        color: _color.material.red
-    });
-    _scene.addNode(scene1, {
-        x: 300,
-        y: 100,
-        color: _color.material.pink
-    });
-    _scene.addNode(scene1, {
-        x: 550,
-        y: 100,
-        color: _color.material.purple
-    });
-    _scene.addNode(scene1, {
-        x: 800,
-        y: 100,
-        color: _color.material.deepPurple
-    });
-    _scene.addNode(scene1, {
-        x: 1050,
-        y: 100,
-        color: _color.material.indigo
-    });
-    _scene.addNode(scene1, {
-        x: 50,
-        y: 250,
-        color: _color.material.blue
-    });
-    _scene.addNode(scene1, {
-        x: 300,
-        y: 250,
-        color: _color.material.lightBlue
-    });
-    _scene.addNode(scene1, {
-        x: 550,
-        y: 250,
-        color: _color.material.cyan
-    });
-    _scene.addNode(scene1, {
-        x: 800,
-        y: 250,
-        color: _color.material.teal
-    });
-    _scene.addNode(scene1, {
-        x: 1050,
-        y: 250,
-        color: _color.material.green
-    });
-    _scene.addNode(scene1, {
-        x: 50,
-        y: 400,
-        color: _color.material.brown
-    });
-    _scene.addNode(scene1, {
-        x: 300,
-        y: 400,
-        color: _color.material.grey
-    });
-    _scene.addNode(scene1, {
-        x: 550,
-        y: 400,
-        color: _color.material.blueGrey
-    });
-    return scene1;
-};
-const scene = initScene();
-
-},{"./scene":"8XkT2","./color":"cVzcX","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"8XkT2":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "addNode", ()=>addNode
-);
-const addNode = (scene, { x , y , color  })=>{
-    const dpr = window.devicePixelRatio;
-    const x1 = x;
-    const y1 = y;
-    const { r , g , b  } = color;
-    const x2 = x1 + 200;
-    const y2 = y1 + 25;
-    const y3 = y2 + 1;
-    const y4 = y2 + 75;
-    const vertices = [
-        x1,
-        y1,
-        x2,
-        y1,
-        x2,
-        y2,
-        x1,
-        y1,
-        x1,
-        y2,
-        x2,
-        y2,
-        x1,
-        y2,
-        x2,
-        y2,
-        x2,
-        y3,
-        x1,
-        y2,
-        x1,
-        y3,
-        x2,
-        y3,
-        x1,
-        y3,
-        x2,
-        y3,
-        x2,
-        y4,
-        x1,
-        y3,
-        x1,
-        y4,
-        x2,
-        y4, 
-    ];
-    scene.positions.push(vertices);
-    scene.colors.push([
-        r,
-        g,
-        b,
-        r,
-        g,
-        b,
-        r,
-        g,
-        b,
-        r,
-        g,
-        b,
-        r,
-        g,
-        b,
-        r,
-        g,
-        b,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        66,
-        66,
-        66,
-        66,
-        66,
-        66,
-        66,
-        66,
-        66,
-        66,
-        66,
-        66,
-        66,
-        66,
-        66,
-        66,
-        66,
-        66, 
-    ]);
-    scene.triangles += vertices.length / 2;
-};
-
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"cVzcX":[function(require,module,exports) {
+},{}],"cVzcX":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "material", ()=>material
@@ -923,6 +814,146 @@ const material = {
         b: 79
     }
 };
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"6Lkv5":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+const vertexShaderSource = `#version 300 es
+uniform vec2 uResolution;
+in vec2 aPosition;
+in vec3 aColor;
+out vec3 vColor;
+
+void main() {
+  vColor = aColor;
+  vec2 clipSpace = aPosition / uResolution * 2.0 - 1.0;
+  gl_Position = vec4(clipSpace * vec2(1, -1), 0.0, 1.0);
+}
+`;
+const fragmentShaderSource = `#version 300 es
+precision mediump float;
+
+in vec3 vColor;
+out vec4 fragColor;
+
+void main() {
+  fragColor = vec4(vColor, 1.0);
+}
+`;
+class Renderer {
+    constructor(scene){
+        this.scene = scene;
+        this.onResize = (entries)=>{
+            entries.map((entry)=>{
+                if (entry.devicePixelContentBoxSize) return {
+                    entry: entry,
+                    width: entry.devicePixelContentBoxSize[0].inlineSize,
+                    height: entry.devicePixelContentBoxSize[0].blockSize,
+                    dpr: 1
+                };
+                if (entry.contentBoxSize) return {
+                    entry: entry,
+                    width: entry.contentBoxSize[0].inlineSize,
+                    height: entry.contentBoxSize[0].blockSize,
+                    dpr: window.devicePixelRatio
+                };
+                return {
+                    entry: entry,
+                    width: entry.contentRect.width,
+                    height: entry.contentRect.height,
+                    dpr: window.devicePixelRatio
+                };
+            }).forEach(({ entry , width , height , dpr  })=>{
+                const canvas = entry.target;
+                canvas.width = Math.round(width * dpr);
+                canvas.height = Math.round(height * dpr);
+            });
+            const gl = this.gl;
+            gl.uniform2f(this.uResolution, gl.canvas.width, gl.canvas.height);
+            gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+            this.ctx.canvas.width = gl.canvas.width;
+            this.ctx.canvas.height = gl.canvas.height;
+            this.render();
+        };
+        this.render = ()=>{
+            const gl = this.gl;
+            const ctx = this.ctx;
+            gl.clear(gl.COLOR_BUFFER_BIT);
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.position.buffer);
+            {
+                const data = new Float32Array(this.scene.triangles * 2);
+                let i = 0;
+                for (const vertices of this.scene.positions)for (const vertex of vertices)data[i++] = vertex;
+                gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
+            }
+            gl.vertexAttribPointer(this.position.location, /*size*/ 2, /*type*/ gl.FLOAT, /*normalize*/ false, /*stride*/ 0, /*offset*/ 0);
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.color.buffer);
+            {
+                const data = new Uint8Array(this.scene.triangles * 3);
+                let i = 0;
+                for (const colors of this.scene.colors)for (const color of colors)data[i++] = color;
+                gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
+            }
+            gl.vertexAttribPointer(this.color.location, /*size*/ 3, /*type*/ gl.UNSIGNED_BYTE, /*normalize*/ true, /*stride*/ 0, /*offset*/ 0);
+            gl.drawArrays(gl.TRIANGLES, /*offset*/ 0, /*count*/ this.scene.triangles);
+            ctx.clearRect(0, 0, gl.canvas.width, gl.canvas.height);
+            ctx.font = `24px sans-serif`;
+            ctx.fillStyle = 'white';
+            ctx.fillText('foo', 55, 121);
+        };
+        const gl_canvas = document.createElement('canvas');
+        gl_canvas.style.width = '100%';
+        gl_canvas.style.height = '100%';
+        gl_canvas.style.position = 'absolute';
+        document.body.appendChild(gl_canvas);
+        const text_canvas = document.createElement('canvas');
+        text_canvas.style.width = '100%';
+        text_canvas.style.height = '100%';
+        text_canvas.style.position = 'absolute';
+        document.body.appendChild(text_canvas);
+        const gl1 = gl_canvas.getContext('webgl2');
+        this.gl = gl1;
+        gl1.clearColor(33 / 255, 33 / 255, 33 / 255, 1);
+        this.ctx = text_canvas.getContext('2d');
+        const vertexShader = gl1.createShader(gl1.VERTEX_SHADER);
+        gl1.shaderSource(vertexShader, vertexShaderSource);
+        gl1.compileShader(vertexShader);
+        const fragmentShader = gl1.createShader(gl1.FRAGMENT_SHADER);
+        gl1.shaderSource(fragmentShader, fragmentShaderSource);
+        gl1.compileShader(fragmentShader);
+        const program = gl1.createProgram();
+        gl1.attachShader(program, vertexShader);
+        gl1.attachShader(program, fragmentShader);
+        gl1.linkProgram(program);
+        if (!gl1.getProgramParameter(program, gl1.LINK_STATUS)) {
+            console.log(gl1.getShaderInfoLog(vertexShader));
+            console.log(gl1.getShaderInfoLog(fragmentShader));
+        }
+        this.uResolution = gl1.getUniformLocation(program, 'uResolution');
+        this.position = {
+            location: gl1.getAttribLocation(program, 'aPosition'),
+            buffer: gl1.createBuffer()
+        };
+        gl1.enableVertexAttribArray(this.position.location);
+        this.color = {
+            location: gl1.getAttribLocation(program, 'aColor'),
+            buffer: gl1.createBuffer()
+        };
+        gl1.enableVertexAttribArray(this.color.location);
+        gl1.useProgram(program);
+        const resizeObserver = new ResizeObserver(this.onResize);
+        try {
+            resizeObserver.observe(gl_canvas, {
+                box: 'device-pixel-content-box'
+            });
+        } catch (ex) {
+            resizeObserver.observe(gl_canvas, {
+                box: 'content-box'
+            });
+        }
+    }
+}
+exports.default = Renderer;
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["8wcER","h7u1C"], "h7u1C", "parcelRequiredb27")
 

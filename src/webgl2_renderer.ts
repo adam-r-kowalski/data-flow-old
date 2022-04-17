@@ -1,6 +1,7 @@
 import Scene from './scene'
 
 const vertexShaderSource = `#version 300 es
+uniform float uDevicePixelRatio;
 uniform vec2 uResolution;
 in vec2 aPosition;
 in vec3 aColor;
@@ -8,7 +9,7 @@ out vec3 vColor;
 
 void main() {
   vColor = aColor;
-  vec2 clipSpace = aPosition / uResolution * 2.0 - 1.0;
+  vec2 clipSpace = aPosition * uDevicePixelRatio / uResolution * 2.0 - 1.0;
   gl_Position = vec4(clipSpace * vec2(1, -1), 0.0, 1.0);
 }
 `
@@ -67,8 +68,11 @@ export default class Renderer {
       console.log(gl.getShaderInfoLog(vertexShader))
       console.log(gl.getShaderInfoLog(fragmentShader))
     }
+    gl.useProgram(program)
 
     this.uResolution = gl.getUniformLocation(program, 'uResolution')
+    const uDevicePixelRatio = gl.getUniformLocation(program, 'uDevicePixelRatio')
+    gl.uniform1f(uDevicePixelRatio, window.devicePixelRatio)
 
     this.position = {
       location: gl.getAttribLocation(program, 'aPosition'),
@@ -82,8 +86,6 @@ export default class Renderer {
     }
     gl.enableVertexAttribArray(this.color.location)
 
-    gl.useProgram(program)
-
     const resizeObserver = new ResizeObserver(this.onResize)
     try {
       resizeObserver.observe(gl_canvas, { box: 'device-pixel-content-box' })
@@ -93,6 +95,7 @@ export default class Renderer {
   }
 
   onResize = (entries: ResizeObserverEntry[]): void => {
+    const gl = this.gl
     entries.map(entry => {
       if (entry.devicePixelContentBoxSize) return {
         entry: entry,
@@ -117,7 +120,6 @@ export default class Renderer {
       canvas.width = Math.round(width * dpr)
       canvas.height = Math.round(height * dpr)
     })
-    const gl = this.gl
     gl.uniform2f(this.uResolution, gl.canvas.width, gl.canvas.height)
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
     this.ctx.canvas.width = gl.canvas.width
@@ -158,9 +160,10 @@ export default class Renderer {
 
     gl.drawArrays(gl.TRIANGLES, /*offset*/0, /*count*/this.scene.triangles)
 
+    const dpr = window.devicePixelRatio
     ctx.clearRect(0, 0, gl.canvas.width, gl.canvas.height)
-    ctx.font = `24px sans-serif`
+    ctx.font = `${24 * dpr}px sans-serif`
     ctx.fillStyle = 'white'
-    ctx.fillText('foo', 55, 100 + 24 - 3)
+    ctx.fillText('foo', 55 * dpr, (100 + 24 - 3) * dpr)
   }
 }

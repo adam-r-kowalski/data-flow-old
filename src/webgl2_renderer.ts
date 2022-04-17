@@ -29,6 +29,7 @@ export default class Renderer {
   ctx: CanvasRenderingContext2D
   position: { buffer: WebGLBuffer, location: number }
   color: { buffer: WebGLBuffer, location: number }
+  uResolution: WebGLUniformLocation
 
   constructor(public scene: Scene) {
     const gl_canvas: HTMLCanvasElement = document.createElement('canvas')
@@ -43,16 +44,11 @@ export default class Renderer {
     text_canvas.style.position = 'absolute'
     document.body.appendChild(text_canvas)
 
-    const dpr = window.devicePixelRatio;
     const gl = gl_canvas.getContext('webgl2')
-    gl.canvas.width = Math.round(gl.canvas.clientWidth * dpr)
-    gl.canvas.height = Math.round(gl.canvas.clientHeight * dpr)
-    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
+    this.gl = gl
     gl.clearColor(33 / 255, 33 / 255, 33 / 255, 1.0)
 
-    const ctx = text_canvas.getContext('2d')
-    ctx.canvas.width = gl.canvas.width
-    ctx.canvas.height = gl.canvas.height
+    this.ctx = text_canvas.getContext('2d')
 
     const vertexShader = gl.createShader(gl.VERTEX_SHADER)
     gl.shaderSource(vertexShader, vertexShaderSource)
@@ -72,29 +68,64 @@ export default class Renderer {
       console.log(gl.getShaderInfoLog(fragmentShader))
     }
 
-    gl.useProgram(program)
+    this.uResolution = gl.getUniformLocation(program, 'uResolution')
 
-    const uResolution = gl.getUniformLocation(program, 'uResolution')
-    const aPosition = gl.getAttribLocation(program, 'aPosition')
-    const aColor = gl.getAttribLocation(program, 'aColor')
-
-    gl.uniform2f(uResolution, gl.canvas.width, gl.canvas.height)
-    gl.enableVertexAttribArray(aPosition)
-    gl.enableVertexAttribArray(aColor)
-
-    this.gl = gl
-    this.ctx = ctx
     this.position = {
-      location: aPosition,
+      location: gl.getAttribLocation(program, 'aPosition'),
       buffer: gl.createBuffer()
     }
+    gl.enableVertexAttribArray(this.position.location)
+
     this.color = {
-      location: aColor,
+      location: gl.getAttribLocation(program, 'aColor'),
       buffer: gl.createBuffer(),
+    }
+    gl.enableVertexAttribArray(this.color.location)
+
+    gl.useProgram(program)
+
+    const resizeObserver = new ResizeObserver(this.onResize)
+    try {
+      resizeObserver.observe(gl_canvas, { box: 'device-pixel-content-box' })
+    } catch (ex) {
+      resizeObserver.observe(gl_canvas, { box: 'content-box' })
     }
   }
 
-  render(): void {
+  onResize = (entries: ResizeObserverEntry[]): void => {
+    entries.map(entry => {
+      if (entry.devicePixelContentBoxSize) return {
+        entry: entry,
+        width: entry.devicePixelContentBoxSize[0].inlineSize,
+        height: entry.devicePixelContentBoxSize[0].blockSize,
+        dpr: 1,
+      }
+      if (entry.contentBoxSize) return {
+        entry: entry,
+        width: entry.contentBoxSize[0].inlineSize,
+        height: entry.contentBoxSize[0].blockSize,
+        dpr: window.devicePixelRatio,
+      }
+      return {
+        entry: entry,
+        width: entry.contentRect.width,
+        height: entry.contentRect.height,
+        dpr: window.devicePixelRatio,
+      }
+    }).forEach(({ entry, width, height, dpr }) => {
+      const canvas = entry.target as HTMLCanvasElement
+      canvas.width = Math.round(width * dpr)
+      canvas.height = Math.round(height * dpr)
+    })
+    const gl = this.gl
+    gl.uniform2f(this.uResolution, gl.canvas.width, gl.canvas.height)
+    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
+    this.ctx.canvas.width = gl.canvas.width
+    this.ctx.canvas.height = gl.canvas.height
+    this.render()
+  }
+
+  render = (): void => {
     const gl = this.gl
     const ctx = this.ctx
     gl.clear(gl.COLOR_BUFFER_BIT)

@@ -97,7 +97,7 @@ export class Engine {
         textBaseline: 'middle',
         color: this.palette.white,
         translation: center(titleRectangle),
-        text: 'Scatter'
+        text: title
       })
 
       const size = 20
@@ -110,7 +110,7 @@ export class Engine {
         const inputRectangle = {
           translation: [x, y],
           scale: [size, size],
-          color: this.palette.indigo
+          color: this.nodes.colors[index]
         }
         vertices.pushRectangle(inputRectangle)
         this.renderer.drawText({
@@ -131,7 +131,7 @@ export class Engine {
         const outputRectangle = {
           translation: [x, y],
           scale: [size, size],
-          color: this.palette.indigo
+          color: this.nodes.colors[index]
         }
         vertices.pushRectangle(outputRectangle)
         this.renderer.drawText({

@@ -20,9 +20,9 @@ engine.pushNode({
 })
 
 engine.pushNode({
-  title: 'Scatter',
+  title: 'Line',
   inputs: ['x', 'y'],
   outputs: ['plot'],
   translation: [500, 500],
-  color: palette.lightBlue
+  color: palette.green
 })

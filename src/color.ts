@@ -12,6 +12,7 @@ export interface Palette {
   brown: number[]
   grey: number[]
   blueGrey: number[]
+  darkGrey: number[]
   white: number[]
 }
 
@@ -29,5 +30,6 @@ export const material: Palette = {
   brown: [78, 52, 46],
   grey: [117, 117, 117],
   blueGrey: [55, 71, 79],
+  darkGrey: [33, 33, 33],
   white: [255, 255, 255]
 }

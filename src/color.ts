@@ -1,37 +1,33 @@
-export interface Color {
-  r: number
-  g: number
-  b: number
-}
-
 export interface Palette {
-  red: Color
-  pink: Color
-  purple: Color
-  deepPurple: Color
-  indigo: Color
-  blue: Color
-  lightBlue: Color
-  cyan: Color
-  teal: Color
-  green: Color
-  brown: Color
-  grey: Color
-  blueGrey: Color
+  red: number[]
+  pink: number[]
+  purple: number[]
+  deepPurple: number[]
+  indigo: number[]
+  blue: number[]
+  lightBlue: number[]
+  cyan: number[]
+  teal: number[]
+  green: number[]
+  brown: number[]
+  grey: number[]
+  blueGrey: number[]
+  white: number[]
 }
 
 export const material: Palette = {
-  red: { r: 198, g: 40, b: 40 },
-  pink: { r: 173, g: 20, b: 87 },
-  purple: { r: 106, g: 27, b: 154 },
-  deepPurple: { r: 69, g: 39, b: 160 },
-  indigo: { r: 40, g: 53, b: 147 },
-  blue: { r: 21, g: 101, b: 192 },
-  lightBlue: { r: 2, g: 119, b: 189 },
-  cyan: { r: 0, g: 131, b: 143 },
-  teal: { r: 0, g: 105, b: 92 },
-  green: { r: 46, g: 125, b: 50 },
-  brown: { r: 78, g: 52, b: 46 },
-  grey: { r: 117, g: 117, b: 117 },
-  blueGrey: { r: 55, g: 71, b: 79 }
+  red: [198, 40, 40],
+  pink: [173, 20, 87],
+  purple: [106, 27, 154],
+  deepPurple: [69, 39, 160],
+  indigo: [40, 53, 147],
+  blue: [21, 101, 192],
+  lightBlue: [2, 119, 189],
+  cyan: [0, 131, 143],
+  teal: [0, 105, 92],
+  green: [46, 125, 50],
+  brown: [78, 52, 46],
+  grey: [117, 117, 117],
+  blueGrey: [55, 71, 79],
+  white: [255, 255, 255]
 }

@@ -1,10 +1,7 @@
-type Entity = number
-
-
 type Component<T> = { new(...args: any[]): T }
 
 class Storage<T> {
-  lookup: Map<Entity, number>
+  lookup: Map<number, number>
   data: T[]
 
   constructor() {
@@ -13,45 +10,55 @@ class Storage<T> {
   }
 
   get = (entity: Entity): T => {
-    const index = this.lookup.get(entity)
+    const index = this.lookup.get(entity.id)
     return this.data[index]
   }
 
   set = (entity: Entity, component: T): void => {
-    const index = this.lookup.get(entity)
-    this.data[index] = component
+    const index = this.lookup.get(entity.id)
+    if (index) {
+      this.data[index] = component
+      return
+    }
+    this.lookup.set(entity.id, this.data.length)
+    this.data.push(component)
+  }
+}
+
+class Entity {
+  constructor(public id: number, public ecs: ECS) { }
+
+  set = (...components: any): void => {
+    for (const component of components) {
+      const Type = component.constructor
+      let storage = this.ecs.storages.get(Type)
+      if (!storage) {
+        storage = new Storage()
+        this.ecs.storages.set(Type, storage)
+      }
+      storage.set(this, component)
+    }
+  }
+
+  get = <T>(Type: Component<T>): T => {
+    const storage = this.ecs.storages.get(Type) as Storage<T>
+    return storage.get(this)
   }
 }
 
 export class ECS {
-  nextEntity: Entity
+  nextEntityId: number
   storages: Map<Component<any>, Storage<any>>
 
   constructor() {
-    this.nextEntity = 0
+    this.nextEntityId = 0
     this.storages = new Map()
   }
 
-  createEntity = (): Entity => {
-    const entity = this.nextEntity
-    ++this.nextEntity
+  entity = (...components: any): Entity => {
+    const entity = new Entity(this.nextEntityId, this)
+    entity.set(...components)
+    ++this.nextEntityId
     return entity
-  }
-
-  set = (entity: Entity, ...components: any): void => {
-    for (const component of components) {
-      const Type = component.constructor
-      let storage = this.storages.get(Type)
-      if (!storage) {
-        storage = new Storage()
-        this.storages.set(Type, storage)
-      }
-      storage.set(entity, component)
-    }
-  }
-
-  get = <T>(entity: Entity, Type: Component<T>): T => {
-    const storage = this.storages.get(Type) as Storage<T>
-    return storage.get(entity)
   }
 }

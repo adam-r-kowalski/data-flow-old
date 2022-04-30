@@ -1,5 +1,9 @@
 export class Mat4x4 {
-  constructor(public data: number[]) { }
+  data: number[]
+
+  constructor(data: number[]) {
+    this.data = data
+  }
 
   mul = (other: Mat4x4): Mat4x4 => {
     const a = this.data

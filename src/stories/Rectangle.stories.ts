@@ -1,15 +1,32 @@
+import { Renderer } from '../webgl_renderer'
+import { ECS } from '../ecs'
+import { Geometry, Translate, Scale } from '../components'
+
 export default {
   title: "Rectangle",
 }
 
 export const Primary = () => {
-  const gl_canvas: HTMLCanvasElement = document.createElement('canvas')
-  gl_canvas.style.width = '100%'
-  gl_canvas.style.height = '100%'
-  gl_canvas.style.position = 'absolute'
-  const gl = gl_canvas.getContext('webgl2')
-  gl.clearColor(0.0, 0.0, 0.0, 1.0)
-  gl.clear(gl.COLOR_BUFFER_BIT)
-  return gl_canvas
+  const renderer = new Renderer()
+  const ecs = new ECS()
+  const rect = ecs.entity(
+    new Geometry(
+      [
+        -0.5, 0.5, 0,
+        0.5, 0.5, 0,
+        -0.5, -0.5, 0,
+        0.5, -0.5, 0
+      ],
+      [
+        0, 1, 2,
+        2, 3, 1
+      ]
+    ),
+    new Translate(200, 200, 0),
+    new Scale(50, 50, 1)
+  )
+  renderer.setSize(500, 300)
+  renderer.render(rect)
+  return renderer.element
 }
 

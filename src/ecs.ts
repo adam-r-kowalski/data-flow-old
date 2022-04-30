@@ -25,8 +25,14 @@ class Storage<T> {
   }
 }
 
-class Entity {
-  constructor(public id: number, public ecs: ECS) { }
+export class Entity {
+  id: number
+  ecs: ECS
+
+  constructor(id: number, ecs: ECS) {
+    this.id = id
+    this.ecs = ecs
+  }
 
   set = (...components: any): void => {
     for (const component of components) {

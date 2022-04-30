@@ -29,40 +29,6 @@ export class Mat4x4 {
   }
 }
 
-export const xRotate = (radians: number): Mat4x4 => {
-  const c = Math.cos(radians)
-  const s = Math.sin(radians)
-  return new Mat4x4([
-    1, 0, 0, 0,
-    0, c, s, 0,
-    0, -s, c, 0,
-    0, 0, 0, 1,
-  ])
-}
-
-export const yRotate = (radians: number): Mat4x4 => {
-  const c = Math.cos(radians)
-  const s = Math.sin(radians)
-  return new Mat4x4([
-    c, 0, -s, 0,
-    0, 1, 0, 0,
-    s, 0, c, 0,
-    0, 0, 0, 1,
-  ])
-}
-
-export const zRotate = (radians: number): Mat4x4 => {
-  const c = Math.cos(radians)
-  const s = Math.sin(radians)
-  return new Mat4x4([
-    c, s, 0, 0,
-    -s, c, 0, 0,
-    0, 0, 1, 0,
-    0, 0, 0, 1,
-  ])
-}
-
-
 export const projection = (width: number, height: number, depth: number): Mat4x4 =>
   new Mat4x4([
     2 / width, 0, 0, 0,

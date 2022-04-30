@@ -3,10 +3,12 @@ type Component<T> = { new(...args: any[]): T }
 class Storage<T> {
   lookup: Map<number, number>
   data: T[]
+  inverses: number[]
 
   constructor() {
     this.lookup = new Map()
     this.data = []
+    this.inverses = []
   }
 
   get = (entity: Entity): T => {
@@ -14,14 +16,20 @@ class Storage<T> {
     return this.data[index]
   }
 
+  hasId = (id: number): boolean => {
+    return this.lookup.has(id)
+  }
+
   set = (entity: Entity, component: T): void => {
     const index = this.lookup.get(entity.id)
     if (index) {
       this.data[index] = component
+      this.inverses[index] = entity.id
       return
     }
     this.lookup.set(entity.id, this.data.length)
     this.data.push(component)
+    this.inverses.push(entity.id)
   }
 }
 
@@ -66,5 +74,17 @@ export class ECS {
     entity.set(...components)
     ++this.nextEntityId
     return entity
+  }
+
+  query = (...components: any): Entity[] => {
+    const entities = []
+    const primary = this.storages.get(components[0])
+    const secondary = components.slice(1).map(s => this.storages.get(s))
+    for (const id of primary.inverses) {
+      if (secondary.every(storage => storage.hasId(id))) {
+        entities.push(new Entity(id, this))
+      }
+    }
+    return entities
   }
 }

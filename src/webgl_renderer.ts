@@ -1,6 +1,6 @@
 import { ECS, Entity } from './ecs'
 import { projection } from './linear_algebra'
-import { Geometry, Translate, Scale } from './components'
+import { Geometry, Translate, Scale, Rotate } from './components'
 
 export class Renderer {
   element: HTMLCanvasElement
@@ -8,14 +8,17 @@ export class Renderer {
   uMatrix: WebGLUniformLocation
   position: { buffer: WebGLBuffer, location: number }
   indexBuffer: WebGLBuffer
+  ecs: ECS
 
-  constructor() {
-    this.element = document.createElement('canvas')
-    this.element.style.width = '100%'
-    this.element.style.height = '100%'
-    const gl = this.element.getContext('webgl2')
+  constructor(ecs: ECS) {
+    const canvas = document.createElement('canvas')
+    canvas.style.width = '100%'
+    canvas.style.height = '100%'
+    const gl = canvas.getContext('webgl2')
+    gl.clearColor(1.0, 1.0, 1.0, 1.0)
+    this.element = canvas
+    this.ecs = ecs
     this.gl = gl
-    gl.clearColor(0.0, 1.0, 1.0, 1.0)
 
     const vertexShaderSource = `#version 300 es
 in vec4 a_position;
@@ -64,28 +67,56 @@ void main() {
     gl.enableVertexAttribArray(this.position.location)
 
     this.indexBuffer = gl.createBuffer()
+    const resizeObserver = new ResizeObserver(this.onResize)
+    try {
+      resizeObserver.observe(canvas, { box: 'device-pixel-content-box' })
+    } catch (ex) {
+      resizeObserver.observe(canvas, { box: 'content-box' })
+    }
   }
 
-  setSize = (width: number, height: number): void => {
-    const gl = this.gl
-    gl.canvas.width = width
-    gl.canvas.height = height
-    gl.viewport(0, 0, width, height)
+  onResize = (entries: ResizeObserverEntry[]): void => {
+    const entry = entries[0]
+    const { width, height, dpr } = (() => {
+      if (entry.devicePixelContentBoxSize) return {
+        width: entry.devicePixelContentBoxSize[0].inlineSize,
+        height: entry.devicePixelContentBoxSize[0].blockSize,
+        dpr: 1
+      }
+      if (entry.contentBoxSize) return {
+        width: entry.contentBoxSize[0].inlineSize,
+        height: entry.contentBoxSize[0].blockSize,
+        dpr: window.devicePixelRatio
+      }
+      return {
+        width: entry.contentRect.width,
+        height: entry.contentRect.height,
+        dpr: window.devicePixelRatio
+      }
+    })()
+    const canvas = this.gl.canvas
+    canvas.width = Math.round(width * dpr)
+    canvas.height = Math.round(height * dpr)
+    this.gl.viewport(0, 0, canvas.width, canvas.height)
+    this.render()
   }
 
-  render = (rect: Entity): void => {
+  render = (): void => {
     const gl = this.gl
     gl.clear(gl.COLOR_BUFFER_BIT)
-    const geometry = rect.get(Geometry)
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.position.buffer)
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(geometry.vertices), gl.STATIC_DRAW)
-    gl.vertexAttribPointer(this.position.location, /*size*/3, /*type*/gl.FLOAT, /*normalize*/false, /*stride*/0, /*offset*/0)
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer)
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint8Array(geometry.indices), gl.STATIC_DRAW)
-    const matrix = projection(gl.canvas.width, gl.canvas.height, 400)
-      .mul(rect.get(Translate).matrix())
-      .mul(rect.get(Scale).matrix())
-    gl.uniformMatrix4fv(this.uMatrix, /*transpose*/false, matrix.data)
-    gl.drawElements(gl.TRIANGLES, /*count*/geometry.vertices.length / 2, /*index type*/gl.UNSIGNED_BYTE, /*offset*/0)
+    for (const entity of this.ecs.query(Geometry)) {
+      const geometry = entity.get(Geometry)
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.position.buffer)
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(geometry.vertices), gl.STATIC_DRAW)
+      gl.vertexAttribPointer(this.position.location, /*size*/3, /*type*/gl.FLOAT, /*normalize*/false, /*stride*/0, /*offset*/0)
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer)
+      gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint8Array(geometry.indices), gl.STATIC_DRAW)
+      const matrix = projection(gl.canvas.width, gl.canvas.height, 400)
+        .mul(entity.get(Translate).matrix())
+        .mul(entity.get(Rotate).matrix())
+        .mul(entity.get(Scale).matrix())
+      gl.uniformMatrix4fv(this.uMatrix, /*transpose*/false, matrix.data)
+      gl.drawElements(gl.TRIANGLES, /*count*/geometry.vertices.length / 2, /*index type*/gl.UNSIGNED_BYTE, /*offset*/0)
+    }
   }
 }

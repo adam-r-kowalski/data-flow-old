@@ -50,3 +50,67 @@ export class Scale {
     ])
 }
 
+export class Rotate {
+  x: number
+  y: number
+  z: number
+
+  constructor(x: number, y: number, z: number) {
+    this.x = x
+    this.y = y
+    this.z = z
+  }
+
+  xMatrix = (): Mat4x4 => {
+    const radians = this.x
+    const c = Math.cos(radians)
+    const s = Math.sin(radians)
+    return new Mat4x4([
+      1, 0, 0, 0,
+      0, c, s, 0,
+      0, -s, c, 0,
+      0, 0, 0, 1,
+    ])
+  }
+
+  yMatrix = (): Mat4x4 => {
+    const radians = this.y
+    const c = Math.cos(radians)
+    const s = Math.sin(radians)
+    return new Mat4x4([
+      c, 0, -s, 0,
+      0, 1, 0, 0,
+      s, 0, c, 0,
+      0, 0, 0, 1,
+    ])
+  }
+
+  zMatrix = (): Mat4x4 => {
+    const radians = this.z
+    const c = Math.cos(radians)
+    const s = Math.sin(radians)
+    return new Mat4x4([
+      c, s, 0, 0,
+      -s, c, 0, 0,
+      0, 0, 1, 0,
+      0, 0, 0, 1,
+    ])
+  }
+
+  matrix = (): Mat4x4 =>
+    this.xMatrix().mul(this.yMatrix()).mul(this.zMatrix())
+}
+
+export const PlaneGeometry = (): Geometry =>
+  new Geometry(
+    [
+      -0.5, 0.5, 0,
+      0.5, 0.5, 0,
+      -0.5, -0.5, 0,
+      0.5, -0.5, 0
+    ],
+    [
+      0, 1, 2,
+      2, 3, 1
+    ]
+  )

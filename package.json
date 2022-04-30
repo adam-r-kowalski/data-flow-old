@@ -3,7 +3,13 @@
   "version": "1.0.0",
   "license": "MIT",
   "devDependencies": {
+    "@babel/core": "^7.17.10",
+    "@storybook/addon-actions": "^6.4.22",
+    "@storybook/addon-essentials": "^6.4.22",
+    "@storybook/addon-links": "^6.4.22",
+    "@storybook/html": "^6.4.22",
     "@types/jest": "^27.4.1",
+    "babel-loader": "^8.2.5",
     "gh-pages": "^3.2.3",
     "jest": "^27.5.1",
     "parcel": "^2.4.1",
@@ -16,6 +22,9 @@
     "start": "parcel ./src/index.html",
     "prebuild": "shx rm -rf dist/*",
     "build": "parcel build ./src/index.html --public-url ./",
-    "push": "yarn gh-pages -d dist"
-  }
+    "push": "yarn gh-pages -d dist",
+    "storybook": "start-storybook -p 6006",
+    "build-storybook": "build-storybook"
+  },
+  "dependencies": {}
 }

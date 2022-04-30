@@ -130,12 +130,10 @@ gl.vertexAttribPointer(aPositionLocation, /*size*/3, /*type*/gl.FLOAT, /*normali
 gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer)
 gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint8Array(geometry.indices), gl.STATIC_DRAW)
 
-const s = rect.get(Scale)
-
 const matrix = projection(gl.canvas.clientWidth, gl.canvas.clientHeight, 400)
   .mul(rect.get(Translate).matrix())
   .mul(rect.get(Scale).matrix())
 
 gl.uniformMatrix4fv(uMatrix, /*transpose*/false, matrix.data)
 
-gl.drawElements(gl.TRIANGLES, /*count*/6, /*index type*/gl.UNSIGNED_BYTE, /*offset*/0)
+gl.drawElements(gl.TRIANGLES, /*count*/geometry.vertices.length / 2, /*index type*/gl.UNSIGNED_BYTE, /*offset*/0)

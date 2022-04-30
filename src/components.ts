@@ -10,15 +10,21 @@ export class Geometry {
   }
 }
 
+interface Vec3 {
+  x: number
+  y: number
+  z: number
+}
+
 export class Translate {
   x: number
   y: number
   z: number
 
-  constructor(x: number, y: number, z: number) {
-    this.x = x
-    this.y = y
-    this.z = z
+  constructor(vec: Vec3) {
+    this.x = vec.x
+    this.y = vec.y
+    this.z = vec.z
   }
 
   matrix = (): Mat4x4 =>
@@ -35,10 +41,10 @@ export class Scale {
   y: number
   z: number
 
-  constructor(x: number, y: number, z: number) {
-    this.x = x
-    this.y = y
-    this.z = z
+  constructor(vec: Vec3) {
+    this.x = vec.x
+    this.y = vec.y
+    this.z = vec.z
   }
 
   matrix = (): Mat4x4 =>
@@ -55,10 +61,10 @@ export class Rotate {
   y: number
   z: number
 
-  constructor(x: number, y: number, z: number) {
-    this.x = x
-    this.y = y
-    this.z = z
+  constructor(vec: Vec3) {
+    this.x = vec.x
+    this.y = vec.y
+    this.z = vec.z
   }
 
   xMatrix = (): Mat4x4 => {
@@ -115,6 +121,12 @@ export const Plane = (): Geometry =>
     ]
   )
 
+interface Hsla {
+  h: number
+  s: number
+  l: number
+  a: number
+}
 
 export class Fill {
   h: number
@@ -122,11 +134,11 @@ export class Fill {
   l: number
   a: number
 
-  constructor(h: number, s: number, l: number, a: number) {
-    this.h = h
-    this.s = s
-    this.l = l
-    this.a = a
+  constructor(hsla: Hsla) {
+    this.h = hsla.h
+    this.s = hsla.s
+    this.l = hsla.l
+    this.a = hsla.a
   }
 }
 
@@ -136,10 +148,10 @@ export class WireFrame {
   l: number
   a: number
 
-  constructor(h: number, s: number, l: number, a: number) {
-    this.h = h
-    this.s = s
-    this.l = l
-    this.a = a
+  constructor(hsla: Hsla) {
+    this.h = hsla.h
+    this.s = hsla.s
+    this.l = hsla.l
+    this.a = hsla.a
   }
 }

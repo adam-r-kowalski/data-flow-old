@@ -97,6 +97,7 @@ void main() {
     const canvas = this.gl.canvas
     canvas.width = Math.round(width * dpr)
     canvas.height = Math.round(height * dpr)
+    console.log(window.devicePixelRatio, dpr, canvas.width, canvas.height)
     this.gl.viewport(0, 0, canvas.width, canvas.height)
     this.render()
   }
@@ -104,6 +105,8 @@ void main() {
   render = (): void => {
     const gl = this.gl
     gl.clear(gl.COLOR_BUFFER_BIT)
+    const dpr = window.devicePixelRatio
+    const view = projection(gl.canvas.width, gl.canvas.height, 400)
     for (const entity of this.ecs.query(Geometry)) {
       const geometry = entity.get(Geometry)
       gl.bindBuffer(gl.ARRAY_BUFFER, this.position.buffer)
@@ -111,7 +114,7 @@ void main() {
       gl.vertexAttribPointer(this.position.location, /*size*/3, /*type*/gl.FLOAT, /*normalize*/false, /*stride*/0, /*offset*/0)
       gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer)
       gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint8Array(geometry.indices), gl.STATIC_DRAW)
-      const matrix = projection(gl.canvas.width, gl.canvas.height, 400)
+      const matrix = view
         .mul(entity.get(Translate).matrix())
         .mul(entity.get(Rotate).matrix())
         .mul(entity.get(Scale).matrix())

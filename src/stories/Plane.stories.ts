@@ -11,9 +11,9 @@ export const Square = () => {
   const renderer = new Renderer(ecs)
   ecs.entity(
     PlaneGeometry(),
-    new Translate(1500, 900, 0),
+    new Translate(200, 200, 0),
     new Rotate(0, 0, 0),
-    new Scale(500, 500, 1)
+    new Scale(100, 100, 1)
   )
   return renderer.element
 }
@@ -23,21 +23,9 @@ export const Rectangle = () => {
   const renderer = new Renderer(ecs)
   ecs.entity(
     PlaneGeometry(),
-    new Translate(1500, 900, 0),
+    new Translate(200, 200, 0),
     new Rotate(0, 0, 0),
-    new Scale(750, 250, 1)
-  )
-  return renderer.element
-}
-
-export const TopLeft = () => {
-  const ecs = new ECS()
-  const renderer = new Renderer(ecs)
-  ecs.entity(
-    PlaneGeometry(),
-    new Translate(600, 300, 0),
-    new Rotate(0, 0, 0),
-    new Scale(750, 250, 1)
+    new Scale(300, 200, 1)
   )
   return renderer.element
 }
@@ -48,19 +36,17 @@ export const RotatingOnXAxis = () => {
 
   const plane = ecs.entity(
     PlaneGeometry(),
-    new Translate(1500, 900, 0),
+    new Translate(200, 200, 0),
     new Rotate(0, 0, 0),
-    new Scale(500, 500, 1)
+    new Scale(100, 100, 1)
   )
 
   let previousTime = 0
-  let theta = 0
 
   const update = (currentTime: number): void => {
     requestAnimationFrame(update)
     const deltaTime = currentTime - previousTime
-    theta += deltaTime / 2000
-    plane.set(new Rotate(theta, 0, 0))
+    plane.get(Rotate).x += deltaTime / 2000
     renderer.render()
     previousTime = currentTime
   }
@@ -76,19 +62,17 @@ export const RotatingOnYAxis = () => {
 
   const plane = ecs.entity(
     PlaneGeometry(),
-    new Translate(1500, 900, 0),
+    new Translate(200, 200, 0),
     new Rotate(0, 0, 0),
-    new Scale(500, 500, 1)
+    new Scale(100, 100, 1)
   )
 
   let previousTime = 0
-  let theta = 0
 
   const update = (currentTime: number): void => {
     requestAnimationFrame(update)
     const deltaTime = currentTime - previousTime
-    theta += deltaTime / 2000
-    plane.set(new Rotate(0, theta, 0))
+    plane.get(Rotate).y += deltaTime / 2000
     renderer.render()
     previousTime = currentTime
   }
@@ -104,19 +88,17 @@ export const RotatingOnZAxis = () => {
 
   const plane = ecs.entity(
     PlaneGeometry(),
-    new Translate(1500, 900, 0),
+    new Translate(200, 200, 0),
     new Rotate(0, 0, 0),
-    new Scale(500, 500, 1)
+    new Scale(100, 100, 1)
   )
 
   let previousTime = 0
-  let theta = 0
 
   const update = (currentTime: number): void => {
     requestAnimationFrame(update)
     const deltaTime = currentTime - previousTime
-    theta += deltaTime / 2000
-    plane.set(new Rotate(0, 0, theta))
+    plane.get(Rotate).z += deltaTime / 2000
     renderer.render()
     previousTime = currentTime
   }
@@ -133,9 +115,9 @@ export const RotatingOnAllAxis = () => {
 
   const plane = ecs.entity(
     PlaneGeometry(),
-    new Translate(1500, 900, 0),
+    new Translate(200, 200, 0),
     new Rotate(0, 0, 0),
-    new Scale(500, 500, 1)
+    new Scale(100, 100, 1)
   )
 
   let previousTime = 0

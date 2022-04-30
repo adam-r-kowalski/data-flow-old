@@ -1,19 +1,21 @@
 import { Renderer } from '../webgl_renderer'
 import { ECS } from '../ecs'
-import { Geometry, Translate, Rotate, Scale, PlaneGeometry } from '../components'
+import { Geometry, Translate, Rotate, Scale, Fill, WireFrame, Plane } from '../components'
 
 export default {
-  title: "PlaneGeometry",
+  title: "Plane",
 }
 
 export const Square = () => {
   const ecs = new ECS()
   const renderer = new Renderer(ecs)
   ecs.entity(
-    PlaneGeometry(),
+    Plane(),
     new Translate(200, 200, 0),
     new Rotate(0, 0, 0),
-    new Scale(100, 100, 1)
+    new Scale(100, 100, 1),
+    new Fill(279, 1, 0.7, 1),
+    new WireFrame(279, 1, 0.3, 1),
   )
   return renderer.element
 }
@@ -22,10 +24,12 @@ export const Rectangle = () => {
   const ecs = new ECS()
   const renderer = new Renderer(ecs)
   ecs.entity(
-    PlaneGeometry(),
+    Plane(),
     new Translate(200, 200, 0),
     new Rotate(0, 0, 0),
-    new Scale(300, 200, 1)
+    new Scale(300, 200, 1),
+    new Fill(279, 1, 0.7, 1),
+    new WireFrame(279, 1, 0.3, 1),
   )
   return renderer.element
 }
@@ -35,10 +39,12 @@ export const RotatingOnXAxis = () => {
   const renderer = new Renderer(ecs)
 
   const plane = ecs.entity(
-    PlaneGeometry(),
+    Plane(),
     new Translate(200, 200, 0),
     new Rotate(0, 0, 0),
-    new Scale(100, 100, 1)
+    new Scale(100, 100, 1),
+    new Fill(279, 1, 0.7, 1),
+    new WireFrame(279, 1, 0.3, 1),
   )
 
   let previousTime = 0
@@ -61,10 +67,12 @@ export const RotatingOnYAxis = () => {
   const renderer = new Renderer(ecs)
 
   const plane = ecs.entity(
-    PlaneGeometry(),
+    Plane(),
     new Translate(200, 200, 0),
     new Rotate(0, 0, 0),
-    new Scale(100, 100, 1)
+    new Scale(100, 100, 1),
+    new Fill(279, 1, 0.7, 1),
+    new WireFrame(279, 1, 0.3, 1),
   )
 
   let previousTime = 0
@@ -87,10 +95,12 @@ export const RotatingOnZAxis = () => {
   const renderer = new Renderer(ecs)
 
   const plane = ecs.entity(
-    PlaneGeometry(),
+    Plane(),
     new Translate(200, 200, 0),
     new Rotate(0, 0, 0),
-    new Scale(100, 100, 1)
+    new Scale(100, 100, 1),
+    new Fill(279, 1, 0.7, 1),
+    new WireFrame(279, 1, 0.3, 1),
   )
 
   let previousTime = 0
@@ -114,10 +124,12 @@ export const RotatingOnAllAxis = () => {
   const renderer = new Renderer(ecs)
 
   const plane = ecs.entity(
-    PlaneGeometry(),
+    Plane(),
     new Translate(200, 200, 0),
     new Rotate(0, 0, 0),
-    new Scale(100, 100, 1)
+    new Scale(100, 100, 1),
+    new Fill(279, 1, 0.7, 1),
+    new WireFrame(279, 1, 0.3, 1),
   )
 
   let previousTime = 0

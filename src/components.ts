@@ -101,16 +101,45 @@ export class Rotate {
     this.xMatrix().mul(this.yMatrix()).mul(this.zMatrix())
 }
 
-export const PlaneGeometry = (): Geometry =>
+export const Plane = (): Geometry =>
   new Geometry(
     [
+      -0.5, -0.5, 0,
       -0.5, 0.5, 0,
       0.5, 0.5, 0,
-      -0.5, -0.5, 0,
-      0.5, -0.5, 0
+      0.5, -0.5, 0,
     ],
     [
       0, 1, 2,
-      2, 3, 1
+      3, 0, 2
     ]
   )
+
+
+export class Fill {
+  h: number
+  s: number
+  l: number
+  a: number
+
+  constructor(h: number, s: number, l: number, a: number) {
+    this.h = h
+    this.s = s
+    this.l = l
+    this.a = a
+  }
+}
+
+export class WireFrame {
+  h: number
+  s: number
+  l: number
+  a: number
+
+  constructor(h: number, s: number, l: number, a: number) {
+    this.h = h
+    this.s = s
+    this.l = l
+    this.a = a
+  }
+}

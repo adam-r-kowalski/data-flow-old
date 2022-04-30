@@ -1,11 +1,12 @@
 import { ECS, Entity } from './ecs'
 import { projection } from './linear_algebra'
-import { Geometry, Translate, Scale, Rotate } from './components'
+import { Geometry, Translate, Scale, Rotate, Fill, WireFrame } from './components'
 
 export class Renderer {
   element: HTMLCanvasElement
   gl: WebGL2RenderingContext
   uMatrix: WebGLUniformLocation
+  uColor: WebGLUniformLocation
   position: { buffer: WebGLBuffer, location: number }
   indexBuffer: WebGLBuffer
   ecs: ECS
@@ -36,8 +37,16 @@ precision mediump float;
 
 out vec4 fragColor;
 
+uniform vec4 u_color;
+
+vec4 hslToRgb( in vec4 hsl) {
+ float h = hsl.x / 360.0;
+ vec3 rgb = clamp( abs(mod(h*6.0+vec3(0.0,4.0,2.0),6.0)-3.0)-1.0, 0.0, 1.0 );
+ return vec4(hsl.z + hsl.y * (rgb-0.5)*(1.0-abs(2.0*hsl.z-1.0)), hsl.w);
+}
+
 void main() {
-  fragColor = vec4(0.0, 0.0, 0.0, 1.0);
+  fragColor = hslToRgb(u_color);
 }
 `
 
@@ -60,6 +69,7 @@ void main() {
     }
     gl.useProgram(program)
     this.uMatrix = gl.getUniformLocation(program, 'u_matrix')
+    this.uColor = gl.getUniformLocation(program, 'u_color')
 
     this.position = {
       buffer: gl.createBuffer(),
@@ -106,7 +116,7 @@ void main() {
     const gl = this.gl
     gl.clear(gl.COLOR_BUFFER_BIT)
     const dpr = window.devicePixelRatio
-    const view = projection(gl.canvas.width, gl.canvas.height, 400)
+    const view = projection(gl.canvas.width / dpr, gl.canvas.height / dpr, 400)
     for (const entity of this.ecs.query(Geometry)) {
       const geometry = entity.get(Geometry)
       gl.bindBuffer(gl.ARRAY_BUFFER, this.position.buffer)
@@ -119,7 +129,12 @@ void main() {
         .mul(entity.get(Rotate).matrix())
         .mul(entity.get(Scale).matrix())
       gl.uniformMatrix4fv(this.uMatrix, /*transpose*/false, matrix.data)
-      gl.drawElements(gl.TRIANGLES, /*count*/geometry.vertices.length / 2, /*index type*/gl.UNSIGNED_BYTE, /*offset*/0)
+      const fill = entity.get(Fill)
+      gl.uniform4f(this.uColor, fill.h, fill.s, fill.l, fill.a)
+      gl.drawElements(gl.TRIANGLES, /*count*/geometry.indices.length, /*index type*/gl.UNSIGNED_BYTE, /*offset*/0)
+      const wireFrame = entity.get(WireFrame)
+      gl.uniform4f(this.uColor, wireFrame.h, wireFrame.s, wireFrame.l, wireFrame.a)
+      gl.drawElements(gl.LINE_STRIP, /*count*/geometry.indices.length, /*index type*/gl.UNSIGNED_BYTE, /*offset*/0)
     }
   }
 }

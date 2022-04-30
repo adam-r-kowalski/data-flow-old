@@ -113,6 +113,7 @@ void main() {
   }
 
   render = (): void => {
+    const start = performance.now()
     const gl = this.gl
     gl.clear(gl.COLOR_BUFFER_BIT)
     const dpr = window.devicePixelRatio
@@ -136,5 +137,7 @@ void main() {
       gl.uniform4f(this.uColor, wireFrame.h, wireFrame.s, wireFrame.l, wireFrame.a)
       gl.drawElements(gl.LINE_STRIP, /*count*/geometry.indices.length, /*index type*/gl.UNSIGNED_BYTE, /*offset*/0)
     }
+    const stop = performance.now()
+    console.log(`frame took ${stop - start} ms`)
   }
 }

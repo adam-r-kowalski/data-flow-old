@@ -130,30 +130,42 @@ export const RotatingOnAllAxis = () => {
 }
 
 
-export const ThreePlanes = () => {
+export const Benchmark = () => {
   const ecs = new ECS()
   const renderer = new Renderer(ecs)
-  const planes = [200, 400, 600].map(x => {
+  const planes = []
+  for (let i = 0; i < 20000; ++i) {
+    const x = Math.floor(Math.random() * 1000)
+    const y = Math.floor(Math.random() * 1000)
     const h = Math.floor(Math.random() * 360)
     const s = Math.random() * (0.9 - 0.5) + 0.5
     const l = Math.random() * (0.7 - 0.4) + 0.4
-    return ecs.entity(
+    planes.push(ecs.entity(
       Plane(),
-      new Translate({ x, y: 200, z: 0 }),
+      new Translate({ x, y, z: 0 }),
       new Rotate({ x: 0, y: 0, z: 0 }),
-      new Scale({ x: 100, y: 100, z: 1 }),
+      new Scale({ x: 25, y: 25, z: 1 }),
       new Fill({ h, s, l, a: 1 }),
       new WireFrame({ h, s, l: l - 0.3, a: 1 }),
-    )
-  })
+    ))
+  }
   let previousTime = 0
   const update = (currentTime: number): void => {
     requestAnimationFrame(update)
     const deltaTime = currentTime - previousTime
     const theta = deltaTime / 1000
-    planes[0].get(Rotate).x += theta
-    planes[1].get(Rotate).y += theta
-    planes[2].get(Rotate).z += theta
+    planes.forEach((p, i) => {
+      if (i % 2 == 0) {
+        p.get(Rotate).x += theta
+      }
+      else if (i % 3 == 0) {
+        p.get(Rotate).y += theta
+      }
+      else {
+        p.get(Rotate).z += theta
+      }
+
+    })
     renderer.render()
     previousTime = currentTime
   }

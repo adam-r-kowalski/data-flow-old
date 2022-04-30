@@ -14,6 +14,7 @@ export class Renderer {
     const canvas = document.createElement('canvas')
     canvas.style.width = '100%'
     canvas.style.height = '100%'
+    canvas.style.display = 'block'
     const gl = canvas.getContext('webgl2')
     gl.clearColor(1.0, 1.0, 1.0, 1.0)
     this.element = canvas
@@ -97,7 +98,6 @@ void main() {
     const canvas = this.gl.canvas
     canvas.width = Math.round(width * dpr)
     canvas.height = Math.round(height * dpr)
-    console.log(window.devicePixelRatio, dpr, canvas.width, canvas.height)
     this.gl.viewport(0, 0, canvas.width, canvas.height)
     this.render()
   }

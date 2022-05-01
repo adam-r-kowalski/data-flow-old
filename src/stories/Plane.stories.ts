@@ -147,6 +147,48 @@ export const ThreePlanes = () => {
   return renderer.element
 }
 
+export const TrackMouse = () => {
+  const ecs = new ECS()
+  const renderer = new Renderer(ecs)
+  const plane = ecs.entity(
+    Plane(),
+    new Translate({ x: 200, y: 200, z: 0 }),
+    new Rotate({ x: 0, y: 0, z: 0 }),
+    new Scale({ x: 10, y: 10, z: 1 }),
+    new Fill({ h: 279, s: 1, l: 0.7, a: 1 }),
+  )
+  let mouse = {
+    x: 200,
+    y: 200,
+    held: false
+  }
+  document.addEventListener('mousemove', e => {
+    mouse.x = e.x
+    mouse.y = e.y
+    plane.set(new Translate({ x: e.x, y: e.y, z: 0 }))
+    renderer.render()
+  })
+  const onMouseHeld = () => {
+    if (mouse.held) {
+      requestAnimationFrame(onMouseHeld)
+    }
+    ecs.entity(
+      Plane(),
+      new Translate({ x: mouse.x, y: mouse.y, z: 0 }),
+      new Rotate({ x: 0, y: 0, z: 0 }),
+      new Scale({ x: 10, y: 10, z: 1 }),
+      new Fill({ h: 279, s: 1, l: 0.7, a: 1 }),
+    )
+    renderer.render()
+  }
+  document.addEventListener('mousedown', e => {
+    mouse.held = true
+    requestAnimationFrame(onMouseHeld)
+  })
+  document.addEventListener('mouseup', e => mouse.held = false)
+  return renderer.element
+}
+
 export const Benchmark = () => {
   const ecs = new ECS()
   const renderer = new Renderer(ecs)

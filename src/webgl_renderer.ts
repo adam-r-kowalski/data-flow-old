@@ -186,6 +186,6 @@ void main() {
       entities = entities.slice(this.maxBatchSize)
     }
     const stop = performance.now()
-    console.log(stop - start)
+    //console.log(stop - start)
   }
 }

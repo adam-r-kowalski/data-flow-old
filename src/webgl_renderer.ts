@@ -88,6 +88,8 @@ void main() {
       location: gl.getAttribLocation(program, 'a_position')
     }
     gl.enableVertexAttribArray(this.aPosition.location)
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.aPosition.buffer)
+    gl.vertexAttribPointer(this.aPosition.location, /*size*/3, /*type*/gl.FLOAT, /*normalize*/false, /*stride*/0, /*offset*/0)
 
     this.vertexIndexBuffer = gl.createBuffer()
 
@@ -96,9 +98,12 @@ void main() {
       location: gl.getAttribLocation(program, 'a_index')
     }
     gl.enableVertexAttribArray(this.aIndex.location)
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.aIndex.buffer)
+    gl.vertexAttribIPointer(this.aIndex.location, /*size*/1, /*type*/gl.UNSIGNED_SHORT, /*stride*/0, /*offset*/0)
 
     this.uMatrix = gl.getUniformLocation(program, 'u_matrix')
     this.uColor = gl.getUniformLocation(program, 'u_color')
+
 
     const resizeObserver = new ResizeObserver(this.onResize)
     try {
@@ -173,12 +178,10 @@ void main() {
       gl.uniform4fv(this.uColor, fills)
       gl.bindBuffer(gl.ARRAY_BUFFER, this.aPosition.buffer)
       gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW)
-      gl.vertexAttribPointer(this.aPosition.location, /*size*/3, /*type*/gl.FLOAT, /*normalize*/false, /*stride*/0, /*offset*/0)
       gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.vertexIndexBuffer)
       gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(vertexIndices), gl.STATIC_DRAW)
       gl.bindBuffer(gl.ARRAY_BUFFER, this.aIndex.buffer)
       gl.bufferData(gl.ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW)
-      gl.vertexAttribIPointer(this.aIndex.location, /*size*/1, /*type*/gl.UNSIGNED_SHORT, /*stride*/0, /*offset*/0)
       gl.drawElements(gl.TRIANGLES, /*count*/vertexIndices.length, /*index type*/gl.UNSIGNED_SHORT, /*offset*/0)
       entities = entities.slice(this.maxBatchSize)
     }

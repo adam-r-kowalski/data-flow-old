@@ -103,7 +103,6 @@ export const RotatingOnZAxis = () => {
   return renderer.element
 }
 
-
 export const RotatingOnAllAxis = () => {
   const ecs = new ECS()
   const renderer = new Renderer(ecs)
@@ -129,12 +128,37 @@ export const RotatingOnAllAxis = () => {
   return renderer.element
 }
 
+export const ThreePlanes = () => {
+  const ecs = new ECS()
+  const renderer = new Renderer(ecs)
+  const planes = [200, 400, 600].map(x => ecs.entity(
+    Plane(),
+    new Translate({ x, y: 200, z: 0 }),
+    new Rotate({ x: 0, y: 0, z: 0 }),
+    new Scale({ x: 100, y: 100, z: 1 }),
+    new Fill({ h: 279, s: 1, l: 0.7, a: 1 }),
+    new WireFrame({ h: 279, s: 1, l: 0.3, a: 1 }),
+  ))
+  let previousTime = 0
+  const update = (currentTime: number): void => {
+    requestAnimationFrame(update)
+    const deltaTime = currentTime - previousTime
+    const theta = deltaTime / 1000
+    planes[0].get(Rotate).x += theta
+    planes[1].get(Rotate).y += theta
+    planes[2].get(Rotate).z += theta
+    renderer.render()
+    previousTime = currentTime
+  }
+  requestAnimationFrame(update)
+  return renderer.element
+}
 
 export const Benchmark = () => {
   const ecs = new ECS()
   const renderer = new Renderer(ecs)
   const planes = []
-  for (let i = 0; i < 20000; ++i) {
+  for (let i = 0; i < 10000; ++i) {
     const x = Math.floor(Math.random() * 1000)
     const y = Math.floor(Math.random() * 1000)
     const h = Math.floor(Math.random() * 360)
@@ -153,16 +177,23 @@ export const Benchmark = () => {
   const update = (currentTime: number): void => {
     requestAnimationFrame(update)
     const deltaTime = currentTime - previousTime
-    const theta = deltaTime / 1000
+    const deltaRotate = deltaTime / 500
+    const deltaTranslate = deltaTime / 50
     planes.forEach((p, i) => {
+      const rotate = p.get(Rotate)
+      const translate = p.get(Translate)
       if (i % 2 == 0) {
-        p.get(Rotate).x += theta
+        rotate.x += deltaRotate
+        translate.y += deltaTranslate
       }
       else if (i % 3 == 0) {
-        p.get(Rotate).y += theta
+        rotate.y += deltaRotate
+        translate.x += deltaTranslate
       }
       else {
-        p.get(Rotate).z += theta
+        rotate.z += deltaRotate
+        translate.x -= deltaTranslate
+        translate.y -= deltaTranslate
       }
 
     })

@@ -140,52 +140,48 @@ void main() {
     gl.clear(gl.COLOR_BUFFER_BIT)
     const dpr = window.devicePixelRatio
     const view = projection(gl.canvas.width / dpr, gl.canvas.height / dpr, 400)
-
-    const positions = []
-    const vertexIndices = []
-    const indices = []
-    const matrices = []
-    const fills = []
-    let index = 0
-    let offset = 0
-
-    for (const entity of this.ecs.query(Geometry)) {
-      const geometry = entity.get(Geometry)
-      positions.push(...geometry.vertices)
-      for (const i of geometry.indices) {
-        vertexIndices.push(i + offset)
+    let entities = this.ecs.query(Geometry)
+    while (entities.length) {
+      const positions = []
+      const vertexIndices = []
+      const indices = []
+      const matrices = []
+      const fills = []
+      let index = 0
+      let offset = 0
+      for (const entity of entities.slice(0, this.maxBatchSize)) {
+        const geometry = entity.get(Geometry)
+        positions.push(...geometry.vertices)
+        for (const i of geometry.indices) {
+          vertexIndices.push(i + offset)
+        }
+        const vertexCount = geometry.vertices.length / 3
+        offset += vertexCount
+        const matrix = view
+          .mul(entity.get(Translate).matrix())
+          .mul(entity.get(Rotate).matrix())
+          .mul(entity.get(Scale).matrix())
+        matrices.push(...matrix.data)
+        const fill = entity.get(Fill)
+        fills.push(fill.h, fill.s, fill.l, fill.a)
+        for (let i = 0; i < vertexCount; ++i) {
+          indices.push(index)
+        }
+        ++index;
       }
-      const vertexCount = geometry.vertices.length / 3
-      offset += vertexCount
-      const matrix = view
-        .mul(entity.get(Translate).matrix())
-        .mul(entity.get(Rotate).matrix())
-        .mul(entity.get(Scale).matrix())
-      matrices.push(...matrix.data)
-      const fill = entity.get(Fill)
-      fills.push(fill.h, fill.s, fill.l, fill.a)
-      for (let i = 0; i < vertexCount; ++i) {
-        indices.push(index)
-      }
-      ++index;
+      gl.uniformMatrix4fv(this.uMatrix, /*transpose*/false, matrices)
+      gl.uniform4fv(this.uColor, fills)
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.aPosition.buffer)
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW)
+      gl.vertexAttribPointer(this.aPosition.location, /*size*/3, /*type*/gl.FLOAT, /*normalize*/false, /*stride*/0, /*offset*/0)
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.vertexIndexBuffer)
+      gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(vertexIndices), gl.STATIC_DRAW)
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.aIndex.buffer)
+      gl.bufferData(gl.ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW)
+      gl.vertexAttribIPointer(this.aIndex.location, /*size*/1, /*type*/gl.UNSIGNED_SHORT, /*stride*/0, /*offset*/0)
+      gl.drawElements(gl.TRIANGLES, /*count*/vertexIndices.length, /*index type*/gl.UNSIGNED_SHORT, /*offset*/0)
+      entities = entities.slice(this.maxBatchSize)
     }
-
-    gl.uniformMatrix4fv(this.uMatrix, /*transpose*/false, matrices)
-    gl.uniform4fv(this.uColor, fills)
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.aPosition.buffer)
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW)
-    gl.vertexAttribPointer(this.aPosition.location, /*size*/3, /*type*/gl.FLOAT, /*normalize*/false, /*stride*/0, /*offset*/0)
-
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.vertexIndexBuffer)
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(vertexIndices), gl.STATIC_DRAW)
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.aIndex.buffer)
-    gl.bufferData(gl.ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW)
-    gl.vertexAttribIPointer(this.aIndex.location, /*size*/1, /*type*/gl.UNSIGNED_SHORT, /*stride*/0, /*offset*/0)
-
-    gl.drawElements(gl.TRIANGLES, /*count*/vertexIndices.length, /*index type*/gl.UNSIGNED_SHORT, /*offset*/0)
-
     const stop = performance.now()
     console.log(stop - start)
   }

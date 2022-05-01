@@ -151,7 +151,7 @@ export const Benchmark = () => {
   const ecs = new ECS()
   const renderer = new Renderer(ecs)
   const planes = []
-  for (let i = 0; i < 819; ++i) {
+  for (let i = 0; i < 10000; ++i) {
     const x = Math.floor(Math.random() * 1000)
     const y = Math.floor(Math.random() * 1000)
     const h = Math.floor(Math.random() * 360)

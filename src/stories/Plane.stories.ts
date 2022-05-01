@@ -150,36 +150,26 @@ export const ThreePlanes = () => {
 export const TrackMouse = () => {
   const ecs = new ECS()
   const renderer = new Renderer(ecs)
-  const plane = ecs.entity(
-    Plane(),
-    new Translate({ x: 200, y: 200, z: 0 }),
-    new Rotate({ x: 0, y: 0, z: 0 }),
-    new Scale({ x: 10, y: 10, z: 1 }),
-    new Fill({ h: 279, s: 1, l: 0.7, a: 1 }),
-  )
   let mouseHeld = false
+  const addPlane = (x, y) =>
+    ecs.entity(
+      Plane(),
+      new Translate({ x, y, z: 0 }),
+      new Rotate({ x: 0, y: 0, z: 0 }),
+      new Scale({ x: 10, y: 10, z: 1 }),
+      new Fill({ h: 279, s: 1, l: 0.7, a: 1 }),
+    )
+  const plane = addPlane(200, 200)
   document.addEventListener('mousemove', e => {
     plane.set(new Translate({ x: e.x, y: e.y, z: 0 }))
     if (mouseHeld) {
-      ecs.entity(
-        Plane(),
-        new Translate({ x: e.x, y: e.y, z: 0 }),
-        new Rotate({ x: 0, y: 0, z: 0 }),
-        new Scale({ x: 10, y: 10, z: 1 }),
-        new Fill({ h: 279, s: 1, l: 0.7, a: 1 }),
-      )
+      addPlane(e.x, e.y)
     }
     renderer.render()
   })
   document.addEventListener('mousedown', e => {
     mouseHeld = true
-    ecs.entity(
-      Plane(),
-      new Translate({ x: e.x, y: e.y, z: 0 }),
-      new Rotate({ x: 0, y: 0, z: 0 }),
-      new Scale({ x: 10, y: 10, z: 1 }),
-      new Fill({ h: 279, s: 1, l: 0.7, a: 1 }),
-    )
+    addPlane(e.x, e.y)
     renderer.render()
   })
   document.addEventListener('mouseup', () => mouseHeld = false)

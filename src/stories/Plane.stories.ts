@@ -157,35 +157,32 @@ export const TrackMouse = () => {
     new Scale({ x: 10, y: 10, z: 1 }),
     new Fill({ h: 279, s: 1, l: 0.7, a: 1 }),
   )
-  let mouse = {
-    x: 200,
-    y: 200,
-    held: false
-  }
+  let mouseHeld = false
   document.addEventListener('mousemove', e => {
-    mouse.x = e.x
-    mouse.y = e.y
     plane.set(new Translate({ x: e.x, y: e.y, z: 0 }))
+    if (mouseHeld) {
+      ecs.entity(
+        Plane(),
+        new Translate({ x: e.x, y: e.y, z: 0 }),
+        new Rotate({ x: 0, y: 0, z: 0 }),
+        new Scale({ x: 10, y: 10, z: 1 }),
+        new Fill({ h: 279, s: 1, l: 0.7, a: 1 }),
+      )
+    }
     renderer.render()
   })
-  const onMouseHeld = () => {
-    if (mouse.held) {
-      requestAnimationFrame(onMouseHeld)
-    }
+  document.addEventListener('mousedown', e => {
+    mouseHeld = true
     ecs.entity(
       Plane(),
-      new Translate({ x: mouse.x, y: mouse.y, z: 0 }),
+      new Translate({ x: e.x, y: e.y, z: 0 }),
       new Rotate({ x: 0, y: 0, z: 0 }),
       new Scale({ x: 10, y: 10, z: 1 }),
       new Fill({ h: 279, s: 1, l: 0.7, a: 1 }),
     )
     renderer.render()
-  }
-  document.addEventListener('mousedown', e => {
-    mouse.held = true
-    requestAnimationFrame(onMouseHeld)
   })
-  document.addEventListener('mouseup', e => mouse.held = false)
+  document.addEventListener('mouseup', () => mouseHeld = false)
   return renderer.element
 }
 

@@ -1,6 +1,6 @@
 import { Renderer } from '../webgl_renderer'
 import { ECS } from '../ecs'
-import { Geometry, Translate, Rotate, Scale, Fill, WireFrame, Plane } from '../components'
+import { Geometry, Translate, Rotate, Scale, Fill, Plane } from '../components'
 
 export default {
   title: "Plane",
@@ -15,7 +15,6 @@ export const Square = () => {
     new Rotate({ x: 0, y: 0, z: 0 }),
     new Scale({ x: 100, y: 100, z: 1 }),
     new Fill({ h: 279, s: 1, l: 0.7, a: 1 }),
-    new WireFrame({ h: 279, s: 1, l: 0.3, a: 1 }),
   )
   return renderer.element
 }
@@ -29,7 +28,6 @@ export const Rectangle = () => {
     new Rotate({ x: 0, y: 0, z: 0 }),
     new Scale({ x: 150, y: 100, z: 1 }),
     new Fill({ h: 279, s: 1, l: 0.7, a: 1 }),
-    new WireFrame({ h: 279, s: 1, l: 0.3, a: 1 }),
   )
   return renderer.element
 }
@@ -43,7 +41,6 @@ export const RotatingOnXAxis = () => {
     new Rotate({ x: 0, y: 0, z: 0 }),
     new Scale({ x: 100, y: 100, z: 1 }),
     new Fill({ h: 279, s: 1, l: 0.7, a: 1 }),
-    new WireFrame({ h: 279, s: 1, l: 0.3, a: 1 }),
   )
   let previousTime = 0
   const update = (currentTime: number): void => {
@@ -66,7 +63,6 @@ export const RotatingOnYAxis = () => {
     new Rotate({ x: 0, y: 0, z: 0 }),
     new Scale({ x: 100, y: 100, z: 1 }),
     new Fill({ h: 279, s: 1, l: 0.7, a: 1 }),
-    new WireFrame({ h: 279, s: 1, l: 0.3, a: 1 }),
   )
   let previousTime = 0
   const update = (currentTime: number): void => {
@@ -89,7 +85,6 @@ export const RotatingOnZAxis = () => {
     new Rotate({ x: 0, y: 0, z: 0 }),
     new Scale({ x: 100, y: 100, z: 1 }),
     new Fill({ h: 279, s: 1, l: 0.7, a: 1 }),
-    new WireFrame({ h: 279, s: 1, l: 0.3, a: 1 }),
   )
   let previousTime = 0
   const update = (currentTime: number): void => {
@@ -112,7 +107,6 @@ export const RotatingOnAllAxis = () => {
     new Rotate({ x: 0, y: 0, z: 0 }),
     new Scale({ x: 100, y: 100, z: 1 }),
     new Fill({ h: 279, s: 1, l: 0.7, a: 1 }),
-    new WireFrame({ h: 279, s: 1, l: 0.3, a: 1 }),
   )
   let previousTime = 0
   let theta = 0
@@ -133,11 +127,10 @@ export const ThreePlanes = () => {
   const renderer = new Renderer(ecs)
   const planes = [200, 400, 600].map(x => ecs.entity(
     Plane(),
-    new Translate({ x, y: 200, z: 0 }),
+    new Translate({ x, y: x, z: 0 }),
     new Rotate({ x: 0, y: 0, z: 0 }),
     new Scale({ x: 100, y: 100, z: 1 }),
     new Fill({ h: 279, s: 1, l: 0.7, a: 1 }),
-    new WireFrame({ h: 279, s: 1, l: 0.3, a: 1 }),
   ))
   let previousTime = 0
   const update = (currentTime: number): void => {
@@ -158,7 +151,7 @@ export const Benchmark = () => {
   const ecs = new ECS()
   const renderer = new Renderer(ecs)
   const planes = []
-  for (let i = 0; i < 10000; ++i) {
+  for (let i = 0; i < 819; ++i) {
     const x = Math.floor(Math.random() * 1000)
     const y = Math.floor(Math.random() * 1000)
     const h = Math.floor(Math.random() * 360)
@@ -170,7 +163,6 @@ export const Benchmark = () => {
       new Rotate({ x: 0, y: 0, z: 0 }),
       new Scale({ x: 25, y: 25, z: 1 }),
       new Fill({ h, s, l, a: 1 }),
-      new WireFrame({ h, s, l: l - 0.3, a: 1 }),
     ))
   }
   let previousTime = 0
@@ -178,22 +170,16 @@ export const Benchmark = () => {
     requestAnimationFrame(update)
     const deltaTime = currentTime - previousTime
     const deltaRotate = deltaTime / 500
-    const deltaTranslate = deltaTime / 50
     planes.forEach((p, i) => {
       const rotate = p.get(Rotate)
-      const translate = p.get(Translate)
       if (i % 2 == 0) {
         rotate.x += deltaRotate
-        translate.y += deltaTranslate
       }
       else if (i % 3 == 0) {
         rotate.y += deltaRotate
-        translate.x += deltaTranslate
       }
       else {
         rotate.z += deltaRotate
-        translate.x -= deltaTranslate
-        translate.y -= deltaTranslate
       }
 
     })

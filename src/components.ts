@@ -141,17 +141,3 @@ export class Fill {
     this.a = hsla.a
   }
 }
-
-export class WireFrame {
-  h: number
-  s: number
-  l: number
-  a: number
-
-  constructor(hsla: Hsla) {
-    this.h = hsla.h
-    this.s = hsla.s
-    this.l = hsla.l
-    this.a = hsla.a
-  }
-}

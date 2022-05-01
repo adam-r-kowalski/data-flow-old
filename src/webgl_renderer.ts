@@ -2,14 +2,21 @@ import { ECS, Entity } from './ecs'
 import { projection } from './linear_algebra'
 import { Geometry, Translate, Scale, Rotate, Fill, WireFrame } from './components'
 
+interface Attribute {
+  buffer: WebGLBuffer
+  location: number
+}
+
 export class Renderer {
   element: HTMLCanvasElement
   gl: WebGL2RenderingContext
   uMatrix: WebGLUniformLocation
   uColor: WebGLUniformLocation
-  position: { buffer: WebGLBuffer, location: number }
-  indexBuffer: WebGLBuffer
+  aPosition: Attribute
+  aIndex: Attribute
+  vertexIndexBuffer: WebGLBuffer
   ecs: ECS
+  maxBatchSize: number
 
   constructor(ecs: ECS) {
     const canvas = document.createElement('canvas')
@@ -22,31 +29,38 @@ export class Renderer {
     this.ecs = ecs
     this.gl = gl
 
-    const vertexShaderSource = `#version 300 es
-in vec4 a_position;
+    this.maxBatchSize = Math.floor(gl.getParameter(gl.MAX_VERTEX_UNIFORM_VECTORS) / 5)
 
-uniform mat4 u_matrix;
+    const vertexShaderSource = `#version 300 es
+uniform mat4[${this.maxBatchSize}] u_matrix;
+uniform vec4[${this.maxBatchSize}] u_color;
+
+in vec4 a_position;
+in uint a_index;
+
+out vec4 v_color;
 
 void main() {
-  gl_Position = u_matrix * a_position;
+  gl_Position = u_matrix[a_index] * a_position;
+  v_color = u_color[a_index];
 }
+
 `
 
     const fragmentShaderSource = `#version 300 es
 precision mediump float;
 
+in vec4 v_color;
 out vec4 fragColor;
 
-uniform vec4 u_color;
-
-vec4 hslToRgb( in vec4 hsl) {
+vec4 hslToRgb(in vec4 hsl) {
  float h = hsl.x / 360.0;
- vec3 rgb = clamp( abs(mod(h*6.0+vec3(0.0,4.0,2.0),6.0)-3.0)-1.0, 0.0, 1.0 );
- return vec4(hsl.z + hsl.y * (rgb-0.5)*(1.0-abs(2.0*hsl.z-1.0)), hsl.w);
+ vec3 rgb = clamp(abs(mod(h * 6.0 + vec3(0.0,4.0,2.0), 6.0) - 3.0) - 1.0, 0.0, 1.0);
+ return vec4(hsl.z + hsl.y * (rgb - 0.5) * (1.0 - abs(2.0 * hsl.z - 1.0)), hsl.w);
 }
 
 void main() {
-  fragColor = hslToRgb(u_color);
+  fragColor = hslToRgb(v_color);
 }
 `
 
@@ -68,16 +82,24 @@ void main() {
       console.log(gl.getShaderInfoLog(fragmentShader))
     }
     gl.useProgram(program)
-    this.uMatrix = gl.getUniformLocation(program, 'u_matrix')
-    this.uColor = gl.getUniformLocation(program, 'u_color')
 
-    this.position = {
+    this.aPosition = {
       buffer: gl.createBuffer(),
       location: gl.getAttribLocation(program, 'a_position')
     }
-    gl.enableVertexAttribArray(this.position.location)
+    gl.enableVertexAttribArray(this.aPosition.location)
 
-    this.indexBuffer = gl.createBuffer()
+    this.vertexIndexBuffer = gl.createBuffer()
+
+    this.aIndex = {
+      buffer: gl.createBuffer(),
+      location: gl.getAttribLocation(program, 'a_index')
+    }
+    gl.enableVertexAttribArray(this.aIndex.location)
+
+    this.uMatrix = gl.getUniformLocation(program, 'u_matrix')
+    this.uColor = gl.getUniformLocation(program, 'u_color')
+
     const resizeObserver = new ResizeObserver(this.onResize)
     try {
       resizeObserver.observe(canvas, { box: 'device-pixel-content-box' })
@@ -118,26 +140,53 @@ void main() {
     gl.clear(gl.COLOR_BUFFER_BIT)
     const dpr = window.devicePixelRatio
     const view = projection(gl.canvas.width / dpr, gl.canvas.height / dpr, 400)
+
+    const positions = []
+    const vertexIndices = []
+    const indices = []
+    const matrices = []
+    const fills = []
+    let index = 0
+    let offset = 0
+
     for (const entity of this.ecs.query(Geometry)) {
       const geometry = entity.get(Geometry)
-      gl.bindBuffer(gl.ARRAY_BUFFER, this.position.buffer)
-      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(geometry.vertices), gl.STATIC_DRAW)
-      gl.vertexAttribPointer(this.position.location, /*size*/3, /*type*/gl.FLOAT, /*normalize*/false, /*stride*/0, /*offset*/0)
-      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer)
-      gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint8Array(geometry.indices), gl.STATIC_DRAW)
+      positions.push(...geometry.vertices)
+      for (const i of geometry.indices) {
+        vertexIndices.push(i + offset)
+      }
+      const vertexCount = geometry.vertices.length / 3
+      offset += vertexCount
       const matrix = view
         .mul(entity.get(Translate).matrix())
         .mul(entity.get(Rotate).matrix())
         .mul(entity.get(Scale).matrix())
-      gl.uniformMatrix4fv(this.uMatrix, /*transpose*/false, matrix.data)
+      matrices.push(...matrix.data)
       const fill = entity.get(Fill)
-      gl.uniform4f(this.uColor, fill.h, fill.s, fill.l, fill.a)
-      gl.drawElements(gl.TRIANGLES, /*count*/geometry.indices.length, /*index type*/gl.UNSIGNED_BYTE, /*offset*/0)
-      const wireFrame = entity.get(WireFrame)
-      gl.uniform4f(this.uColor, wireFrame.h, wireFrame.s, wireFrame.l, wireFrame.a)
-      gl.drawElements(gl.LINE_STRIP, /*count*/geometry.indices.length, /*index type*/gl.UNSIGNED_BYTE, /*offset*/0)
+      fills.push(fill.h, fill.s, fill.l, fill.a)
+      for (let i = 0; i < vertexCount; ++i) {
+        indices.push(index)
+      }
+      ++index;
     }
+
+    gl.uniformMatrix4fv(this.uMatrix, /*transpose*/false, matrices)
+    gl.uniform4fv(this.uColor, fills)
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.aPosition.buffer)
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW)
+    gl.vertexAttribPointer(this.aPosition.location, /*size*/3, /*type*/gl.FLOAT, /*normalize*/false, /*stride*/0, /*offset*/0)
+
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.vertexIndexBuffer)
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(vertexIndices), gl.STATIC_DRAW)
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.aIndex.buffer)
+    gl.bufferData(gl.ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW)
+    gl.vertexAttribIPointer(this.aIndex.location, /*size*/1, /*type*/gl.UNSIGNED_SHORT, /*stride*/0, /*offset*/0)
+
+    gl.drawElements(gl.TRIANGLES, /*count*/vertexIndices.length, /*index type*/gl.UNSIGNED_SHORT, /*offset*/0)
+
     const stop = performance.now()
-    console.log(`frame took ${stop - start} ms`)
+    console.log(stop - start)
   }
 }

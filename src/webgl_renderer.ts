@@ -1,6 +1,6 @@
 import { ECS, Entity } from './ecs'
 import { projection } from './linear_algebra'
-import { Geometry, Translate, Scale, Rotate, Fill, WireFrame } from './components'
+import { Geometry, Translate, Scale, Rotate, Fill } from './components'
 
 interface Attribute {
   buffer: WebGLBuffer
@@ -83,6 +83,9 @@ void main() {
     }
     gl.useProgram(program)
 
+    gl.enable(gl.CULL_FACE)
+    gl.enable(gl.DEPTH_TEST)
+
     this.aPosition = {
       buffer: gl.createBuffer(),
       location: gl.getAttribLocation(program, 'a_position')
@@ -142,7 +145,7 @@ void main() {
   render = (): void => {
     const start = performance.now()
     const gl = this.gl
-    gl.clear(gl.COLOR_BUFFER_BIT)
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
     const dpr = window.devicePixelRatio
     const view = projection(gl.canvas.width / dpr, gl.canvas.height / dpr, 400)
     let entities = this.ecs.query(Geometry)

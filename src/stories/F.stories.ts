@@ -1,0 +1,251 @@
+import { Renderer } from '../webgl_renderer'
+import { ECS } from '../ecs'
+import { Geometry, Translate, Rotate, Scale, Fill, Plane } from '../components'
+
+export default {
+  title: "F",
+}
+
+const degToRad = (d: number): number => d * Math.PI / 180
+
+const leftColumnFront = (ecs: ECS) =>
+  ecs.entity(
+    new Geometry(
+      [
+        0, 0, 0,
+        0, 150, 0,
+        30, 0, 0,
+        30, 150, 0,
+      ],
+      [
+        0, 1, 2,
+        1, 3, 2,
+      ]
+    ),
+    new Translate({ x: 200, y: 200, z: 0 }),
+    new Rotate({ x: degToRad(40), y: degToRad(25), z: degToRad(325) }),
+    new Scale({ x: 1, y: 1, z: 1 }),
+    new Fill({ h: 30, s: 1, l: 0.7, a: 1 }),
+  )
+
+const topRungFront = (ecs: ECS) =>
+  ecs.entity(
+    new Geometry(
+      [
+        30, 0, 0,
+        30, 30, 0,
+        100, 0, 0,
+        100, 30, 0,
+      ],
+      [
+        0, 1, 2,
+        1, 3, 2,
+      ]
+    ),
+    new Translate({ x: 200, y: 200, z: 0 }),
+    new Rotate({ x: degToRad(40), y: degToRad(25), z: degToRad(325) }),
+    new Scale({ x: 1, y: 1, z: 1 }),
+    new Fill({ h: 30, s: 1, l: 0.7, a: 1 }),
+  )
+
+
+const middleRungFront = (ecs: ECS) =>
+  ecs.entity(
+    new Geometry(
+      [
+        30, 60, 0,
+        30, 90, 0,
+        67, 60, 0,
+        67, 90, 0,
+      ],
+      [
+        0, 1, 2,
+        1, 3, 2,
+      ]
+    ),
+    new Translate({ x: 200, y: 200, z: 0 }),
+    new Rotate({ x: degToRad(40), y: degToRad(25), z: degToRad(325) }),
+    new Scale({ x: 1, y: 1, z: 1 }),
+    new Fill({ h: 30, s: 1, l: 0.7, a: 1 }),
+  )
+
+
+const leftColumnBack = (ecs: ECS) =>
+  ecs.entity(
+    new Geometry(
+      [
+        0, 0, 30,
+        30, 0, 30,
+        0, 150, 30,
+        30, 150, 30,
+      ],
+      [
+        0, 1, 2,
+        1, 3, 2,
+
+      ]
+    ),
+    new Translate({ x: 200, y: 200, z: 0 }),
+    new Rotate({ x: degToRad(40), y: degToRad(25), z: degToRad(325) }),
+    new Scale({ x: 1, y: 1, z: 1 }),
+    new Fill({ h: 60, s: 1, l: 0.7, a: 1 }),
+  )
+
+const topRungBack = (ecs: ECS) =>
+  ecs.entity(
+    new Geometry(
+      [
+        30, 0, 30,
+        100, 0, 30,
+        30, 30, 30,
+        100, 30, 30,
+      ],
+      [
+        0, 1, 2,
+        1, 3, 2,
+
+      ]
+    ),
+    new Translate({ x: 200, y: 200, z: 0 }),
+    new Rotate({ x: degToRad(40), y: degToRad(25), z: degToRad(325) }),
+    new Scale({ x: 1, y: 1, z: 1 }),
+    new Fill({ h: 60, s: 1, l: 0.7, a: 1 }),
+  )
+
+
+const middleRungBack = (ecs: ECS) =>
+  ecs.entity(
+    new Geometry(
+      [
+        30, 60, 30,
+        67, 60, 30,
+        30, 90, 30,
+        67, 90, 30,
+      ],
+      [
+        0, 1, 2,
+        1, 3, 2,
+
+      ]
+    ),
+    new Translate({ x: 200, y: 200, z: 0 }),
+    new Rotate({ x: degToRad(40), y: degToRad(25), z: degToRad(325) }),
+    new Scale({ x: 1, y: 1, z: 1 }),
+    new Fill({ h: 60, s: 1, l: 0.7, a: 1 }),
+  )
+
+const top = (ecs: ECS) =>
+  ecs.entity(
+    new Geometry(
+      [
+        0, 0, 0,
+        100, 0, 0,
+        100, 0, 30,
+        0, 0, 30,
+      ],
+      [
+        0, 1, 2,
+        0, 2, 3,
+
+      ]
+    ),
+    new Translate({ x: 200, y: 200, z: 0 }),
+    new Rotate({ x: degToRad(40), y: degToRad(25), z: degToRad(325) }),
+    new Scale({ x: 1, y: 1, z: 1 }),
+    new Fill({ h: 90, s: 1, l: 0.7, a: 1 }),
+  )
+
+const topRungRight = (ecs: ECS) =>
+  ecs.entity(
+    new Geometry(
+      [
+        100, 0, 0,
+        100, 30, 0,
+        100, 30, 30,
+        100, 0, 30,
+      ],
+      [
+        0, 1, 2,
+        0, 2, 3,
+
+      ]
+    ),
+    new Translate({ x: 200, y: 200, z: 0 }),
+    new Rotate({ x: degToRad(40), y: degToRad(25), z: degToRad(325) }),
+    new Scale({ x: 1, y: 1, z: 1 }),
+    new Fill({ h: 120, s: 1, l: 0.7, a: 1 }),
+  )
+
+const underTopRung = (ecs: ECS) =>
+  ecs.entity(
+    new Geometry(
+      [
+        30, 30, 0,
+        30, 30, 30,
+        100, 30, 30,
+        100, 30, 0,
+      ],
+      [
+        0, 1, 2,
+        0, 2, 3,
+
+      ]
+    ),
+    new Translate({ x: 200, y: 200, z: 0 }),
+    new Rotate({ x: degToRad(40), y: degToRad(25), z: degToRad(325) }),
+    new Scale({ x: 1, y: 1, z: 1 }),
+    new Fill({ h: 150, s: 1, l: 0.7, a: 1 }),
+  )
+
+const betweenTopRungAndMiddle = (ecs: ECS) =>
+  ecs.entity(
+    new Geometry(
+      [
+        30, 30, 0,
+        30, 60, 30,
+        30, 30, 30,
+        30, 60, 0,
+        30, 60, 30,
+      ],
+      [
+        0, 1, 2,
+        0, 3, 4,
+
+      ]
+    ),
+    new Translate({ x: 200, y: 200, z: 0 }),
+    new Rotate({ x: degToRad(40), y: degToRad(25), z: degToRad(325) }),
+    new Scale({ x: 1, y: 1, z: 1 }),
+    new Fill({ h: 180, s: 1, l: 0.7, a: 1 }),
+  )
+
+export const ThreeDimensions = () => {
+  const ecs = new ECS()
+  const renderer = new Renderer(ecs)
+  const entities = [
+    leftColumnFront(ecs),
+    topRungFront(ecs),
+    middleRungFront(ecs),
+    leftColumnBack(ecs),
+    topRungBack(ecs),
+    middleRungBack(ecs),
+    top(ecs),
+    topRungRight(ecs),
+    underTopRung(ecs),
+    betweenTopRungAndMiddle(ecs),
+  ]
+  let lastTime = 0
+  const update = (currentTime: number) => {
+    requestAnimationFrame(update)
+    const delta = (currentTime - lastTime) / 1000
+    for (const entity of entities) {
+      const rotate = entity.get(Rotate)
+      rotate.y += delta
+      rotate.x += delta / 2
+    }
+    renderer.render()
+    lastTime = currentTime
+  }
+  requestAnimationFrame(update)
+  return renderer.element
+}

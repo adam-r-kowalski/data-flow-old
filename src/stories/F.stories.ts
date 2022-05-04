@@ -219,6 +219,126 @@ const betweenTopRungAndMiddle = (ecs: ECS) =>
     new Fill({ h: 180, s: 1, l: 0.7, a: 1 }),
   )
 
+const topOfMiddleRung = (ecs: ECS) =>
+  ecs.entity(
+    new Geometry(
+      [
+        30, 60, 0,
+        67, 60, 30,
+        30, 60, 30,
+        67, 60, 0,
+      ],
+      [
+        0, 1, 2,
+        0, 3, 1,
+      ]
+    ),
+    new Translate({ x: 200, y: 200, z: 0 }),
+    new Rotate({ x: degToRad(40), y: degToRad(25), z: degToRad(325) }),
+    new Scale({ x: 1, y: 1, z: 1 }),
+    new Fill({ h: 210, s: 1, l: 0.7, a: 1 }),
+  )
+
+const rightOfMiddleRung = (ecs: ECS) =>
+  ecs.entity(
+    new Geometry(
+      [
+        67, 60, 0,
+        67, 90, 30,
+        67, 60, 30,
+        67, 90, 0,
+      ],
+      [
+        0, 1, 2,
+        0, 3, 1,
+      ]
+    ),
+    new Translate({ x: 200, y: 200, z: 0 }),
+    new Rotate({ x: degToRad(40), y: degToRad(25), z: degToRad(325) }),
+    new Scale({ x: 1, y: 1, z: 1 }),
+    new Fill({ h: 240, s: 1, l: 0.7, a: 1 }),
+  )
+
+const bottomOfMiddleRing = (ecs: ECS) =>
+  ecs.entity(
+    new Geometry(
+      [
+        30, 90, 0,
+        30, 90, 30,
+        67, 90, 30,
+        67, 90, 0,
+      ],
+      [
+        0, 1, 2,
+        0, 2, 3,
+      ]
+    ),
+    new Translate({ x: 200, y: 200, z: 0 }),
+    new Rotate({ x: degToRad(40), y: degToRad(25), z: degToRad(325) }),
+    new Scale({ x: 1, y: 1, z: 1 }),
+    new Fill({ h: 270, s: 1, l: 0.7, a: 1 }),
+  )
+
+const rightOfBottom = (ecs: ECS) =>
+  ecs.entity(
+    new Geometry(
+      [
+        30, 90, 0,
+        30, 150, 30,
+        30, 90, 30,
+        30, 150, 0,
+      ],
+      [
+        0, 1, 2,
+        0, 3, 1,
+      ]
+    ),
+    new Translate({ x: 200, y: 200, z: 0 }),
+    new Rotate({ x: degToRad(40), y: degToRad(25), z: degToRad(325) }),
+    new Scale({ x: 1, y: 1, z: 1 }),
+    new Fill({ h: 300, s: 1, l: 0.7, a: 1 }),
+  )
+
+const bottom = (ecs: ECS) =>
+  ecs.entity(
+    new Geometry(
+      [
+        0, 150, 0,
+        0, 150, 30,
+        30, 150, 30,
+        30, 150, 0,
+      ],
+      [
+        0, 1, 2,
+        0, 2, 3,
+      ]
+    ),
+    new Translate({ x: 200, y: 200, z: 0 }),
+    new Rotate({ x: degToRad(40), y: degToRad(25), z: degToRad(325) }),
+    new Scale({ x: 1, y: 1, z: 1 }),
+    new Fill({ h: 330, s: 1, l: 0.7, a: 1 }),
+  )
+
+const leftSide = (ecs: ECS) =>
+  ecs.entity(
+    new Geometry(
+      [
+        0, 0, 0,
+        0, 0, 30,
+        0, 150, 30,
+        0, 150, 0,
+      ],
+      [
+        0, 1, 2,
+        0, 2, 3,
+      ]
+    ),
+    new Translate({ x: 200, y: 200, z: 0 }),
+    new Rotate({ x: degToRad(40), y: degToRad(25), z: degToRad(325) }),
+    new Scale({ x: 1, y: 1, z: 1 }),
+    new Fill({ h: 360, s: 1, l: 0.7, a: 1 }),
+  )
+
 export const ThreeDimensions = () => {
   const ecs = new ECS()
   const renderer = new Renderer(ecs)
@@ -233,6 +353,12 @@ export const ThreeDimensions = () => {
     topRungRight(ecs),
     underTopRung(ecs),
     betweenTopRungAndMiddle(ecs),
+    topOfMiddleRung(ecs),
+    rightOfMiddleRung(ecs),
+    bottomOfMiddleRing(ecs),
+    rightOfBottom(ecs),
+    bottom(ecs),
+    leftSide(ecs),
   ]
   let lastTime = 0
   const update = (currentTime: number) => {

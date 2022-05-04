@@ -1,5 +1,34 @@
 import { Mat4x4 } from './linear_algebra'
 
+export class Camera {
+  matrix: Mat4x4
+
+  constructor(matrix: Mat4x4) {
+    this.matrix = matrix
+  }
+}
+
+interface Orthographic {
+  left: number
+  right: number
+  bottom: number
+  top: number
+  near: number
+  far: number
+}
+
+export const orthographicCamera = ({ left, right, bottom, top, near, far }: Orthographic): Camera =>
+  new Camera(
+    new Mat4x4([
+      2 / (right - left), 0, 0, 0,
+      0, 2 / (top - bottom), 0, 0,
+      0, 0, 2 / (near - far), 0,
+      (left + right) / (left - right),
+      (bottom + top) / (bottom - top),
+      (near + far) / (near - far)
+    ])
+  )
+
 export class Geometry {
   vertices: number[]
   indices: number[]
@@ -107,7 +136,7 @@ export class Rotate {
     this.xMatrix().mul(this.yMatrix()).mul(this.zMatrix())
 }
 
-export const Plane = (): Geometry =>
+export const planeGeometry = (): Geometry =>
   new Geometry(
     [
       -0.5, -0.5, 0,

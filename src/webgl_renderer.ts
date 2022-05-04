@@ -25,7 +25,6 @@ export class Renderer {
   aIndex: Attribute
   vertexIndexBuffer: WebGLBuffer
   maxBatchSize: number
-  onResize: OnResize | null
 
   constructor(viewport: Viewport) {
     const canvas = document.createElement('canvas')
@@ -33,7 +32,7 @@ export class Renderer {
     canvas.style.height = viewport.height.toString()
     canvas.style.display = 'block'
     const gl = canvas.getContext('webgl2')!
-    gl.clearColor(1.0, 1.0, 1.0, 1.0)
+    gl.clearColor(0.0, 0.0, 0.0, 1.0)
     this.element = canvas
     this.gl = gl
 
@@ -114,37 +113,6 @@ void main() {
 
     this.uMatrix = gl.getUniformLocation(program, 'u_matrix')!
     this.uColor = gl.getUniformLocation(program, 'u_color')!
-
-    const resizeObserver = new ResizeObserver((entries: ResizeObserverEntry[]): void => {
-      const entry = entries[0]
-      this.onResize && this.onResize((() => {
-        if (entry.devicePixelContentBoxSize) return {
-          x: 0,
-          y: 0,
-          width: entry.devicePixelContentBoxSize[0].inlineSize,
-          height: entry.devicePixelContentBoxSize[0].blockSize,
-        }
-        const dpr = window.devicePixelRatio
-        if (entry.contentBoxSize) return {
-          x: 0,
-          y: 0,
-          width: entry.contentBoxSize[0].inlineSize * dpr,
-          height: entry.contentBoxSize[0].blockSize * dpr,
-        }
-        return {
-          x: 0,
-          y: 0,
-          width: entry.contentRect.width * dpr,
-          height: entry.contentRect.height * dpr,
-        }
-      })())
-    })
-    try {
-      resizeObserver.observe(canvas, { box: 'device-pixel-content-box' })
-    } catch (ex) {
-      resizeObserver.observe(canvas, { box: 'content-box' })
-    }
-
     this.viewport(viewport)
   }
 
@@ -158,16 +126,8 @@ void main() {
     const start = performance.now()
     const gl = this.gl
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-    const dpr = window.devicePixelRatio
     const camera = ecs.get(ActiveCamera)!.entity
-    const view = camera.get(Projection)!.matrix.mul(
-      new Mat4x4([
-        dpr, 0, 0, 0,
-        0, dpr, 0, 0,
-        0, 0, dpr, 0,
-        0, 0, 0, 1
-      ])
-    )
+    const view = camera.get(Projection)!.matrix
     let entities = ecs.query(Geometry)
     while (entities.length) {
       const positions: number[] = []

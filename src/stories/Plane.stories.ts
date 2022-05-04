@@ -15,7 +15,7 @@ export const Square = () => {
   ecs.set(new ActiveCamera(camera))
   ecs.entity(
     planeGeometry(),
-    new Translate({ x: 200, y: 200, z: 0 }),
+    new Translate({ x: viewport.width / 2, y: viewport.height / 2, z: 0 }),
     new Rotate({ x: 0, y: 0, z: 0 }),
     new Scale({ x: 100, y: 100, z: 1 }),
     new Fill({ h: 279, s: 1, l: 0.7, a: 1 }),
@@ -33,7 +33,7 @@ export const Rectangle = () => {
   ecs.set(new ActiveCamera(camera))
   ecs.entity(
     planeGeometry(),
-    new Translate({ x: 200, y: 200, z: 0 }),
+    new Translate({ x: viewport.width / 2, y: viewport.height / 2, z: 0 }),
     new Rotate({ x: 0, y: 0, z: 0 }),
     new Scale({ x: 150, y: 100, z: 1 }),
     new Fill({ h: 279, s: 1, l: 0.7, a: 1 }),
@@ -51,7 +51,7 @@ export const RotatingOnXAxis = () => {
   ecs.set(new ActiveCamera(camera))
   const plane = ecs.entity(
     planeGeometry(),
-    new Translate({ x: 200, y: 200, z: 0 }),
+    new Translate({ x: viewport.width / 2, y: viewport.height / 2, z: 0 }),
     new Rotate({ x: 0, y: 0, z: 0 }),
     new Scale({ x: 100, y: 100, z: 1 }),
     new Fill({ h: 279, s: 1, l: 0.7, a: 1 }),
@@ -77,7 +77,7 @@ export const RotatingOnYAxis = () => {
   ecs.set(new ActiveCamera(camera))
   const plane = ecs.entity(
     planeGeometry(),
-    new Translate({ x: 200, y: 200, z: 0 }),
+    new Translate({ x: viewport.width / 2, y: viewport.height / 2, z: 0 }),
     new Rotate({ x: 0, y: 0, z: 0 }),
     new Scale({ x: 100, y: 100, z: 1 }),
     new Fill({ h: 279, s: 1, l: 0.7, a: 1 }),
@@ -103,7 +103,7 @@ export const RotatingOnZAxis = () => {
   ecs.set(new ActiveCamera(camera))
   const plane = ecs.entity(
     planeGeometry(),
-    new Translate({ x: 200, y: 200, z: 0 }),
+    new Translate({ x: viewport.width / 2, y: viewport.height / 2, z: 0 }),
     new Rotate({ x: 0, y: 0, z: 0 }),
     new Scale({ x: 100, y: 100, z: 1 }),
     new Fill({ h: 279, s: 1, l: 0.7, a: 1 }),
@@ -129,7 +129,7 @@ export const RotatingOnAllAxis = () => {
   ecs.set(new ActiveCamera(camera))
   const plane = ecs.entity(
     planeGeometry(),
-    new Translate({ x: 200, y: 200, z: 0 }),
+    new Translate({ x: viewport.width / 2, y: viewport.height / 2, z: 0 }),
     new Rotate({ x: 0, y: 0, z: 0 }),
     new Scale({ x: 100, y: 100, z: 1 }),
     new Fill({ h: 279, s: 1, l: 0.7, a: 1 }),
@@ -184,13 +184,6 @@ export const TrackMouse = () => {
   const renderer = new Renderer(viewport)
   const camera = ecs.entity(orthographicProjection({ ...viewport, near, far }))
   ecs.set(new ActiveCamera(camera))
-  renderer.element.style.width = '100%'
-  renderer.element.style.height = '100%'
-  renderer.onResize = (viewport) => {
-    renderer.viewport(viewport)
-    camera.set(orthographicProjection({ ...viewport, near, far }))
-    renderer.render(ecs)
-  }
   let mouseHeld = false
   const addPlane = (x, y) =>
     ecs.entity(
@@ -200,7 +193,7 @@ export const TrackMouse = () => {
       new Scale({ x: 10, y: 10, z: 1 }),
       new Fill({ h: 279, s: 1, l: 0.7, a: 1 }),
     )
-  const plane = addPlane(200, 200)
+  const plane = addPlane(viewport.width / 2, viewport.height / 2)
   document.addEventListener('pointermove', e => {
     plane.set(new Translate({ x: e.x, y: e.y, z: 0 }))
     if (mouseHeld) {
@@ -216,6 +209,7 @@ export const TrackMouse = () => {
     renderer.render(ecs)
   })
   document.addEventListener('mouseup', () => mouseHeld = false)
+  renderer.render(ecs)
   return renderer.element
 }
 

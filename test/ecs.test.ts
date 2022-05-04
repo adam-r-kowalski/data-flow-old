@@ -14,7 +14,7 @@ test("set and get component", () => {
   const ecs = new ECS()
   const joe = ecs.entity()
   joe.set(new Name("Joe"))
-  expect(joe.get(Name).value).toEqual("Joe")
+  expect(joe.get(Name)!.value).toEqual("Joe")
 })
 
 test("set and get component on two entities", () => {
@@ -27,8 +27,8 @@ test("set and get component on two entities", () => {
   const bob = ecs.entity()
   joe.set(new Name("Joe"))
   bob.set(new Name("Bob"))
-  expect(joe.get(Name).value).toEqual("Joe")
-  expect(bob.get(Name).value).toEqual("Bob")
+  expect(joe.get(Name)!.value).toEqual("Joe")
+  expect(bob.get(Name)!.value).toEqual("Bob")
 })
 
 test("set and get component with constructor", () => {
@@ -38,7 +38,7 @@ test("set and get component with constructor", () => {
 
   const ecs = new ECS()
   const joe = ecs.entity(new Name("Joe"))
-  expect(joe.get(Name).value).toEqual("Joe")
+  expect(joe.get(Name)!.value).toEqual("Joe")
 })
 
 test("set component twice", () => {
@@ -48,9 +48,9 @@ test("set component twice", () => {
 
   const ecs = new ECS()
   const joe = ecs.entity(new Name("Joe"))
-  expect(joe.get(Name).value).toEqual("Joe")
+  expect(joe.get(Name)!.value).toEqual("Joe")
   joe.set(new Name("Joeseph"))
-  expect(joe.get(Name).value).toEqual("Joeseph")
+  expect(joe.get(Name)!.value).toEqual("Joeseph")
 })
 
 test("set two components", () => {
@@ -64,8 +64,8 @@ test("set two components", () => {
 
   const ecs = new ECS()
   const joe = ecs.entity(new Name("Joe"), new Age(25))
-  expect(joe.get(Name).value).toEqual("Joe")
-  expect(joe.get(Age).value).toEqual(25)
+  expect(joe.get(Name)!.value).toEqual("Joe")
+  expect(joe.get(Age)!.value).toEqual(25)
 })
 
 
@@ -84,4 +84,17 @@ test("query entities with component", () => {
   const entity2 = ecs.entity(new Age(22))
   expect(ecs.query(Name).map(entity => entity.id)).toEqual([0, 1])
   expect(ecs.query(Name, Age).map(entity => entity.id)).toEqual([1])
+})
+
+test("set and get resource", () => {
+  class Score {
+    constructor(public value: number) { }
+  }
+
+  const ecs = new ECS()
+  expect(ecs.get(Score)).toEqual(undefined)
+  ecs.set(new Score(10))
+  expect(ecs.get(Score)!.value).toEqual(10)
+  ecs.set(new Score(20))
+  expect(ecs.get(Score)!.value).toEqual(20)
 })

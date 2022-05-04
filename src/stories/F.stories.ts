@@ -1,6 +1,6 @@
 import { Renderer } from '../webgl_renderer'
 import { ECS } from '../ecs'
-import { Geometry, Translate, Rotate, Scale, Fill, Plane } from '../components'
+import { Geometry, Translate, Rotate, Scale, Fill, ActiveCamera, orthographicProjection } from '../components'
 
 export default {
   title: "F",
@@ -339,9 +339,13 @@ const leftSide = (ecs: ECS) =>
     new Fill({ h: 360, s: 1, l: 0.7, a: 1 }),
   )
 
-export const ThreeDimensions = () => {
+export const Orthographic = () => {
+  const [near, far] = [500, -500]
   const ecs = new ECS()
-  const renderer = new Renderer(ecs)
+  const viewport = { x: 0, y: 0, width: 500, height: 500 }
+  const renderer = new Renderer(viewport)
+  const camera = ecs.entity(orthographicProjection({ ...viewport, near, far }))
+  ecs.set(new ActiveCamera(camera))
   const entities = [
     leftColumnFront(ecs),
     topRungFront(ecs),
@@ -365,11 +369,11 @@ export const ThreeDimensions = () => {
     requestAnimationFrame(update)
     const delta = (currentTime - lastTime) / 1000
     for (const entity of entities) {
-      const rotate = entity.get(Rotate)
+      const rotate = entity.get(Rotate)!
       rotate.y += delta
       rotate.x += delta / 2
     }
-    renderer.render()
+    renderer.render(ecs)
     lastTime = currentTime
   }
   requestAnimationFrame(update)

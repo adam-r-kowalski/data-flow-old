@@ -1,6 +1,7 @@
 import { Mat4x4 } from './linear_algebra'
+import { Entity } from './ecs'
 
-export class Camera {
+export class Projection {
   matrix: Mat4x4
 
   constructor(matrix: Mat4x4) {
@@ -9,25 +10,39 @@ export class Camera {
 }
 
 interface Orthographic {
-  left: number
-  right: number
-  bottom: number
-  top: number
+  x: number
+  y: number
+  width: number
+  height: number
   near: number
   far: number
 }
 
-export const orthographicCamera = ({ left, right, bottom, top, near, far }: Orthographic): Camera =>
-  new Camera(
+export const orthographicProjection = ({ x, y, width, height, near, far }: Orthographic): Projection => {
+  const left = x
+  const right = x + width
+  const top = y
+  const bottom = y + height
+  return new Projection(
     new Mat4x4([
       2 / (right - left), 0, 0, 0,
       0, 2 / (top - bottom), 0, 0,
       0, 0, 2 / (near - far), 0,
       (left + right) / (left - right),
       (bottom + top) / (bottom - top),
-      (near + far) / (near - far)
+      (near + far) / (near - far),
+      1
     ])
   )
+}
+
+export class ActiveCamera {
+  entity: Entity
+
+  constructor(camera: Entity) {
+    this.entity = camera
+  }
+}
 
 export class Geometry {
   vertices: number[]

@@ -28,11 +28,3 @@ export class Mat4x4 {
     ])
   }
 }
-
-export const projection = (width: number, height: number, depth: number): Mat4x4 =>
-  new Mat4x4([
-    2 / width, 0, 0, 0,
-    0, -2 / height, 0, 0,
-    0, 0, 2 / depth, 0,
-    -1, 1, 0, 1,
-  ])

@@ -11,9 +11,9 @@ class Storage<T> {
     this.inverses = []
   }
 
-  get = (entity: Entity): T => {
+  get = (entity: Entity): T | undefined => {
     const index = this.lookup.get(entity.id)
-    return this.data[index]
+    return index != undefined ? this.data[index] : undefined
   }
 
   hasId = (id: number): boolean => {
@@ -54,7 +54,7 @@ export class Entity {
     }
   }
 
-  get = <T>(Type: Component<T>): T => {
+  get = <T>(Type: Component<T>): T | undefined => {
     const storage = this.ecs.storages.get(Type) as Storage<T>
     return storage.get(this)
   }
@@ -63,10 +63,12 @@ export class Entity {
 export class ECS {
   nextEntityId: number
   storages: Map<Component<any>, Storage<any>>
+  resources: Map<Component<any>, any>
 
   constructor() {
     this.nextEntityId = 0
     this.storages = new Map()
+    this.resources = new Map()
   }
 
   entity = (...components: any): Entity => {
@@ -77,8 +79,8 @@ export class ECS {
   }
 
   query = (...components: any): Entity[] => {
-    const entities = []
-    const primary = this.storages.get(components[0])
+    const entities: Entity[] = []
+    const primary = this.storages.get(components[0])!
     const secondary = components.slice(1).map(s => this.storages.get(s))
     for (const id of primary.inverses) {
       if (secondary.every(storage => storage.hasId(id))) {
@@ -86,5 +88,16 @@ export class ECS {
       }
     }
     return entities
+  }
+
+  set = <T>(...components: any): void => {
+    for (const component of components) {
+      const Type = component.constructor
+      this.resources.set(Type, component)
+    }
+  }
+
+  get = <T>(Type: Component<T>): T | undefined => {
+    return this.resources.get(Type)
   }
 }

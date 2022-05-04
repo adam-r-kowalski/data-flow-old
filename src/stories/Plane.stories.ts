@@ -1,14 +1,18 @@
 import { Renderer } from '../webgl_renderer'
 import { ECS } from '../ecs'
-import { Geometry, Translate, Rotate, Scale, Fill, planeGeometry } from '../components'
+import { Geometry, Translate, Rotate, Scale, Fill, planeGeometry, orthographicProjection, ActiveCamera } from '../components'
 
 export default {
   title: "Plane",
 }
 
 export const Square = () => {
+  const [near, far] = [500, -500]
   const ecs = new ECS()
-  const renderer = new Renderer(ecs)
+  const viewport = { x: 0, y: 0, width: 500, height: 500 }
+  const renderer = new Renderer(viewport)
+  const camera = ecs.entity(orthographicProjection({ ...viewport, near, far }))
+  ecs.set(new ActiveCamera(camera))
   ecs.entity(
     planeGeometry(),
     new Translate({ x: 200, y: 200, z: 0 }),
@@ -16,12 +20,17 @@ export const Square = () => {
     new Scale({ x: 100, y: 100, z: 1 }),
     new Fill({ h: 279, s: 1, l: 0.7, a: 1 }),
   )
+  renderer.render(ecs)
   return renderer.element
 }
 
 export const Rectangle = () => {
+  const [near, far] = [500, -500]
   const ecs = new ECS()
-  const renderer = new Renderer(ecs)
+  const viewport = { x: 0, y: 0, width: 500, height: 500 }
+  const renderer = new Renderer(viewport)
+  const camera = ecs.entity(orthographicProjection({ ...viewport, near, far }))
+  ecs.set(new ActiveCamera(camera))
   ecs.entity(
     planeGeometry(),
     new Translate({ x: 200, y: 200, z: 0 }),
@@ -29,12 +38,17 @@ export const Rectangle = () => {
     new Scale({ x: 150, y: 100, z: 1 }),
     new Fill({ h: 279, s: 1, l: 0.7, a: 1 }),
   )
+  renderer.render(ecs)
   return renderer.element
 }
 
 export const RotatingOnXAxis = () => {
+  const [near, far] = [500, -500]
   const ecs = new ECS()
-  const renderer = new Renderer(ecs)
+  const viewport = { x: 0, y: 0, width: 500, height: 500 }
+  const renderer = new Renderer(viewport)
+  const camera = ecs.entity(orthographicProjection({ ...viewport, near, far }))
+  ecs.set(new ActiveCamera(camera))
   const plane = ecs.entity(
     planeGeometry(),
     new Translate({ x: 200, y: 200, z: 0 }),
@@ -46,8 +60,8 @@ export const RotatingOnXAxis = () => {
   const update = (currentTime: number): void => {
     requestAnimationFrame(update)
     const deltaTime = currentTime - previousTime
-    plane.get(Rotate).x += deltaTime / 1000
-    renderer.render()
+    plane.get(Rotate)!.x += deltaTime / 1000
+    renderer.render(ecs)
     previousTime = currentTime
   }
   requestAnimationFrame(update)
@@ -55,8 +69,12 @@ export const RotatingOnXAxis = () => {
 }
 
 export const RotatingOnYAxis = () => {
+  const [near, far] = [500, -500]
   const ecs = new ECS()
-  const renderer = new Renderer(ecs)
+  const viewport = { x: 0, y: 0, width: 500, height: 500 }
+  const renderer = new Renderer(viewport)
+  const camera = ecs.entity(orthographicProjection({ ...viewport, near, far }))
+  ecs.set(new ActiveCamera(camera))
   const plane = ecs.entity(
     planeGeometry(),
     new Translate({ x: 200, y: 200, z: 0 }),
@@ -68,8 +86,8 @@ export const RotatingOnYAxis = () => {
   const update = (currentTime: number): void => {
     requestAnimationFrame(update)
     const deltaTime = currentTime - previousTime
-    plane.get(Rotate).y += deltaTime / 1000
-    renderer.render()
+    plane.get(Rotate)!.y += deltaTime / 1000
+    renderer.render(ecs)
     previousTime = currentTime
   }
   requestAnimationFrame(update)
@@ -77,8 +95,12 @@ export const RotatingOnYAxis = () => {
 }
 
 export const RotatingOnZAxis = () => {
+  const [near, far] = [500, -500]
   const ecs = new ECS()
-  const renderer = new Renderer(ecs)
+  const viewport = { x: 0, y: 0, width: 500, height: 500 }
+  const renderer = new Renderer(viewport)
+  const camera = ecs.entity(orthographicProjection({ ...viewport, near, far }))
+  ecs.set(new ActiveCamera(camera))
   const plane = ecs.entity(
     planeGeometry(),
     new Translate({ x: 200, y: 200, z: 0 }),
@@ -90,8 +112,8 @@ export const RotatingOnZAxis = () => {
   const update = (currentTime: number): void => {
     requestAnimationFrame(update)
     const deltaTime = currentTime - previousTime
-    plane.get(Rotate).z += deltaTime / 1000
-    renderer.render()
+    plane.get(Rotate)!.z += deltaTime / 1000
+    renderer.render(ecs)
     previousTime = currentTime
   }
   requestAnimationFrame(update)
@@ -99,8 +121,12 @@ export const RotatingOnZAxis = () => {
 }
 
 export const RotatingOnAllAxis = () => {
+  const [near, far] = [500, -500]
   const ecs = new ECS()
-  const renderer = new Renderer(ecs)
+  const viewport = { x: 0, y: 0, width: 500, height: 500 }
+  const renderer = new Renderer(viewport)
+  const camera = ecs.entity(orthographicProjection({ ...viewport, near, far }))
+  ecs.set(new ActiveCamera(camera))
   const plane = ecs.entity(
     planeGeometry(),
     new Translate({ x: 200, y: 200, z: 0 }),
@@ -115,7 +141,7 @@ export const RotatingOnAllAxis = () => {
     const deltaTime = currentTime - previousTime
     theta += deltaTime / 1000
     plane.set(new Rotate({ x: theta, y: theta, z: theta }))
-    renderer.render()
+    renderer.render(ecs)
     previousTime = currentTime
   }
   requestAnimationFrame(update)
@@ -123,9 +149,13 @@ export const RotatingOnAllAxis = () => {
 }
 
 export const ThreePlanes = () => {
+  const [near, far] = [500, -500]
   const ecs = new ECS()
-  const renderer = new Renderer(ecs)
-  const planes = [200, 400, 600].map(x => ecs.entity(
+  const viewport = { x: 0, y: 0, width: 500, height: 500 }
+  const renderer = new Renderer(viewport)
+  const camera = ecs.entity(orthographicProjection({ ...viewport, near, far }))
+  ecs.set(new ActiveCamera(camera))
+  const planes = [100, 250, 400].map(x => ecs.entity(
     planeGeometry(),
     new Translate({ x, y: x, z: 0 }),
     new Rotate({ x: 0, y: 0, z: 0 }),
@@ -137,10 +167,10 @@ export const ThreePlanes = () => {
     requestAnimationFrame(update)
     const deltaTime = currentTime - previousTime
     const theta = deltaTime / 1000
-    planes[0].get(Rotate).x += theta
-    planes[1].get(Rotate).y += theta
-    planes[2].get(Rotate).z += theta
-    renderer.render()
+    planes[0].get(Rotate)!.x += theta
+    planes[1].get(Rotate)!.y += theta
+    planes[2].get(Rotate)!.z += theta
+    renderer.render(ecs)
     previousTime = currentTime
   }
   requestAnimationFrame(update)
@@ -148,8 +178,19 @@ export const ThreePlanes = () => {
 }
 
 export const TrackMouse = () => {
+  const [near, far] = [500, -500]
   const ecs = new ECS()
-  const renderer = new Renderer(ecs)
+  const viewport = { x: 0, y: 0, width: 500, height: 500 }
+  const renderer = new Renderer(viewport)
+  const camera = ecs.entity(orthographicProjection({ ...viewport, near, far }))
+  ecs.set(new ActiveCamera(camera))
+  renderer.element.style.width = '100%'
+  renderer.element.style.height = '100%'
+  renderer.onResize = (viewport) => {
+    renderer.viewport(viewport)
+    camera.set(orthographicProjection({ ...viewport, near, far }))
+    renderer.render(ecs)
+  }
   let mouseHeld = false
   const addPlane = (x, y) =>
     ecs.entity(
@@ -160,17 +201,19 @@ export const TrackMouse = () => {
       new Fill({ h: 279, s: 1, l: 0.7, a: 1 }),
     )
   const plane = addPlane(200, 200)
-  document.addEventListener('mousemove', e => {
+  document.addEventListener('pointermove', e => {
     plane.set(new Translate({ x: e.x, y: e.y, z: 0 }))
     if (mouseHeld) {
-      addPlane(e.x, e.y)
+      for (const c of e.getCoalescedEvents()) {
+        addPlane(c.x, c.y)
+      }
     }
-    renderer.render()
+    renderer.render(ecs)
   })
   document.addEventListener('mousedown', e => {
     mouseHeld = true
     addPlane(e.x, e.y)
-    renderer.render()
+    renderer.render(ecs)
   })
   document.addEventListener('mouseup', () => mouseHeld = false)
   return renderer.element

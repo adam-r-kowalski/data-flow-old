@@ -1,6 +1,6 @@
 import { Renderer } from '../webgl_renderer'
 import { ECS } from '../ecs'
-import { Geometry, Translate, Rotate, Scale, Fill, planeGeometry, orthographicProjection, ActiveCamera } from '../components'
+import { Geometry, Translate, Rotate, Scale, Fill, planeGeometry, orthographicProjection, ActiveCamera, Root } from '../components'
 
 export default {
   title: "Plane",
@@ -19,6 +19,7 @@ export const Square = () => {
     new Rotate({ x: 0, y: 0, z: 0 }),
     new Scale({ x: 100, y: 100, z: 1 }),
     new Fill({ h: 279, s: 1, l: 0.7, a: 1 }),
+    new Root(),
   )
   renderer.render(ecs)
   return renderer.element
@@ -37,6 +38,7 @@ export const Rectangle = () => {
     new Rotate({ x: 0, y: 0, z: 0 }),
     new Scale({ x: 150, y: 100, z: 1 }),
     new Fill({ h: 279, s: 1, l: 0.7, a: 1 }),
+    new Root(),
   )
   renderer.render(ecs)
   return renderer.element
@@ -55,6 +57,7 @@ export const RotatingOnXAxis = () => {
     new Rotate({ x: 0, y: 0, z: 0 }),
     new Scale({ x: 100, y: 100, z: 1 }),
     new Fill({ h: 279, s: 1, l: 0.7, a: 1 }),
+    new Root(),
   )
   let previousTime = 0
   const update = (currentTime: number): void => {
@@ -81,6 +84,7 @@ export const RotatingOnYAxis = () => {
     new Rotate({ x: 0, y: 0, z: 0 }),
     new Scale({ x: 100, y: 100, z: 1 }),
     new Fill({ h: 279, s: 1, l: 0.7, a: 1 }),
+    new Root(),
   )
   let previousTime = 0
   const update = (currentTime: number): void => {
@@ -107,6 +111,7 @@ export const RotatingOnZAxis = () => {
     new Rotate({ x: 0, y: 0, z: 0 }),
     new Scale({ x: 100, y: 100, z: 1 }),
     new Fill({ h: 279, s: 1, l: 0.7, a: 1 }),
+    new Root(),
   )
   let previousTime = 0
   const update = (currentTime: number): void => {
@@ -133,6 +138,7 @@ export const RotatingOnAllAxis = () => {
     new Rotate({ x: 0, y: 0, z: 0 }),
     new Scale({ x: 100, y: 100, z: 1 }),
     new Fill({ h: 279, s: 1, l: 0.7, a: 1 }),
+    new Root(),
   )
   let previousTime = 0
   let theta = 0
@@ -161,19 +167,21 @@ export const ThreePlanes = () => {
     new Rotate({ x: 0, y: 0, z: 0 }),
     new Scale({ x: 100, y: 100, z: 1 }),
     new Fill({ h: 279, s: 1, l: 0.7, a: 1 }),
+    new Root(),
   ))
   let previousTime = 0
-  const update = (currentTime: number): void => {
-    requestAnimationFrame(update)
-    const deltaTime = currentTime - previousTime
-    const theta = deltaTime / 1000
-    planes[0].get(Rotate)!.x += theta
-    planes[1].get(Rotate)!.y += theta
-    planes[2].get(Rotate)!.z += theta
-    renderer.render(ecs)
-    previousTime = currentTime
-  }
-  requestAnimationFrame(update)
+  // const update = (currentTime: number): void => {
+  //   requestAnimationFrame(update)
+  //   const deltaTime = currentTime - previousTime
+  //   const theta = deltaTime / 1000
+  //   planes[0].get(Rotate)!.x += theta
+  //   planes[1].get(Rotate)!.y += theta
+  //   planes[2].get(Rotate)!.z += theta
+  //   renderer.render(ecs)
+  //   previousTime = currentTime
+  // }
+  // requestAnimationFrame(update)
+  renderer.render(ecs)
   return renderer.element
 }
 
@@ -185,27 +193,28 @@ export const TrackMouse = () => {
   const camera = ecs.entity(orthographicProjection({ ...viewport, near, far }))
   ecs.set(new ActiveCamera(camera))
   let mouseHeld = false
-  const addPlane = (x, y) =>
+  const addPlane = (x, y, h) =>
     ecs.entity(
       planeGeometry(),
       new Translate({ x, y, z: 0 }),
       new Rotate({ x: 0, y: 0, z: 0 }),
       new Scale({ x: 10, y: 10, z: 1 }),
-      new Fill({ h: 279, s: 1, l: 0.7, a: 1 }),
+      new Fill({ h, s: 1, l: 0.7, a: 1 }),
+      new Root(),
     )
-  const plane = addPlane(viewport.width / 2, viewport.height / 2)
+  const plane = addPlane(viewport.width / 2, viewport.height / 2, 279)
   document.addEventListener('pointermove', e => {
     plane.set(new Translate({ x: e.x, y: e.y, z: 0 }))
     if (mouseHeld) {
       for (const c of e.getCoalescedEvents()) {
-        addPlane(c.x, c.y)
+        addPlane(c.x, c.y, Math.floor(Math.random() * 360))
       }
     }
     renderer.render(ecs)
   })
   document.addEventListener('mousedown', e => {
     mouseHeld = true
-    addPlane(e.x, e.y)
+    addPlane(e.x, e.y, Math.floor(Math.random() * 360))
     renderer.render(ecs)
   })
   document.addEventListener('mouseup', () => mouseHeld = false)

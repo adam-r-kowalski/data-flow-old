@@ -1,6 +1,6 @@
 import { Mat4x4 } from './linear_algebra'
 import { ECS, Entity } from './ecs'
-import { Geometry, Translate, Scale, Rotate, Fill, ActiveCamera, Projection } from './components'
+import { Root, Children, Geometry, Translate, Scale, Rotate, Fill, ActiveCamera, Projection } from './components'
 
 interface Attribute {
   buffer: WebGLBuffer
@@ -15,6 +15,11 @@ interface Viewport {
 }
 
 type OnResize = (viewport: Viewport) => void
+
+interface RenderData {
+  entity: Entity
+  transform: Mat4x4
+}
 
 export class Renderer {
   element: HTMLCanvasElement
@@ -51,7 +56,6 @@ void main() {
   gl_Position = u_matrix[a_index] * a_position;
   v_color = u_color[a_index];
 }
-
 `
 
     const fragmentShaderSource = `#version 300 es
@@ -122,41 +126,56 @@ void main() {
     this.gl.viewport(x, y, width, height)
   }
 
+  renderEntities = function*(ecs: ECS): Generator<RenderData> {
+    const renderChildren = function*(renderData: RenderData): Generator<RenderData> {
+      const children = renderData.entity.get(Children)
+      if (children) for (const child of children.entities) {
+        const localTransform = child.get(Translate)!.matrix()
+          .mul(child.get(Rotate)!.matrix())
+          .mul(child.get(Scale)!.matrix())
+        const transform = renderData.transform.mul(localTransform)
+        const childRenderData = {
+          entity: child,
+          transform
+        }
+        yield childRenderData
+        yield* renderChildren(childRenderData)
+      }
+    }
+    const camera = ecs.get(ActiveCamera)!.entity
+    const view = camera.get(Projection)!.matrix
+    for (const root of ecs.query(Root)) {
+      const localTransform = root.get(Translate)!.matrix()
+        .mul(root.get(Rotate)!.matrix())
+        .mul(root.get(Scale)!.matrix())
+      const transform = view.mul(localTransform)
+      const renderData = { transform, entity: root }
+      yield renderData
+      yield* renderChildren(renderData)
+    }
+  }
+
   render = (ecs: ECS): void => {
     const start = performance.now()
     const gl = this.gl
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
     const camera = ecs.get(ActiveCamera)!.entity
     const view = camera.get(Projection)!.matrix
-    let entities = ecs.query(Geometry)
-    while (entities.length) {
-      const positions: number[] = []
-      const vertexIndices: number[] = []
-      const indices: number[] = []
-      const matrices: number[] = []
-      const fills: number[] = []
-      let index = 0
-      let offset = 0
-      for (const entity of entities.slice(0, this.maxBatchSize)) {
-        const geometry = entity.get(Geometry)!
-        positions.push(...geometry.vertices)
-        for (const i of geometry.indices) {
-          vertexIndices.push(i + offset)
-        }
-        const vertexCount = geometry.vertices.length / 3
-        offset += vertexCount
-        const matrix = view
-          .mul(entity.get(Translate)!.matrix())
-          .mul(entity.get(Rotate)!.matrix())
-          .mul(entity.get(Scale)!.matrix())
-        matrices.push(...matrix.data)
-        const fill = entity.get(Fill)!
-        fills.push(fill.h, fill.s, fill.l, fill.a)
-        for (let i = 0; i < vertexCount; ++i) {
-          indices.push(index)
-        }
-        ++index;
-      }
+    let positions: number[] = []
+    let vertexIndices: number[] = []
+    let indices: number[] = []
+    let matrices: number[] = []
+    let fills: number[] = []
+    let index = 0
+    let offset = 0
+    const drawBatch = () => {
+      console.log('positions', positions)
+      console.log('vertexIndices', vertexIndices)
+      console.log('indices', indices)
+      console.log('matrices', matrices)
+      console.log('fills', fills)
+      console.log('index', index)
+      console.log('offset', offset)
       gl.uniformMatrix4fv(this.uMatrix, /*transpose*/false, matrices)
       gl.uniform4fv(this.uColor, fills)
       gl.bindBuffer(gl.ARRAY_BUFFER, this.aPosition.buffer)
@@ -166,8 +185,30 @@ void main() {
       gl.bindBuffer(gl.ARRAY_BUFFER, this.aIndex.buffer)
       gl.bufferData(gl.ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW)
       gl.drawElements(gl.TRIANGLES, /*count*/vertexIndices.length, /*index type*/gl.UNSIGNED_SHORT, /*offset*/0)
-      entities = entities.slice(this.maxBatchSize)
     }
+    for (const { entity, transform } of this.renderEntities(ecs)) {
+      const geometry = entity.get(Geometry)
+      if (!geometry) continue
+      positions.push(...geometry.vertices)
+      for (const i of geometry.indices) vertexIndices.push(i + offset)
+      const vertexCount = geometry.vertices.length / 3
+      offset += vertexCount
+      matrices.push(...transform.data)
+      const fill = entity.get(Fill)!
+      fills.push(fill.h, fill.s, fill.l, fill.a)
+      for (let i = 0; i < vertexCount; ++i) indices.push(index)
+      if (++index == this.maxBatchSize) {
+        drawBatch()
+        positions = []
+        vertexIndices = []
+        indices = []
+        matrices = []
+        fills = []
+        index = 0
+        offset = 0
+      }
+    }
+    if (index != 0) drawBatch()
     const stop = performance.now()
     //console.log(stop - start)
   }

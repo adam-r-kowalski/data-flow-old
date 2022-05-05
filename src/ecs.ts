@@ -55,8 +55,8 @@ export class Entity {
   }
 
   get = <T>(Type: Component<T>): T | undefined => {
-    const storage = this.ecs.storages.get(Type) as Storage<T>
-    return storage.get(this)
+    const storage = this.ecs.storages.get(Type)
+    return storage ? storage.get(this) : undefined
   }
 }
 
@@ -78,16 +78,14 @@ export class ECS {
     return entity
   }
 
-  query = (...components: any): Entity[] => {
-    const entities: Entity[] = []
+  query = function*(...components: any): Generator<Entity> {
     const primary = this.storages.get(components[0])!
     const secondary = components.slice(1).map(s => this.storages.get(s))
     for (const id of primary.inverses) {
       if (secondary.every(storage => storage.hasId(id))) {
-        entities.push(new Entity(id, this))
+        yield new Entity(id, this)
       }
     }
-    return entities
   }
 
   set = <T>(...components: any): void => {

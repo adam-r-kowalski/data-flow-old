@@ -1,6 +1,6 @@
 import { Renderer } from '../webgl_renderer'
-import { ECS } from '../ecs'
-import { Geometry, Translate, Rotate, Scale, Fill, ActiveCamera, orthographicProjection } from '../components'
+import { ECS, Entity } from '../ecs'
+import { Root, Children, Geometry, Translate, Rotate, Scale, Fill, ActiveCamera, orthographicProjection } from '../components'
 
 export default {
   title: "F",
@@ -22,8 +22,8 @@ const leftColumnFront = (ecs: ECS) =>
         1, 3, 2,
       ]
     ),
-    new Translate({ x: 200, y: 200, z: 0 }),
-    new Rotate({ x: degToRad(40), y: degToRad(25), z: degToRad(325) }),
+    new Translate({ x: 0, y: 0, z: 0 }),
+    new Rotate({ x: 0, y: 0, z: 0 }),
     new Scale({ x: 1, y: 1, z: 1 }),
     new Fill({ h: 30, s: 1, l: 0.7, a: 1 }),
   )
@@ -42,8 +42,8 @@ const topRungFront = (ecs: ECS) =>
         1, 3, 2,
       ]
     ),
-    new Translate({ x: 200, y: 200, z: 0 }),
-    new Rotate({ x: degToRad(40), y: degToRad(25), z: degToRad(325) }),
+    new Translate({ x: 0, y: 0, z: 0 }),
+    new Rotate({ x: 0, y: 0, z: 0 }),
     new Scale({ x: 1, y: 1, z: 1 }),
     new Fill({ h: 30, s: 1, l: 0.7, a: 1 }),
   )
@@ -63,8 +63,8 @@ const middleRungFront = (ecs: ECS) =>
         1, 3, 2,
       ]
     ),
-    new Translate({ x: 200, y: 200, z: 0 }),
-    new Rotate({ x: degToRad(40), y: degToRad(25), z: degToRad(325) }),
+    new Translate({ x: 0, y: 0, z: 0 }),
+    new Rotate({ x: 0, y: 0, z: 0 }),
     new Scale({ x: 1, y: 1, z: 1 }),
     new Fill({ h: 30, s: 1, l: 0.7, a: 1 }),
   )
@@ -85,8 +85,8 @@ const leftColumnBack = (ecs: ECS) =>
 
       ]
     ),
-    new Translate({ x: 200, y: 200, z: 0 }),
-    new Rotate({ x: degToRad(40), y: degToRad(25), z: degToRad(325) }),
+    new Translate({ x: 0, y: 0, z: 0 }),
+    new Rotate({ x: 0, y: 0, z: 0 }),
     new Scale({ x: 1, y: 1, z: 1 }),
     new Fill({ h: 60, s: 1, l: 0.7, a: 1 }),
   )
@@ -106,8 +106,8 @@ const topRungBack = (ecs: ECS) =>
 
       ]
     ),
-    new Translate({ x: 200, y: 200, z: 0 }),
-    new Rotate({ x: degToRad(40), y: degToRad(25), z: degToRad(325) }),
+    new Translate({ x: 0, y: 0, z: 0 }),
+    new Rotate({ x: 0, y: 0, z: 0 }),
     new Scale({ x: 1, y: 1, z: 1 }),
     new Fill({ h: 60, s: 1, l: 0.7, a: 1 }),
   )
@@ -128,8 +128,8 @@ const middleRungBack = (ecs: ECS) =>
 
       ]
     ),
-    new Translate({ x: 200, y: 200, z: 0 }),
-    new Rotate({ x: degToRad(40), y: degToRad(25), z: degToRad(325) }),
+    new Translate({ x: 0, y: 0, z: 0 }),
+    new Rotate({ x: 0, y: 0, z: 0 }),
     new Scale({ x: 1, y: 1, z: 1 }),
     new Fill({ h: 60, s: 1, l: 0.7, a: 1 }),
   )
@@ -149,8 +149,8 @@ const top = (ecs: ECS) =>
 
       ]
     ),
-    new Translate({ x: 200, y: 200, z: 0 }),
-    new Rotate({ x: degToRad(40), y: degToRad(25), z: degToRad(325) }),
+    new Translate({ x: 0, y: 0, z: 0 }),
+    new Rotate({ x: 0, y: 0, z: 0 }),
     new Scale({ x: 1, y: 1, z: 1 }),
     new Fill({ h: 90, s: 1, l: 0.7, a: 1 }),
   )
@@ -170,8 +170,8 @@ const topRungRight = (ecs: ECS) =>
 
       ]
     ),
-    new Translate({ x: 200, y: 200, z: 0 }),
-    new Rotate({ x: degToRad(40), y: degToRad(25), z: degToRad(325) }),
+    new Translate({ x: 0, y: 0, z: 0 }),
+    new Rotate({ x: 0, y: 0, z: 0 }),
     new Scale({ x: 1, y: 1, z: 1 }),
     new Fill({ h: 120, s: 1, l: 0.7, a: 1 }),
   )
@@ -191,8 +191,8 @@ const underTopRung = (ecs: ECS) =>
 
       ]
     ),
-    new Translate({ x: 200, y: 200, z: 0 }),
-    new Rotate({ x: degToRad(40), y: degToRad(25), z: degToRad(325) }),
+    new Translate({ x: 0, y: 0, z: 0 }),
+    new Rotate({ x: 0, y: 0, z: 0 }),
     new Scale({ x: 1, y: 1, z: 1 }),
     new Fill({ h: 150, s: 1, l: 0.7, a: 1 }),
   )
@@ -213,8 +213,8 @@ const betweenTopRungAndMiddle = (ecs: ECS) =>
 
       ]
     ),
-    new Translate({ x: 200, y: 200, z: 0 }),
-    new Rotate({ x: degToRad(40), y: degToRad(25), z: degToRad(325) }),
+    new Translate({ x: 0, y: 0, z: 0 }),
+    new Rotate({ x: 0, y: 0, z: 0 }),
     new Scale({ x: 1, y: 1, z: 1 }),
     new Fill({ h: 180, s: 1, l: 0.7, a: 1 }),
   )
@@ -233,8 +233,8 @@ const topOfMiddleRung = (ecs: ECS) =>
         0, 3, 1,
       ]
     ),
-    new Translate({ x: 200, y: 200, z: 0 }),
-    new Rotate({ x: degToRad(40), y: degToRad(25), z: degToRad(325) }),
+    new Translate({ x: 0, y: 0, z: 0 }),
+    new Rotate({ x: 0, y: 0, z: 0 }),
     new Scale({ x: 1, y: 1, z: 1 }),
     new Fill({ h: 210, s: 1, l: 0.7, a: 1 }),
   )
@@ -253,8 +253,8 @@ const rightOfMiddleRung = (ecs: ECS) =>
         0, 3, 1,
       ]
     ),
-    new Translate({ x: 200, y: 200, z: 0 }),
-    new Rotate({ x: degToRad(40), y: degToRad(25), z: degToRad(325) }),
+    new Translate({ x: 0, y: 0, z: 0 }),
+    new Rotate({ x: 0, y: 0, z: 0 }),
     new Scale({ x: 1, y: 1, z: 1 }),
     new Fill({ h: 240, s: 1, l: 0.7, a: 1 }),
   )
@@ -273,8 +273,8 @@ const bottomOfMiddleRing = (ecs: ECS) =>
         0, 2, 3,
       ]
     ),
-    new Translate({ x: 200, y: 200, z: 0 }),
-    new Rotate({ x: degToRad(40), y: degToRad(25), z: degToRad(325) }),
+    new Translate({ x: 0, y: 0, z: 0 }),
+    new Rotate({ x: 0, y: 0, z: 0 }),
     new Scale({ x: 1, y: 1, z: 1 }),
     new Fill({ h: 270, s: 1, l: 0.7, a: 1 }),
   )
@@ -293,8 +293,8 @@ const rightOfBottom = (ecs: ECS) =>
         0, 3, 1,
       ]
     ),
-    new Translate({ x: 200, y: 200, z: 0 }),
-    new Rotate({ x: degToRad(40), y: degToRad(25), z: degToRad(325) }),
+    new Translate({ x: 0, y: 0, z: 0 }),
+    new Rotate({ x: 0, y: 0, z: 0 }),
     new Scale({ x: 1, y: 1, z: 1 }),
     new Fill({ h: 300, s: 1, l: 0.7, a: 1 }),
   )
@@ -313,8 +313,8 @@ const bottom = (ecs: ECS) =>
         0, 2, 3,
       ]
     ),
-    new Translate({ x: 200, y: 200, z: 0 }),
-    new Rotate({ x: degToRad(40), y: degToRad(25), z: degToRad(325) }),
+    new Translate({ x: 0, y: 0, z: 0 }),
+    new Rotate({ x: 0, y: 0, z: 0 }),
     new Scale({ x: 1, y: 1, z: 1 }),
     new Fill({ h: 330, s: 1, l: 0.7, a: 1 }),
   )
@@ -333,10 +333,37 @@ const leftSide = (ecs: ECS) =>
         0, 2, 3,
       ]
     ),
-    new Translate({ x: 200, y: 200, z: 0 }),
-    new Rotate({ x: degToRad(40), y: degToRad(25), z: degToRad(325) }),
+    new Translate({ x: 0, y: 0, z: 0 }),
+    new Rotate({ x: 0, y: 0, z: 0 }),
     new Scale({ x: 1, y: 1, z: 1 }),
     new Fill({ h: 360, s: 1, l: 0.7, a: 1 }),
+  )
+
+
+const F = (ecs: ECS): Entity =>
+  ecs.entity(
+    new Translate({ x: 250, y: 250, z: 0 }),
+    new Rotate({ x: degToRad(40), y: degToRad(25), z: degToRad(325) }),
+    new Scale({ x: 1, y: 1, z: 1 }),
+    new Children([
+      leftColumnFront(ecs),
+      topRungFront(ecs),
+      middleRungFront(ecs),
+      leftColumnBack(ecs),
+      topRungBack(ecs),
+      middleRungBack(ecs),
+      top(ecs),
+      topRungRight(ecs),
+      underTopRung(ecs),
+      betweenTopRungAndMiddle(ecs),
+      topOfMiddleRung(ecs),
+      rightOfMiddleRung(ecs),
+      bottomOfMiddleRing(ecs),
+      rightOfBottom(ecs),
+      bottom(ecs),
+      leftSide(ecs),
+    ]),
+    new Root()
   )
 
 export const Orthographic = () => {
@@ -346,33 +373,14 @@ export const Orthographic = () => {
   const renderer = new Renderer(viewport)
   const camera = ecs.entity(orthographicProjection({ ...viewport, near, far }))
   ecs.set(new ActiveCamera(camera))
-  const entities = [
-    leftColumnFront(ecs),
-    topRungFront(ecs),
-    middleRungFront(ecs),
-    leftColumnBack(ecs),
-    topRungBack(ecs),
-    middleRungBack(ecs),
-    top(ecs),
-    topRungRight(ecs),
-    underTopRung(ecs),
-    betweenTopRungAndMiddle(ecs),
-    topOfMiddleRung(ecs),
-    rightOfMiddleRung(ecs),
-    bottomOfMiddleRing(ecs),
-    rightOfBottom(ecs),
-    bottom(ecs),
-    leftSide(ecs),
-  ]
+  const f = F(ecs)
   let lastTime = 0
   const update = (currentTime: number) => {
     requestAnimationFrame(update)
     const delta = (currentTime - lastTime) / 1000
-    for (const entity of entities) {
-      const rotate = entity.get(Rotate)!
-      rotate.y += delta
-      rotate.x += delta / 2
-    }
+    const rotate = f.get(Rotate)!
+    rotate.y += delta
+    rotate.x += delta / 2
     renderer.render(ecs)
     lastTime = currentTime
   }

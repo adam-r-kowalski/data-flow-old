@@ -187,3 +187,13 @@ export class Fill {
     this.a = hsla.a
   }
 }
+
+export class Children {
+  entities: Entity[]
+
+  constructor(entities: Entity[]) {
+    this.entities = entities
+  }
+}
+
+export class Root { }

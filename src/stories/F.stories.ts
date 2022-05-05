@@ -1,6 +1,4 @@
-import { Renderer } from '../webgl_renderer'
-import { ECS, Entity } from '../ecs'
-import { Root, Children, Geometry, Translate, Rotate, Scale, Fill, ActiveCamera, orthographicProjection } from '../components'
+import * as Studio from '../studio'
 
 export default {
   title: "F",
@@ -8,9 +6,9 @@ export default {
 
 const degToRad = (d: number): number => d * Math.PI / 180
 
-const leftColumnFront = (ecs: ECS) =>
+const leftColumnFront = (ecs: Studio.ECS) =>
   ecs.entity(
-    new Geometry(
+    new Studio.Geometry(
       [
         0, 0, 0,
         0, 150, 0,
@@ -22,15 +20,15 @@ const leftColumnFront = (ecs: ECS) =>
         1, 3, 2,
       ]
     ),
-    new Translate({ x: 0, y: 0, z: 0 }),
-    new Rotate({ x: 0, y: 0, z: 0 }),
-    new Scale({ x: 1, y: 1, z: 1 }),
-    new Fill({ h: 30, s: 1, l: 0.7, a: 1 }),
+    new Studio.Translate({ x: 0, y: 0, z: 0 }),
+    new Studio.Rotate({ x: 0, y: 0, z: 0 }),
+    new Studio.Scale({ x: 1, y: 1, z: 1 }),
+    new Studio.Fill({ h: 30, s: 1, l: 0.7, a: 1 }),
   )
 
-const topRungFront = (ecs: ECS) =>
+const topRungFront = (ecs: Studio.ECS) =>
   ecs.entity(
-    new Geometry(
+    new Studio.Geometry(
       [
         30, 0, 0,
         30, 30, 0,
@@ -42,16 +40,16 @@ const topRungFront = (ecs: ECS) =>
         1, 3, 2,
       ]
     ),
-    new Translate({ x: 0, y: 0, z: 0 }),
-    new Rotate({ x: 0, y: 0, z: 0 }),
-    new Scale({ x: 1, y: 1, z: 1 }),
-    new Fill({ h: 30, s: 1, l: 0.7, a: 1 }),
+    new Studio.Translate({ x: 0, y: 0, z: 0 }),
+    new Studio.Rotate({ x: 0, y: 0, z: 0 }),
+    new Studio.Scale({ x: 1, y: 1, z: 1 }),
+    new Studio.Fill({ h: 30, s: 1, l: 0.7, a: 1 }),
   )
 
 
-const middleRungFront = (ecs: ECS) =>
+const middleRungFront = (ecs: Studio.ECS) =>
   ecs.entity(
-    new Geometry(
+    new Studio.Geometry(
       [
         30, 60, 0,
         30, 90, 0,
@@ -63,16 +61,16 @@ const middleRungFront = (ecs: ECS) =>
         1, 3, 2,
       ]
     ),
-    new Translate({ x: 0, y: 0, z: 0 }),
-    new Rotate({ x: 0, y: 0, z: 0 }),
-    new Scale({ x: 1, y: 1, z: 1 }),
-    new Fill({ h: 30, s: 1, l: 0.7, a: 1 }),
+    new Studio.Translate({ x: 0, y: 0, z: 0 }),
+    new Studio.Rotate({ x: 0, y: 0, z: 0 }),
+    new Studio.Scale({ x: 1, y: 1, z: 1 }),
+    new Studio.Fill({ h: 30, s: 1, l: 0.7, a: 1 }),
   )
 
 
-const leftColumnBack = (ecs: ECS) =>
+const leftColumnBack = (ecs: Studio.ECS) =>
   ecs.entity(
-    new Geometry(
+    new Studio.Geometry(
       [
         0, 0, 30,
         30, 0, 30,
@@ -85,15 +83,15 @@ const leftColumnBack = (ecs: ECS) =>
 
       ]
     ),
-    new Translate({ x: 0, y: 0, z: 0 }),
-    new Rotate({ x: 0, y: 0, z: 0 }),
-    new Scale({ x: 1, y: 1, z: 1 }),
-    new Fill({ h: 60, s: 1, l: 0.7, a: 1 }),
+    new Studio.Translate({ x: 0, y: 0, z: 0 }),
+    new Studio.Rotate({ x: 0, y: 0, z: 0 }),
+    new Studio.Scale({ x: 1, y: 1, z: 1 }),
+    new Studio.Fill({ h: 60, s: 1, l: 0.7, a: 1 }),
   )
 
-const topRungBack = (ecs: ECS) =>
+const topRungBack = (ecs: Studio.ECS) =>
   ecs.entity(
-    new Geometry(
+    new Studio.Geometry(
       [
         30, 0, 30,
         100, 0, 30,
@@ -106,16 +104,16 @@ const topRungBack = (ecs: ECS) =>
 
       ]
     ),
-    new Translate({ x: 0, y: 0, z: 0 }),
-    new Rotate({ x: 0, y: 0, z: 0 }),
-    new Scale({ x: 1, y: 1, z: 1 }),
-    new Fill({ h: 60, s: 1, l: 0.7, a: 1 }),
+    new Studio.Translate({ x: 0, y: 0, z: 0 }),
+    new Studio.Rotate({ x: 0, y: 0, z: 0 }),
+    new Studio.Scale({ x: 1, y: 1, z: 1 }),
+    new Studio.Fill({ h: 60, s: 1, l: 0.7, a: 1 }),
   )
 
 
-const middleRungBack = (ecs: ECS) =>
+const middleRungBack = (ecs: Studio.ECS) =>
   ecs.entity(
-    new Geometry(
+    new Studio.Geometry(
       [
         30, 60, 30,
         67, 60, 30,
@@ -128,15 +126,15 @@ const middleRungBack = (ecs: ECS) =>
 
       ]
     ),
-    new Translate({ x: 0, y: 0, z: 0 }),
-    new Rotate({ x: 0, y: 0, z: 0 }),
-    new Scale({ x: 1, y: 1, z: 1 }),
-    new Fill({ h: 60, s: 1, l: 0.7, a: 1 }),
+    new Studio.Translate({ x: 0, y: 0, z: 0 }),
+    new Studio.Rotate({ x: 0, y: 0, z: 0 }),
+    new Studio.Scale({ x: 1, y: 1, z: 1 }),
+    new Studio.Fill({ h: 60, s: 1, l: 0.7, a: 1 }),
   )
 
-const top = (ecs: ECS) =>
+const top = (ecs: Studio.ECS) =>
   ecs.entity(
-    new Geometry(
+    new Studio.Geometry(
       [
         0, 0, 0,
         100, 0, 0,
@@ -149,15 +147,15 @@ const top = (ecs: ECS) =>
 
       ]
     ),
-    new Translate({ x: 0, y: 0, z: 0 }),
-    new Rotate({ x: 0, y: 0, z: 0 }),
-    new Scale({ x: 1, y: 1, z: 1 }),
-    new Fill({ h: 90, s: 1, l: 0.7, a: 1 }),
+    new Studio.Translate({ x: 0, y: 0, z: 0 }),
+    new Studio.Rotate({ x: 0, y: 0, z: 0 }),
+    new Studio.Scale({ x: 1, y: 1, z: 1 }),
+    new Studio.Fill({ h: 90, s: 1, l: 0.7, a: 1 }),
   )
 
-const topRungRight = (ecs: ECS) =>
+const topRungRight = (ecs: Studio.ECS) =>
   ecs.entity(
-    new Geometry(
+    new Studio.Geometry(
       [
         100, 0, 0,
         100, 30, 0,
@@ -170,15 +168,15 @@ const topRungRight = (ecs: ECS) =>
 
       ]
     ),
-    new Translate({ x: 0, y: 0, z: 0 }),
-    new Rotate({ x: 0, y: 0, z: 0 }),
-    new Scale({ x: 1, y: 1, z: 1 }),
-    new Fill({ h: 120, s: 1, l: 0.7, a: 1 }),
+    new Studio.Translate({ x: 0, y: 0, z: 0 }),
+    new Studio.Rotate({ x: 0, y: 0, z: 0 }),
+    new Studio.Scale({ x: 1, y: 1, z: 1 }),
+    new Studio.Fill({ h: 120, s: 1, l: 0.7, a: 1 }),
   )
 
-const underTopRung = (ecs: ECS) =>
+const underTopRung = (ecs: Studio.ECS) =>
   ecs.entity(
-    new Geometry(
+    new Studio.Geometry(
       [
         30, 30, 0,
         30, 30, 30,
@@ -191,15 +189,15 @@ const underTopRung = (ecs: ECS) =>
 
       ]
     ),
-    new Translate({ x: 0, y: 0, z: 0 }),
-    new Rotate({ x: 0, y: 0, z: 0 }),
-    new Scale({ x: 1, y: 1, z: 1 }),
-    new Fill({ h: 150, s: 1, l: 0.7, a: 1 }),
+    new Studio.Translate({ x: 0, y: 0, z: 0 }),
+    new Studio.Rotate({ x: 0, y: 0, z: 0 }),
+    new Studio.Scale({ x: 1, y: 1, z: 1 }),
+    new Studio.Fill({ h: 150, s: 1, l: 0.7, a: 1 }),
   )
 
-const betweenTopRungAndMiddle = (ecs: ECS) =>
+const betweenTopRungAndMiddle = (ecs: Studio.ECS) =>
   ecs.entity(
-    new Geometry(
+    new Studio.Geometry(
       [
         30, 30, 0,
         30, 60, 30,
@@ -213,15 +211,15 @@ const betweenTopRungAndMiddle = (ecs: ECS) =>
 
       ]
     ),
-    new Translate({ x: 0, y: 0, z: 0 }),
-    new Rotate({ x: 0, y: 0, z: 0 }),
-    new Scale({ x: 1, y: 1, z: 1 }),
-    new Fill({ h: 180, s: 1, l: 0.7, a: 1 }),
+    new Studio.Translate({ x: 0, y: 0, z: 0 }),
+    new Studio.Rotate({ x: 0, y: 0, z: 0 }),
+    new Studio.Scale({ x: 1, y: 1, z: 1 }),
+    new Studio.Fill({ h: 180, s: 1, l: 0.7, a: 1 }),
   )
 
-const topOfMiddleRung = (ecs: ECS) =>
+const topOfMiddleRung = (ecs: Studio.ECS) =>
   ecs.entity(
-    new Geometry(
+    new Studio.Geometry(
       [
         30, 60, 0,
         67, 60, 30,
@@ -233,15 +231,15 @@ const topOfMiddleRung = (ecs: ECS) =>
         0, 3, 1,
       ]
     ),
-    new Translate({ x: 0, y: 0, z: 0 }),
-    new Rotate({ x: 0, y: 0, z: 0 }),
-    new Scale({ x: 1, y: 1, z: 1 }),
-    new Fill({ h: 210, s: 1, l: 0.7, a: 1 }),
+    new Studio.Translate({ x: 0, y: 0, z: 0 }),
+    new Studio.Rotate({ x: 0, y: 0, z: 0 }),
+    new Studio.Scale({ x: 1, y: 1, z: 1 }),
+    new Studio.Fill({ h: 210, s: 1, l: 0.7, a: 1 }),
   )
 
-const rightOfMiddleRung = (ecs: ECS) =>
+const rightOfMiddleRung = (ecs: Studio.ECS) =>
   ecs.entity(
-    new Geometry(
+    new Studio.Geometry(
       [
         67, 60, 0,
         67, 90, 30,
@@ -253,15 +251,15 @@ const rightOfMiddleRung = (ecs: ECS) =>
         0, 3, 1,
       ]
     ),
-    new Translate({ x: 0, y: 0, z: 0 }),
-    new Rotate({ x: 0, y: 0, z: 0 }),
-    new Scale({ x: 1, y: 1, z: 1 }),
-    new Fill({ h: 240, s: 1, l: 0.7, a: 1 }),
+    new Studio.Translate({ x: 0, y: 0, z: 0 }),
+    new Studio.Rotate({ x: 0, y: 0, z: 0 }),
+    new Studio.Scale({ x: 1, y: 1, z: 1 }),
+    new Studio.Fill({ h: 240, s: 1, l: 0.7, a: 1 }),
   )
 
-const bottomOfMiddleRing = (ecs: ECS) =>
+const bottomOfMiddleRing = (ecs: Studio.ECS) =>
   ecs.entity(
-    new Geometry(
+    new Studio.Geometry(
       [
         30, 90, 0,
         30, 90, 30,
@@ -273,15 +271,15 @@ const bottomOfMiddleRing = (ecs: ECS) =>
         0, 2, 3,
       ]
     ),
-    new Translate({ x: 0, y: 0, z: 0 }),
-    new Rotate({ x: 0, y: 0, z: 0 }),
-    new Scale({ x: 1, y: 1, z: 1 }),
-    new Fill({ h: 270, s: 1, l: 0.7, a: 1 }),
+    new Studio.Translate({ x: 0, y: 0, z: 0 }),
+    new Studio.Rotate({ x: 0, y: 0, z: 0 }),
+    new Studio.Scale({ x: 1, y: 1, z: 1 }),
+    new Studio.Fill({ h: 270, s: 1, l: 0.7, a: 1 }),
   )
 
-const rightOfBottom = (ecs: ECS) =>
+const rightOfBottom = (ecs: Studio.ECS) =>
   ecs.entity(
-    new Geometry(
+    new Studio.Geometry(
       [
         30, 90, 0,
         30, 150, 30,
@@ -293,15 +291,15 @@ const rightOfBottom = (ecs: ECS) =>
         0, 3, 1,
       ]
     ),
-    new Translate({ x: 0, y: 0, z: 0 }),
-    new Rotate({ x: 0, y: 0, z: 0 }),
-    new Scale({ x: 1, y: 1, z: 1 }),
-    new Fill({ h: 300, s: 1, l: 0.7, a: 1 }),
+    new Studio.Translate({ x: 0, y: 0, z: 0 }),
+    new Studio.Rotate({ x: 0, y: 0, z: 0 }),
+    new Studio.Scale({ x: 1, y: 1, z: 1 }),
+    new Studio.Fill({ h: 300, s: 1, l: 0.7, a: 1 }),
   )
 
-const bottom = (ecs: ECS) =>
+const bottom = (ecs: Studio.ECS) =>
   ecs.entity(
-    new Geometry(
+    new Studio.Geometry(
       [
         0, 150, 0,
         0, 150, 30,
@@ -313,15 +311,15 @@ const bottom = (ecs: ECS) =>
         0, 2, 3,
       ]
     ),
-    new Translate({ x: 0, y: 0, z: 0 }),
-    new Rotate({ x: 0, y: 0, z: 0 }),
-    new Scale({ x: 1, y: 1, z: 1 }),
-    new Fill({ h: 330, s: 1, l: 0.7, a: 1 }),
+    new Studio.Translate({ x: 0, y: 0, z: 0 }),
+    new Studio.Rotate({ x: 0, y: 0, z: 0 }),
+    new Studio.Scale({ x: 1, y: 1, z: 1 }),
+    new Studio.Fill({ h: 330, s: 1, l: 0.7, a: 1 }),
   )
 
-const leftSide = (ecs: ECS) =>
+const leftSide = (ecs: Studio.ECS) =>
   ecs.entity(
-    new Geometry(
+    new Studio.Geometry(
       [
         0, 0, 0,
         0, 0, 30,
@@ -333,19 +331,19 @@ const leftSide = (ecs: ECS) =>
         0, 2, 3,
       ]
     ),
-    new Translate({ x: 0, y: 0, z: 0 }),
-    new Rotate({ x: 0, y: 0, z: 0 }),
-    new Scale({ x: 1, y: 1, z: 1 }),
-    new Fill({ h: 360, s: 1, l: 0.7, a: 1 }),
+    new Studio.Translate({ x: 0, y: 0, z: 0 }),
+    new Studio.Rotate({ x: 0, y: 0, z: 0 }),
+    new Studio.Scale({ x: 1, y: 1, z: 1 }),
+    new Studio.Fill({ h: 360, s: 1, l: 0.7, a: 1 }),
   )
 
 
-const F = (ecs: ECS): Entity =>
+const F = (ecs: Studio.ECS): Studio.Entity =>
   ecs.entity(
-    new Translate({ x: 250, y: 250, z: 0 }),
-    new Rotate({ x: degToRad(40), y: degToRad(25), z: degToRad(325) }),
-    new Scale({ x: 1, y: 1, z: 1 }),
-    new Children([
+    new Studio.Translate({ x: 250, y: 250, z: 0 }),
+    new Studio.Rotate({ x: degToRad(40), y: degToRad(25), z: degToRad(325) }),
+    new Studio.Scale({ x: 1, y: 1, z: 1 }),
+    new Studio.Children([
       leftColumnFront(ecs),
       topRungFront(ecs),
       middleRungFront(ecs),
@@ -363,22 +361,24 @@ const F = (ecs: ECS): Entity =>
       bottom(ecs),
       leftSide(ecs),
     ]),
-    new Root()
+    new Studio.Root()
   )
 
 export const Orthographic = () => {
   const [near, far] = [500, -500]
-  const ecs = new ECS()
+  const ecs = new Studio.ECS()
   const viewport = { x: 0, y: 0, width: 500, height: 500 }
-  const renderer = new Renderer(viewport)
-  const camera = ecs.entity(orthographicProjection({ ...viewport, near, far }))
-  ecs.set(new ActiveCamera(camera))
+  const renderer = new Studio.renderer.WebGL2(viewport)
+  const camera = ecs.entity(
+    Studio.orthographicProjection({ ...viewport, near, far })
+  )
+  ecs.set(new Studio.ActiveCamera(camera))
   const f = F(ecs)
   let lastTime = 0
   const update = (currentTime: number) => {
     requestAnimationFrame(update)
     const delta = (currentTime - lastTime) / 1000
-    const rotate = f.get(Rotate)!
+    const rotate = f.get(Studio.Rotate)!
     rotate.y += delta
     rotate.x += delta / 2
     renderer.render(ecs)

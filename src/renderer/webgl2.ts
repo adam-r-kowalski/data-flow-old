@@ -1,6 +1,6 @@
-import { Mat4x4 } from './linear_algebra'
-import { ECS, Entity } from './ecs'
-import { Root, Children, Geometry, Translate, Scale, Rotate, Fill, ActiveCamera, Projection } from './components'
+import { Mat4x4 } from '../linear_algebra'
+import { ECS, Entity } from '../ecs'
+import { Root, Children, Geometry, Translate, Scale, Rotate, Fill, ActiveCamera, Projection } from '../components'
 
 interface Attribute {
   buffer: WebGLBuffer
@@ -169,13 +169,6 @@ void main() {
     let index = 0
     let offset = 0
     const drawBatch = () => {
-      console.log('positions', positions)
-      console.log('vertexIndices', vertexIndices)
-      console.log('indices', indices)
-      console.log('matrices', matrices)
-      console.log('fills', fills)
-      console.log('index', index)
-      console.log('offset', offset)
       gl.uniformMatrix4fv(this.uMatrix, /*transpose*/false, matrices)
       gl.uniform4fv(this.uColor, fills)
       gl.bindBuffer(gl.ARRAY_BUFFER, this.aPosition.buffer)

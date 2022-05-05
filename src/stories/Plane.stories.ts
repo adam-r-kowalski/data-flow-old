@@ -1,6 +1,4 @@
-import { Renderer } from '../webgl_renderer'
-import { ECS } from '../ecs'
-import { Geometry, Translate, Rotate, Scale, Fill, planeGeometry, orthographicProjection, ActiveCamera, Root } from '../components'
+import * as Studio from '../studio'
 
 export default {
   title: "Plane",
@@ -8,18 +6,24 @@ export default {
 
 export const Square = () => {
   const [near, far] = [500, -500]
-  const ecs = new ECS()
+  const ecs = new Studio.ECS()
   const viewport = { x: 0, y: 0, width: 500, height: 500 }
-  const renderer = new Renderer(viewport)
-  const camera = ecs.entity(orthographicProjection({ ...viewport, near, far }))
-  ecs.set(new ActiveCamera(camera))
+  const renderer = new Studio.renderer.WebGL2(viewport)
+  const camera = ecs.entity(
+    Studio.orthographicProjection({ ...viewport, near, far })
+  )
+  ecs.set(new Studio.ActiveCamera(camera))
   ecs.entity(
-    planeGeometry(),
-    new Translate({ x: viewport.width / 2, y: viewport.height / 2, z: 0 }),
-    new Rotate({ x: 0, y: 0, z: 0 }),
-    new Scale({ x: 100, y: 100, z: 1 }),
-    new Fill({ h: 279, s: 1, l: 0.7, a: 1 }),
-    new Root(),
+    Studio.planeGeometry(),
+    new Studio.Translate({
+      x: viewport.width / 2,
+      y: viewport.height / 2,
+      z: 0
+    }),
+    new Studio.Rotate({ x: 0, y: 0, z: 0 }),
+    new Studio.Scale({ x: 100, y: 100, z: 1 }),
+    new Studio.Fill({ h: 279, s: 1, l: 0.7, a: 1 }),
+    new Studio.Root(),
   )
   renderer.render(ecs)
   return renderer.element
@@ -27,18 +31,24 @@ export const Square = () => {
 
 export const Rectangle = () => {
   const [near, far] = [500, -500]
-  const ecs = new ECS()
+  const ecs = new Studio.ECS()
   const viewport = { x: 0, y: 0, width: 500, height: 500 }
-  const renderer = new Renderer(viewport)
-  const camera = ecs.entity(orthographicProjection({ ...viewport, near, far }))
-  ecs.set(new ActiveCamera(camera))
+  const renderer = new Studio.renderer.WebGL2(viewport)
+  const camera = ecs.entity(
+    Studio.orthographicProjection({ ...viewport, near, far })
+  )
+  ecs.set(new Studio.ActiveCamera(camera))
   ecs.entity(
-    planeGeometry(),
-    new Translate({ x: viewport.width / 2, y: viewport.height / 2, z: 0 }),
-    new Rotate({ x: 0, y: 0, z: 0 }),
-    new Scale({ x: 150, y: 100, z: 1 }),
-    new Fill({ h: 279, s: 1, l: 0.7, a: 1 }),
-    new Root(),
+    Studio.planeGeometry(),
+    new Studio.Translate({
+      x: viewport.width / 2,
+      y: viewport.height / 2,
+      z: 0
+    }),
+    new Studio.Rotate({ x: 0, y: 0, z: 0 }),
+    new Studio.Scale({ x: 150, y: 100, z: 1 }),
+    new Studio.Fill({ h: 279, s: 1, l: 0.7, a: 1 }),
+    new Studio.Root(),
   )
   renderer.render(ecs)
   return renderer.element
@@ -46,24 +56,30 @@ export const Rectangle = () => {
 
 export const RotatingOnXAxis = () => {
   const [near, far] = [500, -500]
-  const ecs = new ECS()
+  const ecs = new Studio.ECS()
   const viewport = { x: 0, y: 0, width: 500, height: 500 }
-  const renderer = new Renderer(viewport)
-  const camera = ecs.entity(orthographicProjection({ ...viewport, near, far }))
-  ecs.set(new ActiveCamera(camera))
+  const renderer = new Studio.renderer.WebGL2(viewport)
+  const camera = ecs.entity(
+    Studio.orthographicProjection({ ...viewport, near, far })
+  )
+  ecs.set(new Studio.ActiveCamera(camera))
   const plane = ecs.entity(
-    planeGeometry(),
-    new Translate({ x: viewport.width / 2, y: viewport.height / 2, z: 0 }),
-    new Rotate({ x: 0, y: 0, z: 0 }),
-    new Scale({ x: 100, y: 100, z: 1 }),
-    new Fill({ h: 279, s: 1, l: 0.7, a: 1 }),
-    new Root(),
+    Studio.planeGeometry(),
+    new Studio.Translate({
+      x: viewport.width / 2,
+      y: viewport.height / 2,
+      z: 0
+    }),
+    new Studio.Rotate({ x: 0, y: 0, z: 0 }),
+    new Studio.Scale({ x: 100, y: 100, z: 1 }),
+    new Studio.Fill({ h: 279, s: 1, l: 0.7, a: 1 }),
+    new Studio.Root(),
   )
   let previousTime = 0
   const update = (currentTime: number): void => {
     requestAnimationFrame(update)
     const deltaTime = currentTime - previousTime
-    plane.get(Rotate)!.x += deltaTime / 1000
+    plane.get(Studio.Rotate)!.x += deltaTime / 1000
     renderer.render(ecs)
     previousTime = currentTime
   }
@@ -73,24 +89,30 @@ export const RotatingOnXAxis = () => {
 
 export const RotatingOnYAxis = () => {
   const [near, far] = [500, -500]
-  const ecs = new ECS()
+  const ecs = new Studio.ECS()
   const viewport = { x: 0, y: 0, width: 500, height: 500 }
-  const renderer = new Renderer(viewport)
-  const camera = ecs.entity(orthographicProjection({ ...viewport, near, far }))
-  ecs.set(new ActiveCamera(camera))
+  const renderer = new Studio.renderer.WebGL2(viewport)
+  const camera = ecs.entity(
+    Studio.orthographicProjection({ ...viewport, near, far })
+  )
+  ecs.set(new Studio.ActiveCamera(camera))
   const plane = ecs.entity(
-    planeGeometry(),
-    new Translate({ x: viewport.width / 2, y: viewport.height / 2, z: 0 }),
-    new Rotate({ x: 0, y: 0, z: 0 }),
-    new Scale({ x: 100, y: 100, z: 1 }),
-    new Fill({ h: 279, s: 1, l: 0.7, a: 1 }),
-    new Root(),
+    Studio.planeGeometry(),
+    new Studio.Translate({
+      x: viewport.width / 2,
+      y: viewport.height / 2,
+      z: 0
+    }),
+    new Studio.Rotate({ x: 0, y: 0, z: 0 }),
+    new Studio.Scale({ x: 100, y: 100, z: 1 }),
+    new Studio.Fill({ h: 279, s: 1, l: 0.7, a: 1 }),
+    new Studio.Root(),
   )
   let previousTime = 0
   const update = (currentTime: number): void => {
     requestAnimationFrame(update)
     const deltaTime = currentTime - previousTime
-    plane.get(Rotate)!.y += deltaTime / 1000
+    plane.get(Studio.Rotate)!.y += deltaTime / 1000
     renderer.render(ecs)
     previousTime = currentTime
   }
@@ -100,24 +122,30 @@ export const RotatingOnYAxis = () => {
 
 export const RotatingOnZAxis = () => {
   const [near, far] = [500, -500]
-  const ecs = new ECS()
+  const ecs = new Studio.ECS()
   const viewport = { x: 0, y: 0, width: 500, height: 500 }
-  const renderer = new Renderer(viewport)
-  const camera = ecs.entity(orthographicProjection({ ...viewport, near, far }))
-  ecs.set(new ActiveCamera(camera))
+  const renderer = new Studio.renderer.WebGL2(viewport)
+  const camera = ecs.entity(
+    Studio.orthographicProjection({ ...viewport, near, far })
+  )
+  ecs.set(new Studio.ActiveCamera(camera))
   const plane = ecs.entity(
-    planeGeometry(),
-    new Translate({ x: viewport.width / 2, y: viewport.height / 2, z: 0 }),
-    new Rotate({ x: 0, y: 0, z: 0 }),
-    new Scale({ x: 100, y: 100, z: 1 }),
-    new Fill({ h: 279, s: 1, l: 0.7, a: 1 }),
-    new Root(),
+    Studio.planeGeometry(),
+    new Studio.Translate({
+      x: viewport.width / 2,
+      y: viewport.height / 2,
+      z: 0
+    }),
+    new Studio.Rotate({ x: 0, y: 0, z: 0 }),
+    new Studio.Scale({ x: 100, y: 100, z: 1 }),
+    new Studio.Fill({ h: 279, s: 1, l: 0.7, a: 1 }),
+    new Studio.Root(),
   )
   let previousTime = 0
   const update = (currentTime: number): void => {
     requestAnimationFrame(update)
     const deltaTime = currentTime - previousTime
-    plane.get(Rotate)!.z += deltaTime / 1000
+    plane.get(Studio.Rotate)!.z += deltaTime / 1000
     renderer.render(ecs)
     previousTime = currentTime
   }
@@ -127,18 +155,24 @@ export const RotatingOnZAxis = () => {
 
 export const RotatingOnAllAxis = () => {
   const [near, far] = [500, -500]
-  const ecs = new ECS()
+  const ecs = new Studio.ECS()
   const viewport = { x: 0, y: 0, width: 500, height: 500 }
-  const renderer = new Renderer(viewport)
-  const camera = ecs.entity(orthographicProjection({ ...viewport, near, far }))
-  ecs.set(new ActiveCamera(camera))
+  const renderer = new Studio.renderer.WebGL2(viewport)
+  const camera = ecs.entity(
+    Studio.orthographicProjection({ ...viewport, near, far })
+  )
+  ecs.set(new Studio.ActiveCamera(camera))
   const plane = ecs.entity(
-    planeGeometry(),
-    new Translate({ x: viewport.width / 2, y: viewport.height / 2, z: 0 }),
-    new Rotate({ x: 0, y: 0, z: 0 }),
-    new Scale({ x: 100, y: 100, z: 1 }),
-    new Fill({ h: 279, s: 1, l: 0.7, a: 1 }),
-    new Root(),
+    Studio.planeGeometry(),
+    new Studio.Translate({
+      x: viewport.width / 2,
+      y: viewport.height / 2,
+      z: 0
+    }),
+    new Studio.Rotate({ x: 0, y: 0, z: 0 }),
+    new Studio.Scale({ x: 100, y: 100, z: 1 }),
+    new Studio.Fill({ h: 279, s: 1, l: 0.7, a: 1 }),
+    new Studio.Root(),
   )
   let previousTime = 0
   let theta = 0
@@ -146,7 +180,7 @@ export const RotatingOnAllAxis = () => {
     requestAnimationFrame(update)
     const deltaTime = currentTime - previousTime
     theta += deltaTime / 1000
-    plane.set(new Rotate({ x: theta, y: theta, z: theta }))
+    plane.set(new Studio.Rotate({ x: theta, y: theta, z: theta }))
     renderer.render(ecs)
     previousTime = currentTime
   }
@@ -156,55 +190,58 @@ export const RotatingOnAllAxis = () => {
 
 export const ThreePlanes = () => {
   const [near, far] = [500, -500]
-  const ecs = new ECS()
+  const ecs = new Studio.ECS()
   const viewport = { x: 0, y: 0, width: 500, height: 500 }
-  const renderer = new Renderer(viewport)
-  const camera = ecs.entity(orthographicProjection({ ...viewport, near, far }))
-  ecs.set(new ActiveCamera(camera))
+  const renderer = new Studio.renderer.WebGL2(viewport)
+  const camera = ecs.entity(
+    Studio.orthographicProjection({ ...viewport, near, far })
+  )
+  ecs.set(new Studio.ActiveCamera(camera))
   const planes = [100, 250, 400].map(x => ecs.entity(
-    planeGeometry(),
-    new Translate({ x, y: x, z: 0 }),
-    new Rotate({ x: 0, y: 0, z: 0 }),
-    new Scale({ x: 100, y: 100, z: 1 }),
-    new Fill({ h: 279, s: 1, l: 0.7, a: 1 }),
-    new Root(),
+    Studio.planeGeometry(),
+    new Studio.Translate({ x, y: x, z: 0 }),
+    new Studio.Rotate({ x: 0, y: 0, z: 0 }),
+    new Studio.Scale({ x: 100, y: 100, z: 1 }),
+    new Studio.Fill({ h: 279, s: 1, l: 0.7, a: 1 }),
+    new Studio.Root(),
   ))
   let previousTime = 0
-  // const update = (currentTime: number): void => {
-  //   requestAnimationFrame(update)
-  //   const deltaTime = currentTime - previousTime
-  //   const theta = deltaTime / 1000
-  //   planes[0].get(Rotate)!.x += theta
-  //   planes[1].get(Rotate)!.y += theta
-  //   planes[2].get(Rotate)!.z += theta
-  //   renderer.render(ecs)
-  //   previousTime = currentTime
-  // }
-  // requestAnimationFrame(update)
-  renderer.render(ecs)
+  const update = (currentTime: number): void => {
+    requestAnimationFrame(update)
+    const deltaTime = currentTime - previousTime
+    const theta = deltaTime / 1000
+    planes[0].get(Studio.Rotate)!.x += theta
+    planes[1].get(Studio.Rotate)!.y += theta
+    planes[2].get(Studio.Rotate)!.z += theta
+    renderer.render(ecs)
+    previousTime = currentTime
+  }
+  requestAnimationFrame(update)
   return renderer.element
 }
 
 export const TrackMouse = () => {
   const [near, far] = [500, -500]
-  const ecs = new ECS()
+  const ecs = new Studio.ECS()
   const viewport = { x: 0, y: 0, width: 500, height: 500 }
-  const renderer = new Renderer(viewport)
-  const camera = ecs.entity(orthographicProjection({ ...viewport, near, far }))
-  ecs.set(new ActiveCamera(camera))
+  const renderer = new Studio.renderer.WebGL2(viewport)
+  const camera = ecs.entity(
+    Studio.orthographicProjection({ ...viewport, near, far })
+  )
+  ecs.set(new Studio.ActiveCamera(camera))
   let mouseHeld = false
   const addPlane = (x, y, h) =>
     ecs.entity(
-      planeGeometry(),
-      new Translate({ x, y, z: 0 }),
-      new Rotate({ x: 0, y: 0, z: 0 }),
-      new Scale({ x: 10, y: 10, z: 1 }),
-      new Fill({ h, s: 1, l: 0.7, a: 1 }),
-      new Root(),
+      Studio.planeGeometry(),
+      new Studio.Translate({ x, y, z: 0 }),
+      new Studio.Rotate({ x: 0, y: 0, z: 0 }),
+      new Studio.Scale({ x: 10, y: 10, z: 1 }),
+      new Studio.Fill({ h, s: 1, l: 0.7, a: 1 }),
+      new Studio.Root(),
     )
   const plane = addPlane(viewport.width / 2, viewport.height / 2, 279)
   document.addEventListener('pointermove', e => {
-    plane.set(new Translate({ x: e.x, y: e.y, z: 0 }))
+    plane.set(new Studio.Translate({ x: e.x, y: e.y, z: 0 }))
     if (mouseHeld) {
       for (const c of e.getCoalescedEvents()) {
         addPlane(c.x, c.y, Math.floor(Math.random() * 360))

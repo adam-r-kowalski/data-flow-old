@@ -259,9 +259,7 @@ export const TrackMouse = () => {
   const update = (currentTime: number) => {
     requestAnimationFrame(update)
     for (const entity of ecs.query(Studio.Rotate)) {
-      const rotate = entity.get(Studio.Rotate)!
-      const theta = (currentTime - lastTime) / 1000
-      rotate.x += theta
+      entity.get(Studio.Rotate)!.x += (currentTime - lastTime) / 1000
     }
     lastTime = currentTime
     renderer.render(ecs)

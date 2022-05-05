@@ -255,7 +255,18 @@ export const TrackMouse = () => {
     renderer.render(ecs)
   })
   document.addEventListener('mouseup', () => mouseHeld = false)
-  renderer.render(ecs)
+  let lastTime = 0
+  const update = (currentTime: number) => {
+    requestAnimationFrame(update)
+    for (const entity of ecs.query(Studio.Rotate)) {
+      const rotate = entity.get(Studio.Rotate)!
+      const theta = (currentTime - lastTime) / 1000
+      rotate.x += theta
+    }
+    lastTime = currentTime
+    renderer.render(ecs)
+  }
+  requestAnimationFrame(update)
   return renderer.element
 }
 

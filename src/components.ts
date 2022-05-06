@@ -36,6 +36,28 @@ export const orthographicProjection = ({ x, y, width, height, near, far }: Ortho
   )
 }
 
+interface Perspective {
+  fieldOfView: number
+  width: number
+  height: number
+  near: number
+  far: number
+}
+
+export const perspectiveProjection = ({ fieldOfView, width, height, near, far }: Perspective): Projection => {
+  const aspectRatio = width / height
+  const f = Math.tan(Math.PI * 0.5 - 0.5 * fieldOfView)
+  const rangeInv = 1.0 / (near - far)
+  return new Projection(
+    new Mat4x4([
+      f / aspectRatio, 0, 0, 0,
+      0, f, 0, 0,
+      0, 0, (near + far) * rangeInv, -1,
+      0, 0, near * far * rangeInv * 2, 0,
+    ])
+  )
+}
+
 export class ActiveCamera {
   entity: Entity
 
@@ -44,13 +66,18 @@ export class ActiveCamera {
   }
 }
 
+interface GeometryData {
+  vertices: number[]
+  indices: number[]
+}
+
 export class Geometry {
   vertices: number[]
   indices: number[]
 
-  constructor(vertices: number[], indices: number[]) {
-    this.vertices = vertices
-    this.indices = indices
+  constructor(data: GeometryData) {
+    this.vertices = data.vertices
+    this.indices = data.indices
   }
 }
 
@@ -152,20 +179,20 @@ export class Rotate {
 }
 
 export const planeGeometry = (): Geometry =>
-  new Geometry(
-    [
+  new Geometry({
+    vertices: [
       -0.5, -0.5, 0,
       -0.5, 0.5, 0,
       0.5, 0.5, 0,
       0.5, -0.5, 0,
     ],
-    [
+    indices: [
       0, 1, 2,
       3, 0, 2,
       2, 1, 0,
       2, 0, 3,
     ]
-  )
+  })
 
 interface Hsla {
   h: number

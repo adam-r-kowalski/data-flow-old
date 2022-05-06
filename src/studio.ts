@@ -2,6 +2,7 @@ export * as renderer from './renderer'
 export { ECS, Entity } from './ecs'
 export {
   orthographicProjection,
+  perspectiveProjection,
   ActiveCamera,
   Geometry,
   planeGeometry,

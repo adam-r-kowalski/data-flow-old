@@ -42,7 +42,7 @@ export class Entity {
     this.ecs = ecs
   }
 
-  set = (...components: any): void => {
+  set = (...components: any): Entity => {
     for (const component of components) {
       const Type = component.constructor
       let storage = this.ecs.storages.get(Type)
@@ -52,6 +52,7 @@ export class Entity {
       }
       storage.set(this, component)
     }
+    return this
   }
 
   get = <T>(Type: Component<T>): T | undefined => {

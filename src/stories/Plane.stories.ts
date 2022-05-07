@@ -79,7 +79,7 @@ export const RotatingOnXAxis = () => {
   const update = (currentTime: number): void => {
     requestAnimationFrame(update)
     const deltaTime = currentTime - previousTime
-    plane.get(Studio.Rotate)!.x += deltaTime / 1000
+    plane.update(Studio.Rotate, rotate => rotate.x += deltaTime / 1000)
     renderer.render(ecs)
     previousTime = currentTime
   }
@@ -112,7 +112,7 @@ export const RotatingOnYAxis = () => {
   const update = (currentTime: number): void => {
     requestAnimationFrame(update)
     const deltaTime = currentTime - previousTime
-    plane.get(Studio.Rotate)!.y += deltaTime / 1000
+    plane.update(Studio.Rotate, rotate => rotate.y += deltaTime / 1000)
     renderer.render(ecs)
     previousTime = currentTime
   }
@@ -145,7 +145,7 @@ export const RotatingOnZAxis = () => {
   const update = (currentTime: number): void => {
     requestAnimationFrame(update)
     const deltaTime = currentTime - previousTime
-    plane.get(Studio.Rotate)!.z += deltaTime / 1000
+    plane.update(Studio.Rotate, rotate => rotate.z += deltaTime / 1000)
     renderer.render(ecs)
     previousTime = currentTime
   }
@@ -180,7 +180,11 @@ export const RotatingOnAllAxis = () => {
     requestAnimationFrame(update)
     const deltaTime = currentTime - previousTime
     theta += deltaTime / 1000
-    plane.set(new Studio.Rotate({ x: theta, y: theta, z: theta }))
+    plane.update(Studio.Rotate, rotate => {
+      rotate.x = theta
+      rotate.y = theta
+      rotate.z = theta
+    })
     renderer.render(ecs)
     previousTime = currentTime
   }
@@ -210,9 +214,9 @@ export const ThreePlanes = () => {
     requestAnimationFrame(update)
     const deltaTime = currentTime - previousTime
     const theta = deltaTime / 1000
-    planes[0].get(Studio.Rotate)!.x += theta
-    planes[1].get(Studio.Rotate)!.y += theta
-    planes[2].get(Studio.Rotate)!.z += theta
+    planes[0].update(Studio.Rotate, rotate => rotate.x += theta)
+    planes[1].update(Studio.Rotate, rotate => rotate.y += theta)
+    planes[2].update(Studio.Rotate, rotate => rotate.z += theta)
     renderer.render(ecs)
     previousTime = currentTime
   }
@@ -259,7 +263,7 @@ export const TrackMouse = () => {
   const update = (currentTime: number) => {
     requestAnimationFrame(update)
     for (const entity of ecs.query(Studio.Rotate)) {
-      entity.get(Studio.Rotate)!.x += (currentTime - lastTime) / 1000
+      entity.update(Studio.Rotate, rotate => rotate.x += (currentTime - lastTime) / 1000)
     }
     lastTime = currentTime
     renderer.render(ecs)

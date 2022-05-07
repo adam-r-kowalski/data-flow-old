@@ -98,3 +98,22 @@ test("set and get resource", () => {
   ecs.set(new Score(20))
   expect(ecs.get(Score)!.value).toEqual(20)
 })
+
+test("update component", () => {
+  class Name {
+    constructor(public value: string) { }
+  }
+
+  class Age {
+    constructor(public value: number) { }
+  }
+
+  const ecs = new ECS()
+  const joe = ecs.entity()
+  joe.set(new Name("Joe"), new Age(20))
+  expect(joe.get(Name)!.value).toEqual("Joe")
+  expect(joe.get(Age)!.value).toEqual(20)
+  joe.update(Age, age => age.value += 1)
+  expect(joe.get(Name)!.value).toEqual("Joe")
+  expect(joe.get(Age)!.value).toEqual(21)
+})

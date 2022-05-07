@@ -49,10 +49,11 @@ export const Single = () => {
   let previousTime = 0
   const update = (currentTime: number) => {
     requestAnimationFrame(update)
-    const rotate = pyramid.get(Studio.Rotate)!
     const delta = (currentTime - previousTime) / 1000
-    rotate.y += delta
-    rotate.x += delta
+    pyramid.update(Studio.Rotate, rotate => {
+      rotate.y += delta
+      rotate.x += delta
+    })
     previousTime = currentTime
     renderer.render(ecs)
   }
@@ -120,7 +121,7 @@ export const SierpinskiPyramid = () => {
     requestAnimationFrame(update)
     const delta = currentTime - previousTime
     for (const entity of ecs.query(Studio.Rotate)) {
-      entity.get(Studio.Rotate)!.y += delta / 5000
+      entity.update(Studio.Rotate, rotate => rotate.y += delta / 5000)
     }
     previousTime = currentTime
     renderer.render(ecs)

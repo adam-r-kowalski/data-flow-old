@@ -384,9 +384,10 @@ export const Orthographic = () => {
   const update = (currentTime: number) => {
     requestAnimationFrame(update)
     const delta = (currentTime - lastTime) / 1000
-    const rotate = f.get(Studio.Rotate)!
-    rotate.y += delta
-    rotate.x += delta / 2
+    f.update(Studio.Rotate, rotate => {
+      rotate.y += delta
+      rotate.x += delta / 2
+    })
     renderer.render(ecs)
     lastTime = currentTime
   }
@@ -408,9 +409,10 @@ export const Perspective = () => {
   const update = (currentTime: number) => {
     requestAnimationFrame(update)
     const delta = (currentTime - lastTime) / 1000
-    const rotate = f.get(Studio.Rotate)!
-    rotate.y += delta
-    rotate.x += delta / 2
+    f.update(Studio.Rotate, rotate => {
+      rotate.y += delta
+      rotate.x += delta / 2
+    })
     renderer.render(ecs)
     lastTime = currentTime
   }

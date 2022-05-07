@@ -34,13 +34,7 @@ class Storage<T> {
 }
 
 export class Entity {
-  id: number
-  ecs: ECS
-
-  constructor(id: number, ecs: ECS) {
-    this.id = id
-    this.ecs = ecs
-  }
+  constructor(public id: number, public ecs: ECS) { }
 
   set = (...components: any): Entity => {
     for (const component of components) {
@@ -55,9 +49,17 @@ export class Entity {
     return this
   }
 
-  get = <T>(Type: Component<T>): T | undefined => {
+  get = <T>(Type: Component<T>): Readonly<T> | undefined => {
     const storage = this.ecs.storages.get(Type)
     return storage ? storage.get(this) : undefined
+  }
+
+  update = <T>(Type: Component<T>, f: (c: T) => void): void => {
+    const storage = this.ecs.storages.get(Type) as Storage<T>
+    if (!storage) return
+    const component = storage.get(this)
+    if (!component) return
+    f(component)
   }
 }
 
@@ -80,7 +82,8 @@ export class ECS {
   }
 
   query = function*(...components: any): Generator<Entity> {
-    const primary = this.storages.get(components[0])!
+    const primary = this.storages.get(components[0])
+    if (!primary) return
     const secondary = components.slice(1).map(s => this.storages.get(s))
     for (const id of primary.inverses) {
       if (secondary.every(storage => storage.hasId(id))) {

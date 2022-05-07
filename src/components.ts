@@ -2,11 +2,7 @@ import { Mat4x4 } from './linear_algebra'
 import { Entity } from './ecs'
 
 export class Projection {
-  matrix: Mat4x4
-
-  constructor(matrix: Mat4x4) {
-    this.matrix = matrix
-  }
+  constructor(public matrix: Mat4x4) { }
 }
 
 interface Orthographic {
@@ -59,11 +55,7 @@ export const perspectiveProjection = ({ fieldOfView, width, height, near, far }:
 }
 
 export class ActiveCamera {
-  entity: Entity
-
-  constructor(camera: Entity) {
-    this.entity = camera
-  }
+  constructor(public entity: Entity) { }
 }
 
 interface GeometryData {
@@ -216,11 +208,7 @@ export class Fill {
 }
 
 export class Children {
-  entities: Entity[]
-
-  constructor(entities: Entity[]) {
-    this.entities = entities
-  }
+  constructor(public entities: Entity[]) { }
 }
 
 export class Root { }

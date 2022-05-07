@@ -4,10 +4,10 @@ const ecs = new Studio.ECS()
 
 let viewport = { x: 0, y: 0, width: 500, height: 500 }
 
-
 const renderer = new Studio.renderer.WebGL2(viewport)
 renderer.element.style.width = '100%'
 renderer.element.style.height = '100%'
+renderer.element.style.touchAction = 'none'
 document.body.appendChild(renderer.element)
 
 const camera = ecs.entity()
@@ -33,7 +33,6 @@ const addPlane = (x, y, h) =>
     new Studio.Fill({ h, s: 1, l: 0.7, a: 1 }),
     new Studio.Root(),
   )
-const plane = addPlane(viewport.width / 2, viewport.height / 2, 279)
 
 let mouseHeld = false
 
@@ -43,23 +42,32 @@ document.addEventListener('mousedown', e => {
   renderer.render(ecs)
 })
 
-document.addEventListener('mouseup', () => mouseHeld = false)
+document.addEventListener('mouseup', e => {
+  mouseHeld = false
+})
+
 let lastTime = 0
 const update = (currentTime: number) => {
   requestAnimationFrame(update)
   for (const entity of ecs.query(Studio.Rotate)) {
-    entity.get(Studio.Rotate)!.x += (currentTime - lastTime) / 1000
+    entity.update(Studio.Rotate, rotate => rotate.x += (currentTime - lastTime) / 1000)
   }
   lastTime = currentTime
   renderer.render(ecs)
 }
 
 document.addEventListener('pointermove', e => {
-  plane.set(new Studio.Translate({ x: e.x, y: e.y, z: 0 }))
   if (mouseHeld) {
     for (const c of e.getCoalescedEvents()) {
       addPlane(c.x, c.y, Math.floor(Math.random() * 360))
     }
+  }
+  renderer.render(ecs)
+})
+
+document.addEventListener('touchmove', e => {
+  for (const touch of e.touches) {
+    addPlane(touch.clientX, touch.clientY, Math.floor(Math.random() * 360))
   }
   renderer.render(ecs)
 })

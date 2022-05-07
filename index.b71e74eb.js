@@ -525,6 +525,7 @@ let viewport = {
 const renderer = new _studio.renderer.WebGL2(viewport);
 renderer.element.style.width = '100%';
 renderer.element.style.height = '100%';
+renderer.element.style.touchAction = 'none';
 document.body.appendChild(renderer.element);
 const camera = ecs.entity();
 ecs.set(new _studio.ActiveCamera(camera));
@@ -563,29 +564,29 @@ const addPlane = (x, y, h)=>ecs.entity(_studio.planeGeometry(), new _studio.Tran
         a: 1
     }), new _studio.Root())
 ;
-const plane = addPlane(viewport.width / 2, viewport.height / 2, 279);
 let mouseHeld = false;
 document.addEventListener('mousedown', (e)=>{
     mouseHeld = true;
     addPlane(e.x, e.y, Math.floor(Math.random() * 360));
     renderer.render(ecs);
 });
-document.addEventListener('mouseup', ()=>mouseHeld = false
-);
+document.addEventListener('mouseup', (e)=>{
+    mouseHeld = false;
+});
 let lastTime = 0;
 const update = (currentTime)=>{
     requestAnimationFrame(update);
-    for (const entity of ecs.query(_studio.Rotate))entity.get(_studio.Rotate).x += (currentTime - lastTime) / 1000;
+    for (const entity of ecs.query(_studio.Rotate))entity.update(_studio.Rotate, (rotate)=>rotate.x += (currentTime - lastTime) / 1000
+    );
     lastTime = currentTime;
     renderer.render(ecs);
 };
 document.addEventListener('pointermove', (e)=>{
-    plane.set(new _studio.Translate({
-        x: e.x,
-        y: e.y,
-        z: 0
-    }));
     if (mouseHeld) for (const c of e.getCoalescedEvents())addPlane(c.x, c.y, Math.floor(Math.random() * 360));
+    renderer.render(ecs);
+});
+document.addEventListener('touchmove', (e)=>{
+    for (const touch of e.touches)addPlane(touch.clientX, touch.clientY, Math.floor(Math.random() * 360));
     renderer.render(ecs);
 });
 requestAnimationFrame(update);
@@ -600,6 +601,8 @@ parcelHelpers.export(exports, "ECS", ()=>_ecs.ECS
 parcelHelpers.export(exports, "Entity", ()=>_ecs.Entity
 );
 parcelHelpers.export(exports, "orthographicProjection", ()=>_components.orthographicProjection
+);
+parcelHelpers.export(exports, "perspectiveProjection", ()=>_components.perspectiveProjection
 );
 parcelHelpers.export(exports, "ActiveCamera", ()=>_components.ActiveCamera
 );
@@ -804,6 +807,8 @@ parcelHelpers.export(exports, "Projection", ()=>Projection
 );
 parcelHelpers.export(exports, "orthographicProjection", ()=>orthographicProjection
 );
+parcelHelpers.export(exports, "perspectiveProjection", ()=>perspectiveProjection
+);
 parcelHelpers.export(exports, "ActiveCamera", ()=>ActiveCamera
 );
 parcelHelpers.export(exports, "Geometry", ()=>Geometry
@@ -852,15 +857,38 @@ const orthographicProjection = ({ x , y , width , height , near , far  })=>{
         1
     ]));
 };
+const perspectiveProjection = ({ fieldOfView , width , height , near , far  })=>{
+    const aspectRatio = width / height;
+    const f = Math.tan(Math.PI * 0.5 - 0.5 * fieldOfView);
+    const rangeInv = 1 / (near - far);
+    return new Projection(new _linearAlgebra.Mat4x4([
+        f / aspectRatio,
+        0,
+        0,
+        0,
+        0,
+        f,
+        0,
+        0,
+        0,
+        0,
+        (near + far) * rangeInv,
+        -1,
+        0,
+        0,
+        near * far * rangeInv * 2,
+        0, 
+    ]));
+};
 class ActiveCamera {
-    constructor(camera){
-        this.entity = camera;
+    constructor(entity){
+        this.entity = entity;
     }
 }
 class Geometry {
-    constructor(vertices, indices){
-        this.vertices = vertices;
-        this.indices = indices;
+    constructor(data){
+        this.vertices = data.vertices;
+        this.indices = data.indices;
     }
 }
 class Translate {
@@ -993,33 +1021,36 @@ class Rotate {
     matrix = ()=>this.xMatrix().mul(this.yMatrix()).mul(this.zMatrix())
     ;
 }
-const planeGeometry = ()=>new Geometry([
-        -0.5,
-        -0.5,
-        0,
-        -0.5,
-        0.5,
-        0,
-        0.5,
-        0.5,
-        0,
-        0.5,
-        -0.5,
-        0, 
-    ], [
-        0,
-        1,
-        2,
-        3,
-        0,
-        2,
-        2,
-        1,
-        0,
-        2,
-        0,
-        3, 
-    ])
+const planeGeometry = ()=>new Geometry({
+        vertices: [
+            -0.5,
+            -0.5,
+            0,
+            -0.5,
+            0.5,
+            0,
+            0.5,
+            0.5,
+            0,
+            0.5,
+            -0.5,
+            0, 
+        ],
+        indices: [
+            0,
+            1,
+            2,
+            3,
+            0,
+            2,
+            2,
+            1,
+            0,
+            2,
+            0,
+            3, 
+        ]
+    })
 ;
 class Fill {
     constructor(hsla){
@@ -1045,29 +1076,29 @@ parcelHelpers.export(exports, "Mat4x4", ()=>Mat4x4
 class Mat4x4 {
     constructor(data){
         this.data = data;
+        this.mul = (other)=>{
+            const a = this.data;
+            const b = other.data;
+            return new Mat4x4([
+                b[0] * a[0] + b[1] * a[4] + b[2] * a[8] + b[3] * a[12],
+                b[0] * a[1] + b[1] * a[5] + b[2] * a[9] + b[3] * a[13],
+                b[0] * a[2] + b[1] * a[6] + b[2] * a[10] + b[3] * a[14],
+                b[0] * a[3] + b[1] * a[7] + b[2] * a[11] + b[3] * a[15],
+                b[4] * a[0] + b[5] * a[4] + b[6] * a[8] + b[7] * a[12],
+                b[4] * a[1] + b[5] * a[5] + b[6] * a[9] + b[7] * a[13],
+                b[4] * a[2] + b[5] * a[6] + b[6] * a[10] + b[7] * a[14],
+                b[4] * a[3] + b[5] * a[7] + b[6] * a[11] + b[7] * a[15],
+                b[8] * a[0] + b[9] * a[4] + b[10] * a[8] + b[11] * a[12],
+                b[8] * a[1] + b[9] * a[5] + b[10] * a[9] + b[11] * a[13],
+                b[8] * a[2] + b[9] * a[6] + b[10] * a[10] + b[11] * a[14],
+                b[8] * a[3] + b[9] * a[7] + b[10] * a[11] + b[11] * a[15],
+                b[12] * a[0] + b[13] * a[4] + b[14] * a[8] + b[15] * a[12],
+                b[12] * a[1] + b[13] * a[5] + b[14] * a[9] + b[15] * a[13],
+                b[12] * a[2] + b[13] * a[6] + b[14] * a[10] + b[15] * a[14],
+                b[12] * a[3] + b[13] * a[7] + b[14] * a[11] + b[15] * a[15], 
+            ]);
+        };
     }
-    mul = (other)=>{
-        const a = this.data;
-        const b = other.data;
-        return new Mat4x4([
-            b[0] * a[0] + b[1] * a[4] + b[2] * a[8] + b[3] * a[12],
-            b[0] * a[1] + b[1] * a[5] + b[2] * a[9] + b[3] * a[13],
-            b[0] * a[2] + b[1] * a[6] + b[2] * a[10] + b[3] * a[14],
-            b[0] * a[3] + b[1] * a[7] + b[2] * a[11] + b[3] * a[15],
-            b[4] * a[0] + b[5] * a[4] + b[6] * a[8] + b[7] * a[12],
-            b[4] * a[1] + b[5] * a[5] + b[6] * a[9] + b[7] * a[13],
-            b[4] * a[2] + b[5] * a[6] + b[6] * a[10] + b[7] * a[14],
-            b[4] * a[3] + b[5] * a[7] + b[6] * a[11] + b[7] * a[15],
-            b[8] * a[0] + b[9] * a[4] + b[10] * a[8] + b[11] * a[12],
-            b[8] * a[1] + b[9] * a[5] + b[10] * a[9] + b[11] * a[13],
-            b[8] * a[2] + b[9] * a[6] + b[10] * a[10] + b[11] * a[14],
-            b[8] * a[3] + b[9] * a[7] + b[10] * a[11] + b[11] * a[15],
-            b[12] * a[0] + b[13] * a[4] + b[14] * a[8] + b[15] * a[12],
-            b[12] * a[1] + b[13] * a[5] + b[14] * a[9] + b[15] * a[13],
-            b[12] * a[2] + b[13] * a[6] + b[14] * a[10] + b[15] * a[14],
-            b[12] * a[3] + b[13] * a[7] + b[14] * a[11] + b[15] * a[15], 
-        ]);
-    };
 }
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"gkKU3":[function(require,module,exports) {
@@ -1136,22 +1167,30 @@ class Entity {
     constructor(id, ecs){
         this.id = id;
         this.ecs = ecs;
-    }
-    set = (...components)=>{
-        for (const component of components){
-            const Type = component.constructor;
-            let storage = this.ecs.storages.get(Type);
-            if (!storage) {
-                storage = new Storage();
-                this.ecs.storages.set(Type, storage);
+        this.set = (...components)=>{
+            for (const component of components){
+                const Type = component.constructor;
+                let storage = this.ecs.storages.get(Type);
+                if (!storage) {
+                    storage = new Storage();
+                    this.ecs.storages.set(Type, storage);
+                }
+                storage.set(this, component);
             }
-            storage.set(this, component);
-        }
-    };
-    get = (Type)=>{
-        const storage = this.ecs.storages.get(Type);
-        return storage ? storage.get(this) : undefined;
-    };
+            return this;
+        };
+        this.get = (Type)=>{
+            const storage = this.ecs.storages.get(Type);
+            return storage ? storage.get(this) : undefined;
+        };
+        this.update = (Type, f)=>{
+            const storage = this.ecs.storages.get(Type);
+            if (!storage) return;
+            const component = storage.get(this);
+            if (!component) return;
+            f(component);
+        };
+    }
 }
 class ECS {
     constructor(){
@@ -1167,6 +1206,7 @@ class ECS {
     };
     query = function*(...components) {
         const primary = this.storages.get(components[0]);
+        if (!primary) return;
         const secondary = components.slice(1).map((s)=>this.storages.get(s)
         );
         for (const id of primary.inverses)if (secondary.every((storage)=>storage.hasId(id)

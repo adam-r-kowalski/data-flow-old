@@ -212,3 +212,7 @@ export class Children {
 }
 
 export class Root { }
+
+export class LookAt {
+  constructor(public entity: Entity) { }
+}

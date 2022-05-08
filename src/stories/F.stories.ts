@@ -343,6 +343,7 @@ const F = (ecs: Studio.ECS): Studio.Entity =>
     new Studio.Translate({ x: 0, y: 0, z: 0 }),
     new Studio.Rotate({ x: 0, y: 0, z: 0 }),
     new Studio.Scale({ x: 1, y: 1, z: 1 }),
+    new Studio.Root(),
     new Studio.Children([
       leftColumnFront(ecs),
       topRungFront(ecs),
@@ -361,7 +362,6 @@ const F = (ecs: Studio.ECS): Studio.Entity =>
       bottom(ecs),
       leftSide(ecs),
     ]),
-    new Studio.Root()
   )
 
 export const Orthographic = () => {
@@ -378,7 +378,7 @@ export const Orthographic = () => {
       x: viewport.width / 2,
       y: viewport.height / 2,
       z: 0
-    })
+    }),
   )
   let lastTime = 0
   const update = (currentTime: number) => {
@@ -420,3 +420,69 @@ export const Perspective = () => {
   return renderer.element
 }
 
+export const ManyFs = () => {
+  const [near, far, fieldOfView] = [1, 2000, Math.PI / 2]
+  const ecs = new Studio.ECS()
+  const viewport = { x: 0, y: 0, width: 1000, height: 1000 }
+  const renderer = new Studio.renderer.WebGL2(viewport)
+  const numFs = 5
+  const radius = 300
+  const fs = Array.from({ length: numFs }, (v, i) => {
+    const angle = i * Math.PI * 2 / numFs
+    const x = Math.cos(angle) * radius
+    const z = Math.sin(angle) * radius
+    return F(ecs).set(
+      new Studio.Translate({ x, y: 0, z }),
+      new Studio.Rotate({ x: 0, y: Math.PI, z: Math.PI })
+    )
+  })
+  const camera = ecs.entity(
+    Studio.perspectiveProjection({ ...viewport, near, far, fieldOfView }),
+    new Studio.Translate({ x: 0, y: -50, z: radius * 2 }),
+    new Studio.Rotate({ x: 0, y: 0, z: 0 }),
+    new Studio.Scale({ x: 1, y: 1, z: 1 }),
+    new Studio.LookAt(fs[0]),
+  )
+  ecs.set(new Studio.ActiveCamera(camera))
+  let move = new Studio.Vec3(0, 0, 0)
+  let moveForward = 0
+  let moveBackward = 0
+  let moveLeft = 0
+  let moveRight = 0
+  let moveUp = 0
+  let moveDown = 0
+  document.addEventListener('keydown', e => {
+    if (e.key == 'e') moveForward = 1
+    else if (e.key == 'd') moveBackward = 1
+    else if (e.key == 's') moveLeft = 1
+    else if (e.key == 'f') moveRight = 1
+    else if (e.key == 'r') moveUp = 1
+    else if (e.key == 'w') moveDown = 1
+  })
+  document.addEventListener('keyup', e => {
+    if (e.key == 'e') moveForward = 0
+    else if (e.key == 'd') moveBackward = 0
+    else if (e.key == 's') moveLeft = 0
+    else if (e.key == 'f') moveRight = 0
+    else if (e.key == 'r') moveUp = 0
+    else if (e.key == 'w') moveDown = 0
+  })
+  let then = 0
+  const speed = 300
+  const update = (now: number) => {
+    requestAnimationFrame(update)
+    const delta = (now - then) / 1000 * speed
+    let move = new Studio.Vec3(moveRight - moveLeft, moveUp - moveDown, moveBackward - moveForward)
+      .normalize()
+      .scale(delta)
+    camera.update(Studio.Translate, translate => {
+      translate.x += move.x
+      translate.y += move.y
+      translate.z += move.z
+    })
+    then = now
+    renderer.render(ecs)
+  }
+  requestAnimationFrame(update)
+  return renderer.element
+}

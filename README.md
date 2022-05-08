@@ -1,1 +1,3 @@
-# Automation Engine
+# Studio
+
+Studio helps you bring your ideas to life.

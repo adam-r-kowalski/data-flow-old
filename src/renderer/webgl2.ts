@@ -143,12 +143,17 @@ void main() {
       }
     }
     const camera = ecs.get(ActiveCamera)!.entity
-    const view = camera.get(Projection)!.matrix
+    const projection = camera.get(Projection)!.matrix
+    const view = camera.get(Translate)!.matrix()
+      .mul(camera.get(Rotate)!.matrix())
+      .mul(camera.get(Scale)!.matrix())
+      .inverse()
+    const viewProjection = projection.mul(view)
     for (const root of ecs.query(Root)) {
       const localTransform = root.get(Translate)!.matrix()
         .mul(root.get(Rotate)!.matrix())
         .mul(root.get(Scale)!.matrix())
-      const transform = view.mul(localTransform)
+      const transform = viewProjection.mul(localTransform)
       const renderData = { transform, entity: root }
       yield renderData
       yield* renderChildren(renderData)
@@ -159,8 +164,6 @@ void main() {
     const start = performance.now()
     const gl = this.gl
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-    const camera = ecs.get(ActiveCamera)!.entity
-    const view = camera.get(Projection)!.matrix
     let positions: number[] = []
     let vertexIndices: number[] = []
     let indices: number[] = []

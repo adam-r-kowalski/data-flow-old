@@ -11,5 +11,7 @@ export {
   Scale,
   Fill,
   Root,
-  Children
+  Children,
+  LookAt,
 } from './components'
+export { Mat4x4, Vec3 } from './linear_algebra'

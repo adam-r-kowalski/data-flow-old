@@ -1,4 +1,4 @@
-import { ECS } from '../src/ecs'
+import { ECS, Entity } from '../src/ecs'
 
 test("create entity", () => {
   const ecs = new ECS()
@@ -116,4 +116,84 @@ test("update component", () => {
   joe.update(Age, age => age.value += 1)
   expect(joe.get(Name)!.value).toEqual("Joe")
   expect(joe.get(Age)!.value).toEqual(21)
+})
+
+test("on change", () => {
+  class X {
+    constructor(public value: number) { }
+  }
+
+  class X2 {
+    constructor(public value: number) { }
+  }
+
+  const ecs = new ECS()
+  const entity = ecs.entity()
+  expect(entity.get(X)).toBeUndefined()
+  expect(entity.get(X2)).toBeUndefined()
+  ecs.onChange(X, entity => {
+    const x = entity.get(X)!.value
+    entity.set(new X2(x * x))
+  })
+  entity.set(new X(4))
+  expect(entity.get(X2)!.value).toBe(16)
+  entity.set(new X(5))
+  expect(entity.get(X2)!.value).toBe(25)
+  entity.update(X, x => x.value += 1)
+  expect(entity.get(X2)!.value).toBe(36)
+})
+
+test("on change fires once when setting multiple components", () => {
+  class X { constructor(public value: number) { } }
+  class Y { constructor(public value: number) { } }
+  class Z { constructor(public value: number) { } }
+  const ecs = new ECS()
+  const entity = ecs.entity()
+  let count = 0
+  const handler = () => count += 1
+  ecs.onChange(X, handler)
+  ecs.onChange(Y, handler)
+  ecs.onChange(Z, handler)
+  entity.set(new X(1), new Y(1), new Z(1))
+  expect(count).toEqual(1)
+})
+
+test("on change fires once per update", () => {
+  class X { constructor(public value: number) { } }
+  class Y { constructor(public value: number) { } }
+  class Z { constructor(public value: number) { } }
+  const ecs = new ECS()
+  const entity = ecs.entity()
+  let count = 0
+  const handler = () => count += 1
+  entity.set(new X(1), new Y(1), new Z(1))
+  ecs.onChange(X, handler)
+  ecs.onChange(Y, handler)
+  ecs.onChange(Z, handler)
+  entity.update(X, x => x.value += 1)
+  entity.update(Y, y => y.value += 1)
+  entity.update(Z, z => z.value += 1)
+  expect(count).toEqual(3)
+})
+
+test("on change fires once per bulk update", () => {
+  class X { constructor(public value: number) { } }
+  class Y { constructor(public value: number) { } }
+  class Z { constructor(public value: number) { } }
+  const ecs = new ECS()
+  const entity = ecs.entity()
+  let count = 0
+  const handler = () => count += 1
+  entity.set(new X(1), new Y(1), new Z(1))
+  ecs.onChange(X, handler)
+  ecs.onChange(Y, handler)
+  ecs.onChange(Z, handler)
+  entity.bulkUpdate(X, x => x.value += 1)
+    .update(Y, y => y.value += 2)
+    .update(Z, z => z.value += 3)
+    .dispatch()
+  expect(count).toEqual(1)
+  expect(entity.get(X)!.value).toEqual(2)
+  expect(entity.get(Y)!.value).toEqual(3)
+  expect(entity.get(Z)!.value).toEqual(4)
 })

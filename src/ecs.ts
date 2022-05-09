@@ -33,12 +33,48 @@ class Storage<T> {
   }
 }
 
+type OnChange = (entity: Entity) => void
+
+class BulkUpdate {
+  constructor(
+    public entity: Entity,
+    public handlers: Map<Component<any>, (any) => void>
+  ) { }
+
+  update = <T>(Type: Component<T>, f: (T) => void): BulkUpdate => {
+    this.handlers.set(Type, f)
+    return this
+  }
+
+  dispatch = (): void => {
+    const handlers = new Set<(Entity) => void>()
+    for (const [Type, handler] of this.handlers) {
+      const storage = this.entity.ecs.storages.get(Type)
+      if (!storage) continue
+      const component = storage.get(this.entity)
+      if (!component) continue
+      handler(component)
+      const typeHandlers = this.entity.ecs.subscriptions.get(Type)
+      if (!typeHandlers) continue
+      for (const handler of typeHandlers) handlers.add(handler)
+    }
+    for (const handler of handlers) handler(this.entity)
+  }
+}
+
 export class Entity {
   constructor(public id: number, public ecs: ECS) { }
 
   set = (...components: any): Entity => {
+    const handlers = new Set<OnChange>()
     for (const component of components) {
       const Type = component.constructor
+      const typeHandlers = this.ecs.subscriptions.get(Type)
+      if (typeHandlers) {
+        for (const handler of typeHandlers) {
+          handlers.add(handler)
+        }
+      }
       let storage = this.ecs.storages.get(Type)
       if (!storage) {
         storage = new Storage()
@@ -46,6 +82,7 @@ export class Entity {
       }
       storage.set(this, component)
     }
+    for (const handler of handlers) handler(this)
     return this
   }
 
@@ -60,6 +97,15 @@ export class Entity {
     const component = storage.get(this)
     if (!component) return
     f(component)
+    const handlers = this.ecs.subscriptions.get(Type)
+    if (!handlers) return
+    for (const handler of handlers) handler(this)
+  }
+
+  bulkUpdate = <T>(Type: Component<T>, f: (c: T) => void): BulkUpdate => {
+    const handlers = new Map()
+    handlers.set(Type, f)
+    return new BulkUpdate(this, handlers)
   }
 }
 
@@ -67,11 +113,13 @@ export class ECS {
   nextEntityId: number
   storages: Map<Component<any>, Storage<any>>
   resources: Map<Component<any>, any>
+  subscriptions: Map<Component<any>, Set<OnChange>>
 
   constructor() {
     this.nextEntityId = 0
     this.storages = new Map()
     this.resources = new Map()
+    this.subscriptions = new Map()
   }
 
   entity = (...components: any): Entity => {
@@ -101,5 +149,11 @@ export class ECS {
 
   get = <T>(Type: Component<T>): T | undefined => {
     return this.resources.get(Type)
+  }
+
+  onChange = (Type: Component<any>, handler: OnChange): void => {
+    const handlers = this.subscriptions.get(Type)
+    if (handlers) handlers.add(handler)
+    else this.subscriptions.set(Type, new Set([handler]))
   }
 }

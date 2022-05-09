@@ -9,21 +9,17 @@ export const Square = () => {
   const ecs = new Studio.ECS()
   const viewport = { x: 0, y: 0, width: 500, height: 500 }
   const renderer = new Studio.renderer.WebGL2(viewport)
-  const camera = ecs.entity(
-    Studio.orthographicProjection({ ...viewport, near, far }),
-    new Studio.Translate({ x: 0, y: 0, z: 0 }),
-    new Studio.Rotate({ x: 0, y: 0, z: 0 }),
-    new Studio.Scale({ x: 1, y: 1, z: 1 }),
-  )
+  const camera = Studio
+    .physicalEntity(ecs)
+    .set(Studio.orthographicProjection({ ...viewport, near, far }))
   ecs.set(new Studio.ActiveCamera(camera))
-  ecs.entity(
+  Studio.physicalEntity(ecs).set(
     Studio.planeGeometry(),
     new Studio.Translate({
       x: viewport.width / 2,
       y: viewport.height / 2,
       z: 0
     }),
-    new Studio.Rotate({ x: 0, y: 0, z: 0 }),
     new Studio.Scale({ x: 100, y: 100, z: 1 }),
     new Studio.Fill({ h: 279, s: 1, l: 0.7, a: 1 }),
     new Studio.Root(),
@@ -37,12 +33,9 @@ export const Rectangle = () => {
   const ecs = new Studio.ECS()
   const viewport = { x: 0, y: 0, width: 500, height: 500 }
   const renderer = new Studio.renderer.WebGL2(viewport)
-  const camera = ecs.entity(
-    Studio.orthographicProjection({ ...viewport, near, far }),
-    new Studio.Translate({ x: 0, y: 0, z: 0 }),
-    new Studio.Rotate({ x: 0, y: 0, z: 0 }),
-    new Studio.Scale({ x: 1, y: 1, z: 1 }),
-  )
+  const camera = Studio
+    .physicalEntity(ecs)
+    .set(Studio.orthographicProjection({ ...viewport, near, far }))
   ecs.set(new Studio.ActiveCamera(camera))
   ecs.entity(
     Studio.planeGeometry(),
@@ -65,12 +58,9 @@ export const RotatingOnXAxis = () => {
   const ecs = new Studio.ECS()
   const viewport = { x: 0, y: 0, width: 500, height: 500 }
   const renderer = new Studio.renderer.WebGL2(viewport)
-  const camera = ecs.entity(
-    Studio.orthographicProjection({ ...viewport, near, far }),
-    new Studio.Translate({ x: 0, y: 0, z: 0 }),
-    new Studio.Rotate({ x: 0, y: 0, z: 0 }),
-    new Studio.Scale({ x: 1, y: 1, z: 1 }),
-  )
+  const camera = Studio
+    .physicalEntity(ecs)
+    .set(Studio.orthographicProjection({ ...viewport, near, far }))
   ecs.set(new Studio.ActiveCamera(camera))
   const plane = ecs.entity(
     Studio.planeGeometry(),
@@ -101,12 +91,9 @@ export const RotatingOnYAxis = () => {
   const ecs = new Studio.ECS()
   const viewport = { x: 0, y: 0, width: 500, height: 500 }
   const renderer = new Studio.renderer.WebGL2(viewport)
-  const camera = ecs.entity(
-    Studio.orthographicProjection({ ...viewport, near, far }),
-    new Studio.Translate({ x: 0, y: 0, z: 0 }),
-    new Studio.Rotate({ x: 0, y: 0, z: 0 }),
-    new Studio.Scale({ x: 1, y: 1, z: 1 }),
-  )
+  const camera = Studio
+    .physicalEntity(ecs)
+    .set(Studio.orthographicProjection({ ...viewport, near, far }))
   ecs.set(new Studio.ActiveCamera(camera))
   const plane = ecs.entity(
     Studio.planeGeometry(),

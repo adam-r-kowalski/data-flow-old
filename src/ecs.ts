@@ -91,15 +91,16 @@ export class Entity {
     return storage ? storage.get(this) : undefined
   }
 
-  update = <T>(Type: Component<T>, f: (c: T) => void): void => {
+  update = <T>(Type: Component<T>, f: (c: T) => void): Entity => {
     const storage = this.ecs.storages.get(Type) as Storage<T>
-    if (!storage) return
+    if (!storage) return this
     const component = storage.get(this)
-    if (!component) return
+    if (!component) return this
     f(component)
     const handlers = this.ecs.subscriptions.get(Type)
-    if (!handlers) return
+    if (!handlers) return this
     for (const handler of handlers) handler(this)
+    return this
   }
 
   bulkUpdate = <T>(Type: Component<T>, f: (c: T) => void): BulkUpdate => {

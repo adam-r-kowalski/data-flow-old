@@ -15,3 +15,5 @@ export {
   LookAt,
 } from './components'
 export { Mat4x4, Vec3 } from './linear_algebra'
+export { physicalEntity } from './prefabs/physical_entity'
+export * as prefabs from './prefabs'

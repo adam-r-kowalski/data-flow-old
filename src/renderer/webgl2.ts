@@ -103,7 +103,14 @@ void main() {
     }
     gl.enableVertexAttribArray(this.aPosition.location)
     gl.bindBuffer(gl.ARRAY_BUFFER, this.aPosition.buffer)
-    gl.vertexAttribPointer(this.aPosition.location, /*size*/3, /*type*/gl.FLOAT, /*normalize*/false, /*stride*/0, /*offset*/0)
+    gl.vertexAttribPointer(
+      this.aPosition.location,
+      /*size*/3,
+      /*type*/gl.FLOAT,
+      /*normalize*/false,
+      /*stride*/0,
+      /*offset*/0
+    )
 
     this.vertexIndexBuffer = gl.createBuffer()!
 
@@ -113,7 +120,13 @@ void main() {
     }
     gl.enableVertexAttribArray(this.aIndex.location)
     gl.bindBuffer(gl.ARRAY_BUFFER, this.aIndex.buffer)
-    gl.vertexAttribIPointer(this.aIndex.location, /*size*/1, /*type*/gl.UNSIGNED_SHORT, /*stride*/0, /*offset*/0)
+    gl.vertexAttribIPointer(
+      this.aIndex.location,
+      /*size*/1,
+      /*type*/gl.UNSIGNED_SHORT,
+      /*stride*/0,
+      /*offset*/0
+    )
 
     this.uMatrix = gl.getUniformLocation(program, 'u_matrix')!
     this.uColor = gl.getUniformLocation(program, 'u_color')!
@@ -206,6 +219,6 @@ void main() {
     }
     if (index != 0) drawBatch()
     const stop = performance.now()
-    //console.log(stop - start)
+    // console.log(stop - start)
   }
 }

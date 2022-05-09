@@ -370,7 +370,10 @@ export const Orthographic = () => {
   const viewport = { x: 0, y: 0, width: 500, height: 500 }
   const renderer = new Studio.renderer.WebGL2(viewport)
   const camera = ecs.entity(
-    Studio.orthographicProjection({ ...viewport, near, far })
+    Studio.orthographicProjection({ ...viewport, near, far }),
+    new Studio.Translate({ x: 0, y: 0, z: 0 }),
+    new Studio.Rotate({ x: 0, y: 0, z: 0 }),
+    new Studio.Scale({ x: 1, y: 1, z: 1 }),
   )
   ecs.set(new Studio.ActiveCamera(camera))
   const f = F(ecs).set(
@@ -401,7 +404,10 @@ export const Perspective = () => {
   const viewport = { x: 0, y: 0, width: 500, height: 500 }
   const renderer = new Studio.renderer.WebGL2(viewport)
   const camera = ecs.entity(
-    Studio.perspectiveProjection({ ...viewport, near, far, fieldOfView })
+    Studio.perspectiveProjection({ ...viewport, near, far, fieldOfView }),
+    new Studio.Translate({ x: 0, y: 0, z: 0 }),
+    new Studio.Rotate({ x: 0, y: 0, z: 0 }),
+    new Studio.Scale({ x: 1, y: 1, z: 1 }),
   )
   ecs.set(new Studio.ActiveCamera(camera))
   const f = F(ecs).set(new Studio.Translate({ x: 0, y: 0, z: -300 }))
@@ -423,10 +429,10 @@ export const Perspective = () => {
 export const ManyFs = () => {
   const [near, far, fieldOfView] = [1, 2000, Math.PI / 2]
   const ecs = new Studio.ECS()
-  const viewport = { x: 0, y: 0, width: 1000, height: 1000 }
+  const viewport = { x: 0, y: 0, width: 500, height: 500 }
   const renderer = new Studio.renderer.WebGL2(viewport)
-  const numFs = 5
-  const radius = 300
+  const numFs = 25
+  const radius = 700
   const fs = Array.from({ length: numFs }, (v, i) => {
     const angle = i * Math.PI * 2 / numFs
     const x = Math.cos(angle) * radius

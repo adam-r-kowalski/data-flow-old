@@ -35,10 +35,13 @@ const initPyramid = (ecs: Studio.ECS) =>
 export const Single = () => {
   const [near, far, fieldOfView] = [1, 2000, Math.PI / 2]
   const ecs = new Studio.ECS()
-  const viewport = { x: 0, y: 0, width: 750, height: 750 }
+  const viewport = { x: 0, y: 0, width: 500, height: 500 }
   const renderer = new Studio.renderer.WebGL2(viewport)
   const camera = ecs.entity(
-    Studio.perspectiveProjection({ ...viewport, near, far, fieldOfView })
+    Studio.perspectiveProjection({ ...viewport, near, far, fieldOfView }),
+    new Studio.Translate({ x: 0, y: 0, z: 0 }),
+    new Studio.Rotate({ x: 0, y: 0, z: 0 }),
+    new Studio.Scale({ x: 1, y: 1, z: 1 }),
   )
   ecs.set(new Studio.ActiveCamera(camera))
   const pyramid = initPyramid(ecs).set(
@@ -106,10 +109,13 @@ const levelThree = (ecs: Studio.ECS) =>
 export const SierpinskiPyramid = () => {
   const [near, far, fieldOfView] = [1, 2000, Math.PI / 2]
   const ecs = new Studio.ECS()
-  const viewport = { x: 0, y: 0, width: 1000, height: 1000 }
+  const viewport = { x: 0, y: 0, width: 500, height: 500 }
   const renderer = new Studio.renderer.WebGL2(viewport)
   const camera = ecs.entity(
-    Studio.perspectiveProjection({ ...viewport, near, far, fieldOfView })
+    Studio.perspectiveProjection({ ...viewport, near, far, fieldOfView }),
+    new Studio.Translate({ x: 0, y: 0, z: 0 }),
+    new Studio.Rotate({ x: 0, y: 0, z: 0 }),
+    new Studio.Scale({ x: 1, y: 1, z: 1 }),
   )
   ecs.set(new Studio.ActiveCamera(camera))
   const fractal = levelThree(ecs).set(
@@ -121,6 +127,7 @@ export const SierpinskiPyramid = () => {
     requestAnimationFrame(update)
     const delta = currentTime - previousTime
     for (const entity of ecs.query(Studio.Rotate)) {
+      if (entity.id === camera.id) continue
       entity.update(Studio.Rotate, rotate => rotate.y += delta / 5000)
     }
     previousTime = currentTime

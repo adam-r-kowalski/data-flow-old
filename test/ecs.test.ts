@@ -151,9 +151,7 @@ test("on change fires once when setting multiple components", () => {
   const entity = ecs.entity()
   let count = 0
   const handler = () => count += 1
-  ecs.onChange(X, handler)
-  ecs.onChange(Y, handler)
-  ecs.onChange(Z, handler)
+  ecs.onAnyChange([X, Y, Z], handler)
   entity.set(new X(1), new Y(1), new Z(1))
   expect(count).toEqual(1)
 })
@@ -167,9 +165,7 @@ test("on change fires once per update", () => {
   let count = 0
   const handler = () => count += 1
   entity.set(new X(1), new Y(1), new Z(1))
-  ecs.onChange(X, handler)
-  ecs.onChange(Y, handler)
-  ecs.onChange(Z, handler)
+  ecs.onAnyChange([X, Y, Z], handler)
   entity.update(X, x => x.value += 1)
   entity.update(Y, y => y.value += 1)
   entity.update(Z, z => z.value += 1)
@@ -185,9 +181,7 @@ test("on change fires once per bulk update", () => {
   let count = 0
   const handler = () => count += 1
   entity.set(new X(1), new Y(1), new Z(1))
-  ecs.onChange(X, handler)
-  ecs.onChange(Y, handler)
-  ecs.onChange(Z, handler)
+  ecs.onAnyChange([X, Y, Z], handler)
   entity.bulkUpdate(X, x => x.value += 1)
     .update(Y, y => y.value += 2)
     .update(Z, z => z.value += 3)

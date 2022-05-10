@@ -1,6 +1,6 @@
 import { Mat4x4 } from '../linear_algebra'
 import { ECS, Entity } from '../ecs'
-import { Root, Children, Geometry, Translate, Scale, Rotate, Fill, ActiveCamera, Projection } from '../components'
+import { Root, Children, Geometry, Translate, Scale, Rotate, Fill, ActiveCamera, Projection, LocalTransform } from '../components'
 
 interface Attribute {
   buffer: WebGLBuffer
@@ -143,9 +143,7 @@ void main() {
     const renderChildren = function*(renderData: RenderData): Generator<RenderData> {
       const children = renderData.entity.get(Children)
       if (children) for (const child of children.entities) {
-        const localTransform = child.get(Translate)!.matrix()
-          .mul(child.get(Rotate)!.matrix())
-          .mul(child.get(Scale)!.matrix())
+        const localTransform = child.get(LocalTransform)!.matrix
         const transform = renderData.transform.mul(localTransform)
         const childRenderData = {
           entity: child,
@@ -157,15 +155,10 @@ void main() {
     }
     const camera = ecs.get(ActiveCamera)!.entity
     const projection = camera.get(Projection)!.matrix
-    const view = camera.get(Translate)!.matrix()
-      .mul(camera.get(Rotate)!.matrix())
-      .mul(camera.get(Scale)!.matrix())
-      .inverse()
+    const view = camera.get(LocalTransform)!.matrix.inverse()
     const viewProjection = projection.mul(view)
     for (const root of ecs.query(Root)) {
-      const localTransform = root.get(Translate)!.matrix()
-        .mul(root.get(Rotate)!.matrix())
-        .mul(root.get(Scale)!.matrix())
+      const localTransform = root.get(LocalTransform)!.matrix
       const transform = viewProjection.mul(localTransform)
       const renderData = { transform, entity: root }
       yield renderData

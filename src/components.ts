@@ -1,11 +1,13 @@
 import { Mat4x4 } from './linear_algebra'
 import { Entity } from './ecs'
 
-export class Projection {
-  constructor(public matrix: Mat4x4) { }
-}
+export class LocalTransform { constructor(public matrix: Mat4x4) { } }
 
-interface Orthographic {
+export class WorldTransform { constructor(public matrix: Mat4x4) { } }
+
+export class Projection { constructor(public matrix: Mat4x4) { } }
+
+export interface Orthographic {
   x: number
   y: number
   width: number
@@ -32,7 +34,7 @@ export const orthographicProjection = ({ x, y, width, height, near, far }: Ortho
   )
 }
 
-interface Perspective {
+export interface Perspective {
   fieldOfView: number
   width: number
   height: number
@@ -89,14 +91,6 @@ export class Translate {
     this.y = vec.y
     this.z = vec.z
   }
-
-  matrix = (): Mat4x4 =>
-    new Mat4x4([
-      1, 0, 0, 0,
-      0, 1, 0, 0,
-      0, 0, 1, 0,
-      this.x, this.y, this.z, 1,
-    ])
 }
 
 export class Scale {
@@ -109,14 +103,6 @@ export class Scale {
     this.y = vec.y
     this.z = vec.z
   }
-
-  matrix = (): Mat4x4 =>
-    new Mat4x4([
-      this.x, 0, 0, 0,
-      0, this.y, 0, 0,
-      0, 0, this.z, 0,
-      0, 0, 0, 1,
-    ])
 }
 
 export class Rotate {
@@ -129,45 +115,6 @@ export class Rotate {
     this.y = vec.y
     this.z = vec.z
   }
-
-  xMatrix = (): Mat4x4 => {
-    const radians = this.x
-    const c = Math.cos(radians)
-    const s = Math.sin(radians)
-    return new Mat4x4([
-      1, 0, 0, 0,
-      0, c, s, 0,
-      0, -s, c, 0,
-      0, 0, 0, 1,
-    ])
-  }
-
-  yMatrix = (): Mat4x4 => {
-    const radians = this.y
-    const c = Math.cos(radians)
-    const s = Math.sin(radians)
-    return new Mat4x4([
-      c, 0, -s, 0,
-      0, 1, 0, 0,
-      s, 0, c, 0,
-      0, 0, 0, 1,
-    ])
-  }
-
-  zMatrix = (): Mat4x4 => {
-    const radians = this.z
-    const c = Math.cos(radians)
-    const s = Math.sin(radians)
-    return new Mat4x4([
-      c, s, 0, 0,
-      -s, c, 0, 0,
-      0, 0, 1, 0,
-      0, 0, 0, 1,
-    ])
-  }
-
-  matrix = (): Mat4x4 =>
-    this.xMatrix().mul(this.yMatrix()).mul(this.zMatrix())
 }
 
 export const planeGeometry = (): Geometry =>

@@ -121,4 +121,12 @@ export class Mat4x4 {
         (tmp_20 * m12 + tmp_23 * m22 + tmp_17 * m02)),
     ])
   }
+
+  static identity = (): Mat4x4 =>
+    new Mat4x4([
+      1, 0, 0, 0,
+      0, 1, 0, 0,
+      0, 0, 1, 0,
+      0, 0, 0, 1,
+    ])
 }

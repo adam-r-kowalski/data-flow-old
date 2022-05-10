@@ -24,25 +24,17 @@ const pyramidGeometry = () =>
   })
 
 const initPyramid = (ecs: Studio.ECS) =>
-  ecs.entity(
+  Studio.physicalEntity(ecs).set(
     pyramidGeometry(),
-    new Studio.Translate({ x: 0, y: 0, z: 0 }),
-    new Studio.Rotate({ x: 0, y: 0, z: 0 }),
-    new Studio.Scale({ x: 1, y: 1, z: 1 }),
     new Studio.Fill({ h: 279, s: 1, l: 0.7, a: 1 }),
   )
 
 export const Single = () => {
   const [near, far, fieldOfView] = [1, 2000, Math.PI / 2]
-  const ecs = new Studio.ECS()
+  const ecs = Studio.initECS()
   const viewport = { x: 0, y: 0, width: 500, height: 500 }
   const renderer = new Studio.renderer.WebGL2(viewport)
-  const camera = ecs.entity(
-    Studio.perspectiveProjection({ ...viewport, near, far, fieldOfView }),
-    new Studio.Translate({ x: 0, y: 0, z: 0 }),
-    new Studio.Rotate({ x: 0, y: 0, z: 0 }),
-    new Studio.Scale({ x: 1, y: 1, z: 1 }),
-  )
+  const camera = Studio.perspectiveCamera(ecs, { ...viewport, near, far, fieldOfView })
   ecs.set(new Studio.ActiveCamera(camera))
   const pyramid = initPyramid(ecs).set(
     new Studio.Translate({ x: 0, y: 0, z: -100 }),
@@ -65,10 +57,7 @@ export const Single = () => {
 }
 
 const levelOne = (ecs: Studio.ECS) =>
-  ecs.entity(
-    new Studio.Translate({ x: 0, y: 0, z: 0 }),
-    new Studio.Rotate({ x: 0, y: 0, z: 0 }),
-    new Studio.Scale({ x: 1, y: 1, z: 1 }),
+  Studio.physicalEntity(ecs).set(
     new Studio.Children([
       initPyramid(ecs).set(new Studio.Translate({ x: -0.5, y: -0.5, z: -0.5 })),
       initPyramid(ecs).set(new Studio.Translate({ x: 0.5, y: -0.5, z: -0.5 })),
@@ -79,10 +68,7 @@ const levelOne = (ecs: Studio.ECS) =>
   )
 
 const levelTwo = (ecs: Studio.ECS) =>
-  ecs.entity(
-    new Studio.Translate({ x: 0, y: 0, z: 0 }),
-    new Studio.Rotate({ x: 0, y: 0, z: 0 }),
-    new Studio.Scale({ x: 1, y: 1, z: 1 }),
+  Studio.physicalEntity(ecs).set(
     new Studio.Children([
       levelOne(ecs).set(new Studio.Translate({ x: -1, y: 0, z: -1 })),
       levelOne(ecs).set(new Studio.Translate({ x: 1, y: 0, z: -1 })),
@@ -93,10 +79,7 @@ const levelTwo = (ecs: Studio.ECS) =>
   )
 
 const levelThree = (ecs: Studio.ECS) =>
-  ecs.entity(
-    new Studio.Translate({ x: 0, y: 0, z: 0 }),
-    new Studio.Rotate({ x: 0, y: 0, z: 0 }),
-    new Studio.Scale({ x: 1, y: 1, z: 1 }),
+  Studio.physicalEntity(ecs).set(
     new Studio.Children([
       levelTwo(ecs).set(new Studio.Translate({ x: -2, y: 0, z: -2 })),
       levelTwo(ecs).set(new Studio.Translate({ x: 2, y: 0, z: -2 })),
@@ -108,15 +91,10 @@ const levelThree = (ecs: Studio.ECS) =>
 
 export const SierpinskiPyramid = () => {
   const [near, far, fieldOfView] = [1, 2000, Math.PI / 2]
-  const ecs = new Studio.ECS()
+  const ecs = Studio.initECS()
   const viewport = { x: 0, y: 0, width: 500, height: 500 }
   const renderer = new Studio.renderer.WebGL2(viewport)
-  const camera = ecs.entity(
-    Studio.perspectiveProjection({ ...viewport, near, far, fieldOfView }),
-    new Studio.Translate({ x: 0, y: 0, z: 0 }),
-    new Studio.Rotate({ x: 0, y: 0, z: 0 }),
-    new Studio.Scale({ x: 1, y: 1, z: 1 }),
-  )
+  const camera = Studio.perspectiveCamera(ecs, { ...viewport, near, far, fieldOfView })
   ecs.set(new Studio.ActiveCamera(camera))
   const fractal = levelThree(ecs).set(
     new Studio.Translate({ x: 0, y: 0, z: -10 }),

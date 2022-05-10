@@ -157,4 +157,10 @@ export class ECS {
     if (handlers) handlers.add(handler)
     else this.subscriptions.set(Type, new Set([handler]))
   }
+
+  onAnyChange = (Types: Component<any>[], handler: OnChange): void => {
+    for (const Type of Types) {
+      this.onChange(Type, handler)
+    }
+  }
 }

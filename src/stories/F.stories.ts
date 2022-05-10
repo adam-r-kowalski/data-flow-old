@@ -6,12 +6,10 @@ export default {
 
 export const Orthographic = () => {
   const [near, far] = [500, -500]
-  const ecs = new Studio.ECS()
+  const ecs = Studio.initECS()
   const viewport = { x: 0, y: 0, width: 500, height: 500 }
   const renderer = new Studio.renderer.WebGL2(viewport)
-  const camera = Studio
-    .physicalEntity(ecs)
-    .set(Studio.orthographicProjection({ ...viewport, near, far }))
+  const camera = Studio.orthographicCamera(ecs, { ...viewport, near, far })
   ecs.set(new Studio.ActiveCamera(camera))
   const f = Studio.prefabs.F(ecs)
     .update(Studio.Translate, translate => {
@@ -36,11 +34,10 @@ export const Orthographic = () => {
 
 export const Perspective = () => {
   const [near, far, fieldOfView] = [1, 2000, Math.PI / 2]
-  const ecs = new Studio.ECS()
+  const ecs = Studio.initECS()
   const viewport = { x: 0, y: 0, width: 500, height: 500 }
   const renderer = new Studio.renderer.WebGL2(viewport)
-  const camera = Studio.physicalEntity(ecs)
-    .set(Studio.perspectiveProjection({ ...viewport, near, far, fieldOfView }))
+  const camera = Studio.perspectiveCamera(ecs, { ...viewport, near, far, fieldOfView })
   ecs.set(new Studio.ActiveCamera(camera))
   const f = Studio.prefabs.F(ecs)
     .update(Studio.Translate, translate => translate.z = -300)
@@ -62,14 +59,13 @@ export const Perspective = () => {
 
 export const ManyFs = () => {
   const [near, far, fieldOfView] = [1, 2000, Math.PI / 2]
-  const ecs = new Studio.ECS()
+  const ecs = Studio.initECS()
   const viewport = { x: 0, y: 0, width: 500, height: 500 }
   const renderer = new Studio.renderer.WebGL2(viewport)
   const radius = 500
   const numFs = 10
   const tau = 2 * Math.PI
-  const camera = Studio.physicalEntity(ecs)
-    .set(Studio.perspectiveProjection({ ...viewport, near, far, fieldOfView }))
+  const camera = Studio.perspectiveCamera(ecs, { ...viewport, near, far, fieldOfView })
     .update(Studio.Translate, translate => {
       translate.x = 50
       translate.y = -50

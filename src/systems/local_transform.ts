@@ -1,8 +1,12 @@
-import { Entity } from '../ecs'
+import { ECS, Entity } from '../ecs'
 import { Translate, Rotate, Scale, LocalTransform } from '../components'
 import { Mat4x4 } from '../linear_algebra'
 
-export const updateLocalTransform = (entity: Entity): void => {
+export const register = (ecs: ECS): void => {
+  ecs.onAnyChange([Translate, Rotate, Scale], update)
+}
+
+export const update = (entity: Entity): void => {
   let matrix = Mat4x4.identity()
   const translate = entity.get(Translate)!
   if (translate.x !== 0 || translate.y !== 0 || translate.z !== 0) {

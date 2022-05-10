@@ -1,10 +1,10 @@
 import { ECS } from './ecs'
-import { updateLocalTransform } from './systems'
+import { defaultSystem } from './systems'
 import { Translate, Rotate, Scale } from './components'
 
 export const initECS = (): ECS => {
   const ecs = new ECS()
-  ecs.onAnyChange([Translate, Rotate, Scale], updateLocalTransform)
+  defaultSystem.register(ecs)
   return ecs
 }
 

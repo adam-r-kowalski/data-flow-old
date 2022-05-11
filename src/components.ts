@@ -154,12 +154,10 @@ export class Fill {
   }
 }
 
-export class Children {
-  constructor(public entities: Entity[]) { }
-}
+export class Parent { constructor(public entity: Entity) { } }
+
+export class Children { constructor(public entities: Entity[]) { } }
 
 export class Root { }
 
-export class LookAt {
-  constructor(public entity: Entity) { }
-}
+export class LookAt { constructor(public entity: Entity) { } }

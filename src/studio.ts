@@ -21,10 +21,12 @@ export {
   Scale,
   Fill,
   Root,
+  Parent,
   Children,
   LookAt,
 } from './components'
 export { Mat4x4, Vec3 } from './linear_algebra'
 export { physicalEntity, orthographicCamera, perspectiveCamera } from './prefabs'
 export * as prefabs from './prefabs'
+export { hierarchy } from './systems'
 

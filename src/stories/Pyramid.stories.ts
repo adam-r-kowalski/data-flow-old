@@ -42,13 +42,15 @@ export const Single = () => {
     new Studio.Root(),
   )
   let previousTime = 0
+  let theta = 0
   const update = (currentTime: number) => {
     requestAnimationFrame(update)
-    const delta = (currentTime - previousTime) / 1000
-    pyramid.update(Studio.Rotate, rotate => {
-      rotate.y += delta
-      rotate.x += delta
-    })
+    theta += (currentTime - previousTime) / 1000
+    pyramid.set(new Studio.Rotate({
+      x: theta,
+      y: theta,
+      z: 0,
+    }))
     previousTime = currentTime
     renderer.render(ecs)
   }
@@ -64,8 +66,7 @@ const levelOne = (ecs: Studio.ECS) =>
       initPyramid(ecs).set(new Studio.Translate({ x: -0.5, y: -0.5, z: 0.5 })),
       initPyramid(ecs).set(new Studio.Translate({ x: 0.5, y: -0.5, z: 0.5 })),
       initPyramid(ecs).set(new Studio.Translate({ x: 0, y: 0.5, z: 0 })),
-    ])
-  )
+    ]))
 
 const levelTwo = (ecs: Studio.ECS) =>
   Studio.physicalEntity(ecs).set(
@@ -75,8 +76,7 @@ const levelTwo = (ecs: Studio.ECS) =>
       levelOne(ecs).set(new Studio.Translate({ x: -1, y: 0, z: 1 })),
       levelOne(ecs).set(new Studio.Translate({ x: 1, y: 0, z: 1 })),
       levelOne(ecs).set(new Studio.Translate({ x: 0, y: 2, z: 0 })),
-    ]),
-  )
+    ]))
 
 const levelThree = (ecs: Studio.ECS) =>
   Studio.physicalEntity(ecs).set(
@@ -86,8 +86,7 @@ const levelThree = (ecs: Studio.ECS) =>
       levelTwo(ecs).set(new Studio.Translate({ x: -2, y: 0, z: 2 })),
       levelTwo(ecs).set(new Studio.Translate({ x: 2, y: 0, z: 2 })),
       levelTwo(ecs).set(new Studio.Translate({ x: 0, y: 4, z: 0 })),
-    ]),
-  )
+    ]))
 
 export const SierpinskiPyramid = () => {
   const [near, far, fieldOfView] = [1, 2000, Math.PI / 2]
@@ -101,12 +100,13 @@ export const SierpinskiPyramid = () => {
     new Studio.Root(),
   )
   let previousTime = 0
+  let theta = 0
   const update = (currentTime: number) => {
     requestAnimationFrame(update)
-    const delta = currentTime - previousTime
+    theta += (currentTime - previousTime) / 5000
     for (const entity of ecs.query(Studio.Rotate)) {
       if (entity.id === camera.id) continue
-      entity.update(Studio.Rotate, rotate => rotate.y += delta / 5000)
+      entity.set(new Studio.Rotate({ x: 0, y: theta, z: 0 }))
     }
     previousTime = currentTime
     renderer.render(ecs)

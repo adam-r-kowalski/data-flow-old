@@ -32,81 +32,61 @@ class Storage<T> {
     this.inverses.push(entity.id)
   }
 }
+export class ComponentMap {
+  components: Map<Component<any>, any>
 
-type OnChange = (entity: Entity) => void
-
-class BulkUpdate {
-  constructor(
-    public entity: Entity,
-    public handlers: Map<Component<any>, (any) => void>
-  ) { }
-
-  update = <T>(Type: Component<T>, f: (T) => void): BulkUpdate => {
-    this.handlers.set(Type, f)
-    return this
+  constructor() {
+    this.components = new Map<Component<any>, any>()
   }
 
-  dispatch = (): void => {
-    const handlers = new Set<(Entity) => void>()
-    for (const [Type, handler] of this.handlers) {
-      const storage = this.entity.ecs.storages.get(Type)
-      if (!storage) continue
-      const component = storage.get(this.entity)
-      if (!component) continue
-      handler(component)
-      const typeHandlers = this.entity.ecs.subscriptions.get(Type)
-      if (!typeHandlers) continue
-      for (const handler of typeHandlers) handlers.add(handler)
-    }
-    for (const handler of handlers) handler(this.entity)
+  set = <T>(Type: Component<T>, component: T): void => {
+    this.components.set(Type, component)
   }
+
+  get = <T>(Type: Component<T>): T | undefined =>
+    this.components.get(Type)
 }
+
+export interface ChangeData {
+  entity: Entity
+  newValues: ComponentMap
+  oldValues: ComponentMap
+}
+
+type OnChange = (data: ChangeData) => void
 
 export class Entity {
   constructor(public id: number, public ecs: ECS) { }
 
   set = (...components: any): Entity => {
-    const handlers = new Set<OnChange>()
+    const allHandlers = new Set<OnChange>()
+    const oldValues = new ComponentMap()
+    const newValues = new ComponentMap()
     for (const component of components) {
       const Type = component.constructor
-      const typeHandlers = this.ecs.subscriptions.get(Type)
-      if (typeHandlers) {
-        for (const handler of typeHandlers) {
-          handlers.add(handler)
-        }
-      }
+      newValues.set(Type, component)
       let storage = this.ecs.storages.get(Type)
-      if (!storage) {
+      if (storage) {
+        const old = storage.get(this)
+        if (old) oldValues.set(Type, old)
+      }
+      else {
         storage = new Storage()
         this.ecs.storages.set(Type, storage)
       }
       storage.set(this, component)
+      const handlers = this.ecs.subscriptions.get(Type)
+      if (handlers) for (const handler of handlers) allHandlers.add(handler)
     }
-    for (const handler of handlers) handler(this)
+    for (const handler of allHandlers) {
+      handler({ entity: this, newValues, oldValues })
+    }
     return this
   }
 
   get = <T>(Type: Component<T>): Readonly<T> | undefined => {
     const storage = this.ecs.storages.get(Type)
     return storage ? storage.get(this) : undefined
-  }
-
-  update = <T>(Type: Component<T>, f: (c: T) => void): Entity => {
-    const storage = this.ecs.storages.get(Type) as Storage<T>
-    if (!storage) return this
-    const component = storage.get(this)
-    if (!component) return this
-    f(component)
-    const handlers = this.ecs.subscriptions.get(Type)
-    if (!handlers) return this
-    for (const handler of handlers) handler(this)
-    return this
-  }
-
-  bulkUpdate = <T>(Type: Component<T>, f: (c: T) => void): BulkUpdate => {
-    const handlers = new Map()
-    handlers.set(Type, f)
-    return new BulkUpdate(this, handlers)
   }
 }
 
@@ -152,7 +132,7 @@ export class ECS {
     return this.resources.get(Type)
   }
 
-  onChange = (Type: Component<any>, handler: OnChange): void => {
+  onChange = <T>(Type: Component<T>, handler: OnChange): void => {
     const handlers = this.subscriptions.get(Type)
     if (handlers) handlers.add(handler)
     else this.subscriptions.set(Type, new Set([handler]))

@@ -305,5 +305,4 @@ export const F = (ecs: ECS): Entity =>
       rightOfBottom(ecs),
       bottom(ecs),
       leftSide(ecs),
-    ]),
-  )
+    ]))

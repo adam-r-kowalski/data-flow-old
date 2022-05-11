@@ -12,19 +12,22 @@ export const Orthographic = () => {
   const camera = Studio.orthographicCamera(ecs, { ...viewport, near, far })
   ecs.set(new Studio.ActiveCamera(camera))
   const f = Studio.prefabs.F(ecs)
-    .update(Studio.Translate, translate => {
-      translate.x = viewport.width / 2
-      translate.y = viewport.height / 2
-    })
-    .set(new Studio.Root())
+    .set(new Studio.Translate({
+      x: viewport.width / 2,
+      y: viewport.height / 2,
+      z: 0
+    }),
+      new Studio.Root())
   let lastTime = 0
+  let theta = 0
   const update = (currentTime: number) => {
     requestAnimationFrame(update)
-    const delta = (currentTime - lastTime) / 1000
-    f.update(Studio.Rotate, rotate => {
-      rotate.y += delta
-      rotate.x += delta / 2
-    })
+    theta += (currentTime - lastTime) / 1000
+    f.set(new Studio.Rotate({
+      x: theta / 2,
+      y: theta,
+      z: 0
+    }))
     renderer.render(ecs)
     lastTime = currentTime
   }
@@ -40,16 +43,20 @@ export const Perspective = () => {
   const camera = Studio.perspectiveCamera(ecs, { ...viewport, near, far, fieldOfView })
   ecs.set(new Studio.ActiveCamera(camera))
   const f = Studio.prefabs.F(ecs)
-    .update(Studio.Translate, translate => translate.z = -300)
-    .set(new Studio.Root())
+    .set(
+      new Studio.Translate({ x: 0, y: 0, z: -300 }),
+      new Studio.Root()
+    )
   let lastTime = 0
+  let theta = 0
   const update = (currentTime: number) => {
     requestAnimationFrame(update)
-    const delta = (currentTime - lastTime) / 1000
-    f.update(Studio.Rotate, rotate => {
-      rotate.y += delta
-      rotate.x += delta / 2
-    })
+    theta += (currentTime - lastTime) / 1000
+    f.set(new Studio.Rotate({
+      x: theta / 2,
+      y: theta,
+      z: 0
+    }))
     renderer.render(ecs)
     lastTime = currentTime
   }
@@ -66,24 +73,27 @@ export const ManyFs = () => {
   const numFs = 10
   const tau = 2 * Math.PI
   const camera = Studio.perspectiveCamera(ecs, { ...viewport, near, far, fieldOfView })
-    .update(Studio.Translate, translate => {
-      translate.x = 50
-      translate.y = -50
-      translate.z = radius * 2
-    })
+    .set(new Studio.Translate({
+      x: 50,
+      y: -50,
+      z: radius * 2,
+    }))
   ecs.set(new Studio.ActiveCamera(camera))
   const fs = Array.from({ length: numFs }, (v, i) =>
     Studio.prefabs.F(ecs)
-      .set(new Studio.Root())
-      .bulkUpdate(Studio.Rotate, rotate => {
-        rotate.y = Math.PI
-        rotate.z = Math.PI
-      })
-      .update(Studio.Translate, translate => {
-        translate.x = Math.cos((i / numFs) * tau) * radius
-        translate.z = Math.sin((i / numFs) * tau) * radius
-      })
-      .dispatch()
+      .set(
+        new Studio.Root(),
+        new Studio.Rotate({
+          x: 0,
+          y: Math.PI,
+          z: Math.PI,
+        }),
+        new Studio.Translate({
+          x: Math.cos((i / numFs) * tau) * radius,
+          y: 0,
+          z: Math.sin((i / numFs) * tau) * radius
+        })
+      )
   )
   let moveForward = 0
   let moveBackward = 0
@@ -112,11 +122,12 @@ export const ManyFs = () => {
   const update = (currentTime: number) => {
     requestAnimationFrame(update)
     const delta = (currentTime - lastTime) / 1000 * speed
-    camera.update(Studio.Translate, translate => {
-      translate.x += (moveRight - moveLeft) * delta
-      translate.y += (moveUp - moveDown) * delta
-      translate.z += (moveBackward - moveForward) * delta
-    })
+    const translate = camera.get(Studio.Translate)!
+    camera.set(new Studio.Translate({
+      x: translate.x + (moveRight - moveLeft) * delta,
+      y: translate.y + (moveUp - moveDown) * delta,
+      z: translate.z + (moveBackward - moveForward) * delta
+    }))
     renderer.render(ecs)
     lastTime = currentTime
   }

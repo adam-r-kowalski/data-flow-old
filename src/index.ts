@@ -47,10 +47,12 @@ document.addEventListener('mouseup', e => {
 })
 
 let lastTime = 0
+let theta = 0
 const update = (currentTime: number) => {
   requestAnimationFrame(update)
+  theta += (currentTime - lastTime) / 1000
   for (const entity of ecs.query(Studio.Rotate)) {
-    entity.update(Studio.Rotate, rotate => rotate.x += (currentTime - lastTime) / 1000)
+    entity.set(new Studio.Rotate({ x: theta, y: 0, z: 0 }))
   }
   lastTime = currentTime
   renderer.render(ecs)

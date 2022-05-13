@@ -1,28 +1,36 @@
 import { typeAlias } from '@babel/types'
+import { WebGL2 } from '../renderer'
 import * as Studio from '../studio'
 
 export default {
   title: "Graph",
 }
 
-class DefaultProgram {
+
+class TextureProgram {
   program: WebGLProgram
-  uMatrix: WebGLUniformLocation
-  aPositionBuffer: WebGLBuffer
-  aColorBuffer: WebGLBuffer
+  transformLocation: WebGLUniformLocation
+  textureLocation: WebGLUniformLocation
+  positionBuffer: WebGLBuffer
+  texcoordBuffer: WebGLBuffer
+  colorBuffer: WebGLBuffer
+  indexBuffer: WebGLBuffer
   gl: WebGL2RenderingContext
 
   constructor(gl: WebGL2RenderingContext) {
     const vertexShaderSource = `#version 300 es
-uniform mat4 u_matrix;
+uniform mat3 u_transform;
 
-in vec4 a_position;
+in vec3 a_position;
+in vec2 a_texcoord;
 in vec4 a_color;
 
+out vec2 v_texcoord;
 out vec4 v_color;
 
 void main() {
-  gl_Position = u_matrix * a_position;
+  gl_Position = vec4(u_transform * a_position, 1.0);
+  v_texcoord = a_texcoord;
   v_color = a_color;
 }
 `
@@ -30,11 +38,15 @@ void main() {
     const fragmentShaderSource = `#version 300 es
 precision mediump float;
 
+uniform sampler2D u_texture;
+
+in vec2 v_texcoord;
 in vec4 v_color;
+
 out vec4 fragColor;
 
 void main() {
-  fragColor = v_color;
+  fragColor = texture(u_texture, v_texcoord) * v_color;
 }
 `
 
@@ -56,23 +68,36 @@ void main() {
       console.log(gl.getShaderInfoLog(fragmentShader))
     }
 
-    this.aPositionBuffer = gl.createBuffer()!
+    this.positionBuffer = gl.createBuffer()!
     const aPositionLocation = gl.getAttribLocation(program, 'a_position')
     gl.enableVertexAttribArray(aPositionLocation)
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.aPositionBuffer)
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer)
     gl.vertexAttribPointer(
       aPositionLocation,
-      /*size*/3,
+      /*size*/2,
       /*type*/gl.FLOAT,
       /*normalize*/false,
       /*stride*/0,
       /*offset*/0
     )
 
-    this.aColorBuffer = gl.createBuffer()!
+    this.texcoordBuffer = gl.createBuffer()!
+    const aTexcoordLocation = gl.getAttribLocation(program, 'a_texcoord')
+    gl.enableVertexAttribArray(aTexcoordLocation)
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.texcoordBuffer)
+    gl.vertexAttribPointer(
+      aTexcoordLocation,
+      /*size*/2,
+      /*type*/gl.FLOAT,
+      /*normalize*/true,
+      /*stride*/0,
+      /*offset*/0
+    )
+
+    this.colorBuffer = gl.createBuffer()!
     const aColorLocation = gl.getAttribLocation(program, 'a_color')
     gl.enableVertexAttribArray(aColorLocation)
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.aColorBuffer)
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.colorBuffer)
     gl.vertexAttribPointer(
       aColorLocation,
       /*size*/4,
@@ -82,7 +107,10 @@ void main() {
       /*offset*/0
     )
 
-    this.uMatrix = gl.getUniformLocation(program, 'u_matrix')!
+    this.indexBuffer = gl.createBuffer()!
+
+    this.transformLocation = gl.getUniformLocation(program, 'u_transform')!
+    this.textureLocation = gl.getUniformLocation(program, 'u_texture')!
 
     this.program = program
     this.gl = gl
@@ -91,23 +119,30 @@ void main() {
   use = () => this.gl.useProgram(this.program)
 
   setMatrix = (data: number[]) =>
-    this.gl.uniformMatrix4fv(this.uMatrix, /*transpose*/true, /*data*/[
-      1, 0, 0, 0,
-      0, 1, 0, 0,
-      0, 0, 1, 0,
-      0, 0, 0, 1,
-    ])
+    this.gl.uniformMatrix3fv(this.transformLocation, /*transpose*/true, /*data*/data)
 
   setPosition = (data: number[]) => {
     const gl = this.gl
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.aPositionBuffer)
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer)
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW)
+  }
+
+  setTexcoord = (data: number[]) => {
+    const gl = this.gl
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.texcoordBuffer)
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW)
   }
 
   setColor = (data: number[]) => {
     const gl = this.gl
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.aColorBuffer)
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.colorBuffer)
     gl.bufferData(gl.ARRAY_BUFFER, new Uint8Array(data), gl.STATIC_DRAW)
+  }
+
+  setIndices = (data: number[]) => {
+    const gl = this.gl
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer)
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(data), gl.STATIC_DRAW)
   }
 }
 
@@ -119,22 +154,38 @@ export const Triangle = () => {
   canvas.style.display = 'block'
 
   const gl = canvas.getContext('webgl2')!
-  gl.clearColor(0.0, 0.0, 0.0, 1.0)
 
+  const textureProgram = new TextureProgram(gl)
+  textureProgram.use()
 
-  const defaultProgram = new DefaultProgram(gl)
-  defaultProgram.use()
+  gl.enable(gl.BLEND)
+  gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 
-  const texture = gl.createTexture()
-  gl.bindTexture(gl.TEXTURE_2D, texture)
-  const textureWidth = 250
-  const textureHeight = 250
+  const gradientTexture = gl.createTexture()
+  gl.bindTexture(gl.TEXTURE_2D, gradientTexture)
   gl.texImage2D(
     gl.TEXTURE_2D,
     /*level*/0,
     /*internalFormat*/gl.RGBA,
-    /*width*/textureWidth,
-    /*height*/textureHeight,
+    /*width*/1,
+    /*height*/1,
+    /*border*/0,
+    /*format*/gl.RGBA,
+    /*type*/gl.UNSIGNED_BYTE,
+    /*data*/new Uint8Array([255, 255, 255, 255])
+  )
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+
+  const targetTexture = gl.createTexture()
+  gl.bindTexture(gl.TEXTURE_2D, targetTexture)
+  gl.texImage2D(
+    gl.TEXTURE_2D,
+    /*level*/0,
+    /*internalFormat*/gl.RGBA,
+    /*width*/width,
+    /*height*/height,
     /*border*/0,
     /*format*/gl.RGBA,
     /*type*/gl.UNSIGNED_BYTE,
@@ -144,40 +195,66 @@ export const Triangle = () => {
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
 
-  const framebuffer = gl.createFramebuffer()
+  const framebuffer = gl.createFramebuffer()!
   gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer)
-  gl.viewport(0, 0, width, height)
-
   const attachmentPoint = gl.COLOR_ATTACHMENT0
-  gl.framebufferTexture2D(gl.FRAMEBUFFER, attachmentPoint, gl.TEXTURE_2D, texture, /*level*/0)
+  gl.framebufferTexture2D(gl.FRAMEBUFFER, attachmentPoint, gl.TEXTURE_2D, targetTexture, /*level*/0)
 
+  gl.clearColor(1.0, 0.0, 0.0, 1.0)
+  gl.viewport(0, 0, width, height)
   gl.clear(gl.COLOR_BUFFER_BIT)
 
-  defaultProgram.setMatrix([
-    1, 0, 0, 0,
-    0, 1, 0, 0,
-    0, 0, 1, 0,
-    0, 0, 0, 1,
+  gl.bindTexture(gl.TEXTURE_2D, gradientTexture)
+
+  textureProgram.setMatrix([
+    1, 0, 0,
+    0, 1, 0,
+    0, 0, 1,
   ])
 
-  defaultProgram.setPosition([
-    0.5, 0, 0,
-    0, 0.5, 0,
-    -0.5, 0, 0,
+  textureProgram.setPosition([
+    -1, -1,
+    -1, 1,
+    1, -1,
+    1, 1,
   ])
 
-  defaultProgram.setColor([
-    255, 0, 0, 255,
-    0, 255, 0, 255,
-    0, 0, 255, 255,
+  textureProgram.setTexcoord([
+    0, 0,
+    1, 0,
+    0, 1,
+    1, 1,
   ])
 
-  gl.drawArrays(gl.TRIANGLES, /*first*/0, /*count*/3)
+  textureProgram.setColor([
+    255, 0, 0, 150,
+    0, 255, 0, 150,
+    0, 0, 255, 150,
+    0, 0, 0, 150,
+  ])
+
+  textureProgram.setIndices([
+    0, 1, 2,
+    1, 2, 3,
+  ])
+
+  gl.drawElements(gl.TRIANGLES, /*count*/6, /*type*/gl.UNSIGNED_SHORT, /*offset*/0)
 
   gl.bindFramebuffer(gl.FRAMEBUFFER, null)
 
+  gl.bindTexture(gl.TEXTURE_2D, targetTexture)
+
+  textureProgram.setColor([
+    255, 255, 255, 255,
+    255, 255, 255, 255,
+    255, 255, 255, 255,
+    255, 255, 255, 255,
+  ])
+
+  gl.clearColor(1.0, 1.0, 1.0, 1.0)
   gl.viewport(0, 0, width, height)
   gl.clear(gl.COLOR_BUFFER_BIT)
+  gl.drawElements(gl.TRIANGLES, /*count*/6, /*type*/gl.UNSIGNED_SHORT, /*offset*/0)
 
   return canvas
 }

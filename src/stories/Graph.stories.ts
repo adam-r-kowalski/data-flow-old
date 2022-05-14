@@ -374,12 +374,10 @@ export const Blur = () => {
   const bAttachmentPoint = gl.COLOR_ATTACHMENT0
   gl.framebufferTexture2D(gl.FRAMEBUFFER, bAttachmentPoint, gl.TEXTURE_2D, bTexture, /*level*/0)
 
-
   gl.bindFramebuffer(gl.FRAMEBUFFER, aFramebuffer)
   gl.clearColor(1.0, 0.0, 0.0, 1.0)
   gl.viewport(0, 0, width, height)
   gl.clear(gl.COLOR_BUFFER_BIT)
-
   gl.bindTexture(gl.TEXTURE_2D, gradientTexture)
 
   textureProgram.setMatrix([
@@ -397,8 +395,8 @@ export const Blur = () => {
 
   textureProgram.setTexcoord([
     0, 0,
-    1, 0,
     0, 1,
+    1, 0,
     1, 1,
   ])
 
@@ -443,8 +441,8 @@ export const Blur = () => {
 
   blurProgram.setTexcoord([
     0, 0,
-    width, 0,
     0, height,
+    width, 0,
     width, height,
   ])
 
@@ -454,6 +452,46 @@ export const Blur = () => {
   ])
 
   gl.drawElements(gl.TRIANGLES, /*count*/6, /*type*/gl.UNSIGNED_SHORT, /*offset*/0)
+
+  blurProgram.use()
+  gl.bindFramebuffer(gl.FRAMEBUFFER, aFramebuffer)
+  gl.bindTexture(gl.TEXTURE_2D, bTexture)
+
+  gl.clearColor(1.0, 0.0, 0.0, 1.0)
+  gl.viewport(0, 0, width, height)
+  gl.clear(gl.COLOR_BUFFER_BIT)
+
+
+  blurProgram.setMatrix([
+    1, 0, 0,
+    0, 1, 0,
+    0, 0, 1,
+  ])
+
+  blurProgram.setResolution(width, height)
+  blurProgram.setDirection(1, 0)
+
+  blurProgram.setPosition([
+    -1, -1,
+    -1, 1,
+    1, -1,
+    1, 1,
+  ])
+
+  blurProgram.setTexcoord([
+    0, 0,
+    0, height,
+    width, 0,
+    width, height,
+  ])
+
+  blurProgram.setIndices([
+    0, 1, 2,
+    1, 2, 3,
+  ])
+
+  gl.drawElements(gl.TRIANGLES, /*count*/6, /*type*/gl.UNSIGNED_SHORT, /*offset*/0)
+
 
   gl.bindFramebuffer(gl.FRAMEBUFFER, null)
 

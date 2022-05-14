@@ -15,6 +15,7 @@ class TextureProgram {
   texcoordBuffer: WebGLBuffer
   colorBuffer: WebGLBuffer
   indexBuffer: WebGLBuffer
+  vertexArrayObject: WebGLVertexArrayObject
   gl: WebGL2RenderingContext
 
   constructor(gl: WebGL2RenderingContext) {
@@ -36,7 +37,7 @@ void main() {
 `
 
     const fragmentShaderSource = `#version 300 es
-precision mediump float;
+precision highp float;
 
 uniform sampler2D u_texture;
 
@@ -67,6 +68,9 @@ void main() {
       console.log(gl.getShaderInfoLog(vertexShader))
       console.log(gl.getShaderInfoLog(fragmentShader))
     }
+
+    this.vertexArrayObject = gl.createVertexArray()!
+    gl.bindVertexArray(this.vertexArrayObject)
 
     this.positionBuffer = gl.createBuffer()!
     const aPositionLocation = gl.getAttribLocation(program, 'a_position')
@@ -116,7 +120,11 @@ void main() {
     this.gl = gl
   }
 
-  use = () => this.gl.useProgram(this.program)
+  use = () => {
+    const gl = this.gl
+    gl.useProgram(this.program)
+    gl.bindVertexArray(this.vertexArrayObject)
+  }
 
   setMatrix = (data: number[]) =>
     this.gl.uniformMatrix3fv(this.transformLocation, /*transpose*/true, /*data*/data)
@@ -146,7 +154,150 @@ void main() {
   }
 }
 
-export const Triangle = () => {
+class BlurProgram {
+  program: WebGLProgram
+  transformLocation: WebGLUniformLocation
+  textureLocation: WebGLUniformLocation
+  resolutionLocation: WebGLUniformLocation
+  directionLocation: WebGLUniformLocation
+  positionBuffer: WebGLBuffer
+  texcoordBuffer: WebGLBuffer
+  indexBuffer: WebGLBuffer
+  vertexArrayObject: WebGLVertexArrayObject
+  gl: WebGL2RenderingContext
+
+  constructor(gl: WebGL2RenderingContext) {
+    const vertexShaderSource = `#version 300 es
+uniform mat3 u_transform;
+
+in vec3 a_position;
+in vec2 a_texcoord;
+
+out vec2 v_texcoord;
+
+void main() {
+  gl_Position = vec4(u_transform * a_position, 1.0);
+  v_texcoord = a_texcoord;
+}
+`
+
+    const fragmentShaderSource = `#version 300 es
+precision highp float;
+
+float offset[5] = float[](0.0, 1.0, 2.0, 3.0, 4.0);
+float weight[5] = float[](0.2270270270, 0.1945945946, 0.1216216216, 0.0540540541, 0.0162162162);
+
+uniform sampler2D u_texture;
+uniform vec2 u_resolution;
+uniform vec2 u_direction;
+
+in vec2 v_texcoord;
+
+out vec4 fragColor;
+
+void main() {
+  fragColor = texture(u_texture, v_texcoord / u_resolution) * weight[0];
+  for (int i = 1; i < 5; i++) {
+    vec2 delta = u_direction * offset[i];
+    fragColor += texture(u_texture, (v_texcoord + delta) / u_resolution) * weight[i];
+    fragColor += texture(u_texture, (v_texcoord - delta) / u_resolution) * weight[i];
+  }
+}
+`
+
+    const vertexShader = gl.createShader(gl.VERTEX_SHADER)!
+    gl.shaderSource(vertexShader, vertexShaderSource)
+    gl.compileShader(vertexShader)
+
+    const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER)!
+    gl.shaderSource(fragmentShader, fragmentShaderSource)
+    gl.compileShader(fragmentShader)
+
+    const program = gl.createProgram()!
+    gl.attachShader(program, vertexShader)
+    gl.attachShader(program, fragmentShader)
+    gl.linkProgram(program)
+
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+      console.log(gl.getShaderInfoLog(vertexShader))
+      console.log(gl.getShaderInfoLog(fragmentShader))
+    }
+
+    this.vertexArrayObject = gl.createVertexArray()!
+    gl.bindVertexArray(this.vertexArrayObject)
+
+    this.positionBuffer = gl.createBuffer()!
+    const aPositionLocation = gl.getAttribLocation(program, 'a_position')
+    gl.enableVertexAttribArray(aPositionLocation)
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer)
+    gl.vertexAttribPointer(
+      aPositionLocation,
+      /*size*/2,
+      /*type*/gl.FLOAT,
+      /*normalize*/false,
+      /*stride*/0,
+      /*offset*/0
+    )
+
+    this.texcoordBuffer = gl.createBuffer()!
+    const aTexcoordLocation = gl.getAttribLocation(program, 'a_texcoord')
+    gl.enableVertexAttribArray(aTexcoordLocation)
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.texcoordBuffer)
+    gl.vertexAttribPointer(
+      aTexcoordLocation,
+      /*size*/2,
+      /*type*/gl.FLOAT,
+      /*normalize*/true,
+      /*stride*/0,
+      /*offset*/0
+    )
+
+    this.indexBuffer = gl.createBuffer()!
+
+    this.transformLocation = gl.getUniformLocation(program, 'u_transform')!
+    this.textureLocation = gl.getUniformLocation(program, 'u_texture')!
+    this.resolutionLocation = gl.getUniformLocation(program, 'u_resolution')!
+    this.directionLocation = gl.getUniformLocation(program, 'u_direction')!
+
+    this.program = program
+    this.gl = gl
+  }
+
+  use = () => {
+    const gl = this.gl
+    gl.useProgram(this.program)
+    gl.bindVertexArray(this.vertexArrayObject)
+  }
+
+  setMatrix = (data: number[]) =>
+    this.gl.uniformMatrix3fv(this.transformLocation, /*transpose*/true, /*data*/data)
+
+  setResolution = (x: number, y: number) =>
+    this.gl.uniform2f(this.resolutionLocation, x, y)
+
+  setDirection = (x: number, y: number) =>
+    this.gl.uniform2f(this.directionLocation, x, y)
+
+  setPosition = (data: number[]) => {
+    const gl = this.gl
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer)
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW)
+  }
+
+  setTexcoord = (data: number[]) => {
+    const gl = this.gl
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.texcoordBuffer)
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW)
+  }
+
+  setIndices = (data: number[]) => {
+    const gl = this.gl
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer)
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(data), gl.STATIC_DRAW)
+  }
+}
+
+export const Blur = () => {
   const canvas = document.createElement('canvas')
   const [width, height] = [500, 500]
   canvas.width = width
@@ -156,6 +307,7 @@ export const Triangle = () => {
   const gl = canvas.getContext('webgl2')!
 
   const textureProgram = new TextureProgram(gl)
+  const blurProgram = new BlurProgram(gl)
   textureProgram.use()
 
   gl.enable(gl.BLEND)
@@ -178,8 +330,8 @@ export const Triangle = () => {
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
 
-  const targetTexture = gl.createTexture()
-  gl.bindTexture(gl.TEXTURE_2D, targetTexture)
+  const aTexture = gl.createTexture()
+  gl.bindTexture(gl.TEXTURE_2D, aTexture)
   gl.texImage2D(
     gl.TEXTURE_2D,
     /*level*/0,
@@ -195,11 +347,35 @@ export const Triangle = () => {
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
 
-  const framebuffer = gl.createFramebuffer()!
-  gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer)
-  const attachmentPoint = gl.COLOR_ATTACHMENT0
-  gl.framebufferTexture2D(gl.FRAMEBUFFER, attachmentPoint, gl.TEXTURE_2D, targetTexture, /*level*/0)
+  const aFramebuffer = gl.createFramebuffer()!
+  gl.bindFramebuffer(gl.FRAMEBUFFER, aFramebuffer)
+  const aAttachmentPoint = gl.COLOR_ATTACHMENT0
+  gl.framebufferTexture2D(gl.FRAMEBUFFER, aAttachmentPoint, gl.TEXTURE_2D, aTexture, /*level*/0)
 
+  const bTexture = gl.createTexture()
+  gl.bindTexture(gl.TEXTURE_2D, bTexture)
+  gl.texImage2D(
+    gl.TEXTURE_2D,
+    /*level*/0,
+    /*internalFormat*/gl.RGBA,
+    /*width*/width,
+    /*height*/height,
+    /*border*/0,
+    /*format*/gl.RGBA,
+    /*type*/gl.UNSIGNED_BYTE,
+    /*data*/null
+  )
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+
+  const bFramebuffer = gl.createFramebuffer()!
+  gl.bindFramebuffer(gl.FRAMEBUFFER, bFramebuffer)
+  const bAttachmentPoint = gl.COLOR_ATTACHMENT0
+  gl.framebufferTexture2D(gl.FRAMEBUFFER, bAttachmentPoint, gl.TEXTURE_2D, bTexture, /*level*/0)
+
+
+  gl.bindFramebuffer(gl.FRAMEBUFFER, aFramebuffer)
   gl.clearColor(1.0, 0.0, 0.0, 1.0)
   gl.viewport(0, 0, width, height)
   gl.clear(gl.COLOR_BUFFER_BIT)
@@ -240,9 +416,49 @@ export const Triangle = () => {
 
   gl.drawElements(gl.TRIANGLES, /*count*/6, /*type*/gl.UNSIGNED_SHORT, /*offset*/0)
 
+  blurProgram.use()
+  gl.bindFramebuffer(gl.FRAMEBUFFER, bFramebuffer)
+
+  gl.clearColor(1.0, 0.0, 0.0, 1.0)
+  gl.viewport(0, 0, width, height)
+  gl.clear(gl.COLOR_BUFFER_BIT)
+
+  gl.bindTexture(gl.TEXTURE_2D, aTexture)
+
+  blurProgram.setMatrix([
+    1, 0, 0,
+    0, 1, 0,
+    0, 0, 1,
+  ])
+
+  blurProgram.setResolution(width, height)
+  blurProgram.setDirection(0, 1)
+
+  blurProgram.setPosition([
+    -1, -1,
+    -1, 1,
+    1, -1,
+    1, 1,
+  ])
+
+  blurProgram.setTexcoord([
+    0, 0,
+    width, 0,
+    0, height,
+    width, height,
+  ])
+
+  blurProgram.setIndices([
+    0, 1, 2,
+    1, 2, 3,
+  ])
+
+  gl.drawElements(gl.TRIANGLES, /*count*/6, /*type*/gl.UNSIGNED_SHORT, /*offset*/0)
+
   gl.bindFramebuffer(gl.FRAMEBUFFER, null)
 
-  gl.bindTexture(gl.TEXTURE_2D, targetTexture)
+  textureProgram.use()
+  gl.bindTexture(gl.TEXTURE_2D, bTexture)
 
   textureProgram.setColor([
     255, 255, 255, 255,
@@ -255,6 +471,7 @@ export const Triangle = () => {
   gl.viewport(0, 0, width, height)
   gl.clear(gl.COLOR_BUFFER_BIT)
   gl.drawElements(gl.TRIANGLES, /*count*/6, /*type*/gl.UNSIGNED_SHORT, /*offset*/0)
+
 
   return canvas
 }

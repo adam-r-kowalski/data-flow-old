@@ -271,13 +271,27 @@ export class WebGL2 {
         hsla
       })
     }
+    const implicitWidthAndHeight = (entity: Entity, hsla: c.Hsla): void => {
+      const x = entity.get(c.Left)!.pixels
+      const bottom = entity.get(c.Bottom)!.pixels
+      const right = entity.get(c.Right)!.pixels
+      const y = entity.get(c.Top)!.pixels
+      const height = this.size.height - bottom - y
+      const width = this.size.width - right - x
+      this.pushRect({
+        position: { x, y },
+        size: { width, height },
+        hsla
+      })
+    }
     const children = ui.get(c.Children)
     if (children) for (const child of children.entities) {
       const bg = child.get(c.BackgroundColor)
       if (!bg) continue
       const width = child.get(c.Width)
       const height = child.get(c.Height)
-      if (!width) implicitWidth(child, height!.pixels, bg)
+      if (!width && !height) implicitWidthAndHeight(child, bg)
+      else if (!width) implicitWidth(child, height!.pixels, bg)
       else if (!height) implicitHeight(child, width!.pixels, bg)
       else explicitWidthAndHeight(child, width.pixels, bg)
     }

@@ -1,4 +1,4 @@
-import { ECS, Entity } from '../src/ecs'
+import { ECS } from '../src/ecs'
 
 test("create entity", () => {
   const ecs = new ECS()
@@ -98,40 +98,3 @@ test("set and get resource", () => {
   ecs.set(new Score(20))
   expect(ecs.get(Score)!.value).toEqual(20)
 })
-
-test("on change", () => {
-  class X {
-    constructor(public value: number) { }
-  }
-
-  class X2 {
-    constructor(public value: number) { }
-  }
-
-  const ecs = new ECS()
-  const entity = ecs.entity()
-  expect(entity.get(X)).toBeUndefined()
-  expect(entity.get(X2)).toBeUndefined()
-  ecs.onChange(X, ({ entity }) => {
-    const x = entity.get(X)!.value
-    entity.set(new X2(x * x))
-  })
-  entity.set(new X(4))
-  expect(entity.get(X2)!.value).toBe(16)
-  entity.set(new X(5))
-  expect(entity.get(X2)!.value).toBe(25)
-})
-
-test("on change fires once when setting multiple components", () => {
-  class X { constructor(public value: number) { } }
-  class Y { constructor(public value: number) { } }
-  class Z { constructor(public value: number) { } }
-  const ecs = new ECS()
-  const entity = ecs.entity()
-  let count = 0
-  const handler = () => count += 1
-  ecs.onAnyChange([X, Y, Z], handler)
-  entity.set(new X(1), new Y(1), new Z(1))
-  expect(count).toEqual(1)
-})
-

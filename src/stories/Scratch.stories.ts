@@ -1,11 +1,8 @@
-import { typeAlias } from '@babel/types'
-import { WebGL2 } from '../renderer'
-import * as Studio from '../studio'
+import { gaussian } from '../kernels'
 
 export default {
-  title: "Graph",
+  title: "Scratch",
 }
-
 
 class TextureProgram {
   program: WebGLProgram
@@ -154,6 +151,9 @@ void main() {
   }
 }
 
+
+
+
 class BlurProgram {
   program: WebGLProgram
   transformLocation: WebGLUniformLocation
@@ -166,7 +166,7 @@ class BlurProgram {
   vertexArrayObject: WebGLVertexArrayObject
   gl: WebGL2RenderingContext
 
-  constructor(gl: WebGL2RenderingContext) {
+  constructor(gl: WebGL2RenderingContext, radius: number) {
     const vertexShaderSource = `#version 300 es
 uniform mat3 u_transform;
 
@@ -181,11 +181,14 @@ void main() {
 }
 `
 
+    const offset = Array.from({ length: radius }, (_, i) => `${i}.0`)
+    const weight = gaussian.weight(radius)
+
     const fragmentShaderSource = `#version 300 es
 precision highp float;
 
-float offset[5] = float[](0.0, 1.0, 2.0, 3.0, 4.0);
-float weight[5] = float[](0.2270270270, 0.1945945946, 0.1216216216, 0.0540540541, 0.0162162162);
+float offset[${radius}] = float[](${offset});
+float weight[${radius}] = float[](${weight});
 
 uniform sampler2D u_texture;
 uniform vec2 u_resolution;
@@ -197,7 +200,7 @@ out vec4 fragColor;
 
 void main() {
   fragColor = texture(u_texture, v_texcoord / u_resolution) * weight[0];
-  for (int i = 1; i < 5; i++) {
+  for (int i = 1; i < ${radius}; i++) {
     vec2 delta = u_direction * offset[i];
     fragColor += texture(u_texture, (v_texcoord + delta) / u_resolution) * weight[i];
     fragColor += texture(u_texture, (v_texcoord - delta) / u_resolution) * weight[i];
@@ -307,7 +310,7 @@ export const Blur = () => {
   const gl = canvas.getContext('webgl2')!
 
   const textureProgram = new TextureProgram(gl)
-  const blurProgram = new BlurProgram(gl)
+  const blurProgram = new BlurProgram(gl, /*radius*/15)
   textureProgram.use()
 
   gl.enable(gl.BLEND)
@@ -509,7 +512,6 @@ export const Blur = () => {
   gl.viewport(0, 0, width, height)
   gl.clear(gl.COLOR_BUFFER_BIT)
   gl.drawElements(gl.TRIANGLES, /*count*/6, /*type*/gl.UNSIGNED_SHORT, /*offset*/0)
-
 
   return canvas
 }

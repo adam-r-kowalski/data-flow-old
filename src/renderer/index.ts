@@ -1,1 +1,1 @@
-export { Renderer as WebGL2 } from './webgl2'
+export { WebGL2 } from './webgl2'

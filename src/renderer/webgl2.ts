@@ -1,67 +1,45 @@
-import { Mat4x4 } from '../linear_algebra'
-import { ECS, Entity } from '../ecs'
-import { Root, Children, Geometry, Translate, Scale, Rotate, Fill, ActiveCamera, Projection, LocalTransform } from '../components'
+import * as c from '../components'
+import { ECS } from '../ecs'
 
-interface Attribute {
-  buffer: WebGLBuffer
-  location: number
+interface DrawData {
+  positions: number[]
+  colors: number[]
+  indices: number[]
 }
 
-interface Viewport {
-  x: number
-  y: number
-  width: number
-  height: number
-}
-
-type OnResize = (viewport: Viewport) => void
-
-interface RenderData {
-  entity: Entity
-  transform: Mat4x4
-}
-
-export class Renderer {
-  element: HTMLCanvasElement
+class DefaultProgram {
+  program: WebGLProgram
+  resolutionLocation: WebGLUniformLocation
+  positionBuffer: WebGLBuffer
+  colorBuffer: WebGLBuffer
+  indexBuffer: WebGLBuffer
+  vertexArrayObject: WebGLVertexArrayObject
   gl: WebGL2RenderingContext
-  uMatrix: WebGLUniformLocation
-  uColor: WebGLUniformLocation
-  aPosition: Attribute
-  aIndex: Attribute
-  vertexIndexBuffer: WebGLBuffer
-  maxBatchSize: number
+  count: number
 
-  constructor(viewport: Viewport) {
-    const canvas = document.createElement('canvas')
-    canvas.style.width = viewport.width.toString()
-    canvas.style.height = viewport.height.toString()
-    canvas.style.display = 'block'
-    const gl = canvas.getContext('webgl2')!
-    gl.clearColor(0.0, 0.0, 0.0, 1.0)
-    this.element = canvas
-    this.gl = gl
-
-    this.maxBatchSize = Math.floor(gl.getParameter(gl.MAX_VERTEX_UNIFORM_VECTORS) / 5)
-
+  constructor(gl: WebGL2RenderingContext) {
     const vertexShaderSource = `#version 300 es
-uniform mat4[${this.maxBatchSize}] u_matrix;
-uniform vec4[${this.maxBatchSize}] u_color;
+uniform vec2 u_resolution;
 
-in vec4 a_position;
-in uint a_index;
+in vec2 a_position;
+in vec4 a_color;
 
 out vec4 v_color;
 
 void main() {
-  gl_Position = u_matrix[a_index] * a_position;
-  v_color = u_color[a_index];
+  vec2 zeroToOne = a_position / u_resolution;
+  vec2 zeroToTwo = zeroToOne * 2.0;
+  vec2 clipSpace = zeroToTwo - 1.0;
+  gl_Position = vec4(clipSpace * vec2(1, -1), 0, 1);
+  v_color = a_color;
 }
 `
 
     const fragmentShaderSource = `#version 300 es
-precision mediump float;
+precision highp float;
 
 in vec4 v_color;
+
 out vec4 fragColor;
 
 vec4 hslToRgb(in vec4 hsl) {
@@ -92,126 +70,161 @@ void main() {
       console.log(gl.getShaderInfoLog(vertexShader))
       console.log(gl.getShaderInfoLog(fragmentShader))
     }
-    gl.useProgram(program)
 
-    gl.enable(gl.CULL_FACE)
-    gl.enable(gl.DEPTH_TEST)
+    this.vertexArrayObject = gl.createVertexArray()!
+    gl.bindVertexArray(this.vertexArrayObject)
 
-    this.aPosition = {
-      buffer: gl.createBuffer()!,
-      location: gl.getAttribLocation(program, 'a_position')
-    }
-    gl.enableVertexAttribArray(this.aPosition.location)
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.aPosition.buffer)
+    this.positionBuffer = gl.createBuffer()!
+    const aPositionLocation = gl.getAttribLocation(program, 'a_position')
+    gl.enableVertexAttribArray(aPositionLocation)
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer)
     gl.vertexAttribPointer(
-      this.aPosition.location,
-      /*size*/3,
+      aPositionLocation,
+      /*size*/2,
       /*type*/gl.FLOAT,
       /*normalize*/false,
       /*stride*/0,
       /*offset*/0
     )
 
-    this.vertexIndexBuffer = gl.createBuffer()!
-
-    this.aIndex = {
-      buffer: gl.createBuffer()!,
-      location: gl.getAttribLocation(program, 'a_index')
-    }
-    gl.enableVertexAttribArray(this.aIndex.location)
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.aIndex.buffer)
-    gl.vertexAttribIPointer(
-      this.aIndex.location,
-      /*size*/1,
-      /*type*/gl.UNSIGNED_SHORT,
+    this.colorBuffer = gl.createBuffer()!
+    const aColorLocation = gl.getAttribLocation(program, 'a_color')
+    gl.enableVertexAttribArray(aColorLocation)
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.colorBuffer)
+    gl.vertexAttribPointer(
+      aColorLocation,
+      /*size*/4,
+      /*type*/gl.FLOAT,
+      /*normalize*/false,
       /*stride*/0,
       /*offset*/0
     )
 
-    this.uMatrix = gl.getUniformLocation(program, 'u_matrix')!
-    this.uColor = gl.getUniformLocation(program, 'u_color')!
-    this.viewport(viewport)
+    this.indexBuffer = gl.createBuffer()!
+
+    this.resolutionLocation = gl.getUniformLocation(program, 'u_resolution')!
+
+    this.program = program
+    this.gl = gl
   }
 
-  viewport = ({ x, y, width, height }: Viewport): void => {
-    this.element.width = width
-    this.element.height = height
-    this.gl.viewport(x, y, width, height)
+  use = () => {
+    const gl = this.gl
+    gl.useProgram(this.program)
+    gl.bindVertexArray(this.vertexArrayObject)
   }
 
-  renderEntities = function*(ecs: ECS): Generator<RenderData> {
-    const renderChildren = function*(renderData: RenderData): Generator<RenderData> {
-      const children = renderData.entity.get(Children)
-      if (children) for (const child of children.entities) {
-        const localTransform = child.get(LocalTransform)!.matrix
-        const transform = renderData.transform.mul(localTransform)
-        const childRenderData = {
-          entity: child,
-          transform
-        }
-        yield childRenderData
-        yield* renderChildren(childRenderData)
-      }
-    }
-    const camera = ecs.get(ActiveCamera)!.entity
-    const projection = camera.get(Projection)!.matrix
-    const view = camera.get(LocalTransform)!.matrix.inverse()
-    const viewProjection = projection.mul(view)
-    for (const root of ecs.query(Root)) {
-      const localTransform = root.get(LocalTransform)!.matrix
-      const transform = viewProjection.mul(localTransform)
-      const renderData = { transform, entity: root }
-      yield renderData
-      yield* renderChildren(renderData)
-    }
+  setResolution = (x: number, y: number) =>
+    this.gl.uniform2f(this.resolutionLocation, x, y)
+
+  draw = ({ positions, colors, indices }: DrawData) => {
+    const gl = this.gl
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer)
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW)
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.colorBuffer)
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW)
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer)
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW)
+    gl.drawElements(gl.TRIANGLES, /*count*/indices.length, /*type*/gl.UNSIGNED_SHORT, /*offset*/0)
+  }
+}
+
+interface Size {
+  width: number
+  height: number
+}
+
+export class WebGL2 {
+  element: HTMLCanvasElement
+  gl: WebGL2RenderingContext
+  defaultProgram: DefaultProgram
+  size: Size
+
+  constructor(size: Size) {
+    this.size = size
+    const { width, height } = size
+    const canvas = document.createElement('canvas')
+    this.element = canvas
+    canvas.width = width
+    canvas.height = height
+    canvas.style.display = 'block'
+    const gl = canvas.getContext('webgl2')!
+    this.gl = gl
+
+    this.defaultProgram = new DefaultProgram(gl)
+    this.defaultProgram.use()
+
+    gl.enable(gl.BLEND)
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+
+    gl.clearColor(0.0, 0.0, 0.0, 1.0)
+    gl.viewport(0, 0, width, height)
+
+    this.defaultProgram.setResolution(width, height)
   }
 
   render = (ecs: ECS): void => {
-    const start = performance.now()
     const gl = this.gl
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-    let positions: number[] = []
-    let vertexIndices: number[] = []
-    let indices: number[] = []
-    let matrices: number[] = []
-    let fills: number[] = []
-    let index = 0
-    let offset = 0
-    const drawBatch = () => {
-      gl.uniformMatrix4fv(this.uMatrix, /*transpose*/false, matrices)
-      gl.uniform4fv(this.uColor, fills)
-      gl.bindBuffer(gl.ARRAY_BUFFER, this.aPosition.buffer)
-      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW)
-      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.vertexIndexBuffer)
-      gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(vertexIndices), gl.STATIC_DRAW)
-      gl.bindBuffer(gl.ARRAY_BUFFER, this.aIndex.buffer)
-      gl.bufferData(gl.ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW)
-      gl.drawElements(gl.TRIANGLES, /*count*/vertexIndices.length, /*index type*/gl.UNSIGNED_SHORT, /*offset*/0)
+    gl.clear(gl.COLOR_BUFFER_BIT)
+    const colors: number[] = []
+    const positions: number[] = []
+    const indices: number[] = []
+
+    interface Rect {
+      x: number
+      y: number
+      width: number
+      height: number
+      hsla: c.Hsla
     }
-    for (const { entity, transform } of this.renderEntities(ecs)) {
-      const geometry = entity.get(Geometry)
-      if (!geometry) continue
-      positions.push(...geometry.vertices)
-      for (const i of geometry.indices) vertexIndices.push(i + offset)
-      const vertexCount = geometry.vertices.length / 3
-      offset += vertexCount
-      matrices.push(...transform.data)
-      const fill = entity.get(Fill)!
-      fills.push(fill.h, fill.s, fill.l, fill.a)
-      for (let i = 0; i < vertexCount; ++i) indices.push(index)
-      if (++index == this.maxBatchSize) {
-        drawBatch()
-        positions = []
-        vertexIndices = []
-        indices = []
-        matrices = []
-        fills = []
-        index = 0
-        offset = 0
+    const pushRect = ({ x, y, width, height, hsla }: Rect) => {
+      const { h, s, l, a } = hsla
+      const offset = positions.length / 2
+      colors.push(
+        h, s, l, a,
+        h, s, l, a,
+        h, s, l, a,
+        h, s, l, a,
+      )
+      positions.push(
+        x, y,
+        x, y + height,
+        x + width, y,
+        x + width, y + height,
+      )
+      indices.push(
+        0 + offset, 1 + offset, 2 + offset,
+        1 + offset, 2 + offset, 3 + offset,
+      )
+    }
+    const ui = ecs.get(c.ActiveUI)!.entity
+    const bg = ui.get(c.BackgroundColor)
+    if (bg) {
+      pushRect({
+        x: 0,
+        y: 0,
+        width: this.size.width,
+        height: this.size.height,
+        hsla: bg
+      })
+    }
+    const children = ui.get(c.Children)
+    if (children) for (const child of children.entities) {
+      const top = child.get(c.Top)!.pixels
+      const left = child.get(c.Left)!.pixels
+      const width = child.get(c.Width)!.pixels
+      const height = child.get(c.Height)!.pixels
+      const bg = child.get(c.BackgroundColor)
+      if (bg) {
+        pushRect({
+          x: left,
+          y: top,
+          width,
+          height,
+          hsla: bg
+        })
       }
     }
-    if (index != 0) drawBatch()
-    const stop = performance.now()
-    // console.log(stop - start)
+    this.defaultProgram.draw({ colors, positions, indices })
   }
 }

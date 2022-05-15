@@ -45,7 +45,7 @@ out vec4 fragColor;
 vec4 hslToRgb(in vec4 hsl) {
  float h = hsl.x / 360.0;
  vec3 rgb = clamp(abs(mod(h * 6.0 + vec3(0.0,4.0,2.0), 6.0) - 3.0) - 1.0, 0.0, 1.0);
- return vec4(hsl.z + hsl.y * (rgb - 0.5) * (1.0 - abs(2.0 * hsl.z - 1.0)), hsl.w);
+ return vec4(hsl.z + hsl.y * (rgb - 0.5) * (1.0 - abs(2.0 * hsl.z - 1.0)), hsl.w / 255.0);
 }
 
 void main() {

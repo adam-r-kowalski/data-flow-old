@@ -141,3 +141,51 @@ export const ImplicitWidthAndHeight = () => {
   renderer.render(ecs)
   return renderer.element
 }
+
+export const Transparency = () => {
+  const renderer = new Studio.renderer.WebGL2({ width: 500, height: 500 })
+  const ecs = new Studio.ECS()
+  const ui = ecs.entity(
+    new Studio.c.UI(),
+    new Studio.c.Children([
+      ecs.entity(
+        new Studio.c.Top(25),
+        new Studio.c.Left(25),
+        new Studio.c.Width(200),
+        new Studio.c.Height(100),
+        new Studio.c.BackgroundColor({ h: 90, s: 1, l: 0.7, a: 255 })
+      ),
+      ecs.entity(
+        new Studio.c.Top(25),
+        new Studio.c.Right(25),
+        new Studio.c.Width(100),
+        new Studio.c.Height(200),
+        new Studio.c.BackgroundColor({ h: 90, s: 1, l: 0.7, a: 255 * 0.8 })
+      ),
+      ecs.entity(
+        new Studio.c.Bottom(25),
+        new Studio.c.Right(25),
+        new Studio.c.Width(200),
+        new Studio.c.Height(100),
+        new Studio.c.BackgroundColor({ h: 90, s: 1, l: 0.7, a: 255 * 0.6 })
+      ),
+      ecs.entity(
+        new Studio.c.Bottom(25),
+        new Studio.c.Left(25),
+        new Studio.c.Width(100),
+        new Studio.c.Height(200),
+        new Studio.c.BackgroundColor({ h: 90, s: 1, l: 0.7, a: 255 * 0.4 })
+      ),
+      ecs.entity(
+        new Studio.c.Top(200),
+        new Studio.c.Right(200),
+        new Studio.c.Bottom(200),
+        new Studio.c.Left(200),
+        new Studio.c.BackgroundColor({ h: 90, s: 1, l: 0.7, a: 255 * 0.2 })
+      ),
+    ]),
+  )
+  ecs.set(new Studio.c.ActiveUI(ui))
+  renderer.render(ecs)
+  return renderer.element
+}

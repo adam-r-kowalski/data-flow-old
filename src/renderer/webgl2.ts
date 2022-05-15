@@ -129,9 +129,20 @@ void main() {
   }
 }
 
+interface Position {
+  x: number
+  y: number
+}
+
 interface Size {
   width: number
   height: number
+}
+
+interface Rect {
+  position: Position
+  size: Size
+  hsla: c.Hsla
 }
 
 export class WebGL2 {
@@ -139,6 +150,7 @@ export class WebGL2 {
   gl: WebGL2RenderingContext
   defaultProgram: DefaultProgram
   size: Size
+  drawData: DrawData
 
   constructor(size: Size) {
     this.size = size
@@ -161,50 +173,56 @@ export class WebGL2 {
     gl.viewport(0, 0, width, height)
 
     this.defaultProgram.setResolution(width, height)
+
+    this.drawData = {
+      colors: [],
+      positions: [],
+      indices: [],
+    }
+  }
+
+  pushRect = ({ position, size, hsla }: Rect) => {
+    const { h, s, l, a } = hsla
+    const offset = this.drawData.positions.length / 2
+    this.drawData.colors.push(
+      h, s, l, a,
+      h, s, l, a,
+      h, s, l, a,
+      h, s, l, a,
+    )
+    const { x, y } = position
+    const { width, height } = size
+    this.drawData.positions.push(
+      x, y,
+      x, y + height,
+      x + width, y,
+      x + width, y + height,
+    )
+    this.drawData.indices.push(
+      0 + offset, 1 + offset, 2 + offset,
+      1 + offset, 2 + offset, 3 + offset,
+    )
+  }
+
+  drawBatch = (): void => {
+    this.defaultProgram.draw(this.drawData)
+    this.drawData = {
+      colors: [],
+      positions: [],
+      indices: [],
+    }
   }
 
   render = (ecs: ECS): void => {
     const gl = this.gl
     gl.clear(gl.COLOR_BUFFER_BIT)
-    const colors: number[] = []
-    const positions: number[] = []
-    const indices: number[] = []
 
-    interface Rect {
-      x: number
-      y: number
-      width: number
-      height: number
-      hsla: c.Hsla
-    }
-    const pushRect = ({ x, y, width, height, hsla }: Rect) => {
-      const { h, s, l, a } = hsla
-      const offset = positions.length / 2
-      colors.push(
-        h, s, l, a,
-        h, s, l, a,
-        h, s, l, a,
-        h, s, l, a,
-      )
-      positions.push(
-        x, y,
-        x, y + height,
-        x + width, y,
-        x + width, y + height,
-      )
-      indices.push(
-        0 + offset, 1 + offset, 2 + offset,
-        1 + offset, 2 + offset, 3 + offset,
-      )
-    }
     const ui = ecs.get(c.ActiveUI)!.entity
     const bg = ui.get(c.BackgroundColor)
     if (bg) {
-      pushRect({
-        x: 0,
-        y: 0,
-        width: this.size.width,
-        height: this.size.height,
+      this.pushRect({
+        position: { x: 0, y: 0 },
+        size: this.size,
         hsla: bg
       })
     }
@@ -229,8 +247,12 @@ export class WebGL2 {
       const x = computeX(child, width)
       const y = computeY(child, height)
       const left = child.get(c.Left)
-      pushRect({ x, y, width, height, hsla: bg })
+      this.pushRect({
+        position: { x, y },
+        size: { width, height },
+        hsla: bg
+      })
     }
-    this.defaultProgram.draw({ colors, positions, indices })
+    this.drawBatch()
   }
 }

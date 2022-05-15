@@ -27,7 +27,7 @@ in vec4 a_color;
 out vec4 v_color;
 
 void main() {
-  vec2 zeroToOne = a_position / u_resolution;
+  vec2 zeroToOne = a_position.xy / u_resolution;
   vec2 zeroToTwo = zeroToOne * 2.0;
   vec2 clipSpace = zeroToTwo - 1.0;
   gl_Position = vec4(clipSpace * vec2(1, -1), 0, 1);
@@ -129,32 +129,73 @@ void main() {
   }
 }
 
-interface Position {
+interface Rectangle {
   x: number
   y: number
-}
-
-interface Size {
   width: number
   height: number
 }
 
-interface Rect {
-  position: Position
-  size: Size
-  hsla: c.Hsla
+const computeX = (parentRect: Rectangle, entity: Entity, width: number): number => {
+  const left = entity.get(c.Left)
+  if (left) return parentRect.x + left.pixels
+  const right = entity.get(c.Right)!.pixels
+  return parentRect.x + parentRect.width - width - right
+}
+
+const computeY = (parentRect: Rectangle, entity: Entity, height: number): number => {
+  const top = entity.get(c.Top)
+  if (top) return parentRect.y + top.pixels
+  const bottom = entity.get(c.Bottom)!.pixels
+  return parentRect.y + parentRect.height - height - bottom
+}
+
+const explicitWidthAndHeight = (parentRect: Rectangle, entity: Entity, width: number): Rectangle => {
+  const height = entity.get(c.Height)!.pixels
+  const x = computeX(parentRect, entity, width)
+  const y = computeY(parentRect, entity, height)
+  return { x, y, width, height }
+}
+
+const implicitWidth = (parentRect: Rectangle, entity: Entity, height: number): Rectangle => {
+  const y = computeY(parentRect, entity, height)
+  const right = entity.get(c.Right)!.pixels
+  const left = entity.get(c.Left)!.pixels
+  const width = parentRect.width - right - left
+  const x = left + parentRect.x
+  return { x, y, width, height }
+}
+
+const implicitHeight = (parentRect: Rectangle, entity: Entity, width: number): Rectangle => {
+  const x = computeX(parentRect, entity, width)
+  const bottom = entity.get(c.Bottom)!.pixels
+  const top = entity.get(c.Top)!.pixels
+  const height = parentRect.height - bottom - top
+  const y = top + parentRect.y
+  return { x, y, width, height }
+}
+
+const implicitWidthAndHeight = (parentRect: Rectangle, entity: Entity): Rectangle => {
+  const top = entity.get(c.Top)!.pixels
+  const right = entity.get(c.Right)!.pixels
+  const bottom = entity.get(c.Bottom)!.pixels
+  const left = entity.get(c.Left)!.pixels
+  const x = left + parentRect.x
+  const y = top + parentRect.y
+  const height = parentRect.height - bottom - top
+  const width = parentRect.width - right - left
+  return { x, y, width, height }
 }
 
 export class WebGL2 {
   element: HTMLCanvasElement
   gl: WebGL2RenderingContext
   defaultProgram: DefaultProgram
-  size: Size
   drawData: DrawData
+  rect: Rectangle
 
-  constructor(size: Size) {
-    this.size = size
-    const { width, height } = size
+  constructor({ width, height }: { width: number, height: number }) {
+    this.rect = { x: 0, y: 0, width, height }
     const canvas = document.createElement('canvas')
     this.element = canvas
     canvas.width = width
@@ -181,8 +222,7 @@ export class WebGL2 {
     }
   }
 
-  pushRect = ({ position, size, hsla }: Rect) => {
-    const { h, s, l, a } = hsla
+  pushRect = ({ x, y, width, height }: Rectangle, { h, s, l, a }: c.Hsla) => {
     const offset = this.drawData.positions.length / 2
     this.drawData.colors.push(
       h, s, l, a,
@@ -190,8 +230,6 @@ export class WebGL2 {
       h, s, l, a,
       h, s, l, a,
     )
-    const { x, y } = position
-    const { width, height } = size
     this.drawData.positions.push(
       x, y,
       x, y + height,
@@ -213,88 +251,35 @@ export class WebGL2 {
     }
   }
 
+  renderChild = (parentRect: Rectangle, entity: Entity): void => {
+    const bg = entity.get(c.BackgroundColor)
+    const width = entity.get(c.Width)
+    const height = entity.get(c.Height)
+    const rect = (() => {
+      if (!width && !height) return implicitWidthAndHeight(parentRect, entity)
+      if (!width) return implicitWidth(parentRect, entity, height!.pixels)
+      if (!height) return implicitHeight(parentRect, entity, width.pixels)
+      return explicitWidthAndHeight(parentRect, entity, width.pixels)
+    })()
+    if (bg) this.pushRect(rect, bg)
+    this.renderChildren(rect, entity)
+  }
+
+  renderChildren = (parentRect: Rectangle, entity: Entity): void => {
+    const children = entity.get(c.Children)
+    if (!children) return
+    for (const child of children.entities) {
+      this.renderChild(parentRect, child)
+    }
+  }
+
   render = (ecs: ECS): void => {
     const gl = this.gl
     gl.clear(gl.COLOR_BUFFER_BIT)
-
     const ui = ecs.get(c.ActiveUI)!.entity
     const bg = ui.get(c.BackgroundColor)
-    if (bg) {
-      this.pushRect({
-        position: { x: 0, y: 0 },
-        size: this.size,
-        hsla: bg
-      })
-    }
-    const computeX = (entity: Entity, width: number): number => {
-      const left = entity.get(c.Left)
-      if (left) return left.pixels
-      const right = entity.get(c.Right)!.pixels
-      return this.size.width - width - right
-    }
-    const computeY = (entity: Entity, height: number): number => {
-      const top = entity.get(c.Top)
-      if (top) return top.pixels
-      const bottom = entity.get(c.Bottom)!.pixels
-      return this.size.height - height - bottom
-    }
-    const explicitWidthAndHeight = (entity: Entity, width: number, hsla: c.Hsla): void => {
-      const height = entity.get(c.Height)!.pixels
-      const x = computeX(entity, width)
-      const y = computeY(entity, height)
-      const left = entity.get(c.Left)
-      this.pushRect({
-        position: { x, y },
-        size: { width, height },
-        hsla
-      })
-    }
-    const implicitWidth = (entity: Entity, height: number, hsla: c.Hsla): void => {
-      const y = computeY(entity, height)
-      const right = entity.get(c.Right)!.pixels
-      const x = entity.get(c.Left)!.pixels
-      const width = this.size.width - right - x
-      this.pushRect({
-        position: { x, y },
-        size: { width, height },
-        hsla
-      })
-    }
-    const implicitHeight = (entity: Entity, width: number, hsla: c.Hsla): void => {
-      const x = computeX(entity, width)
-      const bottom = entity.get(c.Bottom)!.pixels
-      const y = entity.get(c.Top)!.pixels
-      const height = this.size.height - bottom - y
-      this.pushRect({
-        position: { x, y },
-        size: { width, height },
-        hsla
-      })
-    }
-    const implicitWidthAndHeight = (entity: Entity, hsla: c.Hsla): void => {
-      const x = entity.get(c.Left)!.pixels
-      const bottom = entity.get(c.Bottom)!.pixels
-      const right = entity.get(c.Right)!.pixels
-      const y = entity.get(c.Top)!.pixels
-      const height = this.size.height - bottom - y
-      const width = this.size.width - right - x
-      this.pushRect({
-        position: { x, y },
-        size: { width, height },
-        hsla
-      })
-    }
-    const children = ui.get(c.Children)
-    if (children) for (const child of children.entities) {
-      const bg = child.get(c.BackgroundColor)
-      if (!bg) continue
-      const width = child.get(c.Width)
-      const height = child.get(c.Height)
-      if (!width && !height) implicitWidthAndHeight(child, bg)
-      else if (!width) implicitWidth(child, height!.pixels, bg)
-      else if (!height) implicitHeight(child, width!.pixels, bg)
-      else explicitWidthAndHeight(child, width.pixels, bg)
-    }
+    if (bg) this.pushRect(this.rect, bg)
+    this.renderChildren(this.rect, ui)
     this.drawBatch()
   }
 }

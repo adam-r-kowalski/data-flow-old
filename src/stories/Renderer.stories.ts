@@ -38,14 +38,14 @@ export const Children = () => {
         new Studio.c.Left(25),
         new Studio.c.Width(200),
         new Studio.c.Height(100),
-        new Studio.c.BackgroundColor({ h: 279, s: 1, l: 0.7, a: 255 })
+        new Studio.c.BackgroundColor({ h: 0, s: 1, l: 0.7, a: 255 })
       ),
       ecs.entity(
-        new Studio.c.Top(200),
-        new Studio.c.Left(300),
+        new Studio.c.Top(25),
+        new Studio.c.Right(25),
         new Studio.c.Width(100),
         new Studio.c.Height(200),
-        new Studio.c.BackgroundColor({ h: 179, s: 1, l: 0.7, a: 255 })
+        new Studio.c.BackgroundColor({ h: 90, s: 1, l: 0.7, a: 255 })
       )
     ]),
   )

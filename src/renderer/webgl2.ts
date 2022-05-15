@@ -1,3 +1,4 @@
+
 import * as c from '../components'
 import { ECS } from '../ecs'
 
@@ -211,19 +212,29 @@ export class WebGL2 {
     const children = ui.get(c.Children)
     if (children) for (const child of children.entities) {
       const top = child.get(c.Top)!.pixels
-      const left = child.get(c.Left)!.pixels
       const width = child.get(c.Width)!.pixels
       const height = child.get(c.Height)!.pixels
       const bg = child.get(c.BackgroundColor)
-      if (bg) {
+      const left = child.get(c.Left)
+      if (!bg) continue
+      if (left) {
         pushRect({
-          x: left,
+          x: left.pixels,
           y: top,
           width,
           height,
           hsla: bg
         })
+        continue;
       }
+      const right = child.get(c.Right)!
+      pushRect({
+        x: this.size.width - width - right.pixels,
+        y: top,
+        width,
+        height,
+        hsla: bg
+      })
     }
     this.defaultProgram.draw({ colors, positions, indices })
   }

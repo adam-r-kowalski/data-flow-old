@@ -46,7 +46,21 @@ export const Children = () => {
         new Studio.c.Width(100),
         new Studio.c.Height(200),
         new Studio.c.BackgroundColor({ h: 90, s: 1, l: 0.7, a: 255 })
-      )
+      ),
+      ecs.entity(
+        new Studio.c.Bottom(25),
+        new Studio.c.Right(25),
+        new Studio.c.Width(200),
+        new Studio.c.Height(100),
+        new Studio.c.BackgroundColor({ h: 180, s: 1, l: 0.7, a: 255 })
+      ),
+      ecs.entity(
+        new Studio.c.Bottom(25),
+        new Studio.c.Left(25),
+        new Studio.c.Width(100),
+        new Studio.c.Height(200),
+        new Studio.c.BackgroundColor({ h: 270, s: 1, l: 0.7, a: 255 })
+      ),
     ]),
   )
   ecs.set(new Studio.c.ActiveUI(ui))

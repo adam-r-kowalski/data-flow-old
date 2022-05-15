@@ -1,6 +1,5 @@
-
 import * as c from '../components'
-import { ECS } from '../ecs'
+import { ECS, Entity } from '../ecs'
 
 interface DrawData {
   positions: number[]
@@ -209,32 +208,28 @@ export class WebGL2 {
         hsla: bg
       })
     }
+    const computeX = (entity: Entity, width: number): number => {
+      const left = entity.get(c.Left)
+      if (left) return left.pixels
+      const right = entity.get(c.Right)!.pixels
+      return this.size.width - width - right
+    }
+    const computeY = (entity: Entity, height: number): number => {
+      const top = entity.get(c.Top)
+      if (top) return top.pixels
+      const bottom = entity.get(c.Bottom)!.pixels
+      return this.size.height - height - bottom
+    }
     const children = ui.get(c.Children)
     if (children) for (const child of children.entities) {
-      const top = child.get(c.Top)!.pixels
+      const bg = child.get(c.BackgroundColor)
+      if (!bg) continue
       const width = child.get(c.Width)!.pixels
       const height = child.get(c.Height)!.pixels
-      const bg = child.get(c.BackgroundColor)
+      const x = computeX(child, width)
+      const y = computeY(child, height)
       const left = child.get(c.Left)
-      if (!bg) continue
-      if (left) {
-        pushRect({
-          x: left.pixels,
-          y: top,
-          width,
-          height,
-          hsla: bg
-        })
-        continue;
-      }
-      const right = child.get(c.Right)!
-      pushRect({
-        x: this.size.width - width - right.pixels,
-        y: top,
-        width,
-        height,
-        hsla: bg
-      })
+      pushRect({ x, y, width, height, hsla: bg })
     }
     this.defaultProgram.draw({ colors, positions, indices })
   }

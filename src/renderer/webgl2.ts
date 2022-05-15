@@ -238,20 +238,48 @@ export class WebGL2 {
       const bottom = entity.get(c.Bottom)!.pixels
       return this.size.height - height - bottom
     }
+    const explicitWidthAndHeight = (entity: Entity, width: number, hsla: c.Hsla): void => {
+      const height = entity.get(c.Height)!.pixels
+      const x = computeX(entity, width)
+      const y = computeY(entity, height)
+      const left = entity.get(c.Left)
+      this.pushRect({
+        position: { x, y },
+        size: { width, height },
+        hsla
+      })
+    }
+    const implicitWidth = (entity: Entity, height: number, hsla: c.Hsla): void => {
+      const y = computeY(entity, height)
+      const right = entity.get(c.Right)!.pixels
+      const x = entity.get(c.Left)!.pixels
+      const width = this.size.width - right - x
+      this.pushRect({
+        position: { x, y },
+        size: { width, height },
+        hsla
+      })
+    }
+    const implicitHeight = (entity: Entity, width: number, hsla: c.Hsla): void => {
+      const x = computeX(entity, width)
+      const bottom = entity.get(c.Bottom)!.pixels
+      const y = entity.get(c.Top)!.pixels
+      const height = this.size.height - bottom - y
+      this.pushRect({
+        position: { x, y },
+        size: { width, height },
+        hsla
+      })
+    }
     const children = ui.get(c.Children)
     if (children) for (const child of children.entities) {
       const bg = child.get(c.BackgroundColor)
       if (!bg) continue
-      const width = child.get(c.Width)!.pixels
-      const height = child.get(c.Height)!.pixels
-      const x = computeX(child, width)
-      const y = computeY(child, height)
-      const left = child.get(c.Left)
-      this.pushRect({
-        position: { x, y },
-        size: { width, height },
-        hsla: bg
-      })
+      const width = child.get(c.Width)
+      const height = child.get(c.Height)
+      if (!width) implicitWidth(child, height!.pixels, bg)
+      else if (!height) implicitHeight(child, width!.pixels, bg)
+      else explicitWidthAndHeight(child, width.pixels, bg)
     }
     this.drawBatch()
   }

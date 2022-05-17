@@ -1,4 +1,5 @@
-import * as c from '../components'
+import * as components from '../components'
+import * as systems from '../systems'
 import { ECS, Entity } from '../ecs'
 
 interface DrawData {
@@ -45,7 +46,7 @@ out vec4 fragColor;
 vec4 hslToRgb(in vec4 hsl) {
  float h = hsl.x / 360.0;
  vec3 rgb = clamp(abs(mod(h * 6.0 + vec3(0.0,4.0,2.0), 6.0) - 3.0) - 1.0, 0.0, 1.0);
- return vec4(hsl.z + hsl.y * (rgb - 0.5) * (1.0 - abs(2.0 * hsl.z - 1.0)), hsl.w / 255.0);
+ return vec4(hsl.z + hsl.y * (rgb - 0.5) * (1.0 - abs(2.0 * hsl.z - 1.0)), hsl.w);
 }
 
 void main() {
@@ -129,70 +130,12 @@ void main() {
   }
 }
 
-interface Rectangle {
-  x: number
-  y: number
-  width: number
-  height: number
-}
-
-const computeX = (parentRect: Rectangle, entity: Entity, width: number): number => {
-  const left = entity.get(c.Left)
-  if (left) return parentRect.x + left.pixels
-  const right = entity.get(c.Right)!.pixels
-  return parentRect.x + parentRect.width - width - right
-}
-
-const computeY = (parentRect: Rectangle, entity: Entity, height: number): number => {
-  const top = entity.get(c.Top)
-  if (top) return parentRect.y + top.pixels
-  const bottom = entity.get(c.Bottom)!.pixels
-  return parentRect.y + parentRect.height - height - bottom
-}
-
-const explicitWidthAndHeight = (parentRect: Rectangle, entity: Entity, width: number): Rectangle => {
-  const height = entity.get(c.Height)!.pixels
-  const x = computeX(parentRect, entity, width)
-  const y = computeY(parentRect, entity, height)
-  return { x, y, width, height }
-}
-
-const implicitWidth = (parentRect: Rectangle, entity: Entity, height: number): Rectangle => {
-  const y = computeY(parentRect, entity, height)
-  const right = entity.get(c.Right)!.pixels
-  const left = entity.get(c.Left)!.pixels
-  const width = parentRect.width - right - left
-  const x = left + parentRect.x
-  return { x, y, width, height }
-}
-
-const implicitHeight = (parentRect: Rectangle, entity: Entity, width: number): Rectangle => {
-  const x = computeX(parentRect, entity, width)
-  const bottom = entity.get(c.Bottom)!.pixels
-  const top = entity.get(c.Top)!.pixels
-  const height = parentRect.height - bottom - top
-  const y = top + parentRect.y
-  return { x, y, width, height }
-}
-
-const implicitWidthAndHeight = (parentRect: Rectangle, entity: Entity): Rectangle => {
-  const top = entity.get(c.Top)!.pixels
-  const right = entity.get(c.Right)!.pixels
-  const bottom = entity.get(c.Bottom)!.pixels
-  const left = entity.get(c.Left)!.pixels
-  const x = left + parentRect.x
-  const y = top + parentRect.y
-  const height = parentRect.height - bottom - top
-  const width = parentRect.width - right - left
-  return { x, y, width, height }
-}
-
 export class WebGL2 {
   element: HTMLCanvasElement
   gl: WebGL2RenderingContext
   defaultProgram: DefaultProgram
   drawData: DrawData
-  rect: Rectangle
+  rect: components.Rectangle
 
   constructor({ width, height }: { width: number, height: number }) {
     this.rect = { x: 0, y: 0, width, height }
@@ -222,7 +165,7 @@ export class WebGL2 {
     }
   }
 
-  pushRect = ({ x, y, width, height }: Rectangle, { h, s, l, a }: c.Hsla) => {
+  pushRect = ({ x, y, width, height }: components.Rectangle, { h, s, l, a }: components.Hsla) => {
     const offset = this.drawData.positions.length / 2
     this.drawData.colors.push(
       h, s, l, a,
@@ -251,35 +194,17 @@ export class WebGL2 {
     }
   }
 
-  renderChild = (parentRect: Rectangle, entity: Entity): void => {
-    const bg = entity.get(c.BackgroundColor)
-    const width = entity.get(c.Width)
-    const height = entity.get(c.Height)
-    const rect = (() => {
-      if (!width && !height) return implicitWidthAndHeight(parentRect, entity)
-      if (!width) return implicitWidth(parentRect, entity, height!.pixels)
-      if (!height) return implicitHeight(parentRect, entity, width.pixels)
-      return explicitWidthAndHeight(parentRect, entity, width.pixels)
-    })()
-    if (bg) this.pushRect(rect, bg)
-    this.renderChildren(rect, entity)
-  }
-
-  renderChildren = (parentRect: Rectangle, entity: Entity): void => {
-    const children = entity.get(c.Children)
-    if (!children) return
-    for (const child of children.entities) {
-      this.renderChild(parentRect, child)
-    }
-  }
-
   render = (ecs: ECS): void => {
     const gl = this.gl
     gl.clear(gl.COLOR_BUFFER_BIT)
-    const ui = ecs.get(c.ActiveUI)!.entity
-    const bg = ui.get(c.BackgroundColor)
-    if (bg) this.pushRect(this.rect, bg)
-    this.renderChildren(this.rect, ui)
+    systems.computeSize(this.rect, ecs)
+    for (const layer of ecs.get(components.Layers)!.stack) {
+      for (const entity of layer) {
+        const bg = entity.get(components.BackgroundColor)
+        if (!bg) continue
+        this.pushRect(entity.get(components.ComputedRectangle)!, bg)
+      }
+    }
     this.drawBatch()
   }
 }

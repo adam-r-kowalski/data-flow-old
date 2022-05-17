@@ -34,3 +34,42 @@ export class BackgroundColor {
 }
 
 export class Children { constructor(public entities: Entity[]) { } }
+
+export class VerticalStack { constructor(public entities: Entity[]) { } }
+
+export interface Rectangle {
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
+export class ComputedRectangle {
+  x: number
+  y: number
+  width: number
+  height: number
+
+  constructor({ x, y, width, height }: Rectangle) {
+    this.x = x
+    this.y = y
+    this.width = width
+    this.height = height
+  }
+}
+
+export class Layers {
+  stack: Entity[][]
+
+  constructor() {
+    this.stack = []
+  }
+
+  push = (layer: number, entity: Entity): void => {
+    const needed_layers = layer + 1 - this.stack.length
+    for (let i = 0; i < needed_layers; ++i) {
+      this.stack.push([])
+    }
+    this.stack[layer].push(entity)
+  }
+}

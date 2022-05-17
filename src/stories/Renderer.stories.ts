@@ -8,9 +8,9 @@ export const Empty = () => {
   const renderer = new Studio.renderer.WebGL2({ width: 500, height: 500 })
   const ecs = new Studio.ECS()
   const ui = ecs.entity(
-    new Studio.c.UI(),
+    new Studio.components.UI(),
   )
-  ecs.set(new Studio.c.ActiveUI(ui))
+  ecs.set(new Studio.components.ActiveUI(ui))
   renderer.render(ecs)
   return renderer.element
 }
@@ -19,10 +19,10 @@ export const BackgroundColor = () => {
   const renderer = new Studio.renderer.WebGL2({ width: 500, height: 500 })
   const ecs = new Studio.ECS()
   const ui = ecs.entity(
-    new Studio.c.UI(),
-    new Studio.c.BackgroundColor({ h: 279, s: 1, l: 0.7, a: 255 })
+    new Studio.components.UI(),
+    new Studio.components.BackgroundColor({ h: 279, s: 1, l: 0.7, a: 1 })
   )
-  ecs.set(new Studio.c.ActiveUI(ui))
+  ecs.set(new Studio.components.ActiveUI(ui))
   renderer.render(ecs)
   return renderer.element
 }
@@ -31,39 +31,39 @@ export const ExplicitWidthAndHeight = () => {
   const renderer = new Studio.renderer.WebGL2({ width: 500, height: 500 })
   const ecs = new Studio.ECS()
   const ui = ecs.entity(
-    new Studio.c.UI(),
-    new Studio.c.Children([
+    new Studio.components.UI(),
+    new Studio.components.Children([
       ecs.entity(
-        new Studio.c.Top(25),
-        new Studio.c.Left(25),
-        new Studio.c.Width(200),
-        new Studio.c.Height(100),
-        new Studio.c.BackgroundColor({ h: 0, s: 1, l: 0.7, a: 255 })
+        new Studio.components.Top(25),
+        new Studio.components.Left(25),
+        new Studio.components.Width(200),
+        new Studio.components.Height(100),
+        new Studio.components.BackgroundColor({ h: 0, s: 1, l: 0.7, a: 1 })
       ),
       ecs.entity(
-        new Studio.c.Top(25),
-        new Studio.c.Right(25),
-        new Studio.c.Width(100),
-        new Studio.c.Height(200),
-        new Studio.c.BackgroundColor({ h: 90, s: 1, l: 0.7, a: 255 })
+        new Studio.components.Top(25),
+        new Studio.components.Right(25),
+        new Studio.components.Width(100),
+        new Studio.components.Height(200),
+        new Studio.components.BackgroundColor({ h: 90, s: 1, l: 0.7, a: 1 })
       ),
       ecs.entity(
-        new Studio.c.Bottom(25),
-        new Studio.c.Right(25),
-        new Studio.c.Width(200),
-        new Studio.c.Height(100),
-        new Studio.c.BackgroundColor({ h: 180, s: 1, l: 0.7, a: 255 })
+        new Studio.components.Bottom(25),
+        new Studio.components.Right(25),
+        new Studio.components.Width(200),
+        new Studio.components.Height(100),
+        new Studio.components.BackgroundColor({ h: 180, s: 1, l: 0.7, a: 1 })
       ),
       ecs.entity(
-        new Studio.c.Bottom(25),
-        new Studio.c.Left(25),
-        new Studio.c.Width(100),
-        new Studio.c.Height(200),
-        new Studio.c.BackgroundColor({ h: 270, s: 1, l: 0.7, a: 255 })
+        new Studio.components.Bottom(25),
+        new Studio.components.Left(25),
+        new Studio.components.Width(100),
+        new Studio.components.Height(200),
+        new Studio.components.BackgroundColor({ h: 270, s: 1, l: 0.7, a: 1 })
       ),
     ]),
   )
-  ecs.set(new Studio.c.ActiveUI(ui))
+  ecs.set(new Studio.components.ActiveUI(ui))
   renderer.render(ecs)
   return renderer.element
 }
@@ -72,25 +72,25 @@ export const ImplicitWidth = () => {
   const renderer = new Studio.renderer.WebGL2({ width: 500, height: 500 })
   const ecs = new Studio.ECS()
   const ui = ecs.entity(
-    new Studio.c.UI(),
-    new Studio.c.Children([
+    new Studio.components.UI(),
+    new Studio.components.Children([
       ecs.entity(
-        new Studio.c.Top(25),
-        new Studio.c.Left(25),
-        new Studio.c.Right(25),
-        new Studio.c.Height(100),
-        new Studio.c.BackgroundColor({ h: 0, s: 1, l: 0.7, a: 255 })
+        new Studio.components.Top(25),
+        new Studio.components.Left(25),
+        new Studio.components.Right(25),
+        new Studio.components.Height(100),
+        new Studio.components.BackgroundColor({ h: 0, s: 1, l: 0.7, a: 1 })
       ),
       ecs.entity(
-        new Studio.c.Bottom(25),
-        new Studio.c.Left(25),
-        new Studio.c.Right(25),
-        new Studio.c.Height(100),
-        new Studio.c.BackgroundColor({ h: 90, s: 1, l: 0.7, a: 255 })
+        new Studio.components.Bottom(25),
+        new Studio.components.Left(25),
+        new Studio.components.Right(25),
+        new Studio.components.Height(100),
+        new Studio.components.BackgroundColor({ h: 90, s: 1, l: 0.7, a: 1 })
       ),
     ]),
   )
-  ecs.set(new Studio.c.ActiveUI(ui))
+  ecs.set(new Studio.components.ActiveUI(ui))
   renderer.render(ecs)
   return renderer.element
 }
@@ -99,25 +99,25 @@ export const ImplicitHeight = () => {
   const renderer = new Studio.renderer.WebGL2({ width: 500, height: 500 })
   const ecs = new Studio.ECS()
   const ui = ecs.entity(
-    new Studio.c.UI(),
-    new Studio.c.Children([
+    new Studio.components.UI(),
+    new Studio.components.Children([
       ecs.entity(
-        new Studio.c.Top(25),
-        new Studio.c.Left(25),
-        new Studio.c.Bottom(25),
-        new Studio.c.Width(100),
-        new Studio.c.BackgroundColor({ h: 0, s: 1, l: 0.7, a: 255 })
+        new Studio.components.Top(25),
+        new Studio.components.Left(25),
+        new Studio.components.Bottom(25),
+        new Studio.components.Width(100),
+        new Studio.components.BackgroundColor({ h: 0, s: 1, l: 0.7, a: 1 })
       ),
       ecs.entity(
-        new Studio.c.Top(25),
-        new Studio.c.Right(25),
-        new Studio.c.Bottom(25),
-        new Studio.c.Width(100),
-        new Studio.c.BackgroundColor({ h: 90, s: 1, l: 0.7, a: 255 })
+        new Studio.components.Top(25),
+        new Studio.components.Right(25),
+        new Studio.components.Bottom(25),
+        new Studio.components.Width(100),
+        new Studio.components.BackgroundColor({ h: 90, s: 1, l: 0.7, a: 1 })
       ),
     ]),
   )
-  ecs.set(new Studio.c.ActiveUI(ui))
+  ecs.set(new Studio.components.ActiveUI(ui))
   renderer.render(ecs)
   return renderer.element
 }
@@ -126,18 +126,18 @@ export const ImplicitWidthAndHeight = () => {
   const renderer = new Studio.renderer.WebGL2({ width: 500, height: 500 })
   const ecs = new Studio.ECS()
   const ui = ecs.entity(
-    new Studio.c.UI(),
-    new Studio.c.Children([
+    new Studio.components.UI(),
+    new Studio.components.Children([
       ecs.entity(
-        new Studio.c.Top(25),
-        new Studio.c.Right(25),
-        new Studio.c.Bottom(25),
-        new Studio.c.Left(25),
-        new Studio.c.BackgroundColor({ h: 0, s: 1, l: 0.7, a: 255 })
+        new Studio.components.Top(25),
+        new Studio.components.Right(25),
+        new Studio.components.Bottom(25),
+        new Studio.components.Left(25),
+        new Studio.components.BackgroundColor({ h: 0, s: 1, l: 0.7, a: 1 })
       ),
     ]),
   )
-  ecs.set(new Studio.c.ActiveUI(ui))
+  ecs.set(new Studio.components.ActiveUI(ui))
   renderer.render(ecs)
   return renderer.element
 }
@@ -146,46 +146,46 @@ export const Transparency = () => {
   const renderer = new Studio.renderer.WebGL2({ width: 500, height: 500 })
   const ecs = new Studio.ECS()
   const ui = ecs.entity(
-    new Studio.c.UI(),
-    new Studio.c.Children([
+    new Studio.components.UI(),
+    new Studio.components.Children([
       ecs.entity(
-        new Studio.c.Top(25),
-        new Studio.c.Left(25),
-        new Studio.c.Width(200),
-        new Studio.c.Height(100),
-        new Studio.c.BackgroundColor({ h: 90, s: 1, l: 0.7, a: 255 })
+        new Studio.components.Top(25),
+        new Studio.components.Left(25),
+        new Studio.components.Width(200),
+        new Studio.components.Height(100),
+        new Studio.components.BackgroundColor({ h: 90, s: 1, l: 0.7, a: 1 })
       ),
       ecs.entity(
-        new Studio.c.Top(25),
-        new Studio.c.Right(25),
-        new Studio.c.Width(100),
-        new Studio.c.Height(200),
-        new Studio.c.BackgroundColor({ h: 90, s: 1, l: 0.7, a: 255 * 0.8 })
+        new Studio.components.Top(25),
+        new Studio.components.Right(25),
+        new Studio.components.Width(100),
+        new Studio.components.Height(200),
+        new Studio.components.BackgroundColor({ h: 90, s: 1, l: 0.7, a: 0.8 })
       ),
       ecs.entity(
-        new Studio.c.Bottom(25),
-        new Studio.c.Right(25),
-        new Studio.c.Width(200),
-        new Studio.c.Height(100),
-        new Studio.c.BackgroundColor({ h: 90, s: 1, l: 0.7, a: 255 * 0.6 })
+        new Studio.components.Bottom(25),
+        new Studio.components.Right(25),
+        new Studio.components.Width(200),
+        new Studio.components.Height(100),
+        new Studio.components.BackgroundColor({ h: 90, s: 1, l: 0.7, a: 0.6 })
       ),
       ecs.entity(
-        new Studio.c.Bottom(25),
-        new Studio.c.Left(25),
-        new Studio.c.Width(100),
-        new Studio.c.Height(200),
-        new Studio.c.BackgroundColor({ h: 90, s: 1, l: 0.7, a: 255 * 0.4 })
+        new Studio.components.Bottom(25),
+        new Studio.components.Left(25),
+        new Studio.components.Width(100),
+        new Studio.components.Height(200),
+        new Studio.components.BackgroundColor({ h: 90, s: 1, l: 0.7, a: 0.4 })
       ),
       ecs.entity(
-        new Studio.c.Top(200),
-        new Studio.c.Right(200),
-        new Studio.c.Bottom(200),
-        new Studio.c.Left(200),
-        new Studio.c.BackgroundColor({ h: 90, s: 1, l: 0.7, a: 255 * 0.2 })
+        new Studio.components.Top(200),
+        new Studio.components.Right(200),
+        new Studio.components.Bottom(200),
+        new Studio.components.Left(200),
+        new Studio.components.BackgroundColor({ h: 90, s: 1, l: 0.7, a: 0.2 })
       ),
     ]),
   )
-  ecs.set(new Studio.c.ActiveUI(ui))
+  ecs.set(new Studio.components.ActiveUI(ui))
   renderer.render(ecs)
   return renderer.element
 }
@@ -194,112 +194,112 @@ export const NestedChildren = () => {
   const renderer = new Studio.renderer.WebGL2({ width: 500, height: 500 })
   const ecs = new Studio.ECS()
   const ui = ecs.entity(
-    new Studio.c.UI(),
-    new Studio.c.Children([
+    new Studio.components.UI(),
+    new Studio.components.Children([
       ecs.entity(
-        new Studio.c.Top(25),
-        new Studio.c.Right(25),
-        new Studio.c.Bottom(25),
-        new Studio.c.Left(25),
-        new Studio.c.BackgroundColor({ h: 0, s: 0.5, l: 0.7, a: 255 }),
-        new Studio.c.Children([
+        new Studio.components.Top(25),
+        new Studio.components.Right(25),
+        new Studio.components.Bottom(25),
+        new Studio.components.Left(25),
+        new Studio.components.BackgroundColor({ h: 0, s: 0.5, l: 0.7, a: 1 }),
+        new Studio.components.Children([
           ecs.entity(
-            new Studio.c.Top(25),
-            new Studio.c.Right(100),
-            new Studio.c.Left(100),
-            new Studio.c.Height(50),
-            new Studio.c.BackgroundColor({ h: 30, s: 0.7, l: 0.7, a: 255 }),
+            new Studio.components.Top(25),
+            new Studio.components.Right(100),
+            new Studio.components.Left(100),
+            new Studio.components.Height(50),
+            new Studio.components.BackgroundColor({ h: 30, s: 0.7, l: 0.7, a: 1 }),
           ),
           ecs.entity(
-            new Studio.c.Top(100),
-            new Studio.c.Bottom(100),
-            new Studio.c.Right(25),
-            new Studio.c.Width(50),
-            new Studio.c.BackgroundColor({ h: 60, s: 0.7, l: 0.7, a: 255 }),
+            new Studio.components.Top(100),
+            new Studio.components.Bottom(100),
+            new Studio.components.Right(25),
+            new Studio.components.Width(50),
+            new Studio.components.BackgroundColor({ h: 60, s: 0.7, l: 0.7, a: 1 }),
           ),
           ecs.entity(
-            new Studio.c.Bottom(25),
-            new Studio.c.Right(100),
-            new Studio.c.Left(100),
-            new Studio.c.Height(50),
-            new Studio.c.BackgroundColor({ h: 90, s: 0.7, l: 0.7, a: 255 }),
+            new Studio.components.Bottom(25),
+            new Studio.components.Right(100),
+            new Studio.components.Left(100),
+            new Studio.components.Height(50),
+            new Studio.components.BackgroundColor({ h: 90, s: 0.7, l: 0.7, a: 1 }),
           ),
           ecs.entity(
-            new Studio.c.Top(100),
-            new Studio.c.Bottom(100),
-            new Studio.c.Left(25),
-            new Studio.c.Width(50),
-            new Studio.c.BackgroundColor({ h: 120, s: 0.7, l: 0.7, a: 255 }),
+            new Studio.components.Top(100),
+            new Studio.components.Bottom(100),
+            new Studio.components.Left(25),
+            new Studio.components.Width(50),
+            new Studio.components.BackgroundColor({ h: 120, s: 0.7, l: 0.7, a: 1 }),
           ),
           ecs.entity(
-            new Studio.c.Top(25),
-            new Studio.c.Left(25),
-            new Studio.c.Width(50),
-            new Studio.c.Height(50),
-            new Studio.c.BackgroundColor({ h: 150, s: 0.7, l: 0.7, a: 255 }),
+            new Studio.components.Top(25),
+            new Studio.components.Left(25),
+            new Studio.components.Width(50),
+            new Studio.components.Height(50),
+            new Studio.components.BackgroundColor({ h: 150, s: 0.7, l: 0.7, a: 1 }),
           ),
           ecs.entity(
-            new Studio.c.Top(25),
-            new Studio.c.Right(25),
-            new Studio.c.Width(50),
-            new Studio.c.Height(50),
-            new Studio.c.BackgroundColor({ h: 180, s: 0.7, l: 0.7, a: 255 }),
+            new Studio.components.Top(25),
+            new Studio.components.Right(25),
+            new Studio.components.Width(50),
+            new Studio.components.Height(50),
+            new Studio.components.BackgroundColor({ h: 180, s: 0.7, l: 0.7, a: 1 }),
           ),
           ecs.entity(
-            new Studio.c.Bottom(25),
-            new Studio.c.Right(25),
-            new Studio.c.Width(50),
-            new Studio.c.Height(50),
-            new Studio.c.BackgroundColor({ h: 210, s: 0.7, l: 0.7, a: 255 }),
+            new Studio.components.Bottom(25),
+            new Studio.components.Right(25),
+            new Studio.components.Width(50),
+            new Studio.components.Height(50),
+            new Studio.components.BackgroundColor({ h: 210, s: 0.7, l: 0.7, a: 1 }),
           ),
           ecs.entity(
-            new Studio.c.Bottom(25),
-            new Studio.c.Left(25),
-            new Studio.c.Width(50),
-            new Studio.c.Height(50),
-            new Studio.c.BackgroundColor({ h: 240, s: 0.7, l: 0.7, a: 255 }),
+            new Studio.components.Bottom(25),
+            new Studio.components.Left(25),
+            new Studio.components.Width(50),
+            new Studio.components.Height(50),
+            new Studio.components.BackgroundColor({ h: 240, s: 0.7, l: 0.7, a: 1 }),
           ),
           ecs.entity(
-            new Studio.c.Top(100),
-            new Studio.c.Right(100),
-            new Studio.c.Bottom(100),
-            new Studio.c.Left(100),
-            new Studio.c.BackgroundColor({ h: 270, s: 0.7, l: 0.7, a: 255 }),
-            new Studio.c.Children([
+            new Studio.components.Top(100),
+            new Studio.components.Right(100),
+            new Studio.components.Bottom(100),
+            new Studio.components.Left(100),
+            new Studio.components.BackgroundColor({ h: 270, s: 0.7, l: 0.7, a: 1 }),
+            new Studio.components.Children([
               ecs.entity(
-                new Studio.c.Top(25),
-                new Studio.c.Left(25),
-                new Studio.c.Width(50),
-                new Studio.c.Height(100),
-                new Studio.c.BackgroundColor({ h: 300, s: 0.9, l: 0.7, a: 255 }),
+                new Studio.components.Top(25),
+                new Studio.components.Left(25),
+                new Studio.components.Width(50),
+                new Studio.components.Height(100),
+                new Studio.components.BackgroundColor({ h: 300, s: 0.9, l: 0.7, a: 1 }),
               ),
               ecs.entity(
-                new Studio.c.Top(25),
-                new Studio.c.Right(25),
-                new Studio.c.Width(100),
-                new Studio.c.Height(50),
-                new Studio.c.BackgroundColor({ h: 330, s: 0.9, l: 0.7, a: 255 }),
+                new Studio.components.Top(25),
+                new Studio.components.Right(25),
+                new Studio.components.Width(100),
+                new Studio.components.Height(50),
+                new Studio.components.BackgroundColor({ h: 330, s: 0.9, l: 0.7, a: 1 }),
               ),
               ecs.entity(
-                new Studio.c.Bottom(25),
-                new Studio.c.Right(25),
-                new Studio.c.Width(50),
-                new Studio.c.Height(100),
-                new Studio.c.BackgroundColor({ h: 0, s: 0.9, l: 0.7, a: 255 }),
+                new Studio.components.Bottom(25),
+                new Studio.components.Right(25),
+                new Studio.components.Width(50),
+                new Studio.components.Height(100),
+                new Studio.components.BackgroundColor({ h: 0, s: 0.9, l: 0.7, a: 1 }),
               ),
               ecs.entity(
-                new Studio.c.Bottom(25),
-                new Studio.c.Left(25),
-                new Studio.c.Width(100),
-                new Studio.c.Height(50),
-                new Studio.c.BackgroundColor({ h: 30, s: 0.9, l: 0.7, a: 255 }),
+                new Studio.components.Bottom(25),
+                new Studio.components.Left(25),
+                new Studio.components.Width(100),
+                new Studio.components.Height(50),
+                new Studio.components.BackgroundColor({ h: 30, s: 0.9, l: 0.7, a: 1 }),
               ),
               ecs.entity(
-                new Studio.c.Top(100),
-                new Studio.c.Right(100),
-                new Studio.c.Bottom(100),
-                new Studio.c.Left(100),
-                new Studio.c.BackgroundColor({ h: 60, s: 1, l: 0.7, a: 255 }),
+                new Studio.components.Top(100),
+                new Studio.components.Right(100),
+                new Studio.components.Bottom(100),
+                new Studio.components.Left(100),
+                new Studio.components.BackgroundColor({ h: 60, s: 1, l: 0.7, a: 1 }),
               ),
             ])
           ),
@@ -307,7 +307,127 @@ export const NestedChildren = () => {
       ),
     ]),
   )
-  ecs.set(new Studio.c.ActiveUI(ui))
+  ecs.set(new Studio.components.ActiveUI(ui))
+  renderer.render(ecs)
+  return renderer.element
+}
+
+export const VerticalStack = () => {
+  const renderer = new Studio.renderer.WebGL2({ width: 500, height: 500 })
+  const ecs = new Studio.ECS()
+  const ui = ecs.entity(
+    new Studio.components.UI(),
+    new Studio.components.VerticalStack([
+      ecs.entity(
+        new Studio.components.Height(100),
+        new Studio.components.BackgroundColor({ h: 0, s: 1, l: 0.7, a: 1 })
+      ),
+      ecs.entity(
+        new Studio.components.Height(200),
+        new Studio.components.BackgroundColor({ h: 30, s: 1, l: 0.7, a: 1 })
+      ),
+      ecs.entity(
+        new Studio.components.Height(100),
+        new Studio.components.BackgroundColor({ h: 60, s: 1, l: 0.7, a: 1 })
+      ),
+      ecs.entity(
+        new Studio.components.Height(100),
+        new Studio.components.BackgroundColor({ h: 90, s: 1, l: 0.7, a: 1 })
+      ),
+    ]),
+  )
+  ecs.set(new Studio.components.ActiveUI(ui))
+  renderer.render(ecs)
+  return renderer.element
+}
+
+export const VerticalStackInChildren = () => {
+  const renderer = new Studio.renderer.WebGL2({ width: 500, height: 500 })
+  const ecs = new Studio.ECS()
+  const ui = ecs.entity(
+    new Studio.components.UI(),
+    new Studio.components.Children([
+      ecs.entity(
+        new Studio.components.Top(25),
+        new Studio.components.Left(25),
+        new Studio.components.Bottom(25),
+        new Studio.components.Width(200),
+        new Studio.components.BackgroundColor({ h: 0, s: 1, l: 0.7, a: 1 }),
+        new Studio.components.VerticalStack([
+          ecs.entity(new Studio.components.Height(25)),
+          ecs.entity(
+            new Studio.components.Height(100),
+            new Studio.components.BackgroundColor({ h: 30, s: 1, l: 0.7, a: 1 })
+          ),
+          ecs.entity(
+            new Studio.components.Height(100),
+            new Studio.components.BackgroundColor({ h: 60, s: 1, l: 0.7, a: 1 })
+          ),
+          ecs.entity(
+            new Studio.components.Height(100),
+            new Studio.components.BackgroundColor({ h: 90, s: 1, l: 0.7, a: 1 })
+          ),
+          ecs.entity(
+            new Studio.components.Height(100),
+            new Studio.components.BackgroundColor({ h: 120, s: 1, l: 0.7, a: 1 })
+          ),
+        ]),
+      ),
+      ecs.entity(
+        new Studio.components.Top(25),
+        new Studio.components.Right(25),
+        new Studio.components.Bottom(25),
+        new Studio.components.Width(200),
+        new Studio.components.BackgroundColor({ h: 150, s: 1, l: 0.7, a: 1 }),
+        new Studio.components.VerticalStack([
+          ecs.entity(new Studio.components.Height(25)),
+          ecs.entity(
+            new Studio.components.Height(100),
+            new Studio.components.BackgroundColor({ h: 180, s: 1, l: 0.7, a: 1 })
+          ),
+          ecs.entity(
+            new Studio.components.Height(100),
+            new Studio.components.BackgroundColor({ h: 210, s: 1, l: 0.7, a: 1 })
+          ),
+          ecs.entity(
+            new Studio.components.Height(100),
+            new Studio.components.BackgroundColor({ h: 240, s: 1, l: 0.7, a: 1 })
+          ),
+          ecs.entity(
+            new Studio.components.Height(100),
+            new Studio.components.BackgroundColor({ h: 270, s: 1, l: 0.7, a: 1 })
+          ),
+        ]),
+      )
+    ]),
+  )
+  ecs.set(new Studio.components.ActiveUI(ui))
+  renderer.render(ecs)
+  return renderer.element
+}
+
+export const VerticalStackImplicitHeight = () => {
+  const renderer = new Studio.renderer.WebGL2({ width: 500, height: 500 })
+  const ecs = new Studio.ECS()
+  const ui = ecs.entity(
+    new Studio.components.UI(),
+    new Studio.components.Children([
+      ecs.entity(
+        new Studio.components.Top(25),
+        new Studio.components.Left(25),
+        new Studio.components.Bottom(25),
+        new Studio.components.Width(200),
+        new Studio.components.BackgroundColor({ h: 0, s: 1, l: 0.7, a: 1 }),
+        new Studio.components.VerticalStack([
+          ecs.entity(
+            new Studio.components.Height(25),
+            new Studio.components.BackgroundColor({ h: 30, s: 1, l: 0.7, a: 1 })
+          ),
+        ]),
+      ),
+    ]),
+  )
+  ecs.set(new Studio.components.ActiveUI(ui))
   renderer.render(ecs)
   return renderer.element
 }

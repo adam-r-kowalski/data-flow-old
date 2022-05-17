@@ -1,3 +1,3 @@
 export * as renderer from './renderer'
-export * as c from './components'
+export * as components from './components'
 export { ECS } from './ecs'

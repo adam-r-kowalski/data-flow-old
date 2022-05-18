@@ -5,33 +5,35 @@ export default {
 }
 
 export const Empty = () => {
-  const renderer = new Studio.renderer.WebGL2({ width: 500, height: 500 })
+  const webgl2 = new Studio.renderer.WebGL2({ width: 500, height: 500 })
   const ecs = new Studio.ECS()
-  const ui = ecs.entity(
-    new Studio.components.UI(),
+  const ui = ecs.entity()
+  ecs.set(
+    new Studio.components.Renderer(webgl2),
+    new Studio.components.UI(ui)
   )
-  ecs.set(new Studio.components.ActiveUI(ui))
-  renderer.render(ecs)
-  return renderer.element
+  Studio.systems.render(ecs)
+  return webgl2.element
 }
 
 export const BackgroundColor = () => {
-  const renderer = new Studio.renderer.WebGL2({ width: 500, height: 500 })
+  const webgl2 = new Studio.renderer.WebGL2({ width: 500, height: 500 })
   const ecs = new Studio.ECS()
   const ui = ecs.entity(
-    new Studio.components.UI(),
     new Studio.components.BackgroundColor({ h: 279, s: 1, l: 0.7, a: 1 })
   )
-  ecs.set(new Studio.components.ActiveUI(ui))
-  renderer.render(ecs)
-  return renderer.element
+  ecs.set(
+    new Studio.components.Renderer(webgl2),
+    new Studio.components.UI(ui)
+  )
+  Studio.systems.render(ecs)
+  return webgl2.element
 }
 
 export const ExplicitWidthAndHeight = () => {
-  const renderer = new Studio.renderer.WebGL2({ width: 500, height: 500 })
+  const webgl2 = new Studio.renderer.WebGL2({ width: 500, height: 500 })
   const ecs = new Studio.ECS()
   const ui = ecs.entity(
-    new Studio.components.UI(),
     new Studio.components.Children([
       ecs.entity(
         new Studio.components.Top(25),
@@ -63,16 +65,18 @@ export const ExplicitWidthAndHeight = () => {
       ),
     ]),
   )
-  ecs.set(new Studio.components.ActiveUI(ui))
-  renderer.render(ecs)
-  return renderer.element
+  ecs.set(
+    new Studio.components.Renderer(webgl2),
+    new Studio.components.UI(ui)
+  )
+  Studio.systems.render(ecs)
+  return webgl2.element
 }
 
 export const ImplicitWidth = () => {
-  const renderer = new Studio.renderer.WebGL2({ width: 500, height: 500 })
+  const webgl2 = new Studio.renderer.WebGL2({ width: 500, height: 500 })
   const ecs = new Studio.ECS()
   const ui = ecs.entity(
-    new Studio.components.UI(),
     new Studio.components.Children([
       ecs.entity(
         new Studio.components.Top(25),
@@ -90,16 +94,18 @@ export const ImplicitWidth = () => {
       ),
     ]),
   )
-  ecs.set(new Studio.components.ActiveUI(ui))
-  renderer.render(ecs)
-  return renderer.element
+  ecs.set(
+    new Studio.components.Renderer(webgl2),
+    new Studio.components.UI(ui)
+  )
+  Studio.systems.render(ecs)
+  return webgl2.element
 }
 
 export const ImplicitHeight = () => {
-  const renderer = new Studio.renderer.WebGL2({ width: 500, height: 500 })
+  const webgl2 = new Studio.renderer.WebGL2({ width: 500, height: 500 })
   const ecs = new Studio.ECS()
   const ui = ecs.entity(
-    new Studio.components.UI(),
     new Studio.components.Children([
       ecs.entity(
         new Studio.components.Top(25),
@@ -117,16 +123,18 @@ export const ImplicitHeight = () => {
       ),
     ]),
   )
-  ecs.set(new Studio.components.ActiveUI(ui))
-  renderer.render(ecs)
-  return renderer.element
+  ecs.set(
+    new Studio.components.Renderer(webgl2),
+    new Studio.components.UI(ui)
+  )
+  Studio.systems.render(ecs)
+  return webgl2.element
 }
 
 export const ImplicitWidthAndHeight = () => {
-  const renderer = new Studio.renderer.WebGL2({ width: 500, height: 500 })
+  const webgl2 = new Studio.renderer.WebGL2({ width: 500, height: 500 })
   const ecs = new Studio.ECS()
   const ui = ecs.entity(
-    new Studio.components.UI(),
     new Studio.components.Children([
       ecs.entity(
         new Studio.components.Top(25),
@@ -137,16 +145,18 @@ export const ImplicitWidthAndHeight = () => {
       ),
     ]),
   )
-  ecs.set(new Studio.components.ActiveUI(ui))
-  renderer.render(ecs)
-  return renderer.element
+  ecs.set(
+    new Studio.components.Renderer(webgl2),
+    new Studio.components.UI(ui)
+  )
+  Studio.systems.render(ecs)
+  return webgl2.element
 }
 
 export const Transparency = () => {
-  const renderer = new Studio.renderer.WebGL2({ width: 500, height: 500 })
+  const webgl2 = new Studio.renderer.WebGL2({ width: 500, height: 500 })
   const ecs = new Studio.ECS()
   const ui = ecs.entity(
-    new Studio.components.UI(),
     new Studio.components.Children([
       ecs.entity(
         new Studio.components.Top(25),
@@ -185,16 +195,18 @@ export const Transparency = () => {
       ),
     ]),
   )
-  ecs.set(new Studio.components.ActiveUI(ui))
-  renderer.render(ecs)
-  return renderer.element
+  ecs.set(
+    new Studio.components.Renderer(webgl2),
+    new Studio.components.UI(ui)
+  )
+  Studio.systems.render(ecs)
+  return webgl2.element
 }
 
 export const NestedChildren = () => {
-  const renderer = new Studio.renderer.WebGL2({ width: 500, height: 500 })
+  const webgl2 = new Studio.renderer.WebGL2({ width: 500, height: 500 })
   const ecs = new Studio.ECS()
   const ui = ecs.entity(
-    new Studio.components.UI(),
     new Studio.components.Children([
       ecs.entity(
         new Studio.components.Top(25),
@@ -307,16 +319,18 @@ export const NestedChildren = () => {
       ),
     ]),
   )
-  ecs.set(new Studio.components.ActiveUI(ui))
-  renderer.render(ecs)
-  return renderer.element
+  ecs.set(
+    new Studio.components.Renderer(webgl2),
+    new Studio.components.UI(ui)
+  )
+  Studio.systems.render(ecs)
+  return webgl2.element
 }
 
 export const VerticalStack = () => {
-  const renderer = new Studio.renderer.WebGL2({ width: 500, height: 500 })
+  const webgl2 = new Studio.renderer.WebGL2({ width: 500, height: 500 })
   const ecs = new Studio.ECS()
   const ui = ecs.entity(
-    new Studio.components.UI(),
     new Studio.components.VerticalStack([
       ecs.entity(
         new Studio.components.Height(100),
@@ -336,16 +350,18 @@ export const VerticalStack = () => {
       ),
     ]),
   )
-  ecs.set(new Studio.components.ActiveUI(ui))
-  renderer.render(ecs)
-  return renderer.element
+  ecs.set(
+    new Studio.components.Renderer(webgl2),
+    new Studio.components.UI(ui)
+  )
+  Studio.systems.render(ecs)
+  return webgl2.element
 }
 
 export const VerticalStackInChildren = () => {
-  const renderer = new Studio.renderer.WebGL2({ width: 500, height: 500 })
+  const webgl2 = new Studio.renderer.WebGL2({ width: 500, height: 500 })
   const ecs = new Studio.ECS()
   const ui = ecs.entity(
-    new Studio.components.UI(),
     new Studio.components.Children([
       ecs.entity(
         new Studio.components.Top(25),
@@ -401,16 +417,18 @@ export const VerticalStackInChildren = () => {
       )
     ]),
   )
-  ecs.set(new Studio.components.ActiveUI(ui))
-  renderer.render(ecs)
-  return renderer.element
+  ecs.set(
+    new Studio.components.Renderer(webgl2),
+    new Studio.components.UI(ui)
+  )
+  Studio.systems.render(ecs)
+  return webgl2.element
 }
 
 export const VerticalStackImplicitHeight = () => {
-  const renderer = new Studio.renderer.WebGL2({ width: 500, height: 500 })
+  const webgl2 = new Studio.renderer.WebGL2({ width: 500, height: 500 })
   const ecs = new Studio.ECS()
   const ui = ecs.entity(
-    new Studio.components.UI(),
     new Studio.components.Children([
       ecs.entity(
         new Studio.components.Top(25),
@@ -427,7 +445,10 @@ export const VerticalStackImplicitHeight = () => {
       ),
     ]),
   )
-  ecs.set(new Studio.components.ActiveUI(ui))
-  renderer.render(ecs)
-  return renderer.element
+  ecs.set(
+    new Studio.components.Renderer(webgl2),
+    new Studio.components.UI(ui)
+  )
+  Studio.systems.render(ecs)
+  return webgl2.element
 }

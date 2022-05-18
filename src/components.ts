@@ -1,8 +1,6 @@
 import { Entity } from './ecs'
 
-export class UI { }
-
-export class ActiveUI { constructor(public entity: Entity) { } }
+export class UI { constructor(public entity: Entity) { } }
 
 export class Width { constructor(public pixels: number) { } }
 export class Height { constructor(public pixels: number) { } }
@@ -72,4 +70,33 @@ export class Layers {
     }
     this.stack[layer].push(entity)
   }
+}
+
+export interface Size {
+  width: number
+  height: number
+}
+
+interface RendererInterface {
+  getSize: () => Size
+  setSize: (Size) => void
+  clear: () => void
+  drawRectangle: (Rectangle, Hsla) => void
+  flush: () => void
+}
+
+export class Renderer {
+  constructor(public renderer: RendererInterface) { }
+
+  getSize = () => this.renderer.getSize()
+
+  setSize = (size: Size) => this.renderer.setSize(size)
+
+  clear = (): void => { this.renderer.clear() }
+
+  drawRectangle = (rect: Rectangle, color: Hsla): void => {
+    this.renderer.drawRectangle(rect, color)
+  }
+
+  flush = (): void => { this.renderer.flush() }
 }

@@ -16,7 +16,6 @@ class DefaultProgram {
   indexBuffer: WebGLBuffer
   vertexArrayObject: WebGLVertexArrayObject
   gl: WebGL2RenderingContext
-  count: number
 
   constructor(gl: WebGL2RenderingContext) {
     const vertexShaderSource = `#version 300 es
@@ -135,29 +134,20 @@ export class WebGL2 {
   gl: WebGL2RenderingContext
   defaultProgram: DefaultProgram
   drawData: DrawData
-  rect: components.Rectangle
+  size: components.Size
 
-  constructor({ width, height }: { width: number, height: number }) {
-    this.rect = { x: 0, y: 0, width, height }
+  constructor(size: components.Size) {
     const canvas = document.createElement('canvas')
     this.element = canvas
-    canvas.width = width
-    canvas.height = height
     canvas.style.display = 'block'
     const gl = canvas.getContext('webgl2')!
     this.gl = gl
-
     this.defaultProgram = new DefaultProgram(gl)
     this.defaultProgram.use()
-
     gl.enable(gl.BLEND)
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
-
     gl.clearColor(0.0, 0.0, 0.0, 1.0)
-    gl.viewport(0, 0, width, height)
-
-    this.defaultProgram.setResolution(width, height)
-
+    this.setSize(size)
     this.drawData = {
       colors: [],
       positions: [],
@@ -165,7 +155,23 @@ export class WebGL2 {
     }
   }
 
-  pushRect = ({ x, y, width, height }: components.Rectangle, { h, s, l, a }: components.Hsla) => {
+  getSize = (): components.Size => this.size
+
+  setSize = (size: components.Size): void => {
+    const { width, height } = size
+    this.size = size
+    this.element.width = width
+    this.element.height = height
+    this.gl.viewport(0, 0, width, height)
+    this.defaultProgram.setResolution(width, height)
+  }
+
+  clear = (): void => {
+    const gl = this.gl
+    gl.clear(gl.COLOR_BUFFER_BIT)
+  }
+
+  drawRectangle = ({ x, y, width, height }: components.Rectangle, { h, s, l, a }: components.Hsla) => {
     const offset = this.drawData.positions.length / 2
     this.drawData.colors.push(
       h, s, l, a,
@@ -185,26 +191,12 @@ export class WebGL2 {
     )
   }
 
-  drawBatch = (): void => {
+  flush = (): void => {
     this.defaultProgram.draw(this.drawData)
     this.drawData = {
       colors: [],
       positions: [],
       indices: [],
     }
-  }
-
-  render = (ecs: ECS): void => {
-    const gl = this.gl
-    gl.clear(gl.COLOR_BUFFER_BIT)
-    systems.computeSize(this.rect, ecs)
-    for (const layer of ecs.get(components.Layers)!.stack) {
-      for (const entity of layer) {
-        const bg = entity.get(components.BackgroundColor)
-        if (!bg) continue
-        this.pushRect(entity.get(components.ComputedRectangle)!, bg)
-      }
-    }
-    this.drawBatch()
   }
 }

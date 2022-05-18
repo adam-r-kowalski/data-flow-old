@@ -90,9 +90,11 @@ const computeVerticalStackSize = (layers: components.Layers, parentRect: compone
   }
 }
 
-export const computeSize = (parentRect: components.Rectangle, ecs: ECS): void => {
+export const computeSize = (ecs: ECS): void => {
   const layers = new components.Layers()
-  const ui = ecs.get(components.ActiveUI)!.entity
+  const ui = ecs.get(components.UI)!.entity
+  const { width, height } = ecs.get(components.Renderer)!.getSize()
+  const parentRect = { x: 0, y: 0, width, height }
   ui.set(new components.ComputedRectangle(parentRect))
   layers.push(0, ui)
   computeChildrenSize(layers, parentRect, ui, 1)

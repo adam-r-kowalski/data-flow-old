@@ -68,6 +68,36 @@ test("set two components", () => {
   expect(joe.get(Age)!.value).toEqual(25)
 })
 
+test("update components", () => {
+  class Age {
+    constructor(public value: number) { }
+  }
+
+  const ecs = new Studio.ECS()
+  const joe = ecs.entity(new Age(25))
+  expect(joe.get(Age)!.value).toEqual(25)
+  joe.update(Age, age => age.value += 1)
+  expect(joe.get(Age)!.value).toEqual(26)
+})
+
+test("unset all components", () => {
+  class Name {
+    constructor(public value: string) { }
+  }
+
+  class Age {
+    constructor(public value: number) { }
+  }
+
+  const ecs = new Studio.ECS()
+  const joe = ecs.entity(new Name("Joe"), new Age(25))
+  const betty = ecs.entity(new Name("Betty"), new Age(23))
+  ecs.unsetAll(Age)
+  expect(joe.get(Name)!.value).toEqual("Joe")
+  expect(joe.get(Age)).toBeUndefined()
+  expect(betty.get(Name)!.value).toEqual("Betty")
+  expect(betty.get(Age)).toBeUndefined()
+})
 
 test("query entities with component", () => {
   class Name {

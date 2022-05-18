@@ -40,38 +40,71 @@ const implicitHeight = (layers: components.Layers, parentRect: components.Rectan
     const height = parentRect.height - bottom.pixels - top.pixels
     return { x, y, width, height }
   }
+  entity.set(new components.VerticalStackAnalyzed())
+  const y = top ?
+    top.pixels + parentRect.y :
+    parentRect.y + parentRect.height - bottom!.pixels
   const children = entity.get(components.VerticalStack)!.entities
-  let offset = 0
+  let entityHeight = 0
   for (const child of children) {
     const height = child.get(components.Height)!.pixels
     const rect = {
-      x: parentRect.x,
-      y: parentRect.y + offset,
-      width: parentRect.width,
+      x,
+      y: y + entityHeight,
+      width,
       height
     }
-    offset += height
     child.set(new components.ComputedRectangle(rect))
     layers.push(z, child)
+    entityHeight += height
   }
-  if (top) {
-    const y = top.pixels + parentRect.y
-    return { x, y, width, height: offset }
+  if (!top) for (const child of children) {
+    child.update(components.ComputedRectangle, rect => rect.y -= entityHeight)
+    return { x, y: y - entityHeight, width, height: entityHeight }
   }
-  const y = parentRect.y + parentRect.height - bottom!.pixels - offset
-  return { x, y, width, height: offset }
+  return { x, y, width, height: entityHeight }
 }
 
-const implicitWidthAndHeight = (parentRect: components.Rectangle, entity: Entity): components.Rectangle => {
+const implicitWidthAndHeight = (layers: components.Layers, parentRect: components.Rectangle, entity: Entity, z: number): components.Rectangle => {
   const top = entity.get(components.Top)!.pixels
-  const right = entity.get(components.Right)!.pixels
-  const bottom = entity.get(components.Bottom)!.pixels
   const left = entity.get(components.Left)!.pixels
   const x = left + parentRect.x
   const y = top + parentRect.y
-  const height = parentRect.height - bottom - top
-  const width = parentRect.width - right - left
-  return { x, y, width, height }
+  const right = entity.get(components.Right)
+  const bottom = entity.get(components.Bottom)
+  if (right && bottom) {
+    const height = parentRect.height - bottom.pixels - top
+    const width = parentRect.width - right.pixels - left
+    return { x, y, width, height }
+  }
+  entity.set(new components.VerticalStackAnalyzed())
+  const children = entity.get(components.VerticalStack)!.entities
+  let entityHeight = 0
+  let entityWidth = 0
+  const needsWidth: Entity[] = []
+  for (const child of children) {
+    const height = child.get(components.Height)!.pixels
+    const width = child.get(components.Width)
+    const rect = new components.ComputedRectangle({
+      x,
+      y: y + entityHeight,
+      width: -1,
+      height
+    })
+    entityHeight += height
+    if (width) {
+      entityWidth = Math.max(entityWidth, width.pixels)
+      rect.width = width.pixels
+    } else {
+      needsWidth.push(child)
+    }
+    child.set(rect)
+    layers.push(z, child)
+  }
+  for (const child of needsWidth) {
+    child.update(components.ComputedRectangle, rect => rect.width = entityWidth)
+  }
+  return { x, y, width: entityWidth, height: entityHeight }
 }
 
 const computeChildrenSize = (layers: components.Layers, parentRect: components.Rectangle, entity: Entity, z: number): void => {
@@ -82,7 +115,7 @@ const computeChildrenSize = (layers: components.Layers, parentRect: components.R
     const width = child.get(components.Width)
     const height = child.get(components.Height)
     const rect = (() => {
-      if (!width && !height) return implicitWidthAndHeight(parentRect, child)
+      if (!width && !height) return implicitWidthAndHeight(layers, parentRect, child, nextZ)
       if (!width) return implicitWidth(parentRect, child, height!.pixels)
       if (!height) return implicitHeight(layers, parentRect, child, width.pixels, nextZ)
       return explicitWidthAndHeight(parentRect, child, width.pixels)
@@ -95,6 +128,7 @@ const computeChildrenSize = (layers: components.Layers, parentRect: components.R
 }
 
 const computeVerticalStackSize = (layers: components.Layers, parentRect: components.Rectangle, entity: Entity, z: number): void => {
+  if (entity.get(components.VerticalStackAnalyzed)) return
   const children = entity.get(components.VerticalStack)
   if (!children) return
   let offset = 0
@@ -122,4 +156,5 @@ export const computeSize = (ecs: ECS): void => {
   computeChildrenSize(layers, parentRect, ui, 1)
   computeVerticalStackSize(layers, parentRect, ui, 1)
   ecs.set(layers)
+  ecs.unsetAll(components.VerticalStackAnalyzed)
 }

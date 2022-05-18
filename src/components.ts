@@ -34,6 +34,8 @@ export class BackgroundColor {
 export class Children { constructor(public entities: Entity[]) { } }
 
 export class VerticalStack { constructor(public entities: Entity[]) { } }
+export class VerticalStackAnalyzed { }
+
 
 export interface Rectangle {
   x: number

@@ -6,9 +6,7 @@ class Storage<T> {
   inverses: number[]
 
   constructor() {
-    this.lookup = new Map()
-    this.data = []
-    this.inverses = []
+    this.clear()
   }
 
   get = (entity: Entity): T | undefined => {
@@ -31,6 +29,12 @@ class Storage<T> {
     this.data.push(component)
     this.inverses.push(entity.id)
   }
+
+  clear = (): void => {
+    this.lookup = new Map()
+    this.data = []
+    this.inverses = []
+  }
 }
 
 export class Entity {
@@ -52,6 +56,14 @@ export class Entity {
   get = <T>(Type: Component<T>): Readonly<T> | undefined => {
     const storage = this.ecs.storages.get(Type)
     return storage ? storage.get(this) : undefined
+  }
+
+  update = <T>(Type: Component<T>, f: (T) => void): void => {
+    const storage = this.ecs.storages.get(Type)
+    if (!storage) return
+    const component = storage.get(this)
+    if (!component) return
+    f(component)
   }
 }
 
@@ -93,5 +105,11 @@ export class ECS {
 
   get = <T>(Type: Component<T>): T | undefined => {
     return this.resources.get(Type)
+  }
+
+  unsetAll = <T>(Type: Component<T>): void => {
+    const storage = this.storages.get(Type)
+    if (!storage) return
+    storage.clear()
   }
 }

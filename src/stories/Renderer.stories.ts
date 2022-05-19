@@ -4,7 +4,6 @@ export default {
   title: "Renderer",
 }
 
-
 export const Empty = () => {
   const webgl2 = new Studio.renderer.WebGL2({ width: 500, height: 500 })
   const ecs = new Studio.ECS()

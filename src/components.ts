@@ -32,10 +32,10 @@ export class BackgroundColor {
 }
 
 export class Children { constructor(public entities: Entity[]) { } }
-
 export class VerticalStack { constructor(public entities: Entity[]) { } }
 export class VerticalStackAnalyzed { }
-
+export class HorizontalStack { constructor(public entities: Entity[]) { } }
+export class HorizontalStackAnalyzed { }
 
 export interface Rectangle {
   x: number

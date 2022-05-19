@@ -140,6 +140,7 @@ const computeChildrenSize = (layers: components.Layers, parentRect: components.R
     layers.push(z, child)
     computeChildrenSize(layers, rect, child, nextZ)
     computeVerticalStackSize(layers, rect, child, nextZ)
+    computeHorizontalStackSize(layers, rect, child, nextZ)
   }
 }
 
@@ -162,6 +163,25 @@ const computeVerticalStackSize = (layers: components.Layers, parentRect: compone
   }
 }
 
+const computeHorizontalStackSize = (layers: components.Layers, parentRect: components.Rectangle, entity: Entity, z: number): void => {
+  if (entity.get(components.HorizontalStackAnalyzed)) return
+  const children = entity.get(components.HorizontalStack)
+  if (!children) return
+  let offset = 0
+  for (const child of children.entities) {
+    const width = child.get(components.Width)!.pixels
+    const rect = {
+      x: parentRect.x + offset,
+      y: parentRect.y,
+      width,
+      height: parentRect.height
+    }
+    offset += width
+    child.set(new components.ComputedRectangle(rect))
+    layers.push(z, child)
+  }
+}
+
 export const computeSize = (ecs: ECS): void => {
   const { width, height } = ecs.get(components.Renderer)!.getSize()
   const parentRect = { x: 0, y: 0, width, height }
@@ -171,6 +191,7 @@ export const computeSize = (ecs: ECS): void => {
   layers.push(0, ui)
   computeChildrenSize(layers, parentRect, ui, 1)
   computeVerticalStackSize(layers, parentRect, ui, 1)
+  computeHorizontalStackSize(layers, parentRect, ui, 1)
   ecs.set(layers)
   ecs.unsetAll(components.VerticalStackAnalyzed)
 }

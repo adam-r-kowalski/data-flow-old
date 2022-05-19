@@ -22,13 +22,38 @@ const explicitWidthAndHeight = (parentRect: components.Rectangle, entity: Entity
   return { x, y, width, height }
 }
 
-const implicitWidth = (parentRect: components.Rectangle, entity: Entity, height: number): components.Rectangle => {
+const implicitWidth = (layers: components.Layers, parentRect: components.Rectangle, entity: Entity, height: number, z: number): components.Rectangle => {
   const y = computeY(parentRect, entity, height)
-  const right = entity.get(components.Right)!.pixels
-  const left = entity.get(components.Left)!.pixels
-  const width = parentRect.width - right - left
-  const x = left + parentRect.x
-  return { x, y, width, height }
+  const right = entity.get(components.Right)
+  const left = entity.get(components.Left)
+  if (right && left) {
+    const x = left.pixels + parentRect.x
+    const width = parentRect.width - right.pixels - left.pixels
+    return { x, y, width, height }
+  }
+  entity.set(new components.HorizontalStackAnalyzed())
+  const x = left ?
+    left.pixels + parentRect.x :
+    parentRect.x + parentRect.width - right!.pixels
+  const children = entity.get(components.HorizontalStack)!.entities
+  let entityWidth = 0
+  for (const child of children) {
+    const width = child.get(components.Width)!.pixels
+    const rect = {
+      x: x + entityWidth,
+      y,
+      width,
+      height
+    }
+    child.set(new components.ComputedRectangle(rect))
+    layers.push(z, child)
+    entityWidth += width
+  }
+  if (left) return { x, y, width: entityWidth, height }
+  for (const child of children) {
+    child.update(components.ComputedRectangle, rect => rect.x -= entityWidth)
+  }
+  return { x: x - entityWidth, y, width: entityWidth, height }
 }
 
 const implicitHeight = (layers: components.Layers, parentRect: components.Rectangle, entity: Entity, width: number, z: number): components.Rectangle => {
@@ -132,7 +157,7 @@ const computeChildrenSize = (layers: components.Layers, parentRect: components.R
     const height = child.get(components.Height)
     const rect = (() => {
       if (!width && !height) return implicitWidthAndHeight(layers, parentRect, child, nextZ)
-      if (!width) return implicitWidth(parentRect, child, height!.pixels)
+      if (!width) return implicitWidth(layers, parentRect, child, height!.pixels, nextZ)
       if (!height) return implicitHeight(layers, parentRect, child, width.pixels, nextZ)
       return explicitWidthAndHeight(parentRect, child, width.pixels)
     })()

@@ -15,4 +15,5 @@ export const render = (ecs: ECS): void => {
     }
   }
   renderer.flush()
+  ecs.unsetAll(components.ComputedRectangle)
 }

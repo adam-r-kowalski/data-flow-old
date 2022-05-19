@@ -468,7 +468,6 @@ export const VerticalStackImplicitHeight = () => {
           ecs.entity(new Studio.components.Height(25)),
         ]),
       ),
-      /*
       ecs.entity(
         new Studio.components.Bottom(25),
         new Studio.components.Right(25),
@@ -507,7 +506,6 @@ export const VerticalStackImplicitHeight = () => {
           ecs.entity(new Studio.components.Height(25)),
         ]),
       ),
-      */
     ]),
   )
   ecs.set(

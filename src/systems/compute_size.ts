@@ -58,11 +58,11 @@ const implicitHeight = (layers: components.Layers, parentRect: components.Rectan
     layers.push(z, child)
     entityHeight += height
   }
-  if (!top) for (const child of children) {
+  if (top) return { x, y, width, height: entityHeight }
+  for (const child of children) {
     child.update(components.ComputedRectangle, rect => rect.y -= entityHeight)
-    return { x, y: y - entityHeight, width, height: entityHeight }
   }
-  return { x, y, width, height: entityHeight }
+  return { x, y: y - entityHeight, width, height: entityHeight }
 }
 
 const implicitWidthAndHeight = (layers: components.Layers, parentRect: components.Rectangle, entity: Entity, z: number): components.Rectangle => {

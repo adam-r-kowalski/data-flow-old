@@ -935,3 +935,315 @@ test("horizontal stack", () => {
   expect(rect(child2)).toEqual({ x: 300, y: 0, width: 100, height: 500 })
   expect(rect(child3)).toEqual({ x: 400, y: 0, width: 100, height: 500 })
 })
+
+test("horizontal stack explicit top left right height", () => {
+  const testing = new Studio.renderer.Testing({ width: 500, height: 500 })
+  const ecs = new Studio.ECS()
+  const child0 = ecs.entity(new Studio.components.Width(25))
+  const child1 = ecs.entity(new Studio.components.Width(100))
+  const child2 = ecs.entity(new Studio.components.Width(100))
+  const child3 = ecs.entity(new Studio.components.Width(100))
+  const child4 = ecs.entity(new Studio.components.Width(100))
+  const child = ecs.entity(
+    new Studio.components.Top(25),
+    new Studio.components.Left(25),
+    new Studio.components.Right(25),
+    new Studio.components.Height(200),
+    new Studio.components.HorizontalStack([child0, child1, child2, child3, child4])
+  )
+  const ui = ecs.entity(new Studio.components.Children([child]))
+  ecs.set(
+    new Studio.components.Renderer(testing),
+    new Studio.components.UI(ui)
+  )
+  Studio.systems.computeSize(ecs)
+  expect(rect(ui)).toEqual({ x: 0, y: 0, width: 500, height: 500 })
+  expect(rect(child)).toEqual({ x: 25, y: 25, width: 450, height: 200, })
+  expect(rect(child0)).toEqual({ x: 25, y: 25, width: 25, height: 200, })
+  expect(rect(child1)).toEqual({ x: 50, y: 25, width: 100, height: 200, })
+  expect(rect(child2)).toEqual({ x: 150, y: 25, width: 100, height: 200, })
+  expect(rect(child3)).toEqual({ x: 250, y: 25, width: 100, height: 200, })
+  expect(rect(child4)).toEqual({ x: 350, y: 25, width: 100, height: 200, })
+})
+
+test("horizontal stack explicit left bottom right height", () => {
+  const testing = new Studio.renderer.Testing({ width: 500, height: 500 })
+  const ecs = new Studio.ECS()
+  const child0 = ecs.entity(new Studio.components.Width(25))
+  const child1 = ecs.entity(new Studio.components.Width(100))
+  const child2 = ecs.entity(new Studio.components.Width(100))
+  const child3 = ecs.entity(new Studio.components.Width(100))
+  const child4 = ecs.entity(new Studio.components.Width(100))
+  const child = ecs.entity(
+    new Studio.components.Left(25),
+    new Studio.components.Bottom(25),
+    new Studio.components.Right(25),
+    new Studio.components.Height(200),
+    new Studio.components.HorizontalStack([child0, child1, child2, child3, child4])
+  )
+  const ui = ecs.entity(new Studio.components.Children([child]))
+  ecs.set(
+    new Studio.components.Renderer(testing),
+    new Studio.components.UI(ui)
+  )
+  Studio.systems.computeSize(ecs)
+  expect(rect(ui)).toEqual({ x: 0, y: 0, width: 500, height: 500 })
+  expect(rect(child)).toEqual({ x: 25, y: 275, width: 450, height: 200 })
+  expect(rect(child0)).toEqual({ x: 25, y: 275, width: 25, height: 200 })
+  expect(rect(child1)).toEqual({ x: 50, y: 275, width: 100, height: 200 })
+  expect(rect(child2)).toEqual({ x: 150, y: 275, width: 100, height: 200 })
+  expect(rect(child3)).toEqual({ x: 250, y: 275, width: 100, height: 200 })
+  expect(rect(child4)).toEqual({ x: 350, y: 275, width: 100, height: 200 })
+})
+
+test("horizontal stack explicit top left height", () => {
+  const testing = new Studio.renderer.Testing({ width: 500, height: 500 })
+  const ecs = new Studio.ECS()
+  const child0 = ecs.entity(new Studio.components.Width(25))
+  const child1 = ecs.entity(new Studio.components.Width(50))
+  const child2 = ecs.entity(new Studio.components.Width(25))
+  const child3 = ecs.entity(new Studio.components.Width(50))
+  const child4 = ecs.entity(new Studio.components.Width(25))
+  const child = ecs.entity(
+    new Studio.components.Top(25),
+    new Studio.components.Left(25),
+    new Studio.components.Height(200),
+    new Studio.components.HorizontalStack([child0, child1, child2, child3, child4])
+  )
+  const ui = ecs.entity(new Studio.components.Children([child]))
+  ecs.set(
+    new Studio.components.Renderer(testing),
+    new Studio.components.UI(ui)
+  )
+  Studio.systems.computeSize(ecs)
+  expect(rect(ui)).toEqual({ x: 0, y: 0, width: 500, height: 500 })
+  expect(rect(child)).toEqual({ x: 25, y: 25, width: 175, height: 200 })
+  expect(rect(child0)).toEqual({ x: 25, y: 25, width: 25, height: 200 })
+  expect(rect(child1)).toEqual({ x: 50, y: 25, width: 50, height: 200 })
+  expect(rect(child2)).toEqual({ x: 100, y: 25, width: 25, height: 200 })
+  expect(rect(child3)).toEqual({ x: 125, y: 25, width: 50, height: 200 })
+  expect(rect(child4)).toEqual({ x: 175, y: 25, width: 25, height: 200 })
+})
+
+test("horizontal stack explicit top right height", () => {
+  const testing = new Studio.renderer.Testing({ width: 500, height: 500 })
+  const ecs = new Studio.ECS()
+  const child0 = ecs.entity(new Studio.components.Width(25))
+  const child1 = ecs.entity(new Studio.components.Width(50))
+  const child2 = ecs.entity(new Studio.components.Width(25))
+  const child3 = ecs.entity(new Studio.components.Width(50))
+  const child4 = ecs.entity(new Studio.components.Width(25))
+  const child = ecs.entity(
+    new Studio.components.Top(25),
+    new Studio.components.Right(25),
+    new Studio.components.Height(200),
+    new Studio.components.HorizontalStack([child0, child1, child2, child3, child4])
+  )
+  const ui = ecs.entity(new Studio.components.Children([child]))
+  ecs.set(
+    new Studio.components.Renderer(testing),
+    new Studio.components.UI(ui)
+  )
+  Studio.systems.computeSize(ecs)
+  expect(rect(ui)).toEqual({ x: 0, y: 0, width: 500, height: 500 })
+  expect(rect(child)).toEqual({ x: 300, y: 25, width: 175, height: 200 })
+  expect(rect(child0)).toEqual({ x: 300, y: 25, width: 25, height: 200 })
+  expect(rect(child1)).toEqual({ x: 325, y: 25, width: 50, height: 200 })
+  expect(rect(child2)).toEqual({ x: 375, y: 25, width: 25, height: 200 })
+  expect(rect(child3)).toEqual({ x: 400, y: 25, width: 50, height: 200 })
+  expect(rect(child4)).toEqual({ x: 450, y: 25, width: 25, height: 200 })
+})
+
+test("horizontal stack explicit bottom right height", () => {
+  const testing = new Studio.renderer.Testing({ width: 500, height: 500 })
+  const ecs = new Studio.ECS()
+  const child0 = ecs.entity(new Studio.components.Width(25))
+  const child1 = ecs.entity(new Studio.components.Width(50))
+  const child2 = ecs.entity(new Studio.components.Width(25))
+  const child3 = ecs.entity(new Studio.components.Width(50))
+  const child4 = ecs.entity(new Studio.components.Width(25))
+  const child = ecs.entity(
+    new Studio.components.Bottom(25),
+    new Studio.components.Right(25),
+    new Studio.components.Height(200),
+    new Studio.components.HorizontalStack([child0, child1, child2, child3, child4])
+  )
+  const ui = ecs.entity(new Studio.components.Children([child]))
+  ecs.set(
+    new Studio.components.Renderer(testing),
+    new Studio.components.UI(ui)
+  )
+  Studio.systems.computeSize(ecs)
+  expect(rect(ui)).toEqual({ x: 0, y: 0, width: 500, height: 500 })
+  expect(rect(child)).toEqual({ x: 300, y: 275, width: 175, height: 200 })
+  expect(rect(child0)).toEqual({ x: 300, y: 275, width: 25, height: 200 })
+  expect(rect(child1)).toEqual({ x: 325, y: 275, width: 50, height: 200 })
+  expect(rect(child2)).toEqual({ x: 375, y: 275, width: 25, height: 200 })
+  expect(rect(child3)).toEqual({ x: 400, y: 275, width: 50, height: 200 })
+  expect(rect(child4)).toEqual({ x: 450, y: 275, width: 25, height: 200 })
+})
+
+test("horizontal stack explicit bottom left height", () => {
+  const testing = new Studio.renderer.Testing({ width: 500, height: 500 })
+  const ecs = new Studio.ECS()
+  const child0 = ecs.entity(new Studio.components.Width(25))
+  const child1 = ecs.entity(new Studio.components.Width(50))
+  const child2 = ecs.entity(new Studio.components.Width(25))
+  const child3 = ecs.entity(new Studio.components.Width(50))
+  const child4 = ecs.entity(new Studio.components.Width(25))
+  const child = ecs.entity(
+    new Studio.components.Bottom(25),
+    new Studio.components.Left(25),
+    new Studio.components.Height(200),
+    new Studio.components.HorizontalStack([child0, child1, child2, child3, child4])
+  )
+  const ui = ecs.entity(new Studio.components.Children([child]))
+  ecs.set(
+    new Studio.components.Renderer(testing),
+    new Studio.components.UI(ui)
+  )
+  Studio.systems.computeSize(ecs)
+  expect(rect(ui)).toEqual({ x: 0, y: 0, width: 500, height: 500 })
+  expect(rect(child)).toEqual({ x: 25, y: 275, width: 175, height: 200 })
+  expect(rect(child0)).toEqual({ x: 25, y: 275, width: 25, height: 200 })
+  expect(rect(child1)).toEqual({ x: 50, y: 275, width: 50, height: 200 })
+  expect(rect(child2)).toEqual({ x: 100, y: 275, width: 25, height: 200 })
+  expect(rect(child3)).toEqual({ x: 125, y: 275, width: 50, height: 200 })
+  expect(rect(child4)).toEqual({ x: 175, y: 275, width: 25, height: 200 })
+})
+
+test("horizontal stack explicit top left", () => {
+  const testing = new Studio.renderer.Testing({ width: 500, height: 500 })
+  const ecs = new Studio.ECS()
+  const child0 = ecs.entity(new Studio.components.Width(25))
+  const child1 = ecs.entity(
+    new Studio.components.Width(50),
+    new Studio.components.Height(200),
+  )
+  const child2 = ecs.entity(new Studio.components.Width(25))
+  const child3 = ecs.entity(
+    new Studio.components.Width(50),
+    new Studio.components.Height(100),
+  )
+  const child4 = ecs.entity(new Studio.components.Width(25))
+  const child = ecs.entity(
+    new Studio.components.Top(25),
+    new Studio.components.Left(25),
+    new Studio.components.HorizontalStack([child0, child1, child2, child3, child4])
+  )
+  const ui = ecs.entity(new Studio.components.Children([child]))
+  ecs.set(
+    new Studio.components.Renderer(testing),
+    new Studio.components.UI(ui)
+  )
+  Studio.systems.computeSize(ecs)
+  expect(rect(ui)).toEqual({ x: 0, y: 0, width: 500, height: 500 })
+  expect(rect(child)).toEqual({ x: 25, y: 25, width: 175, height: 200 })
+  expect(rect(child0)).toEqual({ x: 25, y: 25, width: 25, height: 200 })
+  expect(rect(child1)).toEqual({ x: 50, y: 25, width: 50, height: 200 })
+  expect(rect(child2)).toEqual({ x: 100, y: 25, width: 25, height: 200 })
+  expect(rect(child3)).toEqual({ x: 125, y: 25, width: 50, height: 100 })
+  expect(rect(child4)).toEqual({ x: 175, y: 25, width: 25, height: 200 })
+})
+
+test("horizontal stack explicit top right", () => {
+  const testing = new Studio.renderer.Testing({ width: 500, height: 500 })
+  const ecs = new Studio.ECS()
+  const child0 = ecs.entity(new Studio.components.Width(25))
+  const child1 = ecs.entity(
+    new Studio.components.Width(50),
+    new Studio.components.Height(200),
+  )
+  const child2 = ecs.entity(new Studio.components.Width(25))
+  const child3 = ecs.entity(
+    new Studio.components.Width(50),
+    new Studio.components.Height(100),
+  )
+  const child4 = ecs.entity(new Studio.components.Width(25))
+  const child = ecs.entity(
+    new Studio.components.Top(25),
+    new Studio.components.Right(25),
+    new Studio.components.HorizontalStack([child0, child1, child2, child3, child4])
+  )
+  const ui = ecs.entity(new Studio.components.Children([child]))
+  ecs.set(
+    new Studio.components.Renderer(testing),
+    new Studio.components.UI(ui)
+  )
+  Studio.systems.computeSize(ecs)
+  expect(rect(ui)).toEqual({ x: 0, y: 0, width: 500, height: 500 })
+  expect(rect(child)).toEqual({ x: 300, y: 25, width: 175, height: 200 })
+  expect(rect(child0)).toEqual({ x: 300, y: 25, width: 25, height: 200 })
+  expect(rect(child1)).toEqual({ x: 325, y: 25, width: 50, height: 200 })
+  expect(rect(child2)).toEqual({ x: 375, y: 25, width: 25, height: 200 })
+  expect(rect(child3)).toEqual({ x: 400, y: 25, width: 50, height: 100 })
+  expect(rect(child4)).toEqual({ x: 450, y: 25, width: 25, height: 200 })
+})
+
+test("horizontal stack explicit bottom right", () => {
+  const testing = new Studio.renderer.Testing({ width: 500, height: 500 })
+  const ecs = new Studio.ECS()
+  const child0 = ecs.entity(new Studio.components.Width(25))
+  const child1 = ecs.entity(
+    new Studio.components.Width(50),
+    new Studio.components.Height(200),
+  )
+  const child2 = ecs.entity(new Studio.components.Width(25))
+  const child3 = ecs.entity(
+    new Studio.components.Width(50),
+    new Studio.components.Height(100),
+  )
+  const child4 = ecs.entity(new Studio.components.Width(25))
+  const child = ecs.entity(
+    new Studio.components.Bottom(25),
+    new Studio.components.Right(25),
+    new Studio.components.HorizontalStack([child0, child1, child2, child3, child4])
+  )
+  const ui = ecs.entity(new Studio.components.Children([child]))
+  ecs.set(
+    new Studio.components.Renderer(testing),
+    new Studio.components.UI(ui)
+  )
+  Studio.systems.computeSize(ecs)
+  expect(rect(ui)).toEqual({ x: 0, y: 0, width: 500, height: 500 })
+  expect(rect(child)).toEqual({ x: 300, y: 275, width: 175, height: 200 })
+  expect(rect(child0)).toEqual({ x: 300, y: 275, width: 25, height: 200 })
+  expect(rect(child1)).toEqual({ x: 325, y: 275, width: 50, height: 200 })
+  expect(rect(child2)).toEqual({ x: 375, y: 275, width: 25, height: 200 })
+  expect(rect(child3)).toEqual({ x: 400, y: 275, width: 50, height: 100 })
+  expect(rect(child4)).toEqual({ x: 450, y: 275, width: 25, height: 200 })
+})
+
+test("horizontal stack explicit bottom left", () => {
+  const testing = new Studio.renderer.Testing({ width: 500, height: 500 })
+  const ecs = new Studio.ECS()
+  const child0 = ecs.entity(new Studio.components.Width(25))
+  const child1 = ecs.entity(
+    new Studio.components.Width(50),
+    new Studio.components.Height(200),
+  )
+  const child2 = ecs.entity(new Studio.components.Width(25))
+  const child3 = ecs.entity(
+    new Studio.components.Width(50),
+    new Studio.components.Height(100),
+  )
+  const child4 = ecs.entity(new Studio.components.Width(25))
+  const child = ecs.entity(
+    new Studio.components.Bottom(25),
+    new Studio.components.Left(25),
+    new Studio.components.HorizontalStack([child0, child1, child2, child3, child4])
+  )
+  const ui = ecs.entity(new Studio.components.Children([child]))
+  ecs.set(
+    new Studio.components.Renderer(testing),
+    new Studio.components.UI(ui)
+  )
+  Studio.systems.computeSize(ecs)
+  expect(rect(ui)).toEqual({ x: 0, y: 0, width: 500, height: 500 })
+  expect(rect(child)).toEqual({ x: 25, y: 275, width: 175, height: 200 })
+  expect(rect(child0)).toEqual({ x: 25, y: 275, width: 25, height: 200 })
+  expect(rect(child1)).toEqual({ x: 50, y: 275, width: 50, height: 200 })
+  expect(rect(child2)).toEqual({ x: 100, y: 275, width: 25, height: 200 })
+  expect(rect(child3)).toEqual({ x: 125, y: 275, width: 50, height: 100 })
+  expect(rect(child4)).toEqual({ x: 175, y: 275, width: 25, height: 200 })
+})

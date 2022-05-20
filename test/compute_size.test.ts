@@ -916,3 +916,22 @@ test("vertical stack explicit bottom left", () => {
   expect(rect(child4)).toEqual({ x: 25, y: 450, width: 200, height: 25 })
 })
 
+test("horizontal stack", () => {
+  const testing = new Studio.renderer.Testing({ width: 500, height: 500 })
+  const ecs = new Studio.ECS()
+  const child0 = ecs.entity(new Studio.components.Width(100))
+  const child1 = ecs.entity(new Studio.components.Width(200))
+  const child2 = ecs.entity(new Studio.components.Width(100))
+  const child3 = ecs.entity(new Studio.components.Width(100))
+  const ui = ecs.entity(new Studio.components.HorizontalStack([child0, child1, child2, child3]))
+  ecs.set(
+    new Studio.components.Renderer(testing),
+    new Studio.components.UI(ui)
+  )
+  Studio.systems.computeSize(ecs)
+  expect(rect(ui)).toEqual({ x: 0, y: 0, width: 500, height: 500 })
+  expect(rect(child0)).toEqual({ x: 0, y: 0, width: 100, height: 500 })
+  expect(rect(child1)).toEqual({ x: 100, y: 0, width: 200, height: 500 })
+  expect(rect(child2)).toEqual({ x: 300, y: 0, width: 100, height: 500 })
+  expect(rect(child3)).toEqual({ x: 400, y: 0, width: 100, height: 500 })
+})

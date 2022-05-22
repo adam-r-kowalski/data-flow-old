@@ -894,3 +894,41 @@ export const HorizontalStackImplicitHeight = () => {
   Studio.systems.render(ecs)
   return webgl2.element
 }
+
+export const HorizontalStackInVerticalStack = () => {
+  const webgl2 = new Studio.renderer.WebGL2({ width: 500, height: 500 })
+  const ecs = new Studio.ECS()
+  const ui = ecs.entity(
+    new Studio.components.Children([
+      ecs.entity(
+        new Studio.components.Top(25),
+        new Studio.components.Left(25),
+        new Studio.components.BackgroundColor({ h: 0, s: 1, l: 0.7, a: 1 }),
+        new Studio.components.VerticalStack([
+          ecs.entity(new Studio.components.Height(25)),
+          ecs.entity(
+            new Studio.components.Width(200),
+            new Studio.components.Height(75),
+            new Studio.components.BackgroundColor({ h: 30, s: 1, l: 0.7, a: 1 }),
+            new Studio.components.HorizontalStack([
+              ecs.entity(
+                new Studio.components.Width(100),
+                new Studio.components.BackgroundColor({ h: 60, s: 1, l: 0.7, a: 1 }),
+              ),
+              ecs.entity(
+                new Studio.components.Width(100),
+                new Studio.components.BackgroundColor({ h: 90, s: 1, l: 0.7, a: 1 }),
+              ),
+            ])
+          ),
+        ]),
+      ),
+    ]),
+  )
+  ecs.set(
+    new Studio.components.Renderer(webgl2),
+    new Studio.components.UI(ui)
+  )
+  Studio.systems.render(ecs)
+  return webgl2.element
+}

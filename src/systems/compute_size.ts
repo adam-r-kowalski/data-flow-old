@@ -140,11 +140,16 @@ const implicitWidthAndHeight = (layers: components.Layers, parentRect: component
       return parentRect.y + parentRect.height - entityHeight - bottom!.pixels
     })()
     let offset = 0
+    const nextZ = z + 1
     for (const child of children) {
       child.update(components.ComputedRectangle, rect => {
         rect.x = x
         rect.y = y + offset
         offset += rect.height
+        computeChildrenSize(layers, rect, child, nextZ)
+        computeVerticalStackSize(layers, rect, child, nextZ)
+        computeHorizontalStackSize(layers, rect, child, nextZ)
+
       })
     }
     return { x, y, width: entityWidth, height: entityHeight }

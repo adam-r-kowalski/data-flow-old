@@ -1247,3 +1247,34 @@ test("horizontal stack explicit bottom left", () => {
   expect(rect(child3)).toEqual({ x: 125, y: 275, width: 50, height: 100 })
   expect(rect(child4)).toEqual({ x: 175, y: 275, width: 25, height: 200 })
 })
+
+test("horizontal stack in vertical stack", () => {
+  const testing = new Studio.renderer.Testing({ width: 500, height: 500 })
+  const ecs = new Studio.ECS()
+  const top = ecs.entity(new Studio.components.Height(25))
+  const left = ecs.entity(new Studio.components.Width(100))
+  const right = ecs.entity(new Studio.components.Width(100))
+  const horizontalStack = ecs.entity(
+    new Studio.components.Width(200),
+    new Studio.components.Height(75),
+    new Studio.components.HorizontalStack([left, right])
+  )
+  const verticalStack = ecs.entity(
+    new Studio.components.Top(25),
+    new Studio.components.Left(25),
+    new Studio.components.VerticalStack([top, horizontalStack]),
+  )
+  const ui = ecs.entity(new Studio.components.Children([verticalStack]))
+  ecs.set(
+    new Studio.components.Renderer(testing),
+    new Studio.components.UI(ui)
+  )
+  Studio.systems.computeSize(ecs)
+  expect(rect(ui)).toEqual({ x: 0, y: 0, width: 500, height: 500 })
+  expect(rect(verticalStack)).toEqual({ x: 25, y: 25, width: 200, height: 100 })
+  expect(rect(horizontalStack)).toEqual({ x: 25, y: 50, width: 200, height: 75 })
+  expect(rect(right)).toEqual({ x: 125, y: 50, width: 100, height: 75 })
+  expect(rect(left)).toEqual({ x: 25, y: 50, width: 100, height: 75 })
+  expect(rect(top)).toEqual({ x: 25, y: 25, width: 200, height: 25 })
+})
+

@@ -10,12 +10,12 @@ const nearestPowerOfTwo = (x: number): number => {
   return current
 }
 
-export const Empty = () => {
+export const HelloWorld = () => {
   const canvas = document.createElement('canvas')
   const ctx = canvas.getContext('2d')!
   const totalCells = 256
   const rows = Math.sqrt(totalCells)
-  const fontSize = 72
+  const fontSize = 32
   const size = nearestPowerOfTwo(fontSize * rows)
   const cellSize = size / rows
   canvas.width = size
@@ -36,6 +36,10 @@ export const Empty = () => {
     ctx.fillText(c, x, y)
     return { x, y, width, height }
   })
+  const a = metrics['a'.charCodeAt(0)]
+  const space = metrics[' '.charCodeAt(0)]
+  space.width = a.width
+  space.height = a.height
 
   const webglSize = 500
   const webgl_canvas = document.createElement('canvas')
@@ -54,8 +58,10 @@ export const Empty = () => {
 
   in vec2 a_position;
   in vec2 a_texCoord;
+  in vec4 a_color;
 
   out vec2 v_texCoord;
+  out vec4 v_color;
 
   void main() {
     vec2 zeroToOne = a_position.xy / u_resolution;
@@ -63,6 +69,7 @@ export const Empty = () => {
     vec2 clipSpace = zeroToTwo - 1.0;
     gl_Position = vec4(clipSpace * vec2(1, -1), 0, 1);
     v_texCoord = a_texCoord;
+    v_color = a_color;
   }
   `
 
@@ -72,12 +79,20 @@ export const Empty = () => {
   uniform sampler2D u_image;
 
   in vec2 v_texCoord;
+  in vec4 v_color;
 
   out vec4 fragColor;
+  
+  vec4 hslToRgb(in vec4 hsl) {
+    float h = hsl.x / 360.0;
+    vec3 rgb = clamp(abs(mod(h * 6.0 + vec3(0.0,4.0,2.0), 6.0) - 3.0) - 1.0, 0.0, 1.0);
+    return vec4(hsl.z + hsl.y * (rgb - 0.5) * (1.0 - abs(2.0 * hsl.z - 1.0)), hsl.w);
+  }
 
   void main() {
     ivec2 size = textureSize(u_image, 0);
-    fragColor = texture(u_image, v_texCoord / vec2(float(size.x), float(size.y)));
+    vec2 coord = v_texCoord / vec2(float(size.x), float(size.y));
+    fragColor = texture(u_image, coord) * hslToRgb(v_color);
   }
   `
 
@@ -130,6 +145,19 @@ export const Empty = () => {
         /*offset*/0
   )
 
+  const colorBuffer = gl.createBuffer()!
+  const aColorLocation = gl.getAttribLocation(program, 'a_color')
+  gl.enableVertexAttribArray(aColorLocation)
+  gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer)
+  gl.vertexAttribPointer(
+    aColorLocation,
+        /*size*/4,
+        /*type*/gl.FLOAT,
+        /*normalize*/false,
+        /*stride*/0,
+        /*offset*/0
+  )
+
   const indexBuffer = gl.createBuffer()!
 
   const resolutionLocation = gl.getUniformLocation(program, 'u_resolution')!
@@ -159,6 +187,7 @@ export const Empty = () => {
 
   const positions: number[] = []
   const texCoords: number[] = []
+  const colors: number[] = []
   const indices: number[] = []
   let x = 0
   let offset = 0
@@ -176,6 +205,12 @@ export const Empty = () => {
       metric.x + metric.width, metric.y,
       metric.x + metric.width, metric.y + metric.height,
     )
+    colors.push(
+      0, 1, 1, 1,
+      0, 1, 1, 1,
+      0, 1, 1, 1,
+      0, 1, 1, 1,
+    )
     indices.push(
       offset, offset + 1, offset + 2,
       offset + 1, offset + 2, offset + 3,
@@ -186,6 +221,9 @@ export const Empty = () => {
 
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer)
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW)
+
+  gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer)
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW)
 
   gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer)
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(texCoords), gl.STATIC_DRAW)

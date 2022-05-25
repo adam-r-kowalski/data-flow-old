@@ -15,11 +15,14 @@ export const HelloWorld = () => {
   const ctx = canvas.getContext('2d')!
   const totalCells = 256
   const rows = Math.sqrt(totalCells)
-  const fontSize = 28
+  const fontSize = 18
   const size = nearestPowerOfTwo((fontSize + 5) * rows)
   const cellSize = size / rows
-  canvas.width = size
-  canvas.height = size
+  canvas.width = size * window.devicePixelRatio
+  canvas.height = size * window.devicePixelRatio
+  canvas.style.width = `${size}px`
+  canvas.style.height = `${size}px`
+  ctx.scale(window.devicePixelRatio, window.devicePixelRatio)
   ctx.textAlign = 'left'
   ctx.textBaseline = 'top'
   ctx.font = `${fontSize}px monospace`
@@ -34,7 +37,12 @@ export const HelloWorld = () => {
     const x = i % rows * cellSize
     const y = Math.floor(i / rows) * cellSize
     ctx.fillText(c, x, y)
-    return { x, y, width, height }
+    return {
+       x: x * window.devicePixelRatio,
+       y: y * window.devicePixelRatio,
+       width: width * window.devicePixelRatio,
+       height: height * window.devicePixelRatio
+      }
   })
   const a = metrics['a'.charCodeAt(0)]
   const space = metrics[' '.charCodeAt(0)]
@@ -43,8 +51,10 @@ export const HelloWorld = () => {
 
   const webglSize = 500
   const webgl_canvas = document.createElement('canvas')
-  webgl_canvas.width = webglSize
-  webgl_canvas.height = webglSize
+  webgl_canvas.width = webglSize * window.devicePixelRatio
+  webgl_canvas.height = webglSize * window.devicePixelRatio
+  webgl_canvas.style.width = `${webglSize}px`
+  webgl_canvas.style.height = `${webglSize}px`
   const gl = webgl_canvas.getContext('webgl2')!
 
   // for drawing text

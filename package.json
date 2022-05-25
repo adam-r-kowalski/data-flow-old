@@ -22,9 +22,8 @@
     "start": "parcel ./src/index.html",
     "prebuild": "shx rm -rf dist/*",
     "build": "parcel build ./src/index.html --public-url ./",
-    "push": "yarn gh-pages -d dist",
+    "push": "npm gh-pages -d dist",
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook"
-  },
-  "dependencies": {}
+  }
 }

@@ -15,8 +15,8 @@ export const HelloWorld = () => {
   const ctx = canvas.getContext('2d')!
   const totalCells = 256
   const rows = Math.sqrt(totalCells)
-  const fontSize = 32
-  const size = nearestPowerOfTwo(fontSize * rows)
+  const fontSize = 28
+  const size = nearestPowerOfTwo((fontSize + 5) * rows)
   const cellSize = size / rows
   canvas.width = size
   canvas.height = size
@@ -191,7 +191,7 @@ export const HelloWorld = () => {
   const indices: number[] = []
   let x = 0
   let offset = 0
-  Array.from("Hello World!").forEach(c => {
+  Array.from("Studio Has Crisp Text!").forEach(c => {
     const metric = metrics[c.charCodeAt(0)]
     positions.push(
       x, 0,

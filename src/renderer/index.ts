@@ -1,0 +1,1 @@
+export { webgl2 } from './webgl2'

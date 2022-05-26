@@ -1,3 +1,5 @@
+import * as Studio from '../studio'
+
 export default {
   title: "Text",
 }
@@ -38,11 +40,11 @@ export const HelloWorld = () => {
     const y = Math.floor(i / rows) * cellSize
     ctx.fillText(c, x, y)
     return {
-       x: x * window.devicePixelRatio,
-       y: y * window.devicePixelRatio,
-       width: width * window.devicePixelRatio,
-       height: height * window.devicePixelRatio
-      }
+      x: x * window.devicePixelRatio,
+      y: y * window.devicePixelRatio,
+      width: width * window.devicePixelRatio,
+      height: height * window.devicePixelRatio
+    }
   })
   const a = metrics['a'.charCodeAt(0)]
   const space = metrics[' '.charCodeAt(0)]
@@ -244,4 +246,13 @@ export const HelloWorld = () => {
   gl.drawElements(gl.TRIANGLES, /*count*/indices.length, /*type*/gl.UNSIGNED_SHORT, /*offset*/0)
 
   return webgl_canvas
+}
+
+export const Text = () => {
+  const ecs = new Studio.ECS()
+  const renderer = Studio.renderer.webgl2(ecs, 500, 500)
+  const root = Studio.ui.text(ecs, "Studio!")
+  ecs.set(new Studio.components.UIRoot(root))
+  Studio.systems.render(ecs)
+  return renderer.get(HTMLCanvasElement)!
 }

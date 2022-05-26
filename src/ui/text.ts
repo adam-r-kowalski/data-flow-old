@@ -19,7 +19,7 @@ const layout = (entity: Entity, constraints: Constraints) => {
 export const text = (ecs: ECS, data: string) =>
     ecs.entity(
         new Text(data),
-        new FontSize(24),
+        new FontSize(72),
         new FontFamily("monospace"),
         new Color({ h: 0, s: 1, l: 1, a: 1 }),
         new Layout(layout)

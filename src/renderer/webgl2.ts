@@ -226,15 +226,17 @@ class Geometry {
 const setSize = (self: Entity, size: Size) => {
     const { width, height } = size
     const gl = self.get(WebGL2RenderingContext)!
+    const widthDpr = width * window.devicePixelRatio
+    const heightDpr = height * window.devicePixelRatio
     self.update(HTMLCanvasElement, canvas => {
-        canvas.width = width * window.devicePixelRatio
-        canvas.height = height * window.devicePixelRatio
+        canvas.width = widthDpr
+        canvas.height = heightDpr
         canvas.style.width = `${width}px`
         canvas.style.height = `${height}px`
     })
     const program = self.get(DefaultProgram)!
-    gl.uniform2f(program.resolutionLocation, width, height)
-    gl.viewport(0, 0, width, height)
+    gl.uniform2f(program.resolutionLocation, widthDpr, heightDpr)
+    gl.viewport(0, 0, widthDpr, heightDpr)
     self.set(size)
 }
 

@@ -223,7 +223,7 @@ const setSize = (self: Entity, size: Size) => {
     const program = self.get(DefaultProgram)!
     gl.uniform2f(program.resolutionLocation, widthDpr, heightDpr)
     gl.viewport(0, 0, widthDpr, heightDpr)
-    self.set(size)
+    self.set(new Size(widthDpr, heightDpr))
 }
 
 const getSize = (self: Entity) => self.get(Size)!
@@ -248,7 +248,7 @@ const textSize = (self: Entity, entity: Entity) => {
     return size
 }
 
-const textGeometry = (self: Entity, entity: Entity) => {
+const textGeometry = (self: Entity, entity: Entity, parentOffset: Offset) => {
     const gl = self.get(WebGL2RenderingContext)!
     const text = entity.get(Text)!.value
     const fontSize = entity.get(FontSize)!.value
@@ -261,7 +261,7 @@ const textGeometry = (self: Entity, entity: Entity) => {
     const textureCoordinates = new TextureCoordinates()
     const colors = new Colors()
     const indices = new VertexIndices()
-    const offset = entity.get(Offset)!
+    const offset = entity.get(Offset)!.add(parentOffset)
     for (const c of text) {
         const metric = atlas.metric(c)
         const x0 = offset.x + x
@@ -312,6 +312,7 @@ const draw = (self: Entity) => {
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, program.indexBuffer)
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(vertexIndices), gl.STATIC_DRAW)
     gl.drawElements(gl.TRIANGLES, /*count*/vertexIndices.length, /*type*/gl.UNSIGNED_SHORT, /*offset*/0)
+    self.set(new Vertices(), new Colors(), new TextureCoordinates(), new VertexIndices())
 }
 
 export const webgl2 = (ecs: ECS, width: number, height: number) => {

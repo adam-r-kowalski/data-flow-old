@@ -11,6 +11,8 @@ export class FontFamily { constructor(public value: string) { } }
 
 export class Child { constructor(public entity: Entity) { } }
 
+export class Children { constructor(public entities: Entity[]) { } }
+
 interface Hsla {
     h: number
     s: number
@@ -100,7 +102,7 @@ interface RendererImpl {
     getSize: (self: Entity) => Size
     clear: (self: Entity) => void
     textSize: (self: Entity, entity: Entity) => Size
-    textGeometry: (self: Entity, entity: Entity) => void
+    textGeometry: (self: Entity, entity: Entity, offset: Offset) => void
     draw: (self: Entity) => void
 }
 
@@ -114,6 +116,6 @@ export class Renderer {
     getSize = () => this.impl.getSize(this.entity)
     clear = () => this.impl.clear(this.entity)
     textSize = (entity: Entity) => this.impl.textSize(this.entity, entity)
-    textGeometry = (entity: Entity) => this.impl.textGeometry(this.entity, entity)
+    textGeometry = (entity: Entity, offset: Offset) => this.impl.textGeometry(this.entity, entity, offset)
     draw = () => this.impl.draw(this.entity)
 }

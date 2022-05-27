@@ -20,7 +20,7 @@ const layout = (self: Entity, constraints: Constraints) => {
 }
 
 const geometry = (self: Entity, offset: Offset, layers: Layers, z: number) => {
-    self.ecs.get(Renderer)!.textGeometry(self)
+    self.ecs.get(Renderer)!.textGeometry(self, offset)
     layers.push(z, self)
 }
 

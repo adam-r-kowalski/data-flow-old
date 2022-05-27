@@ -13,6 +13,10 @@ export class Child { constructor(public entity: Entity) { } }
 
 export class Children { constructor(public entities: Entity[]) { } }
 
+export enum Alignment { START, CENTER }
+
+export class CrossAxisAlignment { constructor(public alignment: Alignment) { } }
+
 interface Hsla {
     h: number
     s: number

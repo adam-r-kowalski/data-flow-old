@@ -1,4 +1,5 @@
 import { Entity } from "./ecs";
+import { Layers } from "./layers";
 
 export class UIRoot { constructor(public entity: Entity) { } }
 
@@ -7,6 +8,8 @@ export class Text { constructor(public value: string) { } }
 export class FontSize { constructor(public value: number) { } }
 
 export class FontFamily { constructor(public value: string) { } }
+
+export class Child { constructor(public entity: Entity) { } }
 
 interface Hsla {
     h: number
@@ -45,6 +48,15 @@ export class Size {
     ) { }
 }
 
+export class Offset {
+    constructor(
+        public x: number,
+        public y: number,
+    ) { }
+
+    add = (other: Offset) => new Offset(this.x + other.x, this.y + other.y)
+}
+
 export class Layout {
     constructor(
         private impl: (self: Entity, constraints: Constraints) => Size
@@ -54,13 +66,42 @@ export class Layout {
         this.impl(self, constraints)
 }
 
+export class Vertices {
+    data: number[]
+    constructor() { this.data = [] }
+}
+
+export class TextureCoordinates {
+    data: number[]
+    constructor() { this.data = [] }
+}
+
+export class Colors {
+    data: number[]
+    constructor() { this.data = [] }
+}
+
+export class VertexIndices {
+    data: number[]
+    constructor() { this.data = [] }
+}
+
+export class Geometry {
+    constructor(
+        private impl: (self: Entity, offset: Offset, layers: Layers, z: number) => void
+    ) { }
+
+    geometry = (self: Entity, offset: Offset, layers: Layers, z: number) =>
+        this.impl(self, offset, layers, z)
+}
+
 interface RendererImpl {
     setSize: (self: Entity, size: Size) => void
     getSize: (self: Entity) => Size
     clear: (self: Entity) => void
     textSize: (self: Entity, entity: Entity) => Size
-    drawText: (self: Entity, entity: Entity) => void
-    flush: (self: Entity) => void
+    textGeometry: (self: Entity, entity: Entity) => void
+    draw: (self: Entity) => void
 }
 
 export class Renderer {
@@ -73,6 +114,6 @@ export class Renderer {
     getSize = () => this.impl.getSize(this.entity)
     clear = () => this.impl.clear(this.entity)
     textSize = (entity: Entity) => this.impl.textSize(this.entity, entity)
-    drawText = (entity: Entity) => this.impl.drawText(this.entity, entity)
-    flush = () => this.impl.flush(this.entity)
+    textGeometry = (entity: Entity) => this.impl.textGeometry(this.entity, entity)
+    draw = () => this.impl.draw(this.entity)
 }

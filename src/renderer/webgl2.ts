@@ -1,4 +1,4 @@
-import { Renderer, Size, Text, FontSize, FontFamily, Color } from "../components"
+import { Renderer, Size, Text, FontSize, FontFamily, Color, Vertices, TextureCoordinates, Colors, VertexIndices, Offset } from "../components"
 import { ECS, Entity } from "../ecs"
 
 class DefaultProgram {
@@ -186,10 +186,10 @@ class Fonts {
                 height: height * window.devicePixelRatio
             }
         })
-        const a = metrics['a'.charCodeAt(0)]
+        const small = metrics['-'.charCodeAt(0)]
         const space = metrics[' '.charCodeAt(0)]
-        space.width = a.width
-        space.height = a.height
+        space.width = small.width
+        space.height = small.height
         const texture = gl.createTexture()!
         gl.activeTexture(gl.TEXTURE0)
         gl.bindTexture(gl.TEXTURE_2D, texture)
@@ -206,20 +206,6 @@ class Fonts {
         const newAtlas = new FontAtlas(texture, metrics)
         this.atlasses.set(font, newAtlas)
         return newAtlas
-    }
-}
-
-class Geometry {
-    positions: number[]
-    texCoords: number[]
-    colors: number[]
-    indices: number[]
-
-    constructor() {
-        this.positions = []
-        this.texCoords = []
-        this.colors = []
-        this.indices = []
     }
 }
 
@@ -262,58 +248,70 @@ const textSize = (self: Entity, entity: Entity) => {
     return size
 }
 
-const drawText = (self: Entity, entity: Entity) => {
+const textGeometry = (self: Entity, entity: Entity) => {
     const gl = self.get(WebGL2RenderingContext)!
     const text = entity.get(Text)!.value
     const fontSize = entity.get(FontSize)!.value
     const fontFamily = entity.get(FontFamily)!.value
     const { h, s, l, a } = entity.get(Color)!
     const atlas = self.get(Fonts)!.get(gl, fontFamily, fontSize)
-    const geometry = self.get(Geometry)!
     let x = 0
-    let offset = 0
+    let indexOffset = 0
+    const vertices = new Vertices()
+    const textureCoordinates = new TextureCoordinates()
+    const colors = new Colors()
+    const indices = new VertexIndices()
+    const offset = entity.get(Offset)!
     for (const c of text) {
         const metric = atlas.metric(c)
-        geometry.positions.push(
-            x, 0,
-            x, metric.height,
-            x + metric.width, 0,
-            x + metric.width, metric.height,
+        const x0 = offset.x + x
+        const x1 = x0 + metric.width
+        const y0 = offset.y
+        const y1 = y0 + metric.height
+        vertices.data.push(
+            x0, y0,
+            x0, y1,
+            x1, y0,
+            x1, y1,
         )
-        geometry.texCoords.push(
+        textureCoordinates.data.push(
             metric.x, metric.y,
             metric.x, metric.y + metric.height,
             metric.x + metric.width, metric.y,
             metric.x + metric.width, metric.y + metric.height,
         )
-        geometry.colors.push(
+        colors.data.push(
             h, s, l, a,
             h, s, l, a,
             h, s, l, a,
             h, s, l, a,
         )
-        geometry.indices.push(
-            offset, offset + 1, offset + 2,
-            offset + 1, offset + 2, offset + 3,
+        indices.data.push(
+            indexOffset + 0, indexOffset + 1, indexOffset + 2,
+            indexOffset + 1, indexOffset + 2, indexOffset + 3,
         )
         x += metric.width
-        offset += 4
+        indexOffset += 4
     }
+    entity.set(vertices, textureCoordinates, colors, indices)
 }
 
-const flush = (self: Entity) => {
+const draw = (self: Entity) => {
     const gl = self.get(WebGL2RenderingContext)!
-    const geometry = self.get(Geometry)!
+    const vertices = self.get(Vertices)!.data
+    const colors = self.get(Colors)!.data
+    const textureCoordinates = self.get(TextureCoordinates)!.data
+    const vertexIndices = self.get(VertexIndices)!.data
     const program = self.get(DefaultProgram)!
     gl.bindBuffer(gl.ARRAY_BUFFER, program.positionBuffer)
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(geometry.positions), gl.STATIC_DRAW)
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW)
     gl.bindBuffer(gl.ARRAY_BUFFER, program.colorBuffer)
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(geometry.colors), gl.STATIC_DRAW)
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW)
     gl.bindBuffer(gl.ARRAY_BUFFER, program.texCoordBuffer)
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(geometry.texCoords), gl.STATIC_DRAW)
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoordinates), gl.STATIC_DRAW)
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, program.indexBuffer)
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(geometry.indices), gl.STATIC_DRAW)
-    gl.drawElements(gl.TRIANGLES, /*count*/geometry.indices.length, /*type*/gl.UNSIGNED_SHORT, /*offset*/0)
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(vertexIndices), gl.STATIC_DRAW)
+    gl.drawElements(gl.TRIANGLES, /*count*/vertexIndices.length, /*type*/gl.UNSIGNED_SHORT, /*offset*/0)
 }
 
 export const webgl2 = (ecs: ECS, width: number, height: number) => {
@@ -329,7 +327,10 @@ export const webgl2 = (ecs: ECS, width: number, height: number) => {
         canvas,
         new DefaultProgram(gl),
         new Fonts(),
-        new Geometry()
+        new Vertices(),
+        new Colors(),
+        new TextureCoordinates(),
+        new VertexIndices()
     )
     setSize(entity, new Size(width, height))
     const vtable = {
@@ -337,8 +338,8 @@ export const webgl2 = (ecs: ECS, width: number, height: number) => {
         getSize,
         clear,
         textSize,
-        drawText,
-        flush,
+        textGeometry,
+        draw,
     }
     ecs.set(new Renderer(entity, vtable))
     return entity

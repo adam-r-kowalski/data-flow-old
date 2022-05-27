@@ -12,3 +12,14 @@ export const Text = () => {
   Studio.systems.render(ecs)
   return renderer.get(HTMLCanvasElement)!
 }
+
+export const Center = () => {
+  const ecs = new Studio.ECS()
+  const renderer = Studio.renderer.webgl2(ecs, 500, 500)
+  const root = Studio.ui.center(ecs,
+    Studio.ui.text(ecs, "Hello Crazy World!")
+  )
+  ecs.set(new Studio.components.UIRoot(root))
+  Studio.systems.render(ecs)
+  return renderer.get(HTMLCanvasElement)!
+}

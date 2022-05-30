@@ -35,9 +35,9 @@ export const Column = () => {
   const ecs = new ECS()
   const renderer = webgl2(ecs, 500, 500)
   const root = column(ecs, [
-    text(ecs, "First"),
-    text(ecs, "Second"),
-    text(ecs, "Third"),
+    text(ecs, "Top"),
+    text(ecs, "Middle"),
+    text(ecs, "Bottom"),
   ])
   ecs.set(new UIRoot(root))
   render(ecs)
@@ -49,9 +49,9 @@ export const CenteredColumn = () => {
   const renderer = webgl2(ecs, 500, 500)
   const root = center(ecs,
     column(ecs, [
-      text(ecs, "First"),
-      text(ecs, "Second"),
-      text(ecs, "Third"),
+      text(ecs, "Top"),
+      text(ecs, "Middle"),
+      text(ecs, "Bottom"),
     ])
   )
   ecs.set(new UIRoot(root))
@@ -63,9 +63,9 @@ export const Row = () => {
   const ecs = new ECS()
   const renderer = webgl2(ecs, 500, 500)
   const root = row(ecs, [
-    text(ecs, "First"),
-    text(ecs, "Second"),
-    text(ecs, "Third"),
+    text(ecs, "Left"),
+    text(ecs, "Middle"),
+    text(ecs, "Right"),
   ])
   ecs.set(new UIRoot(root))
   render(ecs)
@@ -77,9 +77,9 @@ export const CenteredRow = () => {
   const renderer = webgl2(ecs, 500, 500)
   const root = center(ecs,
     row(ecs, [
-      text(ecs, "First"),
-      text(ecs, "Second"),
-      text(ecs, "Third"),
+      text(ecs, "Left"),
+      text(ecs, "Middle"),
+      text(ecs, "Right"),
     ])
   )
   ecs.set(new UIRoot(root))
@@ -97,7 +97,8 @@ export const CenteredRowInColumn = () => {
         text(ecs, "Left"),
         text(ecs, "Middle"),
         text(ecs, "Right"),
-      ])
+      ]),
+      text(ecs, "Bottom"),
     ])
   )
   ecs.set(new UIRoot(root))
@@ -115,7 +116,143 @@ export const CenteredRowInColumCenterCrossAxisAlignment = () => {
         text(ecs, "Left"),
         text(ecs, "Middle"),
         text(ecs, "Right"),
-      ])
+      ]),
+      text(ecs, "Bottom"),
+    ])
+  )
+  ecs.set(new UIRoot(root))
+  render(ecs)
+  return renderer.get(HTMLCanvasElement)!
+}
+
+export const CenteredRowInColumEndCrossAxisAlignment = () => {
+  const ecs = new ECS()
+  const renderer = webgl2(ecs, 500, 500)
+  const root = center(ecs,
+    column(ecs, { crossAxisAlignment: Alignment.END }, [
+      text(ecs, "Top"),
+      row(ecs, [
+        text(ecs, "Left"),
+        text(ecs, "Middle"),
+        text(ecs, "Right"),
+      ]),
+      text(ecs, "Bottom"),
+    ]),
+  )
+  ecs.set(new UIRoot(root))
+  render(ecs)
+  return renderer.get(HTMLCanvasElement)!
+}
+
+export const CenteredColumnInRow = () => {
+  const ecs = new ECS()
+  const renderer = webgl2(ecs, 500, 500)
+  const root = center(ecs,
+    row(ecs, [
+      text(ecs, "Left"),
+      column(ecs, [
+        text(ecs, "Top"),
+        text(ecs, "Middle"),
+        text(ecs, "Bottom"),
+      ]),
+      text(ecs, "Right"),
+    ])
+  )
+  ecs.set(new UIRoot(root))
+  render(ecs)
+  return renderer.get(HTMLCanvasElement)!
+}
+
+export const CenteredColumnInRowCenterCrossAxisAlignment = () => {
+  const ecs = new ECS()
+  const renderer = webgl2(ecs, 500, 500)
+  const root = center(ecs,
+    row(ecs, { crossAxisAlignment: Alignment.CENTER }, [
+      text(ecs, "Left"),
+      column(ecs, [
+        text(ecs, "Top"),
+        text(ecs, "Middle"),
+        text(ecs, "Bottom"),
+      ]),
+      text(ecs, "Right"),
+    ])
+  )
+  ecs.set(new UIRoot(root))
+  render(ecs)
+  return renderer.get(HTMLCanvasElement)!
+}
+
+export const CenteredColumnInRowEndCrossAxisAlignment = () => {
+  const ecs = new ECS()
+  const renderer = webgl2(ecs, 500, 500)
+  const root = center(ecs,
+    row(ecs, { crossAxisAlignment: Alignment.END }, [
+      text(ecs, "Left"),
+      column(ecs, [
+        text(ecs, "Top"),
+        text(ecs, "Middle"),
+        text(ecs, "Bottom"),
+      ]),
+      text(ecs, "Right"),
+    ])
+  )
+  ecs.set(new UIRoot(root))
+  render(ecs)
+  return renderer.get(HTMLCanvasElement)!
+}
+
+export const CenteredColumnCenterCrossAxisAlignedInRow = () => {
+  const ecs = new ECS()
+  const renderer = webgl2(ecs, 500, 500)
+  const root = center(ecs,
+    row(ecs, [
+      text(ecs, "Left"),
+      column(ecs, { crossAxisAlignment: Alignment.CENTER }, [
+        text(ecs, "Top"),
+        text(ecs, "Middle"),
+        text(ecs, "Bottom"),
+      ]),
+      text(ecs, "Right"),
+    ])
+  )
+  ecs.set(new UIRoot(root))
+  render(ecs)
+  return renderer.get(HTMLCanvasElement)!
+}
+
+
+export const CenteredColumnCenterCrossAxisAlignedInRowCenterCrossAxisAlignment = () => {
+  const ecs = new ECS()
+  const renderer = webgl2(ecs, 500, 500)
+  const root = center(ecs,
+    row(ecs, { crossAxisAlignment: Alignment.CENTER }, [
+      text(ecs, "Left"),
+      column(ecs, { crossAxisAlignment: Alignment.CENTER }, [
+        text(ecs, "Top"),
+        text(ecs, "Middle"),
+        text(ecs, "Bottom"),
+      ]),
+      text(ecs, "Right"),
+    ])
+  )
+  ecs.set(new UIRoot(root))
+  render(ecs)
+  return renderer.get(HTMLCanvasElement)!
+}
+
+
+export const CenteredColumnCenterCrossAxisAlignedInRowEndCrossAxisAlignment = () => {
+  const ecs = new ECS()
+  const renderer = webgl2(ecs, 500, 500)
+  const root = center(ecs,
+    row(ecs, { crossAxisAlignment: Alignment.END }, [
+      text(ecs, "Left"),
+      column(ecs, { crossAxisAlignment: Alignment.CENTER }, [
+        text(ecs, "Top"),
+        text(ecs, "Middle"),
+        text(ecs, "Bottom"),
+      ]),
+      text(ecs, "Right"),
     ])
   )
   ecs.set(new UIRoot(root))

@@ -3,7 +3,6 @@ import {
     Constraints,
     Geometry,
     Size,
-    Child,
     Offset,
     Children,
     Alignment,
@@ -22,10 +21,21 @@ const layout = (entity: Entity, constraints: Constraints) => {
         height += size.height
         width = Math.max(width, size.width)
     }
-    if (entity.get(CrossAxisAlignment)!.alignment == Alignment.CENTER) {
-        for (const child of children) {
-            child.update(Offset, offset => offset.x = width / 2 - child.get(Size)!.width / 2)
-        }
+    switch (entity.get(CrossAxisAlignment)!.alignment) {
+        case Alignment.START:
+            break
+        case Alignment.CENTER:
+            for (const child of children) {
+                const childWidth = child.get(Size)!.width
+                child.update(Offset, offset => offset.x = width / 2 - childWidth / 2)
+            }
+            break
+        case Alignment.END:
+            for (const child of children) {
+                const childWidth = child.get(Size)!.width
+                child.update(Offset, offset => offset.x = width - childWidth)
+            }
+            break
     }
     const size = new Size(width, height)
     entity.set(constraints, size, new Offset(0, 0))
@@ -39,7 +49,6 @@ const geometry = (entity: Entity, offset: Offset, layers: Layers, z: number) => 
     }
 }
 
-
 interface Properties {
     crossAxisAlignment?: Alignment
 }
@@ -51,7 +60,7 @@ type Overload = {
 
 export const column: Overload = (ecs: ECS, ...args: any[]): Entity => {
     const [properties, children] = (() => {
-        if (args[0] instanceof Array<Entity>) return [{}, args[0]]
+        if (args[0] instanceof Array) return [{}, args[0]]
         return [args[0], args[1]]
     })()
     return ecs.entity(

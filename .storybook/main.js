@@ -5,11 +5,17 @@ module.exports = {
   ],
   addons: [
     "@storybook/addon-links",
-    "@storybook/addon-essentials"
+    "@storybook/addon-essentials",
+    "@storybook/addon-interactions"
   ],
   framework: "@storybook/html",
   babel: async options => ({
     ...options,
-    plugins: options.plugins.filter(x => !(typeof x === 'string' && x.includes('plugin-transform-classes'))),
+    presets: [
+      ["@babel/preset-env", { shippedProposals: true }],
+      "@babel/preset-typescript",
+      ["@babel/preset-react", { runtime: "automatic" }],
+    ],
+    plugins: ["@babel/plugin-transform-typescript", ...options.plugins],
   })
 }

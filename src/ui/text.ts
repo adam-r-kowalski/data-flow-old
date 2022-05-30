@@ -11,7 +11,8 @@ import {
     Vertices,
     TextureCoordinates,
     Colors,
-    VertexIndices
+    VertexIndices,
+    Hsla
 } from "../components";
 import { ECS, Entity } from "../ecs";
 import { Layers } from "../layers";
@@ -95,12 +96,29 @@ const geometry = (self: Entity, offset: Offset, layers: Layers, z: number) => {
     layers.push({ z, entity: self, texture })
 }
 
-export const text = (ecs: ECS, data: string) =>
-    ecs.entity(
+interface Properties {
+    fontSize?: number
+    fontFamily?: number
+    color?: Hsla
+}
+
+type Overload = {
+    (ecs: ECS, data: string): Entity
+    (ecs: ECS, properties: Properties, data: string): Entity
+}
+
+
+export const text: Overload = (ecs: ECS, ...args: any[]): Entity => {
+    const [properties, data] = (() => {
+        if (typeof args[0] === 'string') return [{}, args[0]]
+        return [args[0], args[1]]
+    })()
+    return ecs.entity(
         new Text(data),
-        new FontSize(24),
-        new FontFamily('Verdana'),
-        new Color({ h: 0, s: 1, l: 1, a: 1 }),
+        new FontSize(properties.fontSize ?? 24),
+        new FontFamily(properties.fontFamily ?? "monospace"),
+        new Color(properties.color ?? { h: 0, s: 1, l: 1, a: 1 }),
         new Layout(layout),
         new Geometry(geometry),
     )
+}

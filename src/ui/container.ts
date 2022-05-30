@@ -10,19 +10,25 @@ import {
     Vertices,
     TextureCoordinates,
     Colors,
-    VertexIndices
+    VertexIndices,
+    Padding
 } from "../components";
 import { ECS, Entity } from "../ecs";
 import { Layers } from "../layers";
 
-const layout = (entity: Entity, constraints: Constraints) => {
-    const child = entity.get(Child)!.entity
+const layout = (self: Entity, constraints: Constraints) => {
+    const child = self.get(Child)!.entity
+    const padding = self.get(Padding)!.value
     const childSize = child.get(Layout)!.layout(child, constraints)
     const size = new Size(
-        Math.min(constraints.maxWidth, childSize.width),
-        Math.min(constraints.maxHeight, childSize.height),
+        Math.min(constraints.maxWidth, childSize.width + 2 * padding),
+        Math.min(constraints.maxHeight, childSize.height + 2 * padding),
     )
-    entity.set(constraints, size, new Offset(0, 0))
+    child.update(Offset, offset => {
+        offset.x = padding
+        offset.y = padding
+    })
+    self.set(constraints, size, new Offset(0, 0))
     return size
 }
 
@@ -65,6 +71,7 @@ const geometry = (self: Entity, parentOffset: Offset, layers: Layers, z: number)
 
 interface Properties {
     color: Hsla
+    padding?: number
 }
 
 export const container = (ecs: ECS, properties: Properties, child: Entity) =>
@@ -72,5 +79,6 @@ export const container = (ecs: ECS, properties: Properties, child: Entity) =>
         new Layout(layout),
         new Geometry(geometry),
         new Child(child),
-        new Color(properties.color)
+        new Color(properties.color),
+        new Padding(properties.padding ?? 0)
     )

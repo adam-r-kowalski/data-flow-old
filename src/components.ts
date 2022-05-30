@@ -38,6 +38,8 @@ export class Color {
     }
 }
 
+export class Padding { constructor(public value: number) { } }
+
 export class Constraints {
     constructor(
         public minWidth: number,

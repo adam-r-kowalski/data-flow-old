@@ -1,18 +1,28 @@
 import { Entity } from "./ecs";
 
-type Layer = Entity[]
+interface Data {
+    z: number
+    texture: number
+    entity: Entity
+}
 
 export class Layers {
-    data: Layer[]
+    layers: Map<number, Entity[]>[]
 
     constructor() {
-        this.data = []
+        this.layers = []
     }
 
-    push = (z: number, entity: Entity): void => {
-        for (let i = this.data.length; i < z + 1; ++i) {
-            this.data.push([])
+    push = ({ z, texture, entity }: Data): void => {
+        for (let i = this.layers.length; i < z + 1; ++i) {
+            this.layers.push(new Map())
         }
-        this.data[z].push(entity)
+        const layer = this.layers[z]
+        const entities = layer.get(texture)
+        if (entities) {
+            entities.push(entity)
+            return
+        }
+        layer.set(texture, [entity])
     }
 }

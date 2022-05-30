@@ -100,26 +100,3 @@ export class Geometry {
     geometry = (self: Entity, offset: Offset, layers: Layers, z: number) =>
         this.impl(self, offset, layers, z)
 }
-
-interface RendererImpl {
-    setSize: (self: Entity, size: Size) => void
-    getSize: (self: Entity) => Size
-    clear: (self: Entity) => void
-    textSize: (self: Entity, entity: Entity) => Size
-    textGeometry: (self: Entity, entity: Entity, offset: Offset) => void
-    draw: (self: Entity) => void
-}
-
-export class Renderer {
-    constructor(
-        public entity: Entity,
-        private impl: RendererImpl
-    ) { }
-
-    setSize = (size: Size) => this.impl.setSize(this.entity, size)
-    getSize = () => this.impl.getSize(this.entity)
-    clear = () => this.impl.clear(this.entity)
-    textSize = (entity: Entity) => this.impl.textSize(this.entity, entity)
-    textGeometry = (entity: Entity, offset: Offset) => this.impl.textGeometry(this.entity, entity, offset)
-    draw = () => this.impl.draw(this.entity)
-}

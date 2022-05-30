@@ -39,10 +39,10 @@ const textGeometry = (renderer: Renderer, entity: Entity, parentOffset: Offset):
     const atlas = renderer.fontAtlas(fontFamily, fontSize)
     let x = 0
     let indexOffset = 0
-    const vertices = new Vertices()
-    const textureCoordinates = new TextureCoordinates()
-    const colors = new Colors()
-    const indices = new VertexIndices()
+    const vertices: number[] = []
+    const textureCoordinates: number[] = []
+    const colors: number[] = []
+    const indices: number[] = []
     const offset = entity.get(Offset)!.add(parentOffset)
     for (const c of text) {
         const metric = atlas.metric(c)
@@ -50,32 +50,37 @@ const textGeometry = (renderer: Renderer, entity: Entity, parentOffset: Offset):
         const x1 = x0 + metric.width
         const y0 = offset.y
         const y1 = y0 + metric.height
-        vertices.data.push(
+        vertices.push(
             x0, y0,
             x0, y1,
             x1, y0,
             x1, y1,
         )
-        textureCoordinates.data.push(
+        textureCoordinates.push(
             metric.x, metric.y,
             metric.x, metric.y + metric.height,
             metric.x + metric.width, metric.y,
             metric.x + metric.width, metric.y + metric.height,
         )
-        colors.data.push(
+        colors.push(
             h, s, l, a,
             h, s, l, a,
             h, s, l, a,
             h, s, l, a,
         )
-        indices.data.push(
+        indices.push(
             indexOffset + 0, indexOffset + 1, indexOffset + 2,
             indexOffset + 1, indexOffset + 2, indexOffset + 3,
         )
         x += metric.width
         indexOffset += 4
     }
-    entity.set(vertices, textureCoordinates, colors, indices)
+    entity.set(
+        new Vertices(vertices),
+        new TextureCoordinates(textureCoordinates),
+        new Colors(colors),
+        new VertexIndices(indices)
+    )
     return atlas.texture
 }
 
@@ -94,7 +99,7 @@ export const text = (ecs: ECS, data: string) =>
     ecs.entity(
         new Text(data),
         new FontSize(24),
-        new FontFamily("monospace"),
+        new FontFamily('Verdana'),
         new Color({ h: 0, s: 1, l: 1, a: 1 }),
         new Layout(layout),
         new Geometry(geometry),

@@ -1,5 +1,3 @@
-import { Size } from "./components"
-
 class DefaultProgram {
     positionBuffer: WebGLBuffer
     colorBuffer: WebGLBuffer
@@ -111,7 +109,6 @@ class DefaultProgram {
         /*offset*/0
         )
         this.indexBuffer = gl.createBuffer()!
-        const textureLocation = gl.getUniformLocation(program, 'u_texture')!
         this.resolutionLocation = gl.getUniformLocation(program, 'u_resolution')!
     }
 }
@@ -151,7 +148,8 @@ export class Renderer {
     gl: WebGL2RenderingContext
     canvas: HTMLCanvasElement
     program: DefaultProgram
-    size: Size
+    width: number
+    height: number
     fontAtlasses: Map<string, FontAtlas>
     textures: WebGLTexture[]
 
@@ -169,12 +167,24 @@ export class Renderer {
         this.program = new DefaultProgram(gl)
         this.fontAtlasses = new Map()
         this.textures = []
-        this.setSize(new Size(width, height))
+        this.setSize(width, height)
+        const texture = gl.createTexture()!
+        gl.bindTexture(gl.TEXTURE_2D, texture)
+        gl.texImage2D(
+            gl.TEXTURE_2D,
+      /*mipLevel*/0,
+      /*internalformat*/gl.RGBA,
+      /*width*/1,
+      /*height*/1,
+      /*border*/0,
+      /*srcFormat*/gl.RGBA,
+      /*srcType*/gl.UNSIGNED_BYTE,
+      /*data*/new Uint8Array([255, 255, 255, 255]))
+        this.textures.push(texture)
     }
 
-    setSize = (size: Size) => {
+    setSize = (width: number, height: number) => {
         const { gl, canvas } = this
-        const { width, height } = size
         const widthDpr = width * window.devicePixelRatio
         const heightDpr = height * window.devicePixelRatio
         canvas.width = widthDpr
@@ -183,7 +193,8 @@ export class Renderer {
         canvas.style.height = `${height}px`
         gl.uniform2f(this.program.resolutionLocation, widthDpr, heightDpr)
         gl.viewport(0, 0, widthDpr, heightDpr)
-        this.size = new Size(widthDpr, heightDpr)
+        this.width = widthDpr
+        this.height = heightDpr
     }
 
     clear = () => {
@@ -212,7 +223,7 @@ export class Renderer {
         const ctx = canvas.getContext('2d')!
         const totalCells = 256
         const rows = Math.sqrt(totalCells)
-        const size = nearestPowerOfTwo((fontSize + 5) * rows)
+        const size = nearestPowerOfTwo(fontSize * rows)
         const cellSize = size / rows
         canvas.width = size * window.devicePixelRatio
         canvas.height = size * window.devicePixelRatio
@@ -228,8 +239,8 @@ export class Renderer {
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
         const metrics = chars.map((c, i) => {
             const metric = ctx.measureText(c)
-            const width = Math.abs(metric.actualBoundingBoxLeft) + Math.abs(metric.actualBoundingBoxRight)
-            const height = Math.abs(metric.actualBoundingBoxAscent) + Math.abs(metric.actualBoundingBoxDescent)
+            const width = Math.ceil(metric.width)
+            const height = fontSize
             const x = i % rows * cellSize
             const y = Math.floor(i / rows) * cellSize
             ctx.fillText(c, x, y)
@@ -240,10 +251,6 @@ export class Renderer {
                 height: height * window.devicePixelRatio
             }
         })
-        const small = metrics['-'.charCodeAt(0)]
-        const space = metrics[' '.charCodeAt(0)]
-        space.width = small.width
-        space.height = small.height
         const { gl } = this
         const texture = gl.createTexture()!
         gl.bindTexture(gl.TEXTURE_2D, texture)

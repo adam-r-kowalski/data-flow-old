@@ -17,11 +17,13 @@ export const render = (ecs: ECS) => {
     for (const layer of layers.layers) {
         for (const [texture, entities] of layer) {
             if (texture != previousTexture) {
-                renderer.draw({ vertices, colors, textureCoordinates, vertexIndices })
-                vertices = []
-                colors = []
-                textureCoordinates = []
-                vertexIndices = []
+                if (vertices.length) {
+                    renderer.draw({ vertices, colors, textureCoordinates, vertexIndices })
+                    vertices = []
+                    colors = []
+                    textureCoordinates = []
+                    vertexIndices = []
+                }
                 previousTexture = texture
                 gl.bindTexture(gl.TEXTURE_2D, renderer.textures[texture])
             }
@@ -35,6 +37,7 @@ export const render = (ecs: ECS) => {
                 }
             }
         }
-        renderer.draw({ vertices, colors, textureCoordinates, vertexIndices })
     }
+    if (vertices.length == 0) return
+    renderer.draw({ vertices, colors, textureCoordinates, vertexIndices })
 }

@@ -17,7 +17,7 @@ export enum Alignment { START, CENTER, END }
 
 export class CrossAxisAlignment { constructor(public alignment: Alignment) { } }
 
-interface Hsla {
+export interface Hsla {
     h: number
     s: number
     l: number
@@ -72,25 +72,13 @@ export class Layout {
         this.impl(self, constraints)
 }
 
-export class Vertices {
-    data: number[]
-    constructor() { this.data = [] }
-}
+export class Vertices { constructor(public data: number[]) { } }
 
-export class TextureCoordinates {
-    data: number[]
-    constructor() { this.data = [] }
-}
+export class TextureCoordinates { constructor(public data: number[]) { } }
 
-export class Colors {
-    data: number[]
-    constructor() { this.data = [] }
-}
+export class Colors { constructor(public data: number[]) { } }
 
-export class VertexIndices {
-    data: number[]
-    constructor() { this.data = [] }
-}
+export class VertexIndices { constructor(public data: number[]) { } }
 
 export class Geometry {
     constructor(

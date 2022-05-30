@@ -17,6 +17,10 @@ export enum Alignment { START, CENTER, END }
 
 export class CrossAxisAlignment { constructor(public alignment: Alignment) { } }
 
+export class Width { constructor(public value: number) { } }
+
+export class Height { constructor(public value: number) { } }
+
 export interface Hsla {
     h: number
     s: number

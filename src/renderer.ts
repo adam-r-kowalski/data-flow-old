@@ -158,7 +158,7 @@ export class Renderer {
         const gl = canvas.getContext('webgl2')!
         gl.clearColor(0.0, 0.0, 0.0, 1.0)
         gl.enable(gl.BLEND)
-        gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
         gl.depthMask(false)
         gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true)
         gl.activeTexture(gl.TEXTURE0)

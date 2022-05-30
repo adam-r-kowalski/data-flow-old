@@ -271,7 +271,7 @@ export const Container = () => {
   return renderer.canvas
 }
 
-export const Node = () => {
+export const NodeWithColors = () => {
   const ecs = new ECS()
   const renderer = new Renderer(500, 500)
   const root = center(ecs,
@@ -285,9 +285,38 @@ export const Node = () => {
             container(ecs, { color: { h: 120, s: 1, l: 0.3, a: 1 }, padding: 5 }, text(ecs, { fontSize: 18 }, "width")),
             container(ecs, { color: { h: 150, s: 1, l: 0.3, a: 1 }, padding: 5 }, text(ecs, { fontSize: 18 }, "height")),
           ]),
-          column(ecs, [
+          column(ecs, { crossAxisAlignment: Alignment.END }, [
             container(ecs, { color: { h: 180, s: 1, l: 0.3, a: 1 }, padding: 5 }, text(ecs, { fontSize: 18 }, "rectangle")),
             container(ecs, { color: { h: 210, s: 1, l: 0.3, a: 1 }, padding: 5 }, text(ecs, { fontSize: 18 }, "is square?")),
+          ])
+        ])
+      ])
+    )
+  )
+  ecs.set(renderer, new UIRoot(root))
+  render(ecs)
+  return renderer.canvas
+}
+
+export const Node = () => {
+  const ecs = new ECS()
+  const renderer = new Renderer(500, 500)
+  const root = center(ecs,
+    container(ecs, { color: { h: 210, s: 1, l: 0.3, a: 1 }, padding: 10 },
+      column(ecs, { crossAxisAlignment: Alignment.CENTER }, [
+        container(ecs, { padding: 5 }, text(ecs, "Title")),
+        container(ecs, { height: 10 }),
+        row(ecs, [
+          column(ecs, [
+            container(ecs, { padding: 2 }, text(ecs, { fontSize: 18 }, "x")),
+            container(ecs, { padding: 2 }, text(ecs, { fontSize: 18 }, "y")),
+            container(ecs, { padding: 2 }, text(ecs, { fontSize: 18 }, "width")),
+            container(ecs, { padding: 2 }, text(ecs, { fontSize: 18 }, "height")),
+          ]),
+          container(ecs, { width: 50 }),
+          column(ecs, { crossAxisAlignment: Alignment.END }, [
+            container(ecs, { padding: 2 }, text(ecs, { fontSize: 18 }, "rectangle")),
+            container(ecs, { padding: 2 }, text(ecs, { fontSize: 18 }, "is square?")),
           ])
         ])
       ])

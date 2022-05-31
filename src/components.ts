@@ -13,6 +13,8 @@ export class Child { constructor(public entity: Entity) { } }
 
 export class Children { constructor(public entities: Entity[]) { } }
 
+export class Connections { constructor(public entities: Entity[]) { } }
+
 export enum Alignment { START, CENTER, END }
 
 export class CrossAxisAlignment { constructor(public alignment: Alignment) { } }
@@ -24,6 +26,10 @@ export class Height { constructor(public value: number) { } }
 export class X { constructor(public value: number) { } }
 
 export class Y { constructor(public value: number) { } }
+
+export class From { constructor(public entity: Entity) { } }
+
+export class To { constructor(public entity: Entity) { } }
 
 export interface Hsla {
     h: number
@@ -82,6 +88,15 @@ export class Layout {
         this.impl(self, constraints)
 }
 
+export class WorldSpace {
+    constructor(
+        public x: number,
+        public y: number,
+        public width: number,
+        public height: number
+    ) { }
+}
+
 export class Vertices { constructor(public data: number[]) { } }
 
 export class TextureCoordinates { constructor(public data: number[]) { } }
@@ -92,9 +107,9 @@ export class VertexIndices { constructor(public data: number[]) { } }
 
 export class Geometry {
     constructor(
-        private impl: (self: Entity, offset: Offset, layers: Layers, z: number) => void
+        private impl: (self: Entity, parentOffset: Offset, layers: Layers, z: number) => void
     ) { }
 
-    geometry = (self: Entity, offset: Offset, layers: Layers, z: number) =>
-        this.impl(self, offset, layers, z)
+    geometry = (self: Entity, parentOffset: Offset, layers: Layers, z: number) =>
+        this.impl(self, parentOffset, layers, z)
 }

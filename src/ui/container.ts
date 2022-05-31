@@ -15,7 +15,8 @@ import {
     Width,
     Height,
     X,
-    Y
+    Y,
+    WorldSpace
 } from "../components";
 import { ECS, Entity } from "../ecs";
 import { Layers } from "../layers";
@@ -88,6 +89,7 @@ const geometry = (self: Entity, parentOffset: Offset, layers: Layers, z: number)
     if (child) {
         child.entity.get(Geometry)!.geometry(child.entity, offset, layers, z)
     }
+    self.set(new WorldSpace(x0, y0, width, height))
 }
 
 interface Properties {

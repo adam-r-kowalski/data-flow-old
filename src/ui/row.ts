@@ -7,21 +7,22 @@ import {
     Children,
     Alignment,
     CrossAxisAlignment,
+    WorldSpace,
 } from "../components";
 import { ECS, Entity } from "../ecs";
 import { Layers } from "../layers";
 
-const layout = (entity: Entity, constraints: Constraints) => {
+const layout = (self: Entity, constraints: Constraints) => {
     let width = 0
     let height = 0
-    const children = entity.get(Children)!.entities
+    const children = self.get(Children)!.entities
     for (const child of children) {
         const size = child.get(Layout)!.layout(child, constraints)
         child.update(Offset, offset => offset.x = width)
         width += size.width
         height = Math.max(height, size.height)
     }
-    switch (entity.get(CrossAxisAlignment)!.alignment) {
+    switch (self.get(CrossAxisAlignment)!.alignment) {
         case Alignment.START:
             break
         case Alignment.CENTER:
@@ -38,15 +39,17 @@ const layout = (entity: Entity, constraints: Constraints) => {
             break
     }
     const size = new Size(width, height)
-    entity.set(constraints, size, new Offset(0, 0))
+    self.set(constraints, size, new Offset(0, 0))
     return size
 }
 
-const geometry = (entity: Entity, offset: Offset, layers: Layers, z: number) => {
-    let baseOffset = offset.add(entity.get(Offset)!)
-    for (const child of entity.get(Children)!.entities) {
-        child.get(Geometry)!.geometry(child, baseOffset, layers, z)
+const geometry = (self: Entity, parentOffset: Offset, layers: Layers, z: number) => {
+    const { width, height } = self.get(Size)!
+    const offset = parentOffset.add(self.get(Offset)!)
+    for (const child of self.get(Children)!.entities) {
+        child.get(Geometry)!.geometry(child, offset, layers, z)
     }
+    self.set(new WorldSpace(offset.x, offset.y, width, height))
 }
 
 interface Properties {

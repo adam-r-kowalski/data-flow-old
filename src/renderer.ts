@@ -144,6 +144,13 @@ interface DrawData {
     vertexIndices: number[]
 }
 
+interface DrawLineData {
+    vertices: number[]
+    colors: number[]
+    textureCoordinates: number[]
+}
+
+
 export class Renderer {
     gl: WebGL2RenderingContext
     canvas: HTMLCanvasElement
@@ -213,6 +220,18 @@ export class Renderer {
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, program.indexBuffer)
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(vertexIndices), gl.STATIC_DRAW)
         gl.drawElements(gl.TRIANGLES, /*count*/vertexIndices.length, /*type*/gl.UNSIGNED_SHORT, /*offset*/0)
+    }
+
+    drawLines = ({ vertices, colors, textureCoordinates }: DrawLineData) => {
+        const { gl, program } = this
+        gl.bindBuffer(gl.ARRAY_BUFFER, program.positionBuffer)
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW)
+        gl.bindBuffer(gl.ARRAY_BUFFER, program.colorBuffer)
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW)
+        gl.bindBuffer(gl.ARRAY_BUFFER, program.textureCoordinatesBuffer)
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoordinates), gl.STATIC_DRAW)
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, program.indexBuffer)
+        gl.drawArrays(gl.LINES, 0, vertices.length / 2)
     }
 
     fontAtlas = (fontFamily: string, fontSize: number): FontAtlas => {

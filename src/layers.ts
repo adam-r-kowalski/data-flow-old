@@ -8,9 +8,11 @@ interface Data {
 
 export class Layers {
     layers: Map<number, Entity[]>[]
+    lines: Entity[]
 
     constructor() {
         this.layers = []
+        this.lines = []
     }
 
     push = ({ z, texture, entity }: Data): void => {

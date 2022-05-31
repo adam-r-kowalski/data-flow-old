@@ -5,32 +5,41 @@ import {
     Size,
     Offset,
     Children,
+    Connections,
+    WorldSpace,
 } from "../components";
 import { ECS, Entity } from "../ecs";
 import { Layers } from "../layers";
+import { geometry as connectionGeometry } from './connection'
 
-const layout = (entity: Entity, constraints: Constraints) => {
-    for (const child of entity.get(Children)!.entities) {
+const layout = (self: Entity, constraints: Constraints) => {
+    for (const child of self.get(Children)!.entities) {
         child.get(Layout)!.layout(child, constraints)
     }
     const size = new Size(constraints.maxWidth, constraints.maxHeight)
-    entity.set(constraints, size, new Offset(0, 0))
+    self.set(constraints, size, new Offset(0, 0))
     return size
 }
 
-const geometry = (entity: Entity, offset: Offset, layers: Layers, z: number) => {
-    for (const child of entity.get(Children)!.entities) {
-        child.get(Geometry)!.geometry(child, offset.add(entity.get(Offset)!), layers, z)
+const geometry = (self: Entity, parentOffset: Offset, layers: Layers, z: number) => {
+    const { width, height } = self.get(Size)!
+    const offset = parentOffset.add(self.get(Offset)!)
+    for (const child of self.get(Children)!.entities) {
+        child.get(Geometry)!.geometry(child, offset, layers, z)
     }
+    connectionGeometry(self.get(Connections)!.entities, layers)
+    self.set(new WorldSpace(offset.x, offset.y, width, height))
 }
 
 interface Properties {
-    children: Entity[]
+    children: Entity[],
+    connections: Entity[],
 }
 
 export const scene = (ecs: ECS, properties: Properties) =>
     ecs.entity(
         new Layout(layout),
         new Geometry(geometry),
-        new Children(properties.children)
+        new Children(properties.children),
+        new Connections(properties.connections)
     )

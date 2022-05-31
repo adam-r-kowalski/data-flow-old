@@ -2,7 +2,7 @@ import * as Studio from '../studio'
 
 const { ECS, Renderer } = Studio
 const { UIRoot, Alignment } = Studio.components
-const { text, center, column, row, container } = Studio.ui
+const { text, center, column, row, container, scene } = Studio.ui
 const { render } = Studio.systems
 
 export default {
@@ -322,6 +322,68 @@ export const Node = () => {
       ])
     )
   )
+  ecs.set(renderer, new UIRoot(root))
+  render(ecs)
+  return renderer.canvas
+}
+
+export const Scene = () => {
+  const ecs = new ECS()
+  const renderer = new Renderer(800, 500)
+  const source = container(ecs, { color: { h: 210, s: 1, l: 0.3, a: 1 }, padding: 10, x: 25, y: 200 },
+    column(ecs, { crossAxisAlignment: Alignment.CENTER }, [
+      container(ecs, { padding: 5 }, text(ecs, "Source")),
+      container(ecs, { height: 10 }),
+      row(ecs, [
+        column(ecs, [
+          container(ecs, { padding: 2 }, text(ecs, { fontSize: 18 }, "in 0")),
+          container(ecs, { padding: 2 }, text(ecs, { fontSize: 18 }, "in 1")),
+        ]),
+        container(ecs, { width: 50 }),
+        column(ecs, { crossAxisAlignment: Alignment.END }, [
+          container(ecs, { padding: 2 }, text(ecs, { fontSize: 18 }, "out 1")),
+          container(ecs, { padding: 2 }, text(ecs, { fontSize: 18 }, "out 2")),
+        ])
+      ])
+    ])
+  )
+  const transform = container(ecs, { color: { h: 310, s: 1, l: 0.3, a: 1 }, padding: 10, x: 300, y: 100 },
+    column(ecs, { crossAxisAlignment: Alignment.CENTER }, [
+      container(ecs, { padding: 5 }, text(ecs, "Transform")),
+      container(ecs, { height: 10 }),
+      row(ecs, [
+        column(ecs, [
+          container(ecs, { padding: 2 }, text(ecs, { fontSize: 18 }, "in 0")),
+          container(ecs, { padding: 2 }, text(ecs, { fontSize: 18 }, "in 1")),
+        ]),
+        container(ecs, { width: 50 }),
+        column(ecs, { crossAxisAlignment: Alignment.END }, [
+          container(ecs, { padding: 2 }, text(ecs, { fontSize: 18 }, "out 1")),
+          container(ecs, { padding: 2 }, text(ecs, { fontSize: 18 }, "out 2")),
+        ])
+      ])
+    ])
+  )
+  const sink = container(ecs, { color: { h: 110, s: 1, l: 0.3, a: 1 }, padding: 10, x: 600, y: 250 },
+    column(ecs, { crossAxisAlignment: Alignment.CENTER }, [
+      container(ecs, { padding: 5 }, text(ecs, "Sink")),
+      container(ecs, { height: 10 }),
+      row(ecs, [
+        column(ecs, [
+          container(ecs, { padding: 2 }, text(ecs, { fontSize: 18 }, "in 0")),
+          container(ecs, { padding: 2 }, text(ecs, { fontSize: 18 }, "in 1")),
+        ]),
+        container(ecs, { width: 50 }),
+        column(ecs, { crossAxisAlignment: Alignment.END }, [
+          container(ecs, { padding: 2 }, text(ecs, { fontSize: 18 }, "out 1")),
+          container(ecs, { padding: 2 }, text(ecs, { fontSize: 18 }, "out 2")),
+        ])
+      ])
+    ])
+  )
+  const root = scene(ecs, {
+    children: [source, transform, sink]
+  })
   ecs.set(renderer, new UIRoot(root))
   render(ecs)
   return renderer.canvas

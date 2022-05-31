@@ -21,6 +21,10 @@ export class Width { constructor(public value: number) { } }
 
 export class Height { constructor(public value: number) { } }
 
+export class X { constructor(public value: number) { } }
+
+export class Y { constructor(public value: number) { } }
+
 export interface Hsla {
     h: number
     s: number

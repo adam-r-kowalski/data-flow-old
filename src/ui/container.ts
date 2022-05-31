@@ -13,7 +13,9 @@ import {
     VertexIndices,
     Padding,
     Width,
-    Height
+    Height,
+    X,
+    Y
 } from "../components";
 import { ECS, Entity } from "../ecs";
 import { Layers } from "../layers";
@@ -24,6 +26,7 @@ const clamp = (value: number, min: number, max: number): number =>
 const layout = (self: Entity, constraints: Constraints) => {
     const padding = self.get(Padding)!.value
     const child = self.get(Child)
+    const offset = new Offset(self.get(X)!.value, self.get(Y)!.value)
     if (child) {
         const childSize = child.entity.get(Layout)!.layout(child.entity, constraints)
         const size = new Size(
@@ -34,14 +37,14 @@ const layout = (self: Entity, constraints: Constraints) => {
             offset.x = padding
             offset.y = padding
         })
-        self.set(constraints, size, new Offset(0, 0))
+        self.set(constraints, size, offset)
         return size
     }
     const size = new Size(
         clamp(self.get(Width)!.value, constraints.minWidth, constraints.maxWidth),
         clamp(self.get(Height)!.value, constraints.minHeight, constraints.maxHeight),
     )
-    self.set(constraints, size, new Offset(0, 0))
+    self.set(constraints, size, offset)
     return size
 }
 
@@ -92,6 +95,8 @@ interface Properties {
     padding?: number
     width?: number
     height?: number
+    x?: number
+    y?: number
 }
 
 type Overload = {
@@ -106,6 +111,8 @@ export const container: Overload = (ecs: ECS, properties: Properties, child?: En
         new Padding(properties.padding ?? 0),
         new Width(properties.width ?? 0),
         new Height(properties.height ?? 0),
+        new X(properties.x ?? 0),
+        new Y(properties.y ?? 0),
     )
     if (properties.color) entity.set(new Color(properties.color))
     if (child) entity.set(new Child(child))

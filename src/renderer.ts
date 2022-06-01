@@ -4,10 +4,12 @@ class DefaultProgram {
     textureCoordinatesBuffer: WebGLBuffer
     indexBuffer: WebGLBuffer
     resolutionLocation: WebGLUniformLocation
+    devicePixelRatioLocation: WebGLUniformLocation
 
     constructor(gl: WebGL2RenderingContext) {
         const vertexShaderSource = `#version 300 es
   uniform vec2 u_resolution;
+  uniform float u_devicePixelRatio;
 
   in vec2 a_position;
   in vec2 a_textureCoordinates;
@@ -17,11 +19,11 @@ class DefaultProgram {
   out vec4 v_color;
 
   void main() {
-    vec2 zeroToOne = a_position.xy / u_resolution;
+    vec2 zeroToOne = a_position.xy * u_devicePixelRatio / u_resolution;
     vec2 zeroToTwo = zeroToOne * 2.0;
     vec2 clipSpace = zeroToTwo - 1.0;
     gl_Position = vec4(clipSpace * vec2(1, -1), 0, 1);
-    v_textureCoordinates = a_textureCoordinates;
+    v_textureCoordinates = a_textureCoordinates * u_devicePixelRatio;
     v_color = a_color;
   }
   `
@@ -110,6 +112,7 @@ class DefaultProgram {
         )
         this.indexBuffer = gl.createBuffer()!
         this.resolutionLocation = gl.getUniformLocation(program, 'u_resolution')!
+        this.devicePixelRatioLocation = gl.getUniformLocation(program, 'u_devicePixelRatio')!
     }
 }
 
@@ -192,16 +195,15 @@ export class Renderer {
 
     setSize = (width: number, height: number) => {
         const { gl, canvas } = this
-        const widthDpr = width * window.devicePixelRatio
-        const heightDpr = height * window.devicePixelRatio
-        canvas.width = widthDpr
-        canvas.height = heightDpr
+        canvas.width = width * window.devicePixelRatio
+        canvas.height = height * window.devicePixelRatio
         canvas.style.width = `${width}px`
         canvas.style.height = `${height}px`
-        gl.uniform2f(this.program.resolutionLocation, widthDpr, heightDpr)
-        gl.viewport(0, 0, widthDpr, heightDpr)
-        this.width = widthDpr
-        this.height = heightDpr
+        gl.uniform2f(this.program.resolutionLocation, canvas.width, canvas.height)
+        gl.uniform1f(this.program.devicePixelRatioLocation, window.devicePixelRatio)
+        gl.viewport(0, 0, canvas.width, canvas.height)
+        this.width = width
+        this.height = height
     }
 
     clear = () => {
@@ -264,10 +266,10 @@ export class Renderer {
             const y = Math.floor(i / rows) * cellSize
             ctx.fillText(c, x, y)
             return {
-                x: x * window.devicePixelRatio,
-                y: y * window.devicePixelRatio,
-                width: width * window.devicePixelRatio,
-                height: height * window.devicePixelRatio
+                x: x,
+                y: y,
+                width: width,
+                height: height
             }
         })
         const { gl } = this

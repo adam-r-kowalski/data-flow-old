@@ -126,7 +126,7 @@ const root = scene(ecs, {
 
 ecs.set(renderer, new UIRoot(root))
 
-console.log(render(ecs))
+render(ecs)
 
 let mouseDown = false
 document.addEventListener('mousedown', () => mouseDown = true)
@@ -136,13 +136,13 @@ document.addEventListener('mousemove', (e) => {
         translate.x -= e.movementX
         translate.y -= e.movementY
     })
-    console.log(render(ecs))
+    render(ecs)
 })
 document.addEventListener('mouseup', () => mouseDown = false)
 
 window.addEventListener('resize', () => {
     renderer.setSize(window.innerWidth, window.innerHeight)
-    console.log(render(ecs))
+    render(ecs)
 })
 
 document.body.appendChild(renderer.canvas)

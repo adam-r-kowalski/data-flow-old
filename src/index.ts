@@ -145,4 +145,9 @@ window.addEventListener('resize', () => {
     render(ecs)
 })
 
+window.addEventListener('orientationchange', () => {
+    renderer.setSize(window.innerWidth, window.innerHeight)
+    render(ecs)
+})
+
 document.body.appendChild(renderer.canvas)

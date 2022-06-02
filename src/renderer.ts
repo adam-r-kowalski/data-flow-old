@@ -19,7 +19,7 @@ class DefaultProgram {
         const vertexShaderSource = `#version 300 es
   uniform vec2 u_resolution;
   uniform float u_devicePixelRatio;
-  uniform mat3 u_cameras[256];
+  uniform mat3 u_cameras[10];
 
   layout(location = ${aPositionLocation}) in vec2 a_position;
   layout(location = ${aTextureCoordinatesLocation}) in vec2 a_textureCoordinates;

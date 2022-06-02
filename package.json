@@ -25,7 +25,8 @@
                 "push": "yarn gh-pages -d dist",
                 "storybook": "cross-env NODE_OPTIONS=--openssl-legacy-provider start-storybook -p 6006",
                 "build-storybook": "build-storybook",
-                "start": "yarn parcel src/index.html"
+                "start": "yarn parcel src/index.html",
+                "build": "yarn build src/index.html"
         },
         "dependencies": {}
 }

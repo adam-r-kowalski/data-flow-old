@@ -1,3 +1,5 @@
+import { Mat3 } from "./linear_algebra"
+
 class DefaultProgram {
     positionBuffer: WebGLBuffer
     colorBuffer: WebGLBuffer
@@ -5,21 +7,32 @@ class DefaultProgram {
     indexBuffer: WebGLBuffer
     resolutionLocation: WebGLUniformLocation
     devicePixelRatioLocation: WebGLUniformLocation
+    cameraLocation: WebGLUniformLocation
+    cameraIndexBuffer: WebGLBuffer
 
     constructor(gl: WebGL2RenderingContext) {
+        const aPositionLocation = 0
+        const aTextureCoordinatesLocation = 1
+        const aColorLocation = 2
+        const aCameraIndexLocation = 3
+
         const vertexShaderSource = `#version 300 es
   uniform vec2 u_resolution;
   uniform float u_devicePixelRatio;
+  uniform mat3 u_cameras[256];
 
-  in vec2 a_position;
-  in vec2 a_textureCoordinates;
-  in vec4 a_color;
+  layout(location = ${aPositionLocation}) in vec2 a_position;
+  layout(location = ${aTextureCoordinatesLocation}) in vec2 a_textureCoordinates;
+  layout(location = ${aColorLocation}) in vec4 a_color;
+  layout(location = ${aCameraIndexLocation}) in uint a_cameraIndex;
 
   out vec2 v_textureCoordinates;
   out vec4 v_color;
 
   void main() {
-    vec2 zeroToOne = a_position.xy * u_devicePixelRatio / u_resolution;
+    mat3 camera = inverse(u_cameras[a_cameraIndex]);
+    vec3 position = camera * vec3(a_position.xy, 1);
+    vec2 zeroToOne = position.xy * u_devicePixelRatio / u_resolution;
     vec2 zeroToTwo = zeroToOne * 2.0;
     vec2 clipSpace = zeroToTwo - 1.0;
     gl_Position = vec4(clipSpace * vec2(1, -1), 0, 1);
@@ -73,7 +86,7 @@ class DefaultProgram {
         gl.bindVertexArray(vertexArrayObject)
 
         this.positionBuffer = gl.createBuffer()!
-        const aPositionLocation = gl.getAttribLocation(program, 'a_position')
+        gl.bindAttribLocation(program, aPositionLocation, 'a_position')
         gl.enableVertexAttribArray(aPositionLocation)
         gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer)
         gl.vertexAttribPointer(
@@ -86,7 +99,7 @@ class DefaultProgram {
         )
 
         this.textureCoordinatesBuffer = gl.createBuffer()!
-        const aTextureCoordinatesLocation = gl.getAttribLocation(program, 'a_textureCoordinates')
+        gl.bindAttribLocation(program, aTextureCoordinatesLocation, 'a_textureCoordinates')
         gl.enableVertexAttribArray(aTextureCoordinatesLocation)
         gl.bindBuffer(gl.ARRAY_BUFFER, this.textureCoordinatesBuffer)
         gl.vertexAttribPointer(
@@ -99,7 +112,7 @@ class DefaultProgram {
         )
 
         this.colorBuffer = gl.createBuffer()!
-        const aColorLocation = gl.getAttribLocation(program, 'a_color')
+        gl.bindAttribLocation(program, aColorLocation, 'a_color')
         gl.enableVertexAttribArray(aColorLocation)
         gl.bindBuffer(gl.ARRAY_BUFFER, this.colorBuffer)
         gl.vertexAttribPointer(
@@ -110,9 +123,23 @@ class DefaultProgram {
         /*stride*/0,
         /*offset*/0
         )
+
+        this.cameraIndexBuffer = gl.createBuffer()!
+        gl.bindAttribLocation(program, aCameraIndexLocation, 'a_cameraIndex')
+        gl.enableVertexAttribArray(aCameraIndexLocation)
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.cameraIndexBuffer)
+        gl.vertexAttribIPointer(
+            aCameraIndexLocation,
+        /*size*/1,
+        /*type*/gl.UNSIGNED_BYTE,
+        /*stride*/0,
+        /*offset*/0
+        )
+
         this.indexBuffer = gl.createBuffer()!
         this.resolutionLocation = gl.getUniformLocation(program, 'u_resolution')!
         this.devicePixelRatioLocation = gl.getUniformLocation(program, 'u_devicePixelRatio')!
+        this.cameraLocation = gl.getUniformLocation(program, 'u_cameras')!
     }
 }
 
@@ -134,7 +161,9 @@ interface Metric {
 class FontAtlas {
     constructor(
         public texture: number,
-        public metrics: Metric[]
+        public metrics: Metric[],
+        public fontFamily: string,
+        public fontSize: number,
     ) { }
 
     metric = (c: string) => this.metrics[c.charCodeAt(0)]
@@ -145,14 +174,63 @@ interface DrawData {
     colors: number[]
     textureCoordinates: number[]
     vertexIndices: number[]
+    cameraIndices: number[]
 }
 
 interface DrawLineData {
     vertices: number[]
     colors: number[]
     textureCoordinates: number[]
+    cameraIndices: number[]
 }
 
+const createFontMetrics = (gl: WebGL2RenderingContext, texture: WebGLTexture, font: string, fontSize: number) => {
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d')!
+    const totalCells = 256
+    const rows = Math.sqrt(totalCells)
+    const size = nearestPowerOfTwo(fontSize * rows)
+    const cellSize = size / rows
+    canvas.width = size * window.devicePixelRatio
+    canvas.height = size * window.devicePixelRatio
+    canvas.style.width = `${size}px`
+    canvas.style.height = `${size}px`
+    ctx.scale(window.devicePixelRatio, window.devicePixelRatio)
+    ctx.textAlign = 'left'
+    ctx.textBaseline = 'top'
+    ctx.font = font
+    ctx.fillStyle = 'white'
+    const ascii = Array.from({ length: totalCells }, (v, i) => i)
+    const chars = ascii.map(c => String.fromCharCode(c))
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+    const metrics = chars.map((c, i) => {
+        const metric = ctx.measureText(c)
+        const width = Math.ceil(metric.width)
+        const height = fontSize
+        const x = i % rows * cellSize
+        const y = Math.floor(i / rows) * cellSize
+        ctx.fillText(c, x, y)
+        return {
+            x: x,
+            y: y,
+            width: width,
+            height: height
+        }
+    })
+    gl.bindTexture(gl.TEXTURE_2D, texture)
+    gl.texImage2D(
+        gl.TEXTURE_2D,
+      /*mipLevel*/0,
+      /*internalformat*/gl.RGBA,
+      /*srcFormat*/gl.RGBA,
+      /*srcType*/gl.UNSIGNED_BYTE,
+      /*source*/canvas)
+    gl.generateMipmap(gl.TEXTURE_2D)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+    return metrics
+
+}
 
 export class Renderer {
     gl: WebGL2RenderingContext
@@ -162,6 +240,7 @@ export class Renderer {
     height: number
     fontAtlasses: Map<string, FontAtlas>
     textures: WebGLTexture[]
+    devicePixelRatio: number
 
     constructor(width: number, height: number) {
         const canvas = document.createElement('canvas')
@@ -177,6 +256,7 @@ export class Renderer {
         this.program = new DefaultProgram(gl)
         this.fontAtlasses = new Map()
         this.textures = []
+        this.devicePixelRatio = window.devicePixelRatio
         this.setSize(width, height)
         const texture = gl.createTexture()!
         gl.bindTexture(gl.TEXTURE_2D, texture)
@@ -204,6 +284,9 @@ export class Renderer {
         gl.viewport(0, 0, canvas.width, canvas.height)
         this.width = width
         this.height = height
+        if (this.devicePixelRatio == window.devicePixelRatio) return
+        this.devicePixelRatio = window.devicePixelRatio
+        this.recreateFontAtlasses()
     }
 
     clear = () => {
@@ -211,7 +294,16 @@ export class Renderer {
         gl.clear(gl.COLOR_BUFFER_BIT)
     }
 
-    draw = ({ vertices, colors, textureCoordinates, vertexIndices }: DrawData) => {
+    setCameras = (cameras: Mat3[]) => {
+        const { gl } = this
+        const data: number[] = []
+        for (const camera of cameras) {
+            data.push(...camera.data)
+        }
+        gl.uniformMatrix3fv(this.program.cameraLocation, /*transpose*/true, /*data*/data)
+    }
+
+    draw = ({ vertices, colors, textureCoordinates, vertexIndices, cameraIndices }: DrawData) => {
         const { gl, program } = this
         gl.bindBuffer(gl.ARRAY_BUFFER, program.positionBuffer)
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW)
@@ -221,10 +313,12 @@ export class Renderer {
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoordinates), gl.STATIC_DRAW)
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, program.indexBuffer)
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(vertexIndices), gl.STATIC_DRAW)
+        gl.bindBuffer(gl.ARRAY_BUFFER, program.cameraIndexBuffer)
+        gl.bufferData(gl.ARRAY_BUFFER, new Uint8Array(cameraIndices), gl.STATIC_DRAW)
         gl.drawElements(gl.TRIANGLES, /*count*/vertexIndices.length, /*type*/gl.UNSIGNED_SHORT, /*offset*/0)
     }
 
-    drawLines = ({ vertices, colors, textureCoordinates }: DrawLineData) => {
+    drawLines = ({ vertices, colors, textureCoordinates, cameraIndices }: DrawLineData) => {
         const { gl, program } = this
         gl.bindBuffer(gl.ARRAY_BUFFER, program.positionBuffer)
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW)
@@ -233,61 +327,29 @@ export class Renderer {
         gl.bindBuffer(gl.ARRAY_BUFFER, program.textureCoordinatesBuffer)
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoordinates), gl.STATIC_DRAW)
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, program.indexBuffer)
+        gl.bindBuffer(gl.ARRAY_BUFFER, program.cameraIndexBuffer)
+        gl.bufferData(gl.ARRAY_BUFFER, new Uint8Array(cameraIndices), gl.STATIC_DRAW)
         gl.drawArrays(gl.LINES, 0, vertices.length / 2)
+    }
+
+    recreateFontAtlasses = () => {
+        for (const [font, fontAtlas] of this.fontAtlasses) {
+            const texture = this.textures[fontAtlas.texture]
+            const metrics = createFontMetrics(this.gl, texture, font, fontAtlas.fontSize)
+            fontAtlas.metrics = metrics
+        }
     }
 
     fontAtlas = (fontFamily: string, fontSize: number): FontAtlas => {
         const font = `${fontSize}px ${fontFamily}`
         const atlas = this.fontAtlasses.get(font)
         if (atlas) return atlas
-        const canvas = document.createElement('canvas')
-        const ctx = canvas.getContext('2d')!
-        const totalCells = 256
-        const rows = Math.sqrt(totalCells)
-        const size = nearestPowerOfTwo(fontSize * rows)
-        const cellSize = size / rows
-        canvas.width = size * window.devicePixelRatio
-        canvas.height = size * window.devicePixelRatio
-        canvas.style.width = `${size}px`
-        canvas.style.height = `${size}px`
-        ctx.scale(window.devicePixelRatio, window.devicePixelRatio)
-        ctx.textAlign = 'left'
-        ctx.textBaseline = 'top'
-        ctx.font = font
-        ctx.fillStyle = 'white'
-        const ascii = Array.from({ length: totalCells }, (v, i) => i)
-        const chars = ascii.map(c => String.fromCharCode(c))
-        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
-        const metrics = chars.map((c, i) => {
-            const metric = ctx.measureText(c)
-            const width = Math.ceil(metric.width)
-            const height = fontSize
-            const x = i % rows * cellSize
-            const y = Math.floor(i / rows) * cellSize
-            ctx.fillText(c, x, y)
-            return {
-                x: x,
-                y: y,
-                width: width,
-                height: height
-            }
-        })
         const { gl } = this
         const texture = gl.createTexture()!
-        gl.bindTexture(gl.TEXTURE_2D, texture)
-        gl.texImage2D(
-            gl.TEXTURE_2D,
-      /*mipLevel*/0,
-      /*internalformat*/gl.RGBA,
-      /*srcFormat*/gl.RGBA,
-      /*srcType*/gl.UNSIGNED_BYTE,
-      /*source*/canvas)
-        gl.generateMipmap(gl.TEXTURE_2D)
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+        const metrics = createFontMetrics(gl, texture, font, fontSize)
         const textureIndex = this.textures.length
         this.textures.push(texture)
-        const newAtlas = new FontAtlas(textureIndex, metrics)
+        const newAtlas = new FontAtlas(textureIndex, metrics, fontFamily, fontSize)
         this.fontAtlasses.set(font, newAtlas)
         return newAtlas
     }

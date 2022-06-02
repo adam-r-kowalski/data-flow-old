@@ -14,9 +14,9 @@ import {
     Padding,
     Width,
     Height,
-    X,
-    Y,
-    WorldSpace
+    WorldSpace,
+    Translate,
+    CameraIndices
 } from "../components";
 import { ECS, Entity } from "../ecs";
 import { Layers } from "../layers";
@@ -27,7 +27,8 @@ const clamp = (value: number, min: number, max: number): number =>
 const layout = (self: Entity, constraints: Constraints) => {
     const padding = self.get(Padding)!.value
     const child = self.get(Child)
-    const offset = new Offset(self.get(X)!.value, self.get(Y)!.value)
+    const { x, y } = self.get(Translate)!
+    const offset = new Offset(x, y)
     if (child) {
         const childSize = child.entity.get(Layout)!.layout(child.entity, constraints)
         const size = new Size(
@@ -81,7 +82,8 @@ const geometry = (self: Entity, parentOffset: Offset, layers: Layers, z: number)
             new VertexIndices([
                 0, 1, 2,
                 1, 2, 3,
-            ])
+            ]),
+            new CameraIndices(Array(4).fill(layers.activeCamera))
         )
         layers.push({ z, texture: 0, entity: self })
     }
@@ -113,8 +115,7 @@ export const container: Overload = (ecs: ECS, properties: Properties, child?: En
         new Padding(properties.padding ?? 0),
         new Width(properties.width ?? 0),
         new Height(properties.height ?? 0),
-        new X(properties.x ?? 0),
-        new Y(properties.y ?? 0),
+        new Translate(properties.x ?? 0, properties.y ?? 0)
     )
     if (properties.color) entity.set(new Color(properties.color))
     if (child) entity.set(new Child(child))

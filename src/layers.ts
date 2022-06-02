@@ -1,4 +1,5 @@
 import { Entity } from "./ecs";
+import { Mat3 } from "./linear_algebra";
 
 interface Data {
     z: number
@@ -9,10 +10,19 @@ interface Data {
 export class Layers {
     layers: Map<number, Entity[]>[]
     lines: Entity[]
+    cameras: Mat3[]
+    activeCamera: number
 
     constructor() {
         this.layers = []
         this.lines = []
+        this.cameras = [Mat3.identity()]
+        this.activeCamera = 0
+    }
+
+    pushAndSetActiveCamera = (camera: Mat3) => {
+        this.activeCamera = this.cameras.length
+        this.cameras.push(camera)
     }
 
     push = ({ z, texture, entity }: Data): void => {

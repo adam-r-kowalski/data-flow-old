@@ -1,4 +1,4 @@
-import { Color, Colors, From, Hsla, TextureCoordinates, To, Vertices, WorldSpace } from "../components";
+import { CameraIndices, Color, Colors, From, Hsla, TextureCoordinates, To, Vertices, WorldSpace } from "../components";
 import { ECS, Entity } from "../ecs";
 import { Layers } from "../layers";
 
@@ -54,7 +54,8 @@ export const geometry = (connections: Entity[], layers: Layers) => {
         entity.set(
             new Vertices(vertices),
             new TextureCoordinates(textureCoordinates),
-            new Colors(colors)
+            new Colors(colors),
+            new CameraIndices(Array(vertices.length / 2).fill(layers.activeCamera))
         )
         layers.lines.push(entity)
     }

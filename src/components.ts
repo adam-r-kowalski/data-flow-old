@@ -15,6 +15,8 @@ export class Children { constructor(public entities: Entity[]) { } }
 
 export class Connections { constructor(public entities: Entity[]) { } }
 
+export class Camera { constructor(public entity: Entity) { } }
+
 export enum Alignment { START, CENTER, END }
 
 export class CrossAxisAlignment { constructor(public alignment: Alignment) { } }
@@ -23,9 +25,7 @@ export class Width { constructor(public value: number) { } }
 
 export class Height { constructor(public value: number) { } }
 
-export class X { constructor(public value: number) { } }
-
-export class Y { constructor(public value: number) { } }
+export class Translate { constructor(public x: number, public y: number) { } }
 
 export class From { constructor(public entity: Entity) { } }
 
@@ -104,6 +104,8 @@ export class TextureCoordinates { constructor(public data: number[]) { } }
 export class Colors { constructor(public data: number[]) { } }
 
 export class VertexIndices { constructor(public data: number[]) { } }
+
+export class CameraIndices { constructor(public data: number[]) { } }
 
 export class Geometry {
     constructor(

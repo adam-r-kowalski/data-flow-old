@@ -1,7 +1,6 @@
 import * as Studio from '../studio'
-
 const { ECS, Renderer } = Studio
-const { UIRoot, Alignment } = Studio.components
+const { UIRoot, Alignment, Translate } = Studio.components
 const { text, center, column, row, container, scene, connection } = Studio.ui
 const { render } = Studio.systems
 
@@ -433,7 +432,9 @@ export const Scene = () => {
       ])
     ])
   )
+  const camera = ecs.entity(new Translate(0, 0))
   const root = scene(ecs, {
+    camera,
     children: [source, transform, sink],
     connections: [
       connection(ecs, { from: sourceOut, to: transformIn }),
@@ -442,5 +443,16 @@ export const Scene = () => {
   })
   ecs.set(renderer, new UIRoot(root))
   render(ecs)
+  let mouseDown = false
+  renderer.canvas.addEventListener('mousedown', () => mouseDown = true)
+  renderer.canvas.addEventListener('mousemove', (e) => {
+    if (!mouseDown) return
+    camera.update(Translate, translate => {
+      translate.x -= e.movementX
+      translate.y -= e.movementY
+    })
+    render(ecs)
+  })
+  renderer.canvas.addEventListener('mouseup', () => mouseDown = false)
   return renderer.canvas
 }

@@ -1,0 +1,148 @@
+import * as Studio from './studio'
+const { ECS, Renderer } = Studio
+const { UIRoot, Alignment, Translate } = Studio.components
+const { text, center, column, row, container, scene, connection } = Studio.ui
+const { render } = Studio.systems
+
+const ecs = new ECS()
+const renderer = new Renderer(window.innerWidth, window.innerHeight)
+
+const sourceOut = container(ecs, { width: 18, height: 18, color: { h: 70, s: 1, l: 0.7, a: 1 } })
+const source = container(ecs, { color: { h: 110, s: 1, l: 0.3, a: 1 }, padding: 10, x: 25, y: 200 },
+    column(ecs, { crossAxisAlignment: Alignment.CENTER }, [
+        container(ecs, { padding: 5 }, text(ecs, "Source")),
+        container(ecs, { height: 10 }),
+        row(ecs, [
+            column(ecs, [
+                row(ecs, [
+                    container(ecs, { width: 18, height: 18, color: { h: 70, s: 1, l: 0.7, a: 1 } }),
+                    container(ecs, { width: 5 }),
+                    container(ecs, { padding: 2 }, text(ecs, { fontSize: 18 }, "in 0")),
+                ]),
+                row(ecs, [
+                    container(ecs, { width: 18, height: 18, color: { h: 70, s: 1, l: 0.7, a: 1 } }),
+                    container(ecs, { width: 5 }),
+                    container(ecs, { padding: 2 }, text(ecs, { fontSize: 18 }, "in 1")),
+                ]),
+            ]),
+            container(ecs, { width: 30 }),
+            column(ecs, { crossAxisAlignment: Alignment.END }, [
+                row(ecs, [
+                    container(ecs, { padding: 2 }, text(ecs, { fontSize: 18 }, "out 0")),
+                    container(ecs, { width: 5 }),
+                    sourceOut
+                ]),
+                row(ecs, [
+                    container(ecs, { padding: 2 }, text(ecs, { fontSize: 18 }, "out 1")),
+                    container(ecs, { width: 5 }),
+                    container(ecs, { width: 18, height: 18, color: { h: 70, s: 1, l: 0.7, a: 1 } })
+                ]),
+            ])
+        ])
+    ])
+)
+
+const transformIn = container(ecs, { width: 18, height: 18, color: { h: 170, s: 1, l: 0.7, a: 1 } })
+const transformOut = container(ecs, { width: 18, height: 18, color: { h: 170, s: 1, l: 0.7, a: 1 } })
+const transform = container(ecs, { color: { h: 210, s: 1, l: 0.3, a: 1 }, padding: 10, x: 300, y: 100 },
+    column(ecs, { crossAxisAlignment: Alignment.CENTER }, [
+        container(ecs, { padding: 5 }, text(ecs, "Transform")),
+        container(ecs, { height: 10 }),
+        row(ecs, [
+            column(ecs, [
+                row(ecs, [
+                    transformIn,
+                    container(ecs, { width: 5 }),
+                    container(ecs, { padding: 2 }, text(ecs, { fontSize: 18 }, "in 0")),
+                ]),
+                row(ecs, [
+                    container(ecs, { width: 18, height: 18, color: { h: 170, s: 1, l: 0.7, a: 1 } }),
+                    container(ecs, { width: 5 }),
+                    container(ecs, { padding: 2 }, text(ecs, { fontSize: 18 }, "in 1")),
+                ]),
+            ]),
+            container(ecs, { width: 30 }),
+            column(ecs, { crossAxisAlignment: Alignment.END }, [
+                row(ecs, [
+                    container(ecs, { padding: 2 }, text(ecs, { fontSize: 18 }, "out 0")),
+                    container(ecs, { width: 5 }),
+                    container(ecs, { width: 18, height: 18, color: { h: 170, s: 1, l: 0.7, a: 1 } })
+                ]),
+                row(ecs, [
+                    container(ecs, { padding: 2 }, text(ecs, { fontSize: 18 }, "out 1")),
+                    container(ecs, { width: 5 }),
+                    transformOut
+                ]),
+            ])
+        ])
+    ])
+)
+
+const sinkIn = container(ecs, { width: 18, height: 18, color: { h: 270, s: 1, l: 0.7, a: 1 } })
+const sink = container(ecs, { color: { h: 310, s: 1, l: 0.3, a: 1 }, padding: 10, x: 550, y: 250 },
+    column(ecs, { crossAxisAlignment: Alignment.CENTER }, [
+        container(ecs, { padding: 5 }, text(ecs, "Sink")),
+        container(ecs, { height: 10 }),
+        row(ecs, [
+            column(ecs, [
+                row(ecs, [
+                    container(ecs, { width: 18, height: 18, color: { h: 270, s: 1, l: 0.7, a: 1 } }),
+                    container(ecs, { width: 5 }),
+                    container(ecs, { padding: 2 }, text(ecs, { fontSize: 18 }, "in 0")),
+                ]),
+                row(ecs, [
+                    sinkIn,
+                    container(ecs, { width: 5 }),
+                    container(ecs, { padding: 2 }, text(ecs, { fontSize: 18 }, "in 1")),
+                ]),
+            ]),
+            container(ecs, { width: 30 }),
+            column(ecs, { crossAxisAlignment: Alignment.END }, [
+                row(ecs, [
+                    container(ecs, { padding: 2 }, text(ecs, { fontSize: 18 }, "out 0")),
+                    container(ecs, { width: 5 }),
+                    container(ecs, { width: 18, height: 18, color: { h: 270, s: 1, l: 0.7, a: 1 } })
+                ]),
+                row(ecs, [
+                    container(ecs, { padding: 2 }, text(ecs, { fontSize: 18 }, "out 1")),
+                    container(ecs, { width: 5 }),
+                    container(ecs, { width: 18, height: 18, color: { h: 270, s: 1, l: 0.7, a: 1 } })
+                ]),
+            ])
+        ])
+    ])
+)
+
+const camera = ecs.entity(new Translate(0, 0))
+
+const root = scene(ecs, {
+    camera,
+    children: [source, transform, sink],
+    connections: [
+        connection(ecs, { from: sourceOut, to: transformIn }),
+        connection(ecs, { from: transformOut, to: sinkIn }),
+    ]
+})
+
+ecs.set(renderer, new UIRoot(root))
+
+console.log(render(ecs))
+
+let mouseDown = false
+document.addEventListener('mousedown', () => mouseDown = true)
+document.addEventListener('mousemove', (e) => {
+    if (!mouseDown) return
+    camera.update(Translate, translate => {
+        translate.x -= e.movementX
+        translate.y -= e.movementY
+    })
+    console.log(render(ecs))
+})
+document.addEventListener('mouseup', () => mouseDown = false)
+
+window.addEventListener('resize', () => {
+    renderer.setSize(window.innerWidth, window.innerHeight)
+    console.log(render(ecs))
+})
+
+document.body.appendChild(renderer.canvas)

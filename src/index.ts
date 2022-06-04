@@ -6,6 +6,8 @@ const { render } = Studio.systems
 
 const ecs = new ECS()
 const renderer = new Renderer(window.innerWidth, window.innerHeight)
+renderer.canvas.style.width = '100%'
+renderer.canvas.style.height = '100%'
 
 const sourceOut = container(ecs, { width: 18, height: 18, color: { h: 70, s: 1, l: 0.7, a: 1 } })
 const source = container(ecs, { color: { h: 110, s: 1, l: 0.3, a: 1 }, padding: 10, x: 25, y: 200 },
@@ -143,7 +145,7 @@ document.addEventListener('pointermove', (e) => {
 document.addEventListener('pointerup', () => dragging = false)
 
 window.addEventListener('resize', () => {
-    renderer.setSize(window.innerWidth, window.innerHeight)
+    renderer.setSize(renderer.canvas.clientWidth, renderer.canvas.clientHeight)
     requestAnimationFrame(() => render(ecs))
 })
 

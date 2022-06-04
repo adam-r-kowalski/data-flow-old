@@ -278,8 +278,6 @@ export class Renderer {
         const { gl, canvas } = this
         canvas.width = width * window.devicePixelRatio
         canvas.height = height * window.devicePixelRatio
-        canvas.style.width = `${width}px`
-        canvas.style.height = `${height}px`
         gl.uniform2f(this.program.resolutionLocation, canvas.width, canvas.height)
         gl.uniform1f(this.program.devicePixelRatioLocation, window.devicePixelRatio)
         gl.viewport(0, 0, canvas.width, canvas.height)

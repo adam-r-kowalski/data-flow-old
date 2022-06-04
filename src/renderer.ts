@@ -244,6 +244,7 @@ export class Renderer {
 
     constructor(width: number, height: number) {
         const canvas = document.createElement('canvas')
+        canvas.style.touchAction = 'none'
         const gl = canvas.getContext('webgl2')!
         gl.clearColor(0.0, 0.0, 0.0, 1.0)
         gl.enable(gl.BLEND)

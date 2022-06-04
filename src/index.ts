@@ -126,28 +126,33 @@ const root = scene(ecs, {
 
 ecs.set(renderer, new UIRoot(root))
 
-render(ecs)
+requestAnimationFrame(() => render(ecs))
 
-let mouseDown = false
-document.addEventListener('mousedown', () => mouseDown = true)
-document.addEventListener('mousemove', (e) => {
-    if (!mouseDown) return
+let dragging = false
+
+document.addEventListener('pointerdown', () => dragging = true)
+
+document.addEventListener('pointermove', (e) => {
+    if (!dragging) return
     camera.update(Translate, translate => {
         translate.x -= e.movementX
         translate.y -= e.movementY
     })
-    render(ecs)
+    requestAnimationFrame(() => render(ecs))
 })
-document.addEventListener('mouseup', () => mouseDown = false)
+document.addEventListener('pointerup', () => dragging = false)
 
 window.addEventListener('resize', () => {
     renderer.setSize(window.innerWidth, window.innerHeight)
-    render(ecs)
-})
-
-window.addEventListener('orientationchange', () => {
-    renderer.setSize(window.innerWidth, window.innerHeight)
-    render(ecs)
+    requestAnimationFrame(() => render(ecs))
 })
 
 document.body.appendChild(renderer.canvas)
+
+let isFullscreen = false
+
+document.addEventListener('touchend', () => {
+    if (isFullscreen) return
+    renderer.canvas.requestFullscreen()
+    isFullscreen = true
+})

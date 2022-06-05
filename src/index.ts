@@ -1,7 +1,7 @@
 import * as Studio from './studio'
 const { ECS, Renderer } = Studio
-const { UIRoot, Alignment, Translate } = Studio.components
-const { text, center, column, row, container, scene, connection } = Studio.ui
+const { UIRoot, Alignment, Translate, Zoom } = Studio.components
+const { text, column, row, container, scene, connection } = Studio.ui
 const { render } = Studio.systems
 
 const ecs = new ECS()
@@ -115,7 +115,10 @@ const sink = container(ecs, { color: { h: 310, s: 1, l: 0.3, a: 1 }, padding: 10
     ])
 )
 
-const camera = ecs.entity(new Translate(0, 0))
+const camera = ecs.entity(
+    new Translate(0, 0),
+    new Zoom(/*scale*/1, /*x*/0, /*y*/1)
+)
 
 const root = scene(ecs, {
     camera,
@@ -158,3 +161,17 @@ document.addEventListener('touchend', () => {
     renderer.canvas.requestFullscreen()
     isFullscreen = true
 })
+
+const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value))
+
+document.addEventListener('wheel', (e) => {
+    e.preventDefault()
+    camera.update(Zoom, zoom => {
+        zoom.scale = clamp(zoom.scale * Math.pow(2, e.deltaY * 0.01), 0.02, 100)
+        zoom.x = e.clientX
+        zoom.y = e.clientX
+    })
+    render(ecs)
+}, { passive: false })
+
+document.addEventListener('keydown', (e) => e.preventDefault())

@@ -1,6 +1,8 @@
+import { Transform } from '../components'
+import { Mat3 } from '../linear_algebra'
 import * as Studio from '../studio'
 const { ECS, Renderer } = Studio
-const { UIRoot, Alignment, Translate } = Studio.components
+const { UIRoot, Alignment } = Studio.components
 const { text, center, column, row, container, scene, connection } = Studio.ui
 const { render } = Studio.systems
 
@@ -432,7 +434,7 @@ export const Scene = () => {
       ])
     ])
   )
-  const camera = ecs.entity(new Translate(0, 0))
+  const camera = ecs.entity(new Transform(Mat3.identity()))
   const root = scene(ecs, {
     camera,
     children: [source, transform, sink],
@@ -447,9 +449,12 @@ export const Scene = () => {
   renderer.canvas.addEventListener('mousedown', () => mouseDown = true)
   renderer.canvas.addEventListener('mousemove', (e) => {
     if (!mouseDown) return
-    camera.update(Translate, translate => {
-      translate.x -= e.movementX
-      translate.y -= e.movementY
+    camera.update(Transform, transform => {
+      transform.matrix = transform.matrix.mul(new Mat3([
+        1, 0, -e.movementX,
+        0, 1, -e.movementY,
+        0, 0, 1,
+      ]))
     })
     render(ecs)
   })

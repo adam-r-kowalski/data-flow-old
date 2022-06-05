@@ -58,7 +58,7 @@ export class Entity {
     return storage ? storage.get(this) : undefined
   }
 
-  update = <T>(Type: Component<T>, f: (T) => void): void => {
+  update = <T>(Type: Component<T>, f: (_: T) => void): void => {
     const storage = this.ecs.storages.get(Type)
     if (!storage) return
     const component = storage.get(this)
@@ -85,7 +85,7 @@ export class ECS {
     return entity
   }
 
-  query = function*(...components: any): Generator<Entity> {
+  query = function* (...components: any): Generator<Entity> {
     const primary = this.storages.get(components[0])
     if (!primary) return
     const secondary = components.slice(1).map(s => this.storages.get(s))

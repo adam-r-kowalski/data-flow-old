@@ -1,5 +1,6 @@
 import { Entity } from "./ecs";
 import { Layers } from "./layers";
+import { Mat3 } from "./linear_algebra";
 
 export class UIRoot { constructor(public entity: Entity) { } }
 
@@ -25,7 +26,17 @@ export class Width { constructor(public value: number) { } }
 
 export class Height { constructor(public value: number) { } }
 
-export class Translate { constructor(public x: number, public y: number) { } }
+export class Translate {
+    constructor(public x: number, public y: number) { }
+}
+
+export class Zoom {
+    constructor(
+        public scale: number,
+        public x: number,
+        public y: number,
+    ) { }
+}
 
 export class From { constructor(public entity: Entity) { } }
 

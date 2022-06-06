@@ -10,6 +10,7 @@ import {
     Camera,
     Translate,
     Zoom,
+    Transform,
 } from "../components";
 import { ECS, Entity } from "../ecs";
 import { Layers } from "../layers";
@@ -26,32 +27,8 @@ const layout = (self: Entity, constraints: Constraints) => {
 }
 
 const geometry = (self: Entity, parentOffset: Offset, layers: Layers, z: number) => {
-    const { x, y } = self.get(Camera)!.entity.get(Translate)!
-    const translate = new Mat3([
-        1, 0, x,
-        0, 1, y,
-        0, 0, 1,
-    ])
-    const scale = (() => {
-        const { scale, x, y } = self.get(Camera)!.entity.get(Zoom)!
-        const a = new Mat3([
-            1, 0, x,
-            0, 1, y,
-            0, 0, 1
-        ])
-        const b = new Mat3([
-            scale, 0, 0,
-            0, scale, 0,
-            0, 0, 1
-        ])
-        const c = new Mat3([
-            1, 0, -x,
-            0, 1, -y,
-            0, 0, 1
-        ])
-        return a.matMul(b).matMul(c)
-    })()
-    layers.pushAndSetActiveCamera(translate.matMul(scale))
+    const camera = self.get(Camera)!.entity.get(Transform)!.matrix
+    layers.pushAndSetActiveCamera(camera)
     const { width, height } = self.get(Size)!
     const offset = parentOffset.add(self.get(Offset)!)
     for (const child of self.get(Children)!.entities) {

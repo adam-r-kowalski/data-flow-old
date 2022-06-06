@@ -93,8 +93,6 @@ test("matrix inverse of scale", () => {
     )
 })
 
-
-
 test("matrix vector multiplication by identity", () => {
     const a = Mat3.identity()
     const b = new Vec3([1, 2, 3])

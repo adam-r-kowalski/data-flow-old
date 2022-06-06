@@ -1,6 +1,7 @@
+import { Mat3 } from './linear_algebra'
 import * as Studio from './studio'
 const { ECS, Renderer } = Studio
-const { UIRoot, Alignment, Translate, Zoom } = Studio.components
+const { UIRoot, Alignment, Transform } = Studio.components
 const { text, column, row, container, scene, connection } = Studio.ui
 const { render } = Studio.systems
 
@@ -115,10 +116,7 @@ const sink = container(ecs, { color: { h: 310, s: 1, l: 0.3, a: 1 }, padding: 10
     ])
 )
 
-const camera = ecs.entity(
-    new Translate(0, 0),
-    new Zoom(/*scale*/1, /*x*/0, /*y*/1)
-)
+const camera = ecs.entity(new Transform(Mat3.identity()),)
 
 const root = scene(ecs, {
     camera,
@@ -131,7 +129,7 @@ const root = scene(ecs, {
 
 ecs.set(renderer, new UIRoot(root))
 
-render(ecs)
+requestAnimationFrame(() => render(ecs))
 
 let dragging = false
 
@@ -139,17 +137,17 @@ document.addEventListener('pointerdown', () => dragging = true)
 
 document.addEventListener('pointermove', (e) => {
     if (!dragging) return
-    camera.update(Translate, translate => {
-        translate.x -= e.movementX
-        translate.y -= e.movementY
+    camera.update(Transform, transform => {
+        const translate = Mat3.translation(-e.movementX, -e.movementY)
+        transform.matrix = transform.matrix.matMul(translate)
     })
-    render(ecs)
+    requestAnimationFrame(() => render(ecs))
 })
 document.addEventListener('pointerup', () => dragging = false)
 
 window.addEventListener('resize', () => {
     renderer.setSize(renderer.canvas.clientWidth, renderer.canvas.clientHeight)
-    render(ecs)
+    requestAnimationFrame(() => render(ecs))
 })
 
 document.body.appendChild(renderer.canvas)
@@ -162,16 +160,17 @@ document.addEventListener('touchend', () => {
     isFullscreen = true
 })
 
-const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value))
-
 document.addEventListener('wheel', (e) => {
     e.preventDefault()
-    camera.update(Zoom, zoom => {
-        zoom.scale = clamp(zoom.scale * Math.pow(2, e.deltaY * 0.01), 0.02, 100)
-        zoom.x = e.clientX
-        zoom.y = e.clientX
+    camera.update(Transform, transform => {
+        const move = Mat3.translation(e.clientX, e.clientY)
+        const scale = Math.pow(2, e.deltaY * 0.01)
+        const zoom = Mat3.scaling(scale, scale)
+        const moveBack = Mat3.translation(-e.clientX, -e.clientY)
+        const result = move.matMul(zoom).matMul(moveBack)
+        transform.matrix = transform.matrix.matMul(result)
     })
-    render(ecs)
+    requestAnimationFrame(() => render(ecs))
 }, { passive: false })
 
 document.addEventListener('keydown', (e) => e.preventDefault())

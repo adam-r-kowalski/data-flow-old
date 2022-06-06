@@ -60,7 +60,6 @@ const renderLines = (renderer: Renderer, layers: Layers) => {
     renderer.drawLines({ vertices, colors, textureCoordinates, cameraIndices })
 }
 
-
 export const render = (ecs: ECS) => {
     const begin = performance.now()
     layout(ecs)
@@ -72,5 +71,6 @@ export const render = (ecs: ECS) => {
     renderTriangles(renderer, layers)
     renderLines(renderer, layers)
     const end = performance.now()
-    return end - begin
+    const duration = end - begin
+    return duration
 }

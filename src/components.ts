@@ -30,6 +30,8 @@ export class Translate {
     constructor(public x: number, public y: number) { }
 }
 
+export class Transform { constructor(public matrix: Mat3) { } }
+
 export class Zoom {
     constructor(
         public scale: number,

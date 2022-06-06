@@ -1,3 +1,7 @@
+export class Vec3 {
+    constructor(public data: number[]) { }
+}
+
 export class Mat3 {
     constructor(public data: number[]) { }
 
@@ -7,7 +11,35 @@ export class Mat3 {
         0, 0, 1,
     ])
 
-    mul = (other: Mat3) => {
+    static projection = (width: number, height: number) => new Mat3([
+        2 / width, 0, -1,
+        0, -2 / height, 1,
+        0, 0, 1
+    ])
+
+    static translation = (x: number, y: number) => new Mat3([
+        1, 0, x,
+        0, 1, y,
+        0, 0, 1
+    ])
+
+    static rotation = (radians: number) => {
+        const c = Math.cos(radians)
+        const s = Math.sin(radians)
+        return new Mat3([
+            c, s, 0,
+            -s, c, 0,
+            0, 0, 1
+        ])
+    }
+
+    static scaling = (x: number, y: number) => new Mat3([
+        x, 0, 0,
+        0, y, 0,
+        0, 0, 1
+    ])
+
+    matMul = (other: Mat3) => {
         const a = this.data
         const b = other.data
         const a11 = a[0]
@@ -41,6 +73,56 @@ export class Mat3 {
             c11, c12, c13,
             c21, c22, c23,
             c31, c32, c33,
+        ])
+    }
+
+    vecMul = (other: Vec3) => {
+        const a = this.data
+        const b = other.data
+        const a11 = a[0]
+        const a12 = a[1]
+        const a13 = a[2]
+        const a21 = a[3]
+        const a22 = a[4]
+        const a23 = a[5]
+        const a31 = a[6]
+        const a32 = a[7]
+        const a33 = a[8]
+        const b1 = b[0]
+        const b2 = b[1]
+        const b3 = b[2]
+        const c1 = a11 * b1 + a12 * b2 + a13 * b3
+        const c2 = a21 * b1 + a22 * b2 + a23 * b3
+        const c3 = a31 * b1 + a32 * b2 + a33 * b3
+        return new Vec3([c1, c2, c3])
+    }
+
+    inverse = () => {
+        const a = this.data
+        const a11 = a[0]
+        const a12 = a[1]
+        const a13 = a[2]
+        const a21 = a[3]
+        const a22 = a[4]
+        const a23 = a[5]
+        const a31 = a[6]
+        const a32 = a[7]
+        const a33 = a[8]
+        const b11 = a22 * a33 - a23 * a32
+        const b12 = a21 * a33 - a23 * a31
+        const b13 = a21 * a32 - a22 * a31
+        const b21 = a12 * a33 - a13 * a32
+        const b22 = a11 * a33 - a13 * a31
+        const b23 = a11 * a32 - a12 * a31
+        const b31 = a12 * a23 - a13 * a22
+        const b32 = a11 * a23 - a13 * a21
+        const b33 = a11 * a22 - a12 * a21
+        const det = a11 * a22 * a33 + a12 * a23 * a31 + a31 * a21 * a32 - a11 * a23 * a32 - a12 * a21 * a33 - a13 * a22 * a31
+        const idet = 1 / det
+        return new Mat3([
+            idet * b11, idet * -b12, idet * b13,
+            idet * -b21, idet * b22, idet * -b23,
+            idet * b31, idet * -b32, idet * b33
         ])
     }
 }

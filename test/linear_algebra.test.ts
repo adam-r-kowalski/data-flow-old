@@ -8,7 +8,7 @@ test("matrix multiplication by identity rhs", () => {
         7, 8, 9
     ])
     const b = Mat3.identity()
-    const c = a.mul(b)
+    const c = a.matMul(b)
     expect(c.data).toEqual(a.data)
 })
 
@@ -19,7 +19,7 @@ test("matrix multiplication by identity lhs", () => {
         7, 8, 9
     ])
     const b = Mat3.identity()
-    const c = b.mul(a)
+    const c = b.matMul(a)
     expect(c.data).toEqual(a.data)
 })
 
@@ -34,10 +34,27 @@ test("matrix multiplication", () => {
         3, 3, 9,
         4, 4, 2
     ])
-    const c = a.mul(b)
+    const c = a.matMul(b)
     expect(c.data).toEqual([
         130, 120, 240,
         51, 47, 73,
         35, 33, 45
     ])
+})
+
+test("matrix inverse", () => {
+    const a = new Mat3([
+        1, 2, -1,
+        2, 1, 2,
+        -1, 2, 1
+    ])
+    const b = a.inverse()
+    const expected = [
+        3 / 16, 1 / 4, -5 / 16,
+        1 / 4, 0, 1 / 4,
+        -5 / 16, 1 / 4, 3 / 16
+    ]
+    b.data.forEach((value, index) =>
+        expect(value).toBeCloseTo(expected[index])
+    )
 })

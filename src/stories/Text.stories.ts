@@ -450,7 +450,7 @@ export const Scene = () => {
   renderer.canvas.addEventListener('mousemove', (e) => {
     if (!mouseDown) return
     camera.update(Transform, transform => {
-      transform.matrix = transform.matrix.mul(new Mat3([
+      transform.matrix = transform.matrix.matMul(new Mat3([
         1, 0, -e.movementX,
         0, 1, -e.movementY,
         0, 0, 1,

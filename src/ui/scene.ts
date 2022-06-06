@@ -9,7 +9,6 @@ import {
     WorldSpace,
     Camera,
     Translate,
-    Scale,
     Zoom,
 } from "../components";
 import { ECS, Entity } from "../ecs";
@@ -50,9 +49,9 @@ const geometry = (self: Entity, parentOffset: Offset, layers: Layers, z: number)
             0, 1, -y,
             0, 0, 1
         ])
-        return a.mul(b).mul(c)
+        return a.matMul(b).matMul(c)
     })()
-    layers.pushAndSetActiveCamera(translate.mul(scale))
+    layers.pushAndSetActiveCamera(translate.matMul(scale))
     const { width, height } = self.get(Size)!
     const offset = parentOffset.add(self.get(Offset)!)
     for (const child of self.get(Children)!.entities) {

@@ -131,7 +131,7 @@ const root = scene(ecs, {
 
 ecs.set(renderer, new UIRoot(root))
 
-requestAnimationFrame(() => render(ecs))
+render(ecs)
 
 let dragging = false
 
@@ -143,13 +143,13 @@ document.addEventListener('pointermove', (e) => {
         translate.x -= e.movementX
         translate.y -= e.movementY
     })
-    requestAnimationFrame(() => render(ecs))
+    render(ecs)
 })
 document.addEventListener('pointerup', () => dragging = false)
 
 window.addEventListener('resize', () => {
     renderer.setSize(renderer.canvas.clientWidth, renderer.canvas.clientHeight)
-    requestAnimationFrame(() => render(ecs))
+    render(ecs)
 })
 
 document.body.appendChild(renderer.canvas)

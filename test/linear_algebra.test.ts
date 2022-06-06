@@ -1,5 +1,5 @@
 import * as Studio from '../src/studio'
-const { Mat3 } = Studio.linear_algebra
+const { Mat3, Vec3 } = Studio.linear_algebra
 
 test("matrix multiplication by identity rhs", () => {
     const a = new Mat3([
@@ -55,6 +55,38 @@ test("matrix inverse", () => {
         -5 / 16, 1 / 4, 3 / 16
     ]
     b.data.forEach((value, index) =>
+        expect(value).toBeCloseTo(expected[index])
+    )
+})
+
+test("matrix vector multiplication by identity", () => {
+    const a = Mat3.identity()
+    const b = new Vec3([1, 2, 3])
+    const c = a.vecMul(b)
+    expect(c.data).toEqual(b.data)
+})
+
+
+test("scale vector", () => {
+    const a = Mat3.scaling(2, 2)
+    const b = new Vec3([1, 2, 1])
+    const c = a.vecMul(b)
+    expect(c.data).toEqual([2, 4, 1])
+})
+
+test("translate vector", () => {
+    const a = Mat3.translation(2, 2)
+    const b = new Vec3([1, 2, 1])
+    const c = a.vecMul(b)
+    expect(c.data).toEqual([3, 4, 1])
+})
+
+test("rotate vector", () => {
+    const a = Mat3.rotation(-Math.PI / 2)
+    const b = new Vec3([1, 0, 1])
+    const c = a.vecMul(b)
+    const expected = [0, 1, 1]
+    c.data.forEach((value, index) =>
         expect(value).toBeCloseTo(expected[index])
     )
 })

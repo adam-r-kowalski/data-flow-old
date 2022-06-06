@@ -117,7 +117,7 @@ export class Mat3 {
         const b31 = a12 * a23 - a13 * a22
         const b32 = a11 * a23 - a13 * a21
         const b33 = a11 * a22 - a12 * a21
-        const det = a11 * a22 * a33 + a12 * a23 * a31 + a31 * a21 * a32 - a11 * a23 * a32 - a12 * a21 * a33 - a13 * a22 * a31
+        const det = a31 * b31 - a32 * b32 + a33 * b33
         const idet = 1 / det
         return new Mat3([
             idet * b11, idet * -b12, idet * b13,

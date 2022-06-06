@@ -131,19 +131,48 @@ ecs.set(renderer, new UIRoot(root))
 
 requestAnimationFrame(() => render(ecs))
 
+const pointers: PointerEvent[] = []
 let dragging = false
+let pointerDistance = 0
 
-document.addEventListener('pointerdown', () => dragging = true)
+document.addEventListener('pointerdown', (e) => {
+    pointers.push(e)
+    if (pointers.length == 1) dragging = true
+})
 
 document.addEventListener('pointermove', (e) => {
-    if (!dragging) return
-    camera.update(Transform, transform => {
-        const translate = Mat3.translation(-e.movementX, -e.movementY)
-        transform.matrix = transform.matrix.matMul(translate)
-    })
-    requestAnimationFrame(() => render(ecs))
+    pointers[pointers.findIndex(p => p.pointerId == e.pointerId)] = e
+    if (dragging && pointers.length == 1) {
+        camera.update(Transform, transform => {
+            const translate = Mat3.translation(-e.movementX, -e.movementY)
+            transform.matrix = transform.matrix.matMul(translate)
+        })
+        requestAnimationFrame(() => render(ecs))
+    } else if (pointers.length == 2) {
+        const [x1, y1] = [pointers[0].clientX, pointers[0].clientY]
+        const [x2, y2] = [pointers[1].clientX, pointers[1].clientY]
+        const distance = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2))
+        if (pointerDistance > 0) {
+            const move = Mat3.translation(e.clientX, e.clientY)
+            const zoom = Math.pow(2, (pointerDistance - distance) * 0.01)
+            const scale = Mat3.scaling(zoom, zoom)
+            const moveBack = Mat3.translation(-e.clientX, -e.clientY)
+            const result = move.matMul(scale).matMul(moveBack)
+            camera.update(Transform, transform =>
+                transform.matrix = transform.matrix.matMul(result)
+            )
+        }
+        pointerDistance = distance
+        requestAnimationFrame(() => render(ecs))
+    }
 })
-document.addEventListener('pointerup', () => dragging = false)
+document.addEventListener('pointerup', (e) => {
+    pointers.splice(pointers.findIndex(p => p.pointerId == e.pointerId), 1)
+    if (pointers.length == 0) {
+        dragging = false
+        pointerDistance = 0
+    }
+})
 
 window.addEventListener('resize', () => {
     renderer.setSize(renderer.canvas.clientWidth, renderer.canvas.clientHeight)
@@ -152,22 +181,19 @@ window.addEventListener('resize', () => {
 
 document.body.appendChild(renderer.canvas)
 
-let isFullscreen = false
-
 document.addEventListener('touchend', () => {
-    if (isFullscreen) return
     renderer.canvas.requestFullscreen()
-    isFullscreen = true
 })
+
 
 document.addEventListener('wheel', (e) => {
     e.preventDefault()
     camera.update(Transform, transform => {
         const move = Mat3.translation(e.clientX, e.clientY)
-        const scale = Math.pow(2, e.deltaY * 0.01)
-        const zoom = Mat3.scaling(scale, scale)
+        const zoom = Math.pow(2, e.deltaY * 0.01)
+        const scale = Mat3.scaling(zoom, zoom)
         const moveBack = Mat3.translation(-e.clientX, -e.clientY)
-        const result = move.matMul(zoom).matMul(moveBack)
+        const result = move.matMul(scale).matMul(moveBack)
         transform.matrix = transform.matrix.matMul(result)
     })
     requestAnimationFrame(() => render(ecs))

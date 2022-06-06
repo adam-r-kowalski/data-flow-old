@@ -3,6 +3,7 @@ import { ECS } from "../ecs";
 import { CameraIndices, Colors, TextureCoordinates, VertexIndices, Vertices } from "../components";
 import { Layers } from "../layers";
 import { layout, geometry } from './'
+import { Mat3 } from "../linear_algebra";
 
 const renderTriangles = (renderer: Renderer, layers: Layers) => {
     const { gl } = renderer
@@ -65,7 +66,8 @@ export const render = (ecs: ECS) => {
     layout(ecs)
     const layers = geometry(ecs)
     const renderer = ecs.get(Renderer)!
-    renderer.setCameras(layers.cameras)
+    const projection = Mat3.projection(renderer.width, renderer.height)
+    renderer.setMatrices(layers.cameras.map(camera => projection.matMul(camera.inverse())))
     renderer.clear()
     renderTriangles(renderer, layers)
     renderLines(renderer, layers)

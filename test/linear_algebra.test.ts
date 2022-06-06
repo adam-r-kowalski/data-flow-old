@@ -59,6 +59,42 @@ test("matrix inverse", () => {
     )
 })
 
+test("matrix inverse of translate", () => {
+    const a = new Mat3([
+        1, 0, 5,
+        0, 1, 10,
+        0, 0, 1
+    ])
+    const b = a.inverse()
+    const expected = [
+        1, 0, -5,
+        0, 1, -10,
+        0, 0, 1
+    ]
+    b.data.forEach((value, index) =>
+        expect(value).toBeCloseTo(expected[index])
+    )
+})
+
+test("matrix inverse of scale", () => {
+    const a = new Mat3([
+        2, 0, 0,
+        0, 2, 0,
+        0, 0, 1
+    ])
+    const b = a.inverse()
+    const expected = [
+        1 / 2, 0, 0,
+        0, 1 / 2, 0,
+        0, 0, 1
+    ]
+    b.data.forEach((value, index) =>
+        expect(value).toBeCloseTo(expected[index])
+    )
+})
+
+
+
 test("matrix vector multiplication by identity", () => {
     const a = Mat3.identity()
     const b = new Vec3([1, 2, 3])

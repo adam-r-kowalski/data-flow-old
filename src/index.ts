@@ -151,15 +151,25 @@ document.addEventListener('pointerdown', (e) => {
     if (pointers.length == 1) dragging = true
 })
 
+
+let draggedEntity: Entity | null = null
+
 document.addEventListener('pointermove', (e) => {
     pointers[pointers.findIndex(p => p.pointerId == e.pointerId)] = e
     if (dragging && pointers.length == 1) {
+        if (draggedEntity) {
+            const onDrag = draggedEntity.get(OnDrag)!.callback
+            onDrag(draggedEntity, e.movementX, e.movementY)
+            requestAnimationFrame(() => render(ecs))
+            return
+        }
         const cameraMatrix = camera.get(Transform)!.matrix
         const mouse = new Vec3([e.clientX, e.clientY, 1])
-        for (const clickedEntity of rayCast(ecs, cameraMatrix, mouse)) {
-            const onDrag = clickedEntity.get(OnDrag)
+        for (const entity of rayCast(ecs, cameraMatrix, mouse)) {
+            const onDrag = entity.get(OnDrag)
             if (onDrag) {
-                onDrag.callback(clickedEntity, e.movementX, e.movementY)
+                draggedEntity = entity
+                onDrag.callback(entity, e.movementX, e.movementY)
                 requestAnimationFrame(() => render(ecs))
                 return
             }
@@ -193,6 +203,7 @@ document.addEventListener('pointerup', (e) => {
     if (pointers.length == 0) {
         dragging = false
         pointerDistance = 0
+        draggedEntity = null
     }
 })
 

@@ -128,3 +128,7 @@ export class Geometry {
     geometry = (self: Entity, parentOffset: Offset, layers: Layers, z: number) =>
         this.impl(self, parentOffset, layers, z)
 }
+
+export class OnDrag {
+    constructor(public callback: (entity: Entity, x: number, y: number) => void) { }
+}

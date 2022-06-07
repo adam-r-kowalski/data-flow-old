@@ -1,14 +1,22 @@
-import { Mat3 } from './linear_algebra'
+import { OnDrag, Translate } from './components'
+import { Mat3, Vec3 } from './linear_algebra'
 import * as Studio from './studio'
+import { Entity } from './studio'
 const { ECS, Renderer } = Studio
 const { UIRoot, Alignment, Transform } = Studio.components
 const { text, column, row, container, scene, connection } = Studio.ui
-const { render } = Studio.systems
+const { render, rayCast } = Studio.systems
 
 const ecs = new ECS()
 const renderer = new Renderer(window.innerWidth, window.innerHeight)
 renderer.canvas.style.width = '100%'
 renderer.canvas.style.height = '100%'
+
+const dragSelf = (entity: Entity, x: number, y: number) =>
+    entity.update(Translate, translate => {
+        translate.x += x
+        translate.y += y
+    })
 
 const sourceOut = container(ecs, { width: 18, height: 18, color: { h: 70, s: 1, l: 0.7, a: 1 } })
 const source = container(ecs, { color: { h: 110, s: 1, l: 0.3, a: 1 }, padding: 10, x: 25, y: 200 },
@@ -44,6 +52,7 @@ const source = container(ecs, { color: { h: 110, s: 1, l: 0.3, a: 1 }, padding: 
         ])
     ])
 )
+source.set(new OnDrag(dragSelf))
 
 const transformIn = container(ecs, { width: 18, height: 18, color: { h: 170, s: 1, l: 0.7, a: 1 } })
 const transformOut = container(ecs, { width: 18, height: 18, color: { h: 170, s: 1, l: 0.7, a: 1 } })
@@ -80,6 +89,7 @@ const transform = container(ecs, { color: { h: 210, s: 1, l: 0.3, a: 1 }, paddin
         ])
     ])
 )
+transform.set(new OnDrag(dragSelf))
 
 const sinkIn = container(ecs, { width: 18, height: 18, color: { h: 270, s: 1, l: 0.7, a: 1 } })
 const sink = container(ecs, { color: { h: 310, s: 1, l: 0.3, a: 1 }, padding: 10, x: 550, y: 250 },
@@ -115,6 +125,7 @@ const sink = container(ecs, { color: { h: 310, s: 1, l: 0.3, a: 1 }, padding: 10
         ])
     ])
 )
+sink.set(new OnDrag(dragSelf))
 
 const camera = ecs.entity(new Transform(Mat3.identity()),)
 
@@ -143,6 +154,16 @@ document.addEventListener('pointerdown', (e) => {
 document.addEventListener('pointermove', (e) => {
     pointers[pointers.findIndex(p => p.pointerId == e.pointerId)] = e
     if (dragging && pointers.length == 1) {
+        const cameraMatrix = camera.get(Transform)!.matrix
+        const mouse = new Vec3([e.clientX, e.clientY, 1])
+        for (const clickedEntity of rayCast(ecs, cameraMatrix, mouse)) {
+            const onDrag = clickedEntity.get(OnDrag)
+            if (onDrag) {
+                onDrag.callback(clickedEntity, e.movementX, e.movementY)
+                requestAnimationFrame(() => render(ecs))
+                return
+            }
+        }
         camera.update(Transform, transform => {
             const translate = Mat3.translation(-e.movementX, -e.movementY)
             transform.matrix = transform.matrix.matMul(translate)
@@ -166,6 +187,7 @@ document.addEventListener('pointermove', (e) => {
         requestAnimationFrame(() => render(ecs))
     }
 })
+
 document.addEventListener('pointerup', (e) => {
     pointers.splice(pointers.findIndex(p => p.pointerId == e.pointerId), 1)
     if (pointers.length == 0) {
@@ -185,7 +207,6 @@ document.addEventListener('touchend', () => {
     renderer.canvas.requestFullscreen()
 })
 
-
 document.addEventListener('wheel', (e) => {
     e.preventDefault()
     camera.update(Transform, transform => {
@@ -199,4 +220,4 @@ document.addEventListener('wheel', (e) => {
     requestAnimationFrame(() => render(ecs))
 }, { passive: false })
 
-document.addEventListener('keydown', (e) => e.preventDefault())
+//document.addEventListener('keydown', (e) => e.preventDefault())

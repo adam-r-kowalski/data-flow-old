@@ -89,7 +89,7 @@ const geometry = (self: Entity, parentOffset: Offset, layers: Layers, z: number)
     }
     const child = self.get(Child)
     if (child) {
-        child.entity.get(Geometry)!.geometry(child.entity, offset, layers, z)
+        child.entity.get(Geometry)!.geometry(child.entity, offset, layers, z + 1)
     }
     self.set(new WorldSpace(x0, y0, width, height))
 }

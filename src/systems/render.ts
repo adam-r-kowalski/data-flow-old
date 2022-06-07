@@ -61,7 +61,6 @@ const renderLines = (renderer: Renderer, layers: Layers) => {
 }
 
 export const render = (ecs: ECS) => {
-    const begin = performance.now()
     layout(ecs)
     const layers = geometry(ecs)
     const renderer = ecs.get(Renderer)!
@@ -70,7 +69,5 @@ export const render = (ecs: ECS) => {
     renderer.clear()
     renderTriangles(renderer, layers)
     renderLines(renderer, layers)
-    const end = performance.now()
-    const duration = end - begin
-    return duration
+    ecs.set(layers)
 }

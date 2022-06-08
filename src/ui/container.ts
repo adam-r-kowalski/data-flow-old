@@ -16,7 +16,11 @@ import {
     Height,
     WorldSpace,
     Translate,
-    CameraIndices
+    CameraIndices,
+    OnDragCallback,
+    OnClickCallback,
+    OnClick,
+    OnDrag
 } from "../components";
 import { ECS, Entity } from "../ecs";
 import { Layers } from "../layers";
@@ -101,6 +105,8 @@ interface Properties {
     height?: number
     x?: number
     y?: number
+    onDrag?: OnDragCallback
+    onClick?: OnClickCallback
 }
 
 type Overload = {
@@ -119,5 +125,7 @@ export const container: Overload = (ecs: ECS, properties: Properties, child?: En
     )
     if (properties.color) entity.set(new Color(properties.color))
     if (child) entity.set(new Child(child))
+    if (properties.onDrag) entity.set(new OnDrag(properties.onDrag))
+    if (properties.onClick) entity.set(new OnClick(properties.onClick))
     return entity
 }

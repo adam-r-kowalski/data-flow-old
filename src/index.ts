@@ -1,4 +1,4 @@
-import { Camera, Connections, Hsla, OnClick, OnDrag, Translate } from './components'
+import { Camera, Color, Connections, Hsla, OnClick, OnDrag, Translate } from './components'
 import { Mat3, Vec3 } from './linear_algebra'
 import * as Studio from './studio'
 import { Entity } from './studio'
@@ -20,18 +20,44 @@ const dragSelf = (entity: Entity, x: number, y: number) =>
 
 
 let connectionFrom: Entity | null = null
+let connectionTo: Entity | null = null
 
 
-const clickOutput = (entity: Entity) => connectionFrom = entity
+const clickOutput = (entity: Entity) => {
+    if (!connectionTo) {
+        if (connectionFrom == entity) return
+        else if (connectionFrom != null) connectionFrom.update(Color, color => color.h -= 30)
+        connectionFrom = entity
+        entity.update(Color, color => color.h += 30)
+        requestAnimationFrame(() => render(ecs))
+    } else {
+        const con = connection(ecs, { from: entity, to: connectionTo })
+        root.update(Connections, connections =>
+            connections.entities.push(con)
+        )
+        connectionTo.update(Color, color => color.h -= 30)
+        connectionTo = null
+        requestAnimationFrame(() => render(ecs))
+    }
+}
 
 const clickInput = (entity: Entity) => {
-    if (!connectionFrom) return
-    const con = connection(ecs, { from: connectionFrom, to: entity })
-    root.update(Connections, connections =>
-        connections.entities.push(con)
-    )
-    connectionFrom = null
-    requestAnimationFrame(() => render(ecs))
+    if (!connectionFrom) {
+        if (connectionTo == entity) return
+        else if (connectionTo != null) connectionTo.update(Color, color => color.h -= 30)
+        connectionTo = entity
+        entity.update(Color, color => color.h += 30)
+        requestAnimationFrame(() => render(ecs))
+
+    } else {
+        const con = connection(ecs, { from: connectionFrom, to: entity })
+        root.update(Connections, connections =>
+            connections.entities.push(con)
+        )
+        connectionFrom.update(Color, color => color.h -= 30)
+        connectionFrom = null
+        requestAnimationFrame(() => render(ecs))
+    }
 }
 
 

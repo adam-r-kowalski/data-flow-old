@@ -141,6 +141,14 @@ export class Pointers {
     constructor(public events: PointerEvent[]) { }
 }
 
+export class PointerDistance {
+    constructor(public value: number) { }
+}
+
 export class Dragging {
     constructor(public value: boolean) { }
+}
+
+export class DraggedEntity {
+    constructor(public entity: Entity | null) { }
 }

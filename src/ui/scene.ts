@@ -8,13 +8,10 @@ import {
     Connections,
     WorldSpace,
     Camera,
-    Translate,
-    Zoom,
     Transform,
 } from "../components";
 import { ECS, Entity } from "../ecs";
 import { Layers } from "../layers";
-import { Mat3 } from "../linear_algebra";
 import { geometry as connectionGeometry } from './connection'
 
 const layout = (self: Entity, constraints: Constraints) => {
@@ -27,7 +24,7 @@ const layout = (self: Entity, constraints: Constraints) => {
 }
 
 const geometry = (self: Entity, parentOffset: Offset, layers: Layers, z: number) => {
-    const camera = self.get(Camera)!.entity.get(Transform)!.matrix
+    const camera = self.ecs.get(Camera)!.entity.get(Transform)!.matrix
     layers.pushAndSetActiveCamera(camera)
     const { width, height } = self.get(Size)!
     const offset = parentOffset.add(self.get(Offset)!)
@@ -39,7 +36,6 @@ const geometry = (self: Entity, parentOffset: Offset, layers: Layers, z: number)
 }
 
 interface Properties {
-    camera: Entity,
     children: Entity[],
     connections: Entity[],
 }
@@ -50,5 +46,4 @@ export const scene = (ecs: ECS, properties: Properties) =>
         new Geometry(geometry),
         new Children(properties.children),
         new Connections(properties.connections),
-        new Camera(properties.camera),
     )

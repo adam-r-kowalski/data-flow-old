@@ -58,13 +58,8 @@ export class Entity {
     return storage ? storage.get(this) : undefined
   }
 
-  update = <T>(Type: Component<T>, f: (_: T) => void): void => {
-    const storage = this.ecs.storages.get(Type)
-    if (!storage) return
-    const component = storage.get(this)
-    if (!component) return
-    f(component)
-  }
+  update = <T, U>(Type: Component<T>, f: (_: T) => U): U =>
+    f(this.ecs.storages.get(Type)!.get(this)!)
 }
 
 export class ECS {
@@ -106,6 +101,9 @@ export class ECS {
   get = <T>(Type: Component<T>): T | undefined => {
     return this.resources.get(Type)
   }
+
+  update = <T, U>(Type: Component<T>, f: (_: T) => U): U =>
+    f(this.resources.get(Type)!)
 
   unsetAll = <T>(Type: Component<T>): void => {
     const storage = this.storages.get(Type)

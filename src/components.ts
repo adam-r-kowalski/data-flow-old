@@ -136,3 +136,11 @@ export class OnDrag { constructor(public callback: OnDragCallback) { } }
 export type OnClickCallback = (entity: Entity) => void
 
 export class OnClick { constructor(public callback: OnClickCallback) { } }
+
+export class Pointers {
+    constructor(public events: PointerEvent[]) { }
+}
+
+export class Dragging {
+    constructor(public value: boolean) { }
+}

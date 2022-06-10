@@ -19,7 +19,6 @@ const dragSelf = (entity: Entity, x: number, y: number) =>
     })
 
 
-
 let connectionFrom: Entity | null = null
 
 

@@ -45,13 +45,11 @@ const renderLines = (renderer: Renderer, layers: Layers) => {
     let vertices: number[] = []
     let colors: number[] = []
     let textureCoordinates: number[] = []
-    let cameraIndices: number[] = []
     gl.bindTexture(gl.TEXTURE_2D, renderer.textures[0])
     for (const entity of layers.lines) {
         vertices.push(...entity.get(Vertices)!.data)
         colors.push(...entity.get(Colors)!.data)
         textureCoordinates.push(...entity.get(TextureCoordinates)!.data)
-        cameraIndices.push(...entity.get(CameraIndices)!.data)
     }
     if (vertices.length == 0) return
     renderer.drawLines({ vertices, colors, textureCoordinates })
@@ -63,7 +61,7 @@ export const render = (ecs: ECS) => {
     const layers = geometry(root)
     const renderer = ecs.get(Renderer)!
     const projection = Mat3.projection(renderer.width, renderer.height)
-    const camera = root.get(Camera)!.entity.get(Transform)!.matrix
+    const camera = ecs.get(Camera)!.entity.get(Transform)!.matrix
     renderer.setMatrix(projection.matMul(camera.inverse()))
     renderer.clear()
     renderTriangles(renderer, layers)

@@ -7,14 +7,15 @@ const { text, center, column, row, container, scene, connection } = Studio.ui
 const { render } = Studio.systems
 
 export default {
-  title: "Text",
+  title: "Layout",
 }
 
 export const Text = () => {
   const ecs = new ECS()
   const renderer = new Renderer(500, 500)
   const root = text(ecs, "This is some text!")
-  ecs.set(renderer, new UIRoot(root))
+  const camera = ecs.entity(new Transform(Mat3.identity()))
+  ecs.set(renderer, new UIRoot(root), camera)
   render(ecs)
   return renderer.canvas
 }

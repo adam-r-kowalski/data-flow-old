@@ -70,7 +70,7 @@ const sink = container(ecs, { color: { h: 310, s: 1, l: 0.3, a: 1 }, padding: 10
     ])
 )
 
-const camera = ecs.entity(new Transform(Mat3.identity()),)
+const camera = ecs.entity(new Transform(Mat3.identity()))
 
 const root = scene(ecs, {
     children: [source, transform, sink],

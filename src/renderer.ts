@@ -26,7 +26,7 @@ class DefaultProgram {
   out vec4 v_color;
 
   void main() {
-    gl_Position = vec4((u_matrices[a_matrixIndex] * vec3(a_position, 1)).xy, 0, 1);
+    gl_Position = vec4((u_matrix * vec3(a_position, 1)).xy, 0, 1);
     v_textureCoordinates = a_textureCoordinates * u_devicePixelRatio;
     v_color = a_color;
   }

@@ -1,4 +1,4 @@
-import { DraggedEntity, Dragging, PointerDistance, Pointers } from "../components";
+import { ConnectionFrom, ConnectionTo, DraggedEntity, Dragging, PointerDistance, Pointers } from "../components";
 import { ECS } from "../ecs";
 import { pointerDown } from "./pointerDown";
 import { pointerMove } from "./pointerMove";
@@ -12,7 +12,9 @@ export const init = (ecs: ECS) => {
         new Pointers([]),
         new PointerDistance(0),
         new Dragging(false),
-        new DraggedEntity(null)
+        new DraggedEntity(null),
+        new ConnectionFrom(null),
+        new ConnectionTo(null),
     )
     pointerDown(ecs)
     pointerMove(ecs)

@@ -14,7 +14,6 @@ import {
     VertexIndices,
     Hsla,
     WorldSpace,
-    CameraIndices
 } from "../components";
 import { ECS, Entity } from "../ecs";
 import { Layers } from "../layers";
@@ -34,7 +33,7 @@ const textSize = (renderer: Renderer, entity: Entity) => {
     return size
 }
 
-const textGeometry = (renderer: Renderer, entity: Entity, offset: Offset, layers: Layers): number => {
+const textGeometry = (renderer: Renderer, entity: Entity, offset: Offset): number => {
     const text = entity.get(Text)!.value
     const fontSize = entity.get(FontSize)!.value
     const fontFamily = entity.get(FontFamily)!.value
@@ -82,7 +81,6 @@ const textGeometry = (renderer: Renderer, entity: Entity, offset: Offset, layers
         new TextureCoordinates(textureCoordinates),
         new Colors(colors),
         new VertexIndices(indices),
-        new CameraIndices(Array(indexOffset).fill(layers.activeCamera))
     )
     return atlas.texture
 }
@@ -96,7 +94,7 @@ const layout = (self: Entity, constraints: Constraints) => {
 const geometry = (self: Entity, parentOffset: Offset, layers: Layers, z: number) => {
     const { width, height } = self.get(Size)!
     const offset = parentOffset.add(self.get(Offset)!)
-    const texture = textGeometry(self.ecs.get(Renderer)!, self, offset, layers)
+    const texture = textGeometry(self.ecs.get(Renderer)!, self, offset)
     layers.push({ z, entity: self, texture })
     self.set(new WorldSpace(offset.x, offset.y, width, height))
 }

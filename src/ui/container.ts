@@ -16,7 +16,6 @@ import {
     Height,
     WorldSpace,
     Translate,
-    CameraIndices,
     OnDragCallback,
     OnClickCallback,
     OnClick,
@@ -87,7 +86,6 @@ const geometry = (self: Entity, parentOffset: Offset, layers: Layers, z: number)
                 0, 1, 2,
                 1, 2, 3,
             ]),
-            new CameraIndices(Array(4).fill(layers.activeCamera))
         )
         layers.push({ z, texture: 0, entity: self })
     }

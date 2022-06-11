@@ -7,8 +7,6 @@ import {
     Children,
     Connections,
     WorldSpace,
-    Camera,
-    Transform,
 } from "../components";
 import { ECS, Entity } from "../ecs";
 import { Layers } from "../layers";
@@ -24,8 +22,6 @@ const layout = (self: Entity, constraints: Constraints) => {
 }
 
 const geometry = (self: Entity, parentOffset: Offset, layers: Layers, z: number) => {
-    const camera = self.ecs.get(Camera)!.entity.get(Transform)!.matrix
-    layers.pushAndSetActiveCamera(camera)
     const { width, height } = self.get(Size)!
     const offset = parentOffset.add(self.get(Offset)!)
     for (const child of self.get(Children)!.entities) {

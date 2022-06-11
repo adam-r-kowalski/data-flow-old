@@ -3,6 +3,9 @@ import { ECS } from "../ecs";
 import { pointerDown } from "./pointerDown";
 import { pointerMove } from "./pointerMove";
 import { pointerUp } from "./pointerUp";
+import { resize } from "./resize";
+import { touchEnd } from "./touchEnd";
+import { wheel } from "./wheel";
 
 export const init = (ecs: ECS) => {
     ecs.set(
@@ -14,4 +17,7 @@ export const init = (ecs: ECS) => {
     pointerDown(ecs)
     pointerMove(ecs)
     pointerUp(ecs)
+    resize(ecs)
+    touchEnd(ecs)
+    wheel(ecs)
 }

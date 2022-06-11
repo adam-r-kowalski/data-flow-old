@@ -152,3 +152,11 @@ export class Dragging {
 export class DraggedEntity {
     constructor(public entity: Entity | null) { }
 }
+
+export class ConnectionFrom {
+    constructor(public entity: Entity | null) { }
+}
+
+export class ConnectionTo {
+    constructor(public entity: Entity | null) { }
+}

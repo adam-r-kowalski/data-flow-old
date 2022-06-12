@@ -1,4 +1,4 @@
-import { Color, Colors, From, Hsla, TextureCoordinates, To, Vertices, WorldSpace } from "../components";
+import { Color, Colors, From, TextureCoordinates, To, Vertices, WorldSpace } from "../components";
 import { ECS, Entity } from "../ecs";
 import { Layers } from "../layers";
 
@@ -48,9 +48,9 @@ export const geometry = (connections: Entity[], layers: Layers) => {
         const from = entity.get(From)!.entity.get(WorldSpace)!
         const to = entity.get(To)!.entity.get(WorldSpace)!
         const vertices = cubicBezier(ts, from, to)
-        const { h, s, l, a } = entity.get(Color)!
+        const { r, g, b, a } = entity.get(Color)!
         const colors: number[] = []
-        for (let i = 0; i < samples * 2; ++i) colors.push(h, s, l, a)
+        for (let i = 0; i < samples * 2; ++i) colors.push(r, g, b, a)
         entity.set(
             new Vertices(vertices),
             new TextureCoordinates(textureCoordinates),
@@ -63,12 +63,12 @@ export const geometry = (connections: Entity[], layers: Layers) => {
 interface Properties {
     from: Entity
     to: Entity
-    color?: Hsla
+    color?: Color
 }
 
 export const connection = (ecs: ECS, properties: Properties): Entity =>
     ecs.entity(
         new From(properties.from),
         new To(properties.to),
-        new Color(properties.color ?? { h: 0, s: 1, l: 1, a: 1 }),
+        properties.color ?? new Color(255, 255, 255, 255)
     )

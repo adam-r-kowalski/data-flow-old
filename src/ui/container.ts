@@ -5,7 +5,6 @@ import {
     Size,
     Child,
     Offset,
-    Hsla,
     Color,
     Vertices,
     TextureCoordinates,
@@ -62,7 +61,7 @@ const geometry = (self: Entity, parentOffset: Offset, layers: Layers, z: number)
     const y1 = y0 + height
     const color = self.get(Color)
     if (color) {
-        const { h, s, l, a } = color
+        const { r, g, b, a } = color
         self.set(
             new Vertices([
                 x0, y0,
@@ -77,10 +76,10 @@ const geometry = (self: Entity, parentOffset: Offset, layers: Layers, z: number)
                 0, 0,
             ]),
             new Colors([
-                h, s, l, a,
-                h, s, l, a,
-                h, s, l, a,
-                h, s, l, a,
+                r, g, b, a,
+                r, g, b, a,
+                r, g, b, a,
+                r, g, b, a,
             ]),
             new VertexIndices([
                 0, 1, 2,
@@ -97,7 +96,7 @@ const geometry = (self: Entity, parentOffset: Offset, layers: Layers, z: number)
 }
 
 interface Properties {
-    color?: Hsla
+    color?: Color
     padding?: number
     width?: number
     height?: number
@@ -121,7 +120,7 @@ export const container: Overload = (ecs: ECS, properties: Properties, child?: En
         new Height(properties.height ?? 0),
         new Translate(properties.x ?? 0, properties.y ?? 0)
     )
-    if (properties.color) entity.set(new Color(properties.color))
+    if (properties.color) entity.set(properties.color)
     if (child) entity.set(new Child(child))
     if (properties.onDrag) entity.set(new OnDrag(properties.onDrag))
     if (properties.onClick) entity.set(new OnClick(properties.onClick))

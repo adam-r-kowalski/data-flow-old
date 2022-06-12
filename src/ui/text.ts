@@ -12,7 +12,6 @@ import {
     TextureCoordinates,
     Colors,
     VertexIndices,
-    Hsla,
     WorldSpace,
 } from "../components";
 import { ECS, Entity } from "../ecs";
@@ -37,7 +36,7 @@ const textGeometry = (renderer: Renderer, entity: Entity, offset: Offset): numbe
     const text = entity.get(Text)!.value
     const fontSize = entity.get(FontSize)!.value
     const fontFamily = entity.get(FontFamily)!.value
-    const { h, s, l, a } = entity.get(Color)!
+    const { r, g, b, a } = entity.get(Color)!
     const atlas = renderer.fontAtlas(fontFamily, fontSize)
     let x = 0
     let indexOffset = 0
@@ -64,10 +63,10 @@ const textGeometry = (renderer: Renderer, entity: Entity, offset: Offset): numbe
             metric.x + metric.width, metric.y + metric.height,
         )
         colors.push(
-            h, s, l, a,
-            h, s, l, a,
-            h, s, l, a,
-            h, s, l, a,
+            r, g, b, a,
+            r, g, b, a,
+            r, g, b, a,
+            r, g, b, a,
         )
         indices.push(
             indexOffset + 0, indexOffset + 1, indexOffset + 2,
@@ -102,7 +101,7 @@ const geometry = (self: Entity, parentOffset: Offset, layers: Layers, z: number)
 interface Properties {
     fontSize?: number
     fontFamily?: number
-    color?: Hsla
+    color?: Color
 }
 
 type Overload = {
@@ -119,7 +118,7 @@ export const text: Overload = (ecs: ECS, ...args: any[]): Entity => {
         new Text(data),
         new FontSize(properties.fontSize ?? 24),
         new FontFamily(properties.fontFamily ?? "monospace"),
-        new Color(properties.color ?? { h: 0, s: 1, l: 1, a: 1 }),
+        properties.color ?? new Color(255, 255, 255, 255),
         new Layout(layout),
         new Geometry(geometry),
     )

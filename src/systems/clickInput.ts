@@ -9,15 +9,15 @@ export const clickInput = (entity: Entity) => {
     const connectionFrom = ecs.get(ConnectionFrom)!.entity
     if (!connectionFrom) {
         if (connectionTo == entity) return
-        else if (connectionTo != null) connectionTo.update(Color, color => color.h -= 30)
+        else if (connectionTo != null) connectionTo.set(new Color(101, 215, 249, 255))
         ecs.update(ConnectionTo, to => to.entity = entity)
-        entity.update(Color, color => color.h += 30)
+        entity.set(new Color(67, 76, 112, 255))
         requestAnimationFrame(() => render(ecs))
     } else {
         const root = ecs.get(UIRoot)!.entity
         const con = connection(ecs, { from: connectionFrom, to: entity })
         root.update(Connections, connections => connections.entities.push(con))
-        connectionFrom.update(Color, color => color.h -= 30)
+        connectionFrom.set(new Color(101, 215, 249, 255))
         ecs.update(ConnectionFrom, from => from.entity = null)
         requestAnimationFrame(() => render(ecs))
     }

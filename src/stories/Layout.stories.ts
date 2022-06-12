@@ -1,4 +1,4 @@
-import { Transform } from '../components'
+import { Camera, Transform } from '../components'
 import { Mat3 } from '../linear_algebra'
 import * as Studio from '../studio'
 const { ECS, Renderer } = Studio
@@ -10,43 +10,52 @@ export default {
   title: "Layout",
 }
 
+const rendererWithSize = (width: number, height: number) => {
+  const renderer = new Renderer(width, height)
+  renderer.canvas.style.width = '500px'
+  renderer.canvas.style.height = '500px'
+  return renderer
+}
+
 export const Text = () => {
   const ecs = new ECS()
-  const renderer = new Renderer(500, 500)
+  const renderer = rendererWithSize(500, 500)
   const root = text(ecs, "This is some text!")
   const camera = ecs.entity(new Transform(Mat3.identity()))
-  ecs.set(renderer, new UIRoot(root), camera)
+  ecs.set(renderer, new UIRoot(root), new Camera(camera))
   render(ecs)
   return renderer.canvas
 }
 
 export const Center = () => {
   const ecs = new ECS()
-  const renderer = new Renderer(500, 500)
+  const renderer = rendererWithSize(500, 500)
   const root = center(ecs,
     text(ecs, "This text is centered!")
   )
-  ecs.set(renderer, new UIRoot(root))
+  const camera = ecs.entity(new Transform(Mat3.identity()))
+  ecs.set(renderer, new UIRoot(root), new Camera(camera))
   render(ecs)
   return renderer.canvas
 }
 
 export const Column = () => {
   const ecs = new ECS()
-  const renderer = new Renderer(500, 500)
+  const renderer = rendererWithSize(500, 500)
   const root = column(ecs, [
     text(ecs, "Top"),
     text(ecs, "Middle"),
     text(ecs, "Bottom"),
   ])
-  ecs.set(renderer, new UIRoot(root))
+  const camera = ecs.entity(new Transform(Mat3.identity()))
+  ecs.set(renderer, new UIRoot(root), new Camera(camera))
   render(ecs)
   return renderer.canvas
 }
 
 export const CenteredColumn = () => {
   const ecs = new ECS()
-  const renderer = new Renderer(500, 500)
+  const renderer = rendererWithSize(500, 500)
   const root = center(ecs,
     column(ecs, [
       text(ecs, "Top"),
@@ -54,27 +63,29 @@ export const CenteredColumn = () => {
       text(ecs, "Bottom"),
     ])
   )
-  ecs.set(renderer, new UIRoot(root))
+  const camera = ecs.entity(new Transform(Mat3.identity()))
+  ecs.set(renderer, new UIRoot(root), new Camera(camera))
   render(ecs)
   return renderer.canvas
 }
 
 export const Row = () => {
   const ecs = new ECS()
-  const renderer = new Renderer(500, 500)
+  const renderer = rendererWithSize(500, 500)
   const root = row(ecs, [
     text(ecs, "Left"),
     text(ecs, "Middle"),
     text(ecs, "Right"),
   ])
-  ecs.set(renderer, new UIRoot(root))
+  const camera = ecs.entity(new Transform(Mat3.identity()))
+  ecs.set(renderer, new UIRoot(root), new Camera(camera))
   render(ecs)
   return renderer.canvas
 }
 
 export const CenteredRow = () => {
   const ecs = new ECS()
-  const renderer = new Renderer(500, 500)
+  const renderer = rendererWithSize(500, 500)
   const root = center(ecs,
     row(ecs, [
       text(ecs, "Left"),
@@ -82,14 +93,15 @@ export const CenteredRow = () => {
       text(ecs, "Right"),
     ])
   )
-  ecs.set(renderer, new UIRoot(root))
+  const camera = ecs.entity(new Transform(Mat3.identity()))
+  ecs.set(renderer, new UIRoot(root), new Camera(camera))
   render(ecs)
   return renderer.canvas
 }
 
 export const CenteredRowInColumn = () => {
   const ecs = new ECS()
-  const renderer = new Renderer(500, 500)
+  const renderer = rendererWithSize(500, 500)
   const root = center(ecs,
     column(ecs, [
       text(ecs, "Top"),
@@ -101,14 +113,15 @@ export const CenteredRowInColumn = () => {
       text(ecs, "Bottom"),
     ])
   )
-  ecs.set(renderer, new UIRoot(root))
+  const camera = ecs.entity(new Transform(Mat3.identity()))
+  ecs.set(renderer, new UIRoot(root), new Camera(camera))
   render(ecs)
   return renderer.canvas
 }
 
 export const CenteredRowInColumCenterCrossAxisAlignment = () => {
   const ecs = new ECS()
-  const renderer = new Renderer(500, 500)
+  const renderer = rendererWithSize(500, 500)
   const root = center(ecs,
     column(ecs, { crossAxisAlignment: Alignment.CENTER }, [
       text(ecs, "Top"),
@@ -120,14 +133,15 @@ export const CenteredRowInColumCenterCrossAxisAlignment = () => {
       text(ecs, "Bottom"),
     ])
   )
-  ecs.set(renderer, new UIRoot(root))
+  const camera = ecs.entity(new Transform(Mat3.identity()))
+  ecs.set(renderer, new UIRoot(root), new Camera(camera))
   render(ecs)
   return renderer.canvas
 }
 
 export const CenteredRowInColumEndCrossAxisAlignment = () => {
   const ecs = new ECS()
-  const renderer = new Renderer(500, 500)
+  const renderer = rendererWithSize(500, 500)
   const root = center(ecs,
     column(ecs, { crossAxisAlignment: Alignment.END }, [
       text(ecs, "Top"),
@@ -139,14 +153,15 @@ export const CenteredRowInColumEndCrossAxisAlignment = () => {
       text(ecs, "Bottom"),
     ]),
   )
-  ecs.set(renderer, new UIRoot(root))
+  const camera = ecs.entity(new Transform(Mat3.identity()))
+  ecs.set(renderer, new UIRoot(root), new Camera(camera))
   render(ecs)
   return renderer.canvas
 }
 
 export const CenteredColumnInRow = () => {
   const ecs = new ECS()
-  const renderer = new Renderer(500, 500)
+  const renderer = rendererWithSize(500, 500)
   const root = center(ecs,
     row(ecs, [
       text(ecs, "Left"),
@@ -158,14 +173,15 @@ export const CenteredColumnInRow = () => {
       text(ecs, "Right"),
     ])
   )
-  ecs.set(renderer, new UIRoot(root))
+  const camera = ecs.entity(new Transform(Mat3.identity()))
+  ecs.set(renderer, new UIRoot(root), new Camera(camera))
   render(ecs)
   return renderer.canvas
 }
 
 export const CenteredColumnInRowCenterCrossAxisAlignment = () => {
   const ecs = new ECS()
-  const renderer = new Renderer(500, 500)
+  const renderer = rendererWithSize(500, 500)
   const root = center(ecs,
     row(ecs, { crossAxisAlignment: Alignment.CENTER }, [
       text(ecs, "Left"),
@@ -177,14 +193,15 @@ export const CenteredColumnInRowCenterCrossAxisAlignment = () => {
       text(ecs, "Right"),
     ])
   )
-  ecs.set(renderer, new UIRoot(root))
+  const camera = ecs.entity(new Transform(Mat3.identity()))
+  ecs.set(renderer, new UIRoot(root), new Camera(camera))
   render(ecs)
   return renderer.canvas
 }
 
 export const CenteredColumnInRowEndCrossAxisAlignment = () => {
   const ecs = new ECS()
-  const renderer = new Renderer(500, 500)
+  const renderer = rendererWithSize(500, 500)
   const root = center(ecs,
     row(ecs, { crossAxisAlignment: Alignment.END }, [
       text(ecs, "Left"),
@@ -196,14 +213,15 @@ export const CenteredColumnInRowEndCrossAxisAlignment = () => {
       text(ecs, "Right"),
     ])
   )
-  ecs.set(renderer, new UIRoot(root))
+  const camera = ecs.entity(new Transform(Mat3.identity()))
+  ecs.set(renderer, new UIRoot(root), new Camera(camera))
   render(ecs)
   return renderer.canvas
 }
 
 export const CenteredColumnCenterCrossAxisAlignedInRow = () => {
   const ecs = new ECS()
-  const renderer = new Renderer(500, 500)
+  const renderer = rendererWithSize(500, 500)
   const root = center(ecs,
     row(ecs, [
       text(ecs, "Left"),
@@ -215,14 +233,15 @@ export const CenteredColumnCenterCrossAxisAlignedInRow = () => {
       text(ecs, "Right"),
     ])
   )
-  ecs.set(renderer, new UIRoot(root))
+  const camera = ecs.entity(new Transform(Mat3.identity()))
+  ecs.set(renderer, new UIRoot(root), new Camera(camera))
   render(ecs)
   return renderer.canvas
 }
 
 export const CenteredColumnCenterCrossAxisAlignedInRowCenterCrossAxisAlignment = () => {
   const ecs = new ECS()
-  const renderer = new Renderer(500, 500)
+  const renderer = rendererWithSize(500, 500)
   const root = center(ecs,
     row(ecs, { crossAxisAlignment: Alignment.CENTER }, [
       text(ecs, "Left"),
@@ -234,14 +253,15 @@ export const CenteredColumnCenterCrossAxisAlignedInRowCenterCrossAxisAlignment =
       text(ecs, "Right"),
     ])
   )
-  ecs.set(renderer, new UIRoot(root))
+  const camera = ecs.entity(new Transform(Mat3.identity()))
+  ecs.set(renderer, new UIRoot(root), new Camera(camera))
   render(ecs)
   return renderer.canvas
 }
 
 export const CenteredColumnCenterCrossAxisAlignedInRowEndCrossAxisAlignment = () => {
   const ecs = new ECS()
-  const renderer = new Renderer(500, 500)
+  const renderer = rendererWithSize(500, 500)
   const root = center(ecs,
     row(ecs, { crossAxisAlignment: Alignment.END }, [
       text(ecs, "Left"),
@@ -253,14 +273,15 @@ export const CenteredColumnCenterCrossAxisAlignedInRowEndCrossAxisAlignment = ()
       text(ecs, "Right"),
     ])
   )
-  ecs.set(renderer, new UIRoot(root))
+  const camera = ecs.entity(new Transform(Mat3.identity()))
+  ecs.set(renderer, new UIRoot(root), new Camera(camera))
   render(ecs)
   return renderer.canvas
 }
 
 export const Container = () => {
   const ecs = new ECS()
-  const renderer = new Renderer(500, 500)
+  const renderer = rendererWithSize(500, 500)
   const root = center(ecs,
     column(ecs, { crossAxisAlignment: Alignment.CENTER }, [
       container(ecs, { color: { h: 0, s: 1, l: 0.3, a: 1 }, padding: 5 }, text(ecs, "First")),
@@ -268,14 +289,15 @@ export const Container = () => {
       container(ecs, { color: { h: 180, s: 1, l: 0.3, a: 1 }, padding: 5 }, text(ecs, "Third")),
     ])
   )
-  ecs.set(renderer, new UIRoot(root))
+  const camera = ecs.entity(new Transform(Mat3.identity()))
+  ecs.set(renderer, new UIRoot(root), new Camera(camera))
   render(ecs)
   return renderer.canvas
 }
 
 export const NodeWithColors = () => {
   const ecs = new ECS()
-  const renderer = new Renderer(500, 500)
+  const renderer = rendererWithSize(500, 500)
   const root = center(ecs,
     container(ecs, { color: { h: 0, s: 1, l: 0.3, a: 1 } },
       column(ecs, { crossAxisAlignment: Alignment.CENTER }, [
@@ -295,14 +317,15 @@ export const NodeWithColors = () => {
       ])
     )
   )
-  ecs.set(renderer, new UIRoot(root))
+  const camera = ecs.entity(new Transform(Mat3.identity()))
+  ecs.set(renderer, new UIRoot(root), new Camera(camera))
   render(ecs)
   return renderer.canvas
 }
 
 export const Node = () => {
   const ecs = new ECS()
-  const renderer = new Renderer(500, 500)
+  const renderer = rendererWithSize(500, 500)
   const root = center(ecs,
     container(ecs, { color: { h: 210, s: 1, l: 0.3, a: 1 }, padding: 10 },
       column(ecs, { crossAxisAlignment: Alignment.CENTER }, [
@@ -324,14 +347,15 @@ export const Node = () => {
       ])
     )
   )
-  ecs.set(renderer, new UIRoot(root))
+  const camera = ecs.entity(new Transform(Mat3.identity()))
+  ecs.set(renderer, new UIRoot(root), new Camera(camera))
   render(ecs)
   return renderer.canvas
 }
 
 export const Scene = () => {
   const ecs = new ECS()
-  const renderer = new Renderer(800, 500)
+  const renderer = rendererWithSize(500, 500)
   const sourceOut = container(ecs, { width: 18, height: 18, color: { h: 70, s: 1, l: 0.7, a: 1 } })
   const source = container(ecs, { color: { h: 110, s: 1, l: 0.3, a: 1 }, padding: 10, x: 25, y: 200 },
     column(ecs, { crossAxisAlignment: Alignment.CENTER }, [
@@ -435,16 +459,15 @@ export const Scene = () => {
       ])
     ])
   )
-  const camera = ecs.entity(new Transform(Mat3.identity()))
   const root = scene(ecs, {
-    camera,
     children: [source, transform, sink],
     connections: [
       connection(ecs, { from: sourceOut, to: transformIn }),
       connection(ecs, { from: transformOut, to: sinkIn }),
     ]
   })
-  ecs.set(renderer, new UIRoot(root))
+  const camera = ecs.entity(new Transform(Mat3.identity()))
+  ecs.set(renderer, new UIRoot(root), new Camera(camera))
   render(ecs)
   let mouseDown = false
   renderer.canvas.addEventListener('mousedown', () => mouseDown = true)

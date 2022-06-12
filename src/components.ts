@@ -44,25 +44,13 @@ export class From { constructor(public entity: Entity) { } }
 
 export class To { constructor(public entity: Entity) { } }
 
-export interface Hsla {
-    h: number
-    s: number
-    l: number
-    a: number
-}
-
 export class Color {
-    h: number
-    s: number
-    l: number
-    a: number
-
-    constructor({ h, s, l, a }: Hsla) {
-        this.h = h
-        this.s = s
-        this.l = l
-        this.a = a
-    }
+    constructor(
+        public r: number,
+        public g: number,
+        public b: number,
+        public a: number
+    ) { }
 }
 
 export class Padding { constructor(public value: number) { } }

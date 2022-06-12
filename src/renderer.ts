@@ -28,7 +28,7 @@ class DefaultProgram {
   void main() {
     gl_Position = vec4((u_matrix * vec3(a_position, 1)).xy, 0, 1);
     v_textureCoordinates = a_textureCoordinates * u_devicePixelRatio;
-    v_color = a_color;
+    v_color = a_color / 255.0;
   }
   `
         const fragmentShaderSource = `#version 300 es
@@ -41,16 +41,10 @@ class DefaultProgram {
 
   out vec4 fragColor;
   
-  vec4 hslToRgb(in vec4 hsl) {
-    float h = hsl.x / 360.0;
-    vec3 rgb = clamp(abs(mod(h * 6.0 + vec3(0.0,4.0,2.0), 6.0) - 3.0) - 1.0, 0.0, 1.0);
-    return vec4(hsl.z + hsl.y * (rgb - 0.5) * (1.0 - abs(2.0 * hsl.z - 1.0)), hsl.w);
-  }
-
   void main() {
     ivec2 size = textureSize(u_texture, 0);
     vec2 coordinate = v_textureCoordinates / vec2(float(size.x), float(size.y));
-    fragColor = texture(u_texture, coordinate) * hslToRgb(v_color);
+    fragColor = texture(u_texture, coordinate) * v_color;
   }
   `
         const vertexShader = gl.createShader(gl.VERTEX_SHADER)!

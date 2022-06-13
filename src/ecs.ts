@@ -80,17 +80,6 @@ export class ECS {
     return entity
   }
 
-  query = function* (...components: any): Generator<Entity> {
-    const primary = this.storages.get(components[0])
-    if (!primary) return
-    const secondary = components.slice(1).map(s => this.storages.get(s))
-    for (const id of primary.inverses) {
-      if (secondary.every(storage => storage.hasId(id))) {
-        yield new Entity(id, this)
-      }
-    }
-  }
-
   set = <T>(...components: any): void => {
     for (const component of components) {
       const Type = component.constructor

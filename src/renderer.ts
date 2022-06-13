@@ -292,7 +292,7 @@ export class Renderer {
 
     recreateFontAtlasses = () => {
         for (const [font, fontAtlas] of this.fontAtlasses) {
-            const texture = this.textures[fontAtlas.texture]
+            const texture = this.textures[fontAtlas.texture]!
             const metrics = createFontMetrics(this.gl, texture, font, fontAtlas.fontSize)
             fontAtlas.metrics = metrics
         }

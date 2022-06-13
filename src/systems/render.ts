@@ -1,6 +1,6 @@
 import { Renderer } from "../renderer";
 import { ECS } from "../ecs";
-import { Camera, CameraIndices, Colors, TextureCoordinates, Transform, UIRoot, VertexIndices, Vertices } from "../components";
+import { Camera, Colors, TextureCoordinates, Transform, UIRoot, VertexIndices, Vertices } from "../components";
 import { Layers } from "../layers";
 import { layout, geometry } from './'
 import { Mat3 } from "../linear_algebra";
@@ -23,7 +23,7 @@ const renderTriangles = (renderer: Renderer, layers: Layers) => {
                     vertexIndices = []
                 }
                 previousTexture = texture
-                gl.bindTexture(gl.TEXTURE_2D, renderer.textures[texture])
+                gl.bindTexture(gl.TEXTURE_2D, renderer.textures[texture]!)
             }
             for (const entity of entities) {
                 const offset = vertices.length / 2
@@ -45,7 +45,7 @@ const renderLines = (renderer: Renderer, layers: Layers) => {
     let vertices: number[] = []
     let colors: number[] = []
     let textureCoordinates: number[] = []
-    gl.bindTexture(gl.TEXTURE_2D, renderer.textures[0])
+    gl.bindTexture(gl.TEXTURE_2D, renderer.textures[0]!)
     for (const entity of layers.lines) {
         vertices.push(...entity.get(Vertices)!.data)
         colors.push(...entity.get(Colors)!.data)

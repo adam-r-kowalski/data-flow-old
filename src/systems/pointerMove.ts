@@ -34,8 +34,8 @@ const dragging = (ecs: ECS, e: PointerEvent, movementX: number, movementY: numbe
 }
 
 const zoomCamera = (ecs: ECS, pointers: PointerEvent[], e: PointerEvent) => {
-    const [x1, y1] = [pointers[0].clientX, pointers[0].clientY]
-    const [x2, y2] = [pointers[1].clientX, pointers[1].clientY]
+    const [x1, y1] = [pointers[0]!.clientX, pointers[0]!.clientY]
+    const [x2, y2] = [pointers[1]!.clientX, pointers[1]!.clientY]
     const distance = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2))
     const pointerDistance = ecs.get(PointerDistance)!.value
     if (pointerDistance > 0) {
@@ -57,8 +57,8 @@ const onPointerMove = (ecs: ECS, e: PointerEvent) => {
     const pointers = ecs.get(Pointers)!.events
     const index = pointers.findIndex(p => p.pointerId === e.pointerId)
     if (index === -1) return
-    const movementX = e.clientX - pointers[index].clientX
-    const movementY = e.clientY - pointers[index].clientY
+    const movementX = e.clientX - pointers[index]!.clientX
+    const movementY = e.clientY - pointers[index]!.clientY
     pointers[index] = e
     if (ecs.get(Dragging)!.value && pointers.length === 1) {
         dragging(ecs, e, movementX, movementY)

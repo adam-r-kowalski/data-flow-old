@@ -55,7 +55,7 @@ test("matrix inverse", () => {
         -5 / 16, 1 / 4, 3 / 16
     ]
     b.data.forEach((value, index) =>
-        expect(value).toBeCloseTo(expected[index])
+        expect(value).toBeCloseTo(expected[index]!)
     )
 })
 
@@ -72,7 +72,7 @@ test("matrix inverse of translate", () => {
         0, 0, 1
     ]
     b.data.forEach((value, index) =>
-        expect(value).toBeCloseTo(expected[index])
+        expect(value).toBeCloseTo(expected[index]!)
     )
 })
 
@@ -89,7 +89,7 @@ test("matrix inverse of scale", () => {
         0, 0, 1
     ]
     b.data.forEach((value, index) =>
-        expect(value).toBeCloseTo(expected[index])
+        expect(value).toBeCloseTo(expected[index]!)
     )
 })
 
@@ -121,6 +121,6 @@ test("rotate vector", () => {
     const c = a.vecMul(b)
     const expected = [0, 1, 1]
     c.data.forEach((value, index) =>
-        expect(value).toBeCloseTo(expected[index])
+        expect(value).toBeCloseTo(expected[index]!)
     )
 })

@@ -3,6 +3,12 @@
     "target": "esnext",
     "esModuleInterop": true,
     "moduleResolution": "node",
-    "strictNullChecks": true
+    "strictNullChecks": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUnusedLocals": true,
+    "strictFunctionTypes": true
   }
 }

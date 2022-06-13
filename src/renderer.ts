@@ -252,7 +252,7 @@ export class Renderer {
         gl.viewport(0, 0, canvas.width, canvas.height)
         this.width = width
         this.height = height
-        if (this.devicePixelRatio == window.devicePixelRatio) return
+        if (this.devicePixelRatio === window.devicePixelRatio) return
         this.devicePixelRatio = window.devicePixelRatio
         this.recreateFontAtlasses()
     }

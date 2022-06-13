@@ -8,8 +8,8 @@ export const clickOutput = (entity: Entity) => {
     const connectionTo = ecs.get(ConnectionTo)!.entity
     const connectionFrom = ecs.get(ConnectionFrom)!.entity
     if (!connectionTo) {
-        if (connectionFrom == entity) return
-        else if (connectionFrom != null) connectionFrom.set(new Color(101, 215, 249, 255))
+        if (connectionFrom === entity) return
+        else if (connectionFrom !== null) connectionFrom.set(new Color(101, 215, 249, 255))
         ecs.update(ConnectionFrom, from => from.entity = entity)
         entity.set(new Color(67, 76, 112, 255))
         requestAnimationFrame(() => render(ecs))

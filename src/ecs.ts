@@ -11,7 +11,7 @@ class Storage<T> {
 
   get = (entity: Entity): T | undefined => {
     const index = this.lookup.get(entity.id)
-    return index != undefined ? this.data[index] : undefined
+    return index !== undefined ? this.data[index] : undefined
   }
 
   hasId = (id: number): boolean => {

@@ -10,7 +10,7 @@ export const pointerDown = (ecs: ECS) => {
             pointers.events.push(e)
             return pointers.events.length
         })
-        if (length != 1) return
+        if (length !== 1) return
         const camera = ecs.get(Camera)!.entity
         const cameraMatrix = camera.get(Transform)!.matrix
         const mouse = new Vec3([e.clientX, e.clientY, 1])

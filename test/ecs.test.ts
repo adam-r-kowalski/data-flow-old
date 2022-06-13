@@ -99,23 +99,6 @@ test("unset all components", () => {
   expect(betty.get(Age)).toBeUndefined()
 })
 
-test("query entities with component", () => {
-  class Name {
-    constructor(public value: string) { }
-  }
-
-  class Age {
-    constructor(public value: number) { }
-  }
-
-  const ecs = new Studio.ECS()
-  const entity0 = ecs.entity(new Name("Joe"))
-  const entity1 = ecs.entity(new Name("Sally"), new Age(20))
-  const entity2 = ecs.entity(new Age(22))
-  expect([...ecs.query(Name)].map(entity => entity.id)).toEqual([0, 1])
-  expect([...ecs.query(Name, Age)].map(entity => entity.id)).toEqual([1])
-})
-
 test("set and get resource", () => {
   class Score {
     constructor(public value: number) { }

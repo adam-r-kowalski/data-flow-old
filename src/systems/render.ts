@@ -14,7 +14,7 @@ const renderTriangles = (renderer: Renderer, layers: Layers) => {
     let previousTexture: number = -1
     for (const layer of layers.layers) {
         for (const [texture, entities] of layer) {
-            if (texture != previousTexture) {
+            if (texture !== previousTexture) {
                 if (vertices.length) {
                     renderer.draw({ vertices, colors, textureCoordinates, vertexIndices })
                     vertices = []
@@ -36,7 +36,7 @@ const renderTriangles = (renderer: Renderer, layers: Layers) => {
             }
         }
     }
-    if (vertices.length == 0) return
+    if (vertices.length === 0) return
     renderer.draw({ vertices, colors, textureCoordinates, vertexIndices })
 }
 
@@ -51,7 +51,7 @@ const renderLines = (renderer: Renderer, layers: Layers) => {
         colors.push(...entity.get(Colors)!.data)
         textureCoordinates.push(...entity.get(TextureCoordinates)!.data)
     }
-    if (vertices.length == 0) return
+    if (vertices.length === 0) return
     renderer.drawLines({ vertices, colors, textureCoordinates })
 }
 

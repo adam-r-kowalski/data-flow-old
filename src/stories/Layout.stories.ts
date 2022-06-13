@@ -1,4 +1,4 @@
-import { Camera, Transform } from '../components'
+import { Camera, Color, Transform } from '../components'
 import { Mat3 } from '../linear_algebra'
 import * as Studio from '../studio'
 const { ECS, Renderer } = Studio
@@ -284,9 +284,9 @@ export const Container = () => {
   const renderer = rendererWithSize(500, 500)
   const root = center(ecs,
     column(ecs, { crossAxisAlignment: Alignment.CENTER }, [
-      container(ecs, { color: { h: 0, s: 1, l: 0.3, a: 1 }, padding: 5 }, text(ecs, "First")),
-      container(ecs, { color: { h: 90, s: 1, l: 0.3, a: 1 }, padding: 10 }, text(ecs, "Second")),
-      container(ecs, { color: { h: 180, s: 1, l: 0.3, a: 1 }, padding: 5 }, text(ecs, "Third")),
+      container(ecs, { color: new Color(255, 0, 0, 255), padding: 5 }, text(ecs, "First")),
+      container(ecs, { color: new Color(0, 255, 0, 255), padding: 10 }, text(ecs, "Second")),
+      container(ecs, { color: new Color(0, 0, 255, 255), padding: 5 }, text(ecs, "Third")),
     ])
   )
   const camera = ecs.entity(new Transform(Mat3.identity()))
@@ -299,19 +299,19 @@ export const NodeWithColors = () => {
   const ecs = new ECS()
   const renderer = rendererWithSize(500, 500)
   const root = center(ecs,
-    container(ecs, { color: { h: 0, s: 1, l: 0.3, a: 1 } },
+    container(ecs, { color: new Color(255, 0, 0, 255) },
       column(ecs, { crossAxisAlignment: Alignment.CENTER }, [
-        container(ecs, { color: { h: 30, s: 1, l: 0.3, a: 1 }, padding: 5 }, text(ecs, "Title")),
+        container(ecs, { color: new Color(0, 0, 255, 255), padding: 5 }, text(ecs, "Title")),
         row(ecs, [
           column(ecs, [
-            container(ecs, { color: { h: 60, s: 1, l: 0.3, a: 1 }, padding: 5 }, text(ecs, { fontSize: 18 }, "x")),
-            container(ecs, { color: { h: 90, s: 1, l: 0.3, a: 1 }, padding: 5 }, text(ecs, { fontSize: 18 }, "y")),
-            container(ecs, { color: { h: 120, s: 1, l: 0.3, a: 1 }, padding: 5 }, text(ecs, { fontSize: 18 }, "width")),
-            container(ecs, { color: { h: 150, s: 1, l: 0.3, a: 1 }, padding: 5 }, text(ecs, { fontSize: 18 }, "height")),
+            container(ecs, { color: new Color(0, 255, 0, 255), padding: 5 }, text(ecs, { fontSize: 18 }, "x")),
+            container(ecs, { color: new Color(0, 255, 0, 255), padding: 5 }, text(ecs, { fontSize: 18 }, "y")),
+            container(ecs, { color: new Color(0, 255, 0, 255), padding: 5 }, text(ecs, { fontSize: 18 }, "width")),
+            container(ecs, { color: new Color(0, 255, 0, 255), padding: 5 }, text(ecs, { fontSize: 18 }, "height")),
           ]),
           column(ecs, { crossAxisAlignment: Alignment.END }, [
-            container(ecs, { color: { h: 180, s: 1, l: 0.3, a: 1 }, padding: 5 }, text(ecs, { fontSize: 18 }, "rectangle")),
-            container(ecs, { color: { h: 210, s: 1, l: 0.3, a: 1 }, padding: 5 }, text(ecs, { fontSize: 18 }, "is square?")),
+            container(ecs, { color: new Color(128, 0, 128, 255), padding: 5 }, text(ecs, { fontSize: 18 }, "rectangle")),
+            container(ecs, { color: new Color(128, 0, 128, 255), padding: 5 }, text(ecs, { fontSize: 18 }, "is square?")),
           ])
         ])
       ])
@@ -327,7 +327,7 @@ export const Node = () => {
   const ecs = new ECS()
   const renderer = rendererWithSize(500, 500)
   const root = center(ecs,
-    container(ecs, { color: { h: 210, s: 1, l: 0.3, a: 1 }, padding: 10 },
+    container(ecs, { color: new Color(255, 0, 0, 255), padding: 10 },
       column(ecs, { crossAxisAlignment: Alignment.CENTER }, [
         container(ecs, { padding: 5 }, text(ecs, "Title")),
         container(ecs, { height: 10 }),
@@ -356,132 +356,20 @@ export const Node = () => {
 export const Scene = () => {
   const ecs = new ECS()
   const renderer = rendererWithSize(500, 500)
-  const sourceOut = container(ecs, { width: 18, height: 18, color: { h: 70, s: 1, l: 0.7, a: 1 } })
-  const source = container(ecs, { color: { h: 110, s: 1, l: 0.3, a: 1 }, padding: 10, x: 25, y: 200 },
-    column(ecs, { crossAxisAlignment: Alignment.CENTER }, [
-      container(ecs, { padding: 5 }, text(ecs, "Source")),
-      container(ecs, { height: 10 }),
-      row(ecs, [
-        column(ecs, [
-          row(ecs, [
-            container(ecs, { width: 18, height: 18, color: { h: 70, s: 1, l: 0.7, a: 1 } }),
-            container(ecs, { width: 5 }),
-            container(ecs, { padding: 2 }, text(ecs, { fontSize: 18 }, "in 0")),
-          ]),
-          row(ecs, [
-            container(ecs, { width: 18, height: 18, color: { h: 70, s: 1, l: 0.7, a: 1 } }),
-            container(ecs, { width: 5 }),
-            container(ecs, { padding: 2 }, text(ecs, { fontSize: 18 }, "in 1")),
-          ]),
-        ]),
-        container(ecs, { width: 30 }),
-        column(ecs, { crossAxisAlignment: Alignment.END }, [
-          row(ecs, [
-            container(ecs, { padding: 2 }, text(ecs, { fontSize: 18 }, "out 0")),
-            container(ecs, { width: 5 }),
-            sourceOut
-          ]),
-          row(ecs, [
-            container(ecs, { padding: 2 }, text(ecs, { fontSize: 18 }, "out 1")),
-            container(ecs, { width: 5 }),
-            container(ecs, { width: 18, height: 18, color: { h: 70, s: 1, l: 0.7, a: 1 } })
-          ]),
-        ])
-      ])
-    ])
+  const a = container(ecs, { color: new Color(255, 0, 0, 255), padding: 10, x: 50, y: 150 },
+    text(ecs, { fontSize: 18 }, "a")
   )
-  const transformIn = container(ecs, { width: 18, height: 18, color: { h: 170, s: 1, l: 0.7, a: 1 } })
-  const transformOut = container(ecs, { width: 18, height: 18, color: { h: 170, s: 1, l: 0.7, a: 1 } })
-  const transform = container(ecs, { color: { h: 210, s: 1, l: 0.3, a: 1 }, padding: 10, x: 300, y: 100 },
-    column(ecs, { crossAxisAlignment: Alignment.CENTER }, [
-      container(ecs, { padding: 5 }, text(ecs, "Transform")),
-      container(ecs, { height: 10 }),
-      row(ecs, [
-        column(ecs, [
-          row(ecs, [
-            transformIn,
-            container(ecs, { width: 5 }),
-            container(ecs, { padding: 2 }, text(ecs, { fontSize: 18 }, "in 0")),
-          ]),
-          row(ecs, [
-            container(ecs, { width: 18, height: 18, color: { h: 170, s: 1, l: 0.7, a: 1 } }),
-            container(ecs, { width: 5 }),
-            container(ecs, { padding: 2 }, text(ecs, { fontSize: 18 }, "in 1")),
-          ]),
-        ]),
-        container(ecs, { width: 30 }),
-        column(ecs, { crossAxisAlignment: Alignment.END }, [
-          row(ecs, [
-            container(ecs, { padding: 2 }, text(ecs, { fontSize: 18 }, "out 0")),
-            container(ecs, { width: 5 }),
-            container(ecs, { width: 18, height: 18, color: { h: 170, s: 1, l: 0.7, a: 1 } })
-          ]),
-          row(ecs, [
-            container(ecs, { padding: 2 }, text(ecs, { fontSize: 18 }, "out 1")),
-            container(ecs, { width: 5 }),
-            transformOut
-          ]),
-        ])
-      ])
-    ])
-  )
-  const sinkIn = container(ecs, { width: 18, height: 18, color: { h: 270, s: 1, l: 0.7, a: 1 } })
-  const sink = container(ecs, { color: { h: 310, s: 1, l: 0.3, a: 1 }, padding: 10, x: 550, y: 250 },
-    column(ecs, { crossAxisAlignment: Alignment.CENTER }, [
-      container(ecs, { padding: 5 }, text(ecs, "Sink")),
-      container(ecs, { height: 10 }),
-      row(ecs, [
-        column(ecs, [
-          row(ecs, [
-            container(ecs, { width: 18, height: 18, color: { h: 270, s: 1, l: 0.7, a: 1 } }),
-            container(ecs, { width: 5 }),
-            container(ecs, { padding: 2 }, text(ecs, { fontSize: 18 }, "in 0")),
-          ]),
-          row(ecs, [
-            sinkIn,
-            container(ecs, { width: 5 }),
-            container(ecs, { padding: 2 }, text(ecs, { fontSize: 18 }, "in 1")),
-          ]),
-        ]),
-        container(ecs, { width: 30 }),
-        column(ecs, { crossAxisAlignment: Alignment.END }, [
-          row(ecs, [
-            container(ecs, { padding: 2 }, text(ecs, { fontSize: 18 }, "out 0")),
-            container(ecs, { width: 5 }),
-            container(ecs, { width: 18, height: 18, color: { h: 270, s: 1, l: 0.7, a: 1 } })
-          ]),
-          row(ecs, [
-            container(ecs, { padding: 2 }, text(ecs, { fontSize: 18 }, "out 1")),
-            container(ecs, { width: 5 }),
-            container(ecs, { width: 18, height: 18, color: { h: 270, s: 1, l: 0.7, a: 1 } })
-          ]),
-        ])
-      ])
-    ])
+  const b = container(ecs, { color: new Color(0, 255, 0, 255), padding: 10, x: 400, y: 250 },
+    text(ecs, { fontSize: 18 }, "b")
   )
   const root = scene(ecs, {
-    children: [source, transform, sink],
+    children: [a, b],
     connections: [
-      connection(ecs, { from: sourceOut, to: transformIn }),
-      connection(ecs, { from: transformOut, to: sinkIn }),
+      connection(ecs, { from: a, to: b }),
     ]
   })
   const camera = ecs.entity(new Transform(Mat3.identity()))
   ecs.set(renderer, new UIRoot(root), new Camera(camera))
   render(ecs)
-  let mouseDown = false
-  renderer.canvas.addEventListener('mousedown', () => mouseDown = true)
-  renderer.canvas.addEventListener('mousemove', (e) => {
-    if (!mouseDown) return
-    camera.update(Transform, transform => {
-      transform.matrix = transform.matrix.matMul(new Mat3([
-        1, 0, -e.movementX,
-        0, 1, -e.movementY,
-        0, 0, 1,
-      ]))
-    })
-    render(ecs)
-  })
-  renderer.canvas.addEventListener('mouseup', () => mouseDown = false)
   return renderer.canvas
 }

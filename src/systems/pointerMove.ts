@@ -4,12 +4,13 @@ import { Mat3, Vec3 } from "../linear_algebra";
 import { rayCast } from "./ray_cast";
 import { render } from "./render";
 
-const dragging = (ecs: ECS, e: PointerEvent) => {
+const dragging = (ecs: ECS, e: PointerEvent, movementX: number, movementY: number) => {
     const camera = ecs.get(Camera)!.entity
     const draggedEntity = ecs.get(DraggedEntity)!.entity
     if (draggedEntity) {
         const onDrag = draggedEntity.get(OnDrag)!.callback
-        onDrag(draggedEntity, e.movementX, e.movementY)
+        const scaling = camera.get(Transform)!.matrix.vecMul(new Vec3([0, 1, 0])).length()
+        onDrag(draggedEntity, movementX * scaling, movementY * scaling)
         requestAnimationFrame(() => render(ecs))
         return
     }
@@ -19,13 +20,14 @@ const dragging = (ecs: ECS, e: PointerEvent) => {
         const onDrag = entity.get(OnDrag)
         if (onDrag) {
             ecs.update(DraggedEntity, dragged => dragged.entity = entity)
-            onDrag.callback(entity, e.movementX, e.movementY)
+            const scaling = camera.get(Transform)!.matrix.vecMul(new Vec3([0, 1, 0])).length()
+            onDrag.callback(entity, movementX * scaling, movementY * scaling)
             requestAnimationFrame(() => render(ecs))
             return
         }
     }
     camera.update(Transform, transform => {
-        const translate = Mat3.translation(-e.movementX, -e.movementY)
+        const translate = Mat3.translation(-movementX, -movementY)
         transform.matrix = transform.matrix.matMul(translate)
     })
     requestAnimationFrame(() => render(ecs))
@@ -54,9 +56,15 @@ const zoomCamera = (ecs: ECS, pointers: PointerEvent[], e: PointerEvent) => {
 export const pointerMove = (ecs: ECS) => {
     document.addEventListener('pointermove', (e) => {
         const pointers = ecs.get(Pointers)!.events
-        pointers[pointers.findIndex(p => p.pointerId == e.pointerId)] = e
+        const index = pointers.findIndex(p => p.pointerId == e.pointerId)
+        if (index == -1) return
+        const movementX = e.clientX - pointers[index].clientX
+        const movementY = e.clientY - pointers[index].clientY
+        // TODO: implement using coalesced events: https://pspdfkit.com/blog/2019/using-getcoalescedevents/
+        // e.getCoalescedEvents()
+        pointers[index] = e
         if (ecs.get(Dragging)!.value && pointers.length == 1) {
-            dragging(ecs, e)
+            dragging(ecs, e, movementX, movementY)
         } else if (pointers.length == 2) {
             zoomCamera(ecs, pointers, e)
         }

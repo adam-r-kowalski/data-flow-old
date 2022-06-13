@@ -1,5 +1,10 @@
 export class Vec3 {
     constructor(public data: number[]) { }
+
+    length = () => {
+        const [a, b, c] = this.data
+        return Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2) + Math.pow(c, 2))
+    }
 }
 
 export class Mat3 {

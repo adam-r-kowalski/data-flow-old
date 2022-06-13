@@ -53,20 +53,26 @@ const zoomCamera = (ecs: ECS, pointers: PointerEvent[], e: PointerEvent) => {
     requestAnimationFrame(() => render(ecs))
 }
 
+const onPointerMove = (ecs: ECS, e: PointerEvent) => {
+    const pointers = ecs.get(Pointers)!.events
+    const index = pointers.findIndex(p => p.pointerId == e.pointerId)
+    if (index == -1) return
+    const movementX = e.clientX - pointers[index].clientX
+    const movementY = e.clientY - pointers[index].clientY
+    pointers[index] = e
+    if (ecs.get(Dragging)!.value && pointers.length == 1) {
+        dragging(ecs, e, movementX, movementY)
+    } else if (pointers.length == 2) {
+        zoomCamera(ecs, pointers, e)
+    }
+}
+
 export const pointerMove = (ecs: ECS) => {
-    document.addEventListener('pointermove', (e) => {
-        const pointers = ecs.get(Pointers)!.events
-        const index = pointers.findIndex(p => p.pointerId == e.pointerId)
-        if (index == -1) return
-        const movementX = e.clientX - pointers[index].clientX
-        const movementY = e.clientY - pointers[index].clientY
-        // TODO: implement using coalesced events: https://pspdfkit.com/blog/2019/using-getcoalescedevents/
-        // e.getCoalescedEvents()
-        pointers[index] = e
-        if (ecs.get(Dragging)!.value && pointers.length == 1) {
-            dragging(ecs, e, movementX, movementY)
-        } else if (pointers.length == 2) {
-            zoomCamera(ecs, pointers, e)
-        }
-    })
+    if (typeof PointerEvent.prototype.getCoalescedEvents === 'function') {
+        document.addEventListener('pointermove', (e) =>
+            e.getCoalescedEvents().forEach(p => onPointerMove(ecs, p))
+        )
+    } else {
+        document.addEventListener('pointermove', (e) => onPointerMove(ecs, e))
+    }
 }

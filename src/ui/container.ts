@@ -23,8 +23,6 @@ import {
 import { ECS, Entity } from "../ecs";
 import { Layers } from "../layers";
 
-const clamp = (value: number, min: number, max: number): number =>
-    Math.max(Math.min(value, max), min)
 
 const layout = (self: Entity, constraints: Constraints) => {
     const padding = self.get(Padding)!.value
@@ -44,10 +42,15 @@ const layout = (self: Entity, constraints: Constraints) => {
         self.set(constraints, size, offset)
         return size
     }
-    const size = new Size(
-        clamp(self.get(Width)!.value, constraints.minWidth, constraints.maxWidth),
-        clamp(self.get(Height)!.value, constraints.minHeight, constraints.maxHeight),
-    )
+    const width = (() => {
+        const c = self.get(Width)
+        return c !== undefined ? c.value : constraints.maxWidth
+    })()
+    const height = (() => {
+        const c = self.get(Height)
+        return c !== undefined ? c.value : constraints.maxHeight
+    })()
+    const size = new Size(width, height)
     self.set(constraints, size, offset)
     return size
 }
@@ -116,13 +119,13 @@ export const container: Overload = (ecs: ECS, properties: Properties, child?: En
         new Layout(layout),
         new Geometry(geometry),
         new Padding(properties.padding ?? 0),
-        new Width(properties.width ?? 0),
-        new Height(properties.height ?? 0),
         new Translate(properties.x ?? 0, properties.y ?? 0)
     )
-    if (properties.color) entity.set(properties.color)
-    if (child) entity.set(new Child(child))
-    if (properties.onDrag) entity.set(new OnDrag(properties.onDrag))
-    if (properties.onClick) entity.set(new OnClick(properties.onClick))
+    if (properties.width !== undefined) entity.set(new Width(properties.width))
+    if (properties.height !== undefined) entity.set(new Height(properties.height))
+    if (child !== undefined) entity.set(new Child(child))
+    if (properties.color !== undefined) entity.set(properties.color)
+    if (properties.onDrag !== undefined) entity.set(new OnDrag(properties.onDrag))
+    if (properties.onClick !== undefined) entity.set(new OnClick(properties.onClick))
     return entity
 }

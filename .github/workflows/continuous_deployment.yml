@@ -1,6 +1,6 @@
-name: Continuous Integration
+name: Continuous Deployment
 on:
-  pull_request:
+  push:
     branches: [ "main" ]
 jobs:
   build:
@@ -16,4 +16,4 @@ jobs:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
     - run: npm install
-    - run: npm test
+    - run: npm push

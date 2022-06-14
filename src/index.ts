@@ -25,9 +25,9 @@ const root = stack(ecs, [
 const inputs = (n: number): Entity =>
     column(ecs, Array.from({ length: n }, (_, i) =>
         row(ecs, [
-            container(ecs, { width: 18, height: 18, color: new Color(101, 215, 249, 255), onClick: clickInput(graph) }),
+            container(ecs, { width: 28, height: 28, color: new Color(101, 215, 249, 255), onClick: clickInput(graph) }),
             container(ecs, { width: 5, height: 0 }),
-            container(ecs, { padding: 2 }, text(ecs, { fontSize: 18 }, `in ${i}`)),
+            container(ecs, { padding: 5 }, text(ecs, `in ${i}`)),
         ]),
     ))
 
@@ -35,9 +35,9 @@ const inputs = (n: number): Entity =>
 const outputs = (n: number): Entity =>
     column(ecs, { crossAxisAlignment: Alignment.END }, Array.from({ length: n }, (_, i) =>
         row(ecs, [
-            container(ecs, { padding: 2 }, text(ecs, { fontSize: 18 }, `out ${i}`)),
+            container(ecs, { padding: 5 }, text(ecs, `out ${i}`)),
             container(ecs, { width: 5, height: 0 }),
-            container(ecs, { width: 18, height: 18, color: new Color(101, 215, 249, 255), onClick: clickOutput(graph) })
+            container(ecs, { width: 28, height: 28, color: new Color(101, 215, 249, 255), onClick: clickOutput(graph) })
         ]),
     ))
 
@@ -54,7 +54,7 @@ const source = container(ecs, { color: new Color(0, 0, 0, 50), padding: 10, x: 2
     ])
 )
 
-const transform = container(ecs, { color: new Color(0, 0, 0, 50), padding: 10, x: 300, y: 100, onDrag: drag },
+const transform = container(ecs, { color: new Color(0, 0, 0, 50), padding: 10, x: 400, y: 100, onDrag: drag },
     column(ecs, { crossAxisAlignment: Alignment.CENTER }, [
         container(ecs, { padding: 5 }, text(ecs, "Transform")),
         container(ecs, { width: 0, height: 10 }),
@@ -66,7 +66,7 @@ const transform = container(ecs, { color: new Color(0, 0, 0, 50), padding: 10, x
     ])
 )
 
-const sink = container(ecs, { color: new Color(0, 0, 0, 50), padding: 10, x: 550, y: 250, onDrag: drag },
+const sink = container(ecs, { color: new Color(0, 0, 0, 50), padding: 10, x: 750, y: 250, onDrag: drag },
     column(ecs, { crossAxisAlignment: Alignment.CENTER }, [
         container(ecs, { padding: 5 }, text(ecs, "Sink")),
         container(ecs, { width: 0, height: 10 }),

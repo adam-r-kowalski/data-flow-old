@@ -116,7 +116,7 @@ export const text: Overload = (ecs: ECS, ...args: any[]): Entity => {
     })()
     return ecs.entity(
         new Text(data),
-        new FontSize(properties.fontSize ?? 24),
+        new FontSize(properties.fontSize ?? 28),
         new FontFamily(properties.fontFamily ?? "monospace"),
         properties.color ?? new Color(255, 255, 255, 255),
         new Layout(layout),

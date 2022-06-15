@@ -1,11 +1,11 @@
 import { Camera, Transform } from "../components"
-import { ECS } from "../ecs"
+import { Entity } from "../ecs"
 import { Mat3 } from "../linear_algebra"
 import { render } from "./render"
 
-export const wheel = (ecs: ECS) => {
+export const wheel = (graph: Entity) => {
     document.addEventListener('wheel', (e) => {
-        const camera = ecs.get(Camera)!.entity
+        const camera = graph.get(Camera)!.entity
         e.preventDefault()
         camera.update(Transform, transform => {
             const move = Mat3.translation(e.clientX, e.clientY)
@@ -15,6 +15,6 @@ export const wheel = (ecs: ECS) => {
             const result = move.matMul(scale).matMul(moveBack)
             transform.matrix = transform.matrix.matMul(result)
         })
-        requestAnimationFrame(() => render(ecs))
+        requestAnimationFrame(() => render(graph.ecs))
     }, { passive: false })
 }

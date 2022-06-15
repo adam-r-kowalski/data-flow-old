@@ -1,11 +1,12 @@
 import { Camera, DraggedEntity, Dragging, OnDrag, PointerDistance, Pointers, Transform } from "../components";
-import { ECS } from "../ecs";
+import { Entity } from "../ecs";
 import { Mat3, Vec3 } from "../linear_algebra";
 import { rayCast } from "./ray_cast";
 import { render } from "./render";
 
-const dragging = (ecs: ECS, e: PointerEvent, movementX: number, movementY: number) => {
-    const camera = ecs.get(Camera)!.entity
+const dragging = (graph: Entity, e: PointerEvent, movementX: number, movementY: number) => {
+    const ecs = graph.ecs
+    const camera = graph.get(Camera)!.entity
     const draggedEntity = ecs.get(DraggedEntity)!.entity
     if (draggedEntity) {
         const onDrag = draggedEntity.get(OnDrag)!.callback
@@ -33,7 +34,8 @@ const dragging = (ecs: ECS, e: PointerEvent, movementX: number, movementY: numbe
     requestAnimationFrame(() => render(ecs))
 }
 
-const zoomCamera = (ecs: ECS, pointers: PointerEvent[], e: PointerEvent) => {
+const zoomCamera = (graph: Entity, pointers: PointerEvent[], e: PointerEvent) => {
+    const ecs = graph.ecs
     const [x1, y1] = [pointers[0]!.clientX, pointers[0]!.clientY]
     const [x2, y2] = [pointers[1]!.clientX, pointers[1]!.clientY]
     const distance = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2))
@@ -44,7 +46,7 @@ const zoomCamera = (ecs: ECS, pointers: PointerEvent[], e: PointerEvent) => {
         const scale = Mat3.scaling(zoom, zoom)
         const moveBack = Mat3.translation(-e.clientX, -e.clientY)
         const result = move.matMul(scale).matMul(moveBack)
-        const camera = ecs.get(Camera)!.entity
+        const camera = graph.get(Camera)!.entity
         camera.update(Transform, transform =>
             transform.matrix = transform.matrix.matMul(result)
         )
@@ -53,7 +55,8 @@ const zoomCamera = (ecs: ECS, pointers: PointerEvent[], e: PointerEvent) => {
     requestAnimationFrame(() => render(ecs))
 }
 
-const onPointerMove = (ecs: ECS, e: PointerEvent) => {
+const onPointerMove = (graph: Entity, e: PointerEvent) => {
+    const ecs = graph.ecs
     const pointers = ecs.get(Pointers)!.events
     const index = pointers.findIndex(p => p.pointerId === e.pointerId)
     if (index === -1) return
@@ -61,18 +64,18 @@ const onPointerMove = (ecs: ECS, e: PointerEvent) => {
     const movementY = e.clientY - pointers[index]!.clientY
     pointers[index] = e
     if (ecs.get(Dragging)!.value && pointers.length === 1) {
-        dragging(ecs, e, movementX, movementY)
+        dragging(graph, e, movementX, movementY)
     } else if (pointers.length === 2) {
-        zoomCamera(ecs, pointers, e)
+        zoomCamera(graph, pointers, e)
     }
 }
 
-export const pointerMove = (ecs: ECS) => {
+export const pointerMove = (graph: Entity) => {
     if (typeof PointerEvent.prototype.getCoalescedEvents === 'function') {
         document.addEventListener('pointermove', (e) =>
-            e.getCoalescedEvents().forEach(p => onPointerMove(ecs, p))
+            e.getCoalescedEvents().forEach(p => onPointerMove(graph, p))
         )
     } else {
-        document.addEventListener('pointermove', (e) => onPointerMove(ecs, e))
+        document.addEventListener('pointermove', (e) => onPointerMove(graph, e))
     }
 }

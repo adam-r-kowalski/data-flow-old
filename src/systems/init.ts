@@ -1,5 +1,5 @@
 import { ConnectionFrom, ConnectionTo, DraggedEntity, Dragging, PointerDistance, Pointers } from "../components";
-import { ECS } from "../ecs";
+import { Entity } from "../ecs";
 import { pointerDown } from "./pointerDown";
 import { pointerMove } from "./pointerMove";
 import { pointerUp } from "./pointerUp";
@@ -7,7 +7,8 @@ import { resize } from "./resize";
 import { touchEnd } from "./touchEnd";
 import { wheel } from "./wheel";
 
-export const init = (ecs: ECS) => {
+export const init = (graph: Entity) => {
+    const ecs = graph.ecs
     ecs.set(
         new Pointers([]),
         new PointerDistance(0),
@@ -16,10 +17,10 @@ export const init = (ecs: ECS) => {
         new ConnectionFrom(null),
         new ConnectionTo(null),
     )
-    pointerDown(ecs)
-    pointerMove(ecs)
+    pointerDown(graph)
+    pointerMove(graph)
     pointerUp(ecs)
     resize(ecs)
     touchEnd(ecs)
-    wheel(ecs)
+    wheel(graph)
 }

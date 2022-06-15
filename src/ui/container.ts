@@ -18,7 +18,8 @@ import {
     OnDragCallback,
     OnClickCallback,
     OnClick,
-    OnDrag
+    OnDrag,
+    CameraIndices
 } from "../components";
 import { ECS, Entity } from "../ecs";
 import { Layers } from "../layers";
@@ -65,6 +66,7 @@ const geometry = (self: Entity, parentOffset: Offset, layers: Layers, z: number)
     const color = self.get(Color)
     if (color) {
         const { r, g, b, a } = color
+        layers.push({ z, texture: 0, entity: self })
         self.set(
             new Vertices([
                 x0, y0,
@@ -72,12 +74,7 @@ const geometry = (self: Entity, parentOffset: Offset, layers: Layers, z: number)
                 x1, y0,
                 x1, y1,
             ]),
-            new TextureCoordinates([
-                0, 0,
-                0, 0,
-                0, 0,
-                0, 0,
-            ]),
+            new TextureCoordinates(Array(8).fill(0)),
             new Colors([
                 r, g, b, a,
                 r, g, b, a,
@@ -88,8 +85,8 @@ const geometry = (self: Entity, parentOffset: Offset, layers: Layers, z: number)
                 0, 1, 2,
                 1, 2, 3,
             ]),
+            new CameraIndices(Array(4).fill(layers.cameraForEntity.get(self)))
         )
-        layers.push({ z, texture: 0, entity: self })
     }
     const child = self.get(Child)
     if (child) {

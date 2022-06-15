@@ -1,4 +1,4 @@
-import { Camera, Children, Color, Connections } from './components'
+import { Camera, Children, Color } from './components'
 import { Mat3 } from './linear_algebra'
 import * as Studio from './studio'
 import { Entity } from './studio'
@@ -14,8 +14,9 @@ renderer.canvas.style.width = '100%'
 renderer.canvas.style.height = '100%'
 
 
-const graph = scene(ecs)
+const camera = ecs.entity(new Transform(Mat3.identity()))
 
+const graph = scene(ecs).set(new Camera(camera))
 
 const root = stack(ecs, [
     container(ecs, { color: new Color(71, 52, 129, 255) }),
@@ -80,11 +81,9 @@ const sink = container(ecs, { color: new Color(0, 0, 0, 50), padding: 10, x: 750
 
 graph.update(Children, children => children.entities.push(source, transform, sink))
 
-const camera = ecs.entity(new Transform(Mat3.identity()))
+ecs.set(renderer, new UIRoot(root))
 
-ecs.set(renderer, new UIRoot(root), new Camera(camera))
-
-init(ecs)
+init(graph)
 
 requestAnimationFrame(() => render(ecs))
 

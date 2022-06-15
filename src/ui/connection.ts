@@ -1,4 +1,4 @@
-import { Color, Colors, From, TextureCoordinates, To, Vertices, WorldSpace } from "../components";
+import { CameraIndices, Color, Colors, From, TextureCoordinates, To, Vertices, WorldSpace } from "../components";
 import { ECS, Entity } from "../ecs";
 import { Layers } from "../layers";
 
@@ -44,6 +44,7 @@ export const geometry = (connections: Entity[], layers: Layers) => {
     const samples = 20
     const ts = linspace(0, 1, samples)
     const textureCoordinates = Array(samples * 4).fill(0)
+    const camera = layers.activeCamera()
     for (const entity of connections) {
         const from = entity.get(From)!.entity.get(WorldSpace)!
         const to = entity.get(To)!.entity.get(WorldSpace)!
@@ -51,12 +52,14 @@ export const geometry = (connections: Entity[], layers: Layers) => {
         const { r, g, b, a } = entity.get(Color)!
         const colors: number[] = []
         for (let i = 0; i < samples * 2; ++i) colors.push(r, g, b, a)
+        layers.lines.push(entity)
+        layers.cameraForEntity.set(entity, camera)
         entity.set(
             new Vertices(vertices),
             new TextureCoordinates(textureCoordinates),
             new Colors(colors),
+            new CameraIndices(Array(vertices.length / 2).fill(camera))
         )
-        layers.lines.push(entity)
     }
 }
 

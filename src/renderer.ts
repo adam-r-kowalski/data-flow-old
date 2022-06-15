@@ -4,29 +4,35 @@ class DefaultProgram {
     positionBuffer: WebGLBuffer
     colorBuffer: WebGLBuffer
     textureCoordinatesBuffer: WebGLBuffer
+    cameraIndexBuffer: WebGLBuffer
     indexBuffer: WebGLBuffer
     resolutionLocation: WebGLUniformLocation
     devicePixelRatioLocation: WebGLUniformLocation
-    matrixLocation: WebGLUniformLocation
+    camerasLocation: WebGLUniformLocation
+    projectionLocation: WebGLUniformLocation
 
     constructor(gl: WebGL2RenderingContext) {
         const aPositionLocation = 0
         const aTextureCoordinatesLocation = 1
         const aColorLocation = 2
+        const aCameraIndexLocation = 3
 
         const vertexShaderSource = `#version 300 es
   uniform float u_devicePixelRatio;
-  uniform mat3 u_matrix;
+  uniform mat3[8] u_cameras;
+  uniform mat3 u_projection;
 
   layout(location = ${aPositionLocation}) in vec2 a_position;
   layout(location = ${aTextureCoordinatesLocation}) in vec2 a_textureCoordinates;
   layout(location = ${aColorLocation}) in vec4 a_color;
+  layout(location = ${aCameraIndexLocation}) in uint a_cameraIndex;
 
   out vec2 v_textureCoordinates;
   out vec4 v_color;
 
   void main() {
-    gl_Position = vec4((u_matrix * vec3(a_position, 1)).xy, 0, 1);
+    mat3 matrix = u_projection * inverse(u_cameras[a_cameraIndex]);
+    gl_Position = vec4((matrix * vec3(a_position, 1)).xy, 0, 1);
     v_textureCoordinates = a_textureCoordinates * u_devicePixelRatio;
     v_color = a_color / 255.0;
   }
@@ -109,9 +115,22 @@ class DefaultProgram {
         /*offset*/0
         )
 
+        this.cameraIndexBuffer = gl.createBuffer()!
+        gl.bindAttribLocation(program, aCameraIndexLocation, 'a_cameraIndex')
+        gl.enableVertexAttribArray(aCameraIndexLocation)
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.cameraIndexBuffer)
+        gl.vertexAttribIPointer(
+            aCameraIndexLocation,
+        /*size*/1,
+        /*type*/gl.UNSIGNED_SHORT,
+        /*stride*/0,
+        /*offset*/0
+        )
+
         this.indexBuffer = gl.createBuffer()!
         this.devicePixelRatioLocation = gl.getUniformLocation(program, 'u_devicePixelRatio')!
-        this.matrixLocation = gl.getUniformLocation(program, 'u_matrix')!
+        this.camerasLocation = gl.getUniformLocation(program, 'u_cameras')!
+        this.projectionLocation = gl.getUniformLocation(program, 'u_projection')!
     }
 }
 
@@ -146,12 +165,14 @@ interface DrawData {
     colors: number[]
     textureCoordinates: number[]
     vertexIndices: number[]
+    cameraIndices: number[]
 }
 
 interface DrawLineData {
     vertices: number[]
     colors: number[]
     textureCoordinates: number[]
+    cameraIndices: number[]
 }
 
 const createFontMetrics = (gl: WebGL2RenderingContext, texture: WebGLTexture, font: string, fontSize: number) => {
@@ -262,10 +283,16 @@ export class Renderer {
         gl.clear(gl.COLOR_BUFFER_BIT)
     }
 
-    setMatrix = (matrix: Mat3) =>
-        this.gl.uniformMatrix3fv(this.program.matrixLocation, /*transpose*/true, /*data*/matrix.data)
+    setCameras = (matrices: Mat3[]) => {
+        const data = []
+        for (const matrix of matrices) data.push(...matrix.data)
+        this.gl.uniformMatrix3fv(this.program.camerasLocation, /*transpose*/true, data)
+    }
 
-    draw = ({ vertices, colors, textureCoordinates, vertexIndices }: DrawData) => {
+    setProjection = (matrix: Mat3) =>
+        this.gl.uniformMatrix3fv(this.program.projectionLocation, /*transpose*/true, /*data*/matrix.data)
+
+    draw = ({ vertices, colors, textureCoordinates, vertexIndices, cameraIndices }: DrawData) => {
         const { gl, program } = this
         gl.bindBuffer(gl.ARRAY_BUFFER, program.positionBuffer)
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW)
@@ -273,12 +300,14 @@ export class Renderer {
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW)
         gl.bindBuffer(gl.ARRAY_BUFFER, program.textureCoordinatesBuffer)
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoordinates), gl.STATIC_DRAW)
+        gl.bindBuffer(gl.ARRAY_BUFFER, program.cameraIndexBuffer)
+        gl.bufferData(gl.ARRAY_BUFFER, new Uint16Array(cameraIndices), gl.STATIC_DRAW)
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, program.indexBuffer)
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(vertexIndices), gl.STATIC_DRAW)
         gl.drawElements(gl.TRIANGLES, /*count*/vertexIndices.length, /*type*/gl.UNSIGNED_SHORT, /*offset*/0)
     }
 
-    drawLines = ({ vertices, colors, textureCoordinates }: DrawLineData) => {
+    drawLines = ({ vertices, colors, textureCoordinates, cameraIndices }: DrawLineData) => {
         const { gl, program } = this
         gl.bindBuffer(gl.ARRAY_BUFFER, program.positionBuffer)
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW)
@@ -286,7 +315,8 @@ export class Renderer {
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW)
         gl.bindBuffer(gl.ARRAY_BUFFER, program.textureCoordinatesBuffer)
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoordinates), gl.STATIC_DRAW)
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, program.indexBuffer)
+        gl.bindBuffer(gl.ARRAY_BUFFER, program.cameraIndexBuffer)
+        gl.bufferData(gl.ARRAY_BUFFER, new Uint16Array(cameraIndices), gl.STATIC_DRAW)
         gl.drawArrays(gl.LINES, 0, vertices.length / 2)
     }
 

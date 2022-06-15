@@ -1,6 +1,6 @@
 import { Renderer } from "../renderer";
 import { ECS } from "../ecs";
-import { Camera, Colors, TextureCoordinates, Transform, UIRoot, VertexIndices, Vertices } from "../components";
+import { CameraIndices, Colors, TextureCoordinates, UIRoot, VertexIndices, Vertices } from "../components";
 import { Layers } from "../layers";
 import { layout, geometry } from './'
 import { Mat3 } from "../linear_algebra";
@@ -10,16 +10,18 @@ const renderTriangles = (renderer: Renderer, layers: Layers) => {
     let vertices: number[] = []
     let colors: number[] = []
     let textureCoordinates: number[] = []
+    let cameraIndices: number[] = []
     let vertexIndices: number[] = []
     let previousTexture: number = -1
     for (const layer of layers.layers) {
         for (const [texture, entities] of layer) {
             if (texture !== previousTexture) {
                 if (vertices.length) {
-                    renderer.draw({ vertices, colors, textureCoordinates, vertexIndices })
+                    renderer.draw({ vertices, colors, textureCoordinates, vertexIndices, cameraIndices })
                     vertices = []
                     colors = []
                     textureCoordinates = []
+                    cameraIndices = []
                     vertexIndices = []
                 }
                 previousTexture = texture
@@ -33,11 +35,12 @@ const renderTriangles = (renderer: Renderer, layers: Layers) => {
                 for (const index of entity.get(VertexIndices)!.data) {
                     vertexIndices.push(offset + index)
                 }
+                cameraIndices.push(...entity.get(CameraIndices)!.data)
             }
         }
     }
     if (vertices.length === 0) return
-    renderer.draw({ vertices, colors, textureCoordinates, vertexIndices })
+    renderer.draw({ vertices, colors, textureCoordinates, vertexIndices, cameraIndices })
 }
 
 const renderLines = (renderer: Renderer, layers: Layers) => {
@@ -45,14 +48,16 @@ const renderLines = (renderer: Renderer, layers: Layers) => {
     let vertices: number[] = []
     let colors: number[] = []
     let textureCoordinates: number[] = []
+    let cameraIndices: number[] = []
     gl.bindTexture(gl.TEXTURE_2D, renderer.textures[0]!)
     for (const entity of layers.lines) {
         vertices.push(...entity.get(Vertices)!.data)
         colors.push(...entity.get(Colors)!.data)
         textureCoordinates.push(...entity.get(TextureCoordinates)!.data)
+        cameraIndices.push(...entity.get(CameraIndices)!.data)
     }
     if (vertices.length === 0) return
-    renderer.drawLines({ vertices, colors, textureCoordinates })
+    renderer.drawLines({ vertices, colors, textureCoordinates, cameraIndices })
 }
 
 export const render = (ecs: ECS) => {
@@ -61,8 +66,8 @@ export const render = (ecs: ECS) => {
     const layers = geometry(root)
     const renderer = ecs.get(Renderer)!
     const projection = Mat3.projection(renderer.width, renderer.height)
-    const camera = ecs.get(Camera)!.entity.get(Transform)!.matrix
-    renderer.setMatrix(projection.matMul(camera.inverse()))
+    renderer.setProjection(projection)
+    renderer.setCameras(layers.cameras)
     renderer.clear()
     renderTriangles(renderer, layers)
     renderLines(renderer, layers)

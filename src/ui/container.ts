@@ -18,13 +18,12 @@ import {
     OnDragCallback,
     OnClickCallback,
     OnClick,
-    OnDrag
+    OnDrag,
+    CameraIndices
 } from "../components";
 import { ECS, Entity } from "../ecs";
 import { Layers } from "../layers";
 
-const clamp = (value: number, min: number, max: number): number =>
-    Math.max(Math.min(value, max), min)
 
 const layout = (self: Entity, constraints: Constraints) => {
     const padding = self.get(Padding)!.value
@@ -44,10 +43,15 @@ const layout = (self: Entity, constraints: Constraints) => {
         self.set(constraints, size, offset)
         return size
     }
-    const size = new Size(
-        clamp(self.get(Width)!.value, constraints.minWidth, constraints.maxWidth),
-        clamp(self.get(Height)!.value, constraints.minHeight, constraints.maxHeight),
-    )
+    const width = (() => {
+        const c = self.get(Width)
+        return c !== undefined ? c.value : constraints.maxWidth
+    })()
+    const height = (() => {
+        const c = self.get(Height)
+        return c !== undefined ? c.value : constraints.maxHeight
+    })()
+    const size = new Size(width, height)
     self.set(constraints, size, offset)
     return size
 }
@@ -62,6 +66,7 @@ const geometry = (self: Entity, parentOffset: Offset, layers: Layers, z: number)
     const color = self.get(Color)
     if (color) {
         const { r, g, b, a } = color
+        layers.push({ z, texture: 0, entity: self })
         self.set(
             new Vertices([
                 x0, y0,
@@ -69,12 +74,7 @@ const geometry = (self: Entity, parentOffset: Offset, layers: Layers, z: number)
                 x1, y0,
                 x1, y1,
             ]),
-            new TextureCoordinates([
-                0, 0,
-                0, 0,
-                0, 0,
-                0, 0,
-            ]),
+            new TextureCoordinates(Array(8).fill(0)),
             new Colors([
                 r, g, b, a,
                 r, g, b, a,
@@ -85,8 +85,8 @@ const geometry = (self: Entity, parentOffset: Offset, layers: Layers, z: number)
                 0, 1, 2,
                 1, 2, 3,
             ]),
+            new CameraIndices(Array(4).fill(layers.cameraForEntity.get(self)))
         )
-        layers.push({ z, texture: 0, entity: self })
     }
     const child = self.get(Child)
     if (child) {
@@ -116,13 +116,13 @@ export const container: Overload = (ecs: ECS, properties: Properties, child?: En
         new Layout(layout),
         new Geometry(geometry),
         new Padding(properties.padding ?? 0),
-        new Width(properties.width ?? 0),
-        new Height(properties.height ?? 0),
         new Translate(properties.x ?? 0, properties.y ?? 0)
     )
-    if (properties.color) entity.set(properties.color)
-    if (child) entity.set(new Child(child))
-    if (properties.onDrag) entity.set(new OnDrag(properties.onDrag))
-    if (properties.onClick) entity.set(new OnClick(properties.onClick))
+    if (properties.width !== undefined) entity.set(new Width(properties.width))
+    if (properties.height !== undefined) entity.set(new Height(properties.height))
+    if (child !== undefined) entity.set(new Child(child))
+    if (properties.color !== undefined) entity.set(properties.color)
+    if (properties.onDrag !== undefined) entity.set(new OnDrag(properties.onDrag))
+    if (properties.onClick !== undefined) entity.set(new OnClick(properties.onClick))
     return entity
 }

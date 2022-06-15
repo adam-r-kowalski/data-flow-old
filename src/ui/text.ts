@@ -13,6 +13,7 @@ import {
     Colors,
     VertexIndices,
     WorldSpace,
+    CameraIndices,
 } from "../components";
 import { ECS, Entity } from "../ecs";
 import { Layers } from "../layers";
@@ -32,7 +33,7 @@ const textSize = (renderer: Renderer, entity: Entity) => {
     return size
 }
 
-const textGeometry = (renderer: Renderer, entity: Entity, offset: Offset): number => {
+const textGeometry = (renderer: Renderer, entity: Entity, offset: Offset, layers: Layers, z: number): number => {
     const text = entity.get(Text)!.value
     const fontSize = entity.get(FontSize)!.value
     const fontFamily = entity.get(FontFamily)!.value
@@ -75,11 +76,13 @@ const textGeometry = (renderer: Renderer, entity: Entity, offset: Offset): numbe
         x += metric.width
         indexOffset += 4
     }
+    layers.push({ z, entity, texture: atlas.texture })
     entity.set(
         new Vertices(vertices),
         new TextureCoordinates(textureCoordinates),
         new Colors(colors),
         new VertexIndices(indices),
+        new CameraIndices(Array(vertices.length / 2).fill(layers.cameraForEntity.get(entity)))
     )
     return atlas.texture
 }
@@ -93,8 +96,7 @@ const layout = (self: Entity, constraints: Constraints) => {
 const geometry = (self: Entity, parentOffset: Offset, layers: Layers, z: number) => {
     const { width, height } = self.get(Size)!
     const offset = parentOffset.add(self.get(Offset)!)
-    const texture = textGeometry(self.ecs.get(Renderer)!, self, offset)
-    layers.push({ z, entity: self, texture })
+    textGeometry(self.ecs.get(Renderer)!, self, offset, layers, z)
     self.set(new WorldSpace(offset.x, offset.y, width, height))
 }
 
@@ -116,7 +118,7 @@ export const text: Overload = (ecs: ECS, ...args: any[]): Entity => {
     })()
     return ecs.entity(
         new Text(data),
-        new FontSize(properties.fontSize ?? 24),
+        new FontSize(properties.fontSize ?? 28),
         new FontFamily(properties.fontFamily ?? "monospace"),
         properties.color ?? new Color(255, 255, 255, 255),
         new Layout(layout),

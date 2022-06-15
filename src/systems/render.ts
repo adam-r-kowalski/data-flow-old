@@ -62,7 +62,8 @@ export const render = (ecs: ECS) => {
     const renderer = ecs.get(Renderer)!
     const projection = Mat3.projection(renderer.width, renderer.height)
     const camera = ecs.get(Camera)!.entity.get(Transform)!.matrix
-    renderer.setMatrix(projection.matMul(camera.inverse()))
+    renderer.setProjection(projection)
+    renderer.setCamera(camera)
     renderer.clear()
     renderTriangles(renderer, layers)
     renderLines(renderer, layers)

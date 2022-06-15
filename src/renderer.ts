@@ -7,7 +7,8 @@ class DefaultProgram {
     indexBuffer: WebGLBuffer
     resolutionLocation: WebGLUniformLocation
     devicePixelRatioLocation: WebGLUniformLocation
-    matrixLocation: WebGLUniformLocation
+    cameraLocation: WebGLUniformLocation
+    projectionLocation: WebGLUniformLocation
 
     constructor(gl: WebGL2RenderingContext) {
         const aPositionLocation = 0
@@ -16,7 +17,8 @@ class DefaultProgram {
 
         const vertexShaderSource = `#version 300 es
   uniform float u_devicePixelRatio;
-  uniform mat3 u_matrix;
+  uniform mat3 u_camera;
+  uniform mat3 u_projection;
 
   layout(location = ${aPositionLocation}) in vec2 a_position;
   layout(location = ${aTextureCoordinatesLocation}) in vec2 a_textureCoordinates;
@@ -26,7 +28,8 @@ class DefaultProgram {
   out vec4 v_color;
 
   void main() {
-    gl_Position = vec4((u_matrix * vec3(a_position, 1)).xy, 0, 1);
+    mat3 matrix = u_projection * inverse(u_camera);
+    gl_Position = vec4((matrix * vec3(a_position, 1)).xy, 0, 1);
     v_textureCoordinates = a_textureCoordinates * u_devicePixelRatio;
     v_color = a_color / 255.0;
   }
@@ -111,7 +114,8 @@ class DefaultProgram {
 
         this.indexBuffer = gl.createBuffer()!
         this.devicePixelRatioLocation = gl.getUniformLocation(program, 'u_devicePixelRatio')!
-        this.matrixLocation = gl.getUniformLocation(program, 'u_matrix')!
+        this.cameraLocation = gl.getUniformLocation(program, 'u_camera')!
+        this.projectionLocation = gl.getUniformLocation(program, 'u_projection')!
     }
 }
 
@@ -262,8 +266,11 @@ export class Renderer {
         gl.clear(gl.COLOR_BUFFER_BIT)
     }
 
-    setMatrix = (matrix: Mat3) =>
-        this.gl.uniformMatrix3fv(this.program.matrixLocation, /*transpose*/true, /*data*/matrix.data)
+    setCamera = (matrix: Mat3) =>
+        this.gl.uniformMatrix3fv(this.program.cameraLocation, /*transpose*/true, /*data*/matrix.data)
+
+    setProjection = (matrix: Mat3) =>
+        this.gl.uniformMatrix3fv(this.program.projectionLocation, /*transpose*/true, /*data*/matrix.data)
 
     draw = ({ vertices, colors, textureCoordinates, vertexIndices }: DrawData) => {
         const { gl, program } = this

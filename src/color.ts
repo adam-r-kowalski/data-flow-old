@@ -1,16 +1,16 @@
 export class Rgba {
     constructor(
-        readonly red: number,
-        readonly green: number,
-        readonly blue: number,
-        readonly alpha: number,
+        readonly r: number,
+        readonly g: number,
+        readonly b: number,
+        readonly a: number,
     ) { }
 
     rgba = () => this
 }
 
-export const rgba = (red: number, green: number, blue: number, alpha: number) =>
-    new Rgba(red, green, blue, alpha)
+export const rgba = (r: number, g: number, b: number, a: number) =>
+    new Rgba(r, g, b, a)
 
 export interface Color {
     rgba: () => Rgba

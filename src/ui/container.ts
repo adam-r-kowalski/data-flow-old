@@ -26,10 +26,10 @@ export class ContainerGeometry {
 }
 
 interface GeometryData {
-    position: Position
-    vertices?: number[]
-    colors?: number[]
-    vertexIndices?: number[]
+    readonly position: Position
+    readonly vertices?: number[]
+    readonly colors?: number[]
+    readonly vertexIndices?: number[]
 }
 
 export const containerGeometry = (data: GeometryData, child?: Geometry) =>
@@ -122,11 +122,11 @@ export class Container {
 }
 
 interface Props {
-    padding?: Padding
-    width?: number
-    height?: number
-    color?: Color
-    child?: UI
+    readonly padding?: Padding
+    readonly width?: number
+    readonly height?: number
+    readonly color?: Color
+    readonly child?: UI
 }
 
 export const container = ({ padding, width, height, color }: Props, child?: UI): Container =>

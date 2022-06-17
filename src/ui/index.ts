@@ -2,10 +2,10 @@ import { Geometry, Offset } from "../geometry";
 import { Constraints, Layout } from "../layout";
 
 export interface Entry {
-    ui: UI
-    layout: Layout
-    geometry: Geometry
-    z: number
+    readonly ui: UI
+    readonly layout: Layout
+    readonly geometry: Geometry
+    readonly z: number
 }
 
 export interface UI {

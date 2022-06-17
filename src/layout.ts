@@ -1,15 +1,15 @@
 export interface Size {
-    width: number
-    height: number
+    readonly width: number
+    readonly height: number
 }
 
 export interface Constraints {
-    minWidth: number
-    maxWidth: number
-    minHeight: number
-    maxHeight: number
+    readonly minWidth: number
+    readonly maxWidth: number
+    readonly minHeight: number
+    readonly maxHeight: number
 }
 
 export interface Layout {
-    size: Size
+    readonly size: Size
 }

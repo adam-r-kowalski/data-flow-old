@@ -2,9 +2,9 @@ import { Reducer } from "./reduce"
 import { Entry } from "./ui"
 
 interface Batch {
-    vertices: number[]
-    colors: number[]
-    vertexIndices: number[]
+    readonly vertices: number[]
+    readonly colors: number[]
+    readonly vertexIndices: number[]
 }
 
 export const batchGeometry: Reducer<Batch[]> = {

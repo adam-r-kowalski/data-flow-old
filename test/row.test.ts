@@ -1,3 +1,4 @@
+import { batchGeometry } from "../src/batchGeometry"
 import { rgba } from "../src/color"
 import { layerGeometry } from "../src/layerGeometry"
 import { reduce } from "../src/reduce"
@@ -148,4 +149,59 @@ test("row layers", () => {
         ]
     ]
     expect(layers).toEqual(expectedLayers)
+})
+
+test("row batch", () => {
+    const ui = row([
+        container({
+            width: 50,
+            height: 50,
+            color: rgba(255, 0, 0, 255)
+        }),
+        container({
+            width: 50,
+            height: 50,
+            color: rgba(0, 255, 0, 255)
+        })
+    ])
+    const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
+    const layout = ui.layout(constraints)
+    const offsets = { x: 0, y: 0 }
+    const geometry = ui.geometry(layout, offsets)
+    const layers = reduce(ui, layout, geometry, layerGeometry)
+    const batches = batchGeometry(layers)
+    const expectedBatches = [
+        {
+            vertices: [
+                0, 0,
+                0, 50,
+                50, 0,
+                50, 50,
+
+                50, 0,
+                50, 50,
+                100, 0,
+                100, 50,
+            ],
+            colors: [
+                255, 0, 0, 255,
+                255, 0, 0, 255,
+                255, 0, 0, 255,
+                255, 0, 0, 255,
+
+                0, 255, 0, 255,
+                0, 255, 0, 255,
+                0, 255, 0, 255,
+                0, 255, 0, 255,
+            ],
+            vertexIndices: [
+                0, 1, 2,
+                1, 2, 3,
+
+                0, 1, 2,
+                1, 2, 3
+            ]
+        }
+    ]
+    expect(batches).toEqual(expectedBatches)
 })

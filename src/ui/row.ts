@@ -1,4 +1,4 @@
-import { UI } from "."
+import { Entry, UI } from "."
 import { Geometry, Offset, Position } from "../geometry"
 import { Constraints, Layout, Size } from "../layout"
 
@@ -70,6 +70,17 @@ export class Row {
             return acc
         }, initial)
         return rowGeometry({ x: offset.x, y: offset.y }, result.children)
+    }
+
+    *traverse(layout: Layout, geometry: Geometry, z: number): Generator<Entry> {
+        const childrenLayout = (layout as RowLayout).children
+        const childrenGeometry = (geometry as RowGeometry).children
+        const nextZ = z + 1
+        let i = 0
+        for (const child of this.children) {
+            yield* child.traverse(childrenLayout[i], childrenGeometry[i], nextZ)
+            i += 1
+        }
     }
 }
 

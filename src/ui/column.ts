@@ -3,17 +3,17 @@ import { Alignment } from "../alignment"
 import { Geometry, Offset, Position } from "../geometry"
 import { Constraints, Layout, Size } from "../layout"
 
-export class RowLayout {
+export class ColumnLayout {
     constructor(
         readonly size: Size,
         readonly children: Layout[]
     ) { }
 }
 
-export const rowLayout = (size: Size, children: Layout[]) =>
-    new RowLayout(size, children)
+export const columnLayout = (size: Size, children: Layout[]) =>
+    new ColumnLayout(size, children)
 
-export class RowGeometry {
+export class ColumnGeometry {
     constructor(
         readonly position: Position,
         readonly vertices: number[],
@@ -23,10 +23,10 @@ export class RowGeometry {
     ) { }
 }
 
-export const rowGeometry = (position: Position, children: Geometry[]) =>
-    new RowGeometry(position, [], [], [], children)
+export const columnGeometry = (position: Position, children: Geometry[]) =>
+    new ColumnGeometry(position, [], [], [], children)
 
-export class Row {
+export class Column {
     constructor(
         readonly crossAxisAlignment: Alignment,
         readonly children: UI[]
@@ -42,34 +42,34 @@ export class Row {
         const result = this.children.reduce((acc, child) => {
             const layout = child.layout(constraints)
             acc.children.push(layout)
-            acc.width += layout.size.width
-            acc.height = Math.max(acc.height, layout.size.height)
+            acc.height += layout.size.height
+            acc.width = Math.max(acc.width, layout.size.width)
             return acc
         }, initial)
         const { children, width, height } = result
-        return rowLayout({ width, height }, children)
+        return columnLayout({ width, height }, children)
     }
 
     geometry(layout: Layout, offset: Offset) {
-        const rowLayout = (layout as RowLayout)
+        const columnLayout = (layout as ColumnLayout)
         const initialChildren: Geometry[] = []
         const initial = {
             children: initialChildren,
-            x: offset.x,
+            y: offset.y,
         }
         const result = this.children.reduce((acc, child, i) => {
-            const childLayout = rowLayout.children[i]
-            const childOffset = { x: acc.x, y: offset.y }
+            const childLayout = columnLayout.children[i]
+            const childOffset = { x: offset.x, y: acc.y }
             acc.children.push(child.geometry(childLayout, childOffset))
-            acc.x += childLayout.size.width
+            acc.y += childLayout.size.height
             return acc
         }, initial)
-        return rowGeometry({ x: offset.x, y: offset.y }, result.children)
+        return columnGeometry({ x: offset.x, y: offset.y }, result.children)
     }
 
     *traverse(layout: Layout, geometry: Geometry, z: number): Generator<Entry> {
-        const childrenLayout = (layout as RowLayout).children
-        const childrenGeometry = (geometry as RowGeometry).children
+        const childrenLayout = (layout as ColumnLayout).children
+        const childrenGeometry = (geometry as ColumnGeometry).children
         const nextZ = z + 1
         let i = 0
         for (const child of this.children) {
@@ -84,13 +84,13 @@ interface Properties {
 }
 
 type Overload = {
-    (children: UI[]): Row
-    (properties: Properties, children: UI[]): Row
+    (children: UI[]): Column
+    (properties: Properties, children: UI[]): Column
 }
 
-export const row: Overload = (...args: any[]): Row => {
+export const column: Overload = (...args: any[]): Column => {
     const [properties, children] = (() =>
         args[0] instanceof Array ? [{}, args[0]] : [args[0], args[1]]
     )()
-    return new Row(properties.crossAxisAlignment ?? Alignment.START, children)
+    return new Column(properties.crossAxisAlignment ?? Alignment.START, children)
 }

@@ -3,10 +3,10 @@ import { rgba } from "../src/color"
 import { layerGeometry } from "../src/layerGeometry"
 import { reduce } from "../src/reduce"
 import { container, containerGeometry, containerLayout } from "../src/ui/container"
-import { row, rowGeometry, rowLayout } from "../src/ui/row"
+import { column, columnGeometry, columnLayout } from "../src/ui/column"
 
-test("row layout", () => {
-    const ui = row([
+test("column layout", () => {
+    const ui = column([
         container({
             width: 50,
             height: 50,
@@ -20,15 +20,15 @@ test("row layout", () => {
     ])
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
     const layout = ui.layout(constraints)
-    const expectedLayout = rowLayout({ width: 100, height: 50 }, [
+    const expectedLayout = columnLayout({ width: 50, height: 100 }, [
         containerLayout({ width: 50, height: 50 }),
         containerLayout({ width: 50, height: 50 }),
     ])
     expect(layout).toEqual(expectedLayout)
 })
 
-test("row geometry", () => {
-    const ui = row([
+test("column geometry", () => {
+    const ui = column([
         container({
             width: 50,
             height: 50,
@@ -44,7 +44,7 @@ test("row geometry", () => {
     const layout = ui.layout(constraints)
     const offsets = { x: 0, y: 0 }
     const geometry = ui.geometry(layout, offsets)
-    const expectedGeometry = rowGeometry({ x: 0, y: 0 }, [
+    const expectedGeometry = columnGeometry({ x: 0, y: 0 }, [
         containerGeometry({
             position: { x: 0, y: 0 },
             vertices: [
@@ -65,12 +65,12 @@ test("row geometry", () => {
             ]
         }),
         containerGeometry({
-            position: { x: 50, y: 0 },
+            position: { x: 0, y: 50 },
             vertices: [
-                50, 0,
+                0, 50,
+                0, 100,
                 50, 50,
-                100, 0,
-                100, 50,
+                50, 100,
             ],
             colors: [
                 0, 255, 0, 255,
@@ -87,8 +87,8 @@ test("row geometry", () => {
     expect(geometry).toEqual(expectedGeometry)
 })
 
-test("row layers", () => {
-    const ui = row([
+test("column layers", () => {
+    const ui = column([
         container({
             width: 50,
             height: 50,
@@ -128,12 +128,12 @@ test("row layers", () => {
                 ]
             }),
             containerGeometry({
-                position: { x: 50, y: 0 },
+                position: { x: 0, y: 50 },
                 vertices: [
-                    50, 0,
+                    0, 50,
+                    0, 100,
                     50, 50,
-                    100, 0,
-                    100, 50,
+                    50, 100,
                 ],
                 colors: [
                     0, 255, 0, 255,
@@ -151,8 +151,8 @@ test("row layers", () => {
     expect(layers).toEqual(expectedLayers)
 })
 
-test("row batch", () => {
-    const ui = row([
+test("column batch", () => {
+    const ui = column([
         container({
             width: 50,
             height: 50,
@@ -178,10 +178,10 @@ test("row batch", () => {
                 50, 0,
                 50, 50,
 
-                50, 0,
+                0, 50,
+                0, 100,
                 50, 50,
-                100, 0,
-                100, 50,
+                50, 100,
             ],
             colors: [
                 255, 0, 0, 255,

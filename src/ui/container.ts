@@ -14,7 +14,6 @@ export class ContainerLayout {
 export const containerLayout = (size: Size, child?: Layout) =>
     new ContainerLayout(size, child)
 
-
 export class ContainerGeometry {
     constructor(
         readonly position: Position,
@@ -25,7 +24,7 @@ export class ContainerGeometry {
     ) { }
 }
 
-interface GeometryData {
+export interface GeometryData {
     readonly position: Position
     readonly vertices?: number[]
     readonly colors?: number[]
@@ -121,7 +120,7 @@ export class Container {
     }
 }
 
-interface Props {
+interface Properties {
     readonly padding?: Padding
     readonly width?: number
     readonly height?: number
@@ -129,5 +128,5 @@ interface Props {
     readonly child?: UI
 }
 
-export const container = ({ padding, width, height, color }: Props, child?: UI): Container =>
+export const container = ({ padding, width, height, color }: Properties, child?: UI): Container =>
     new Container(padding ?? paddingAll(0), width, height, color, child)

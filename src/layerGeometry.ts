@@ -2,16 +2,17 @@ import { Geometry } from "./geometry"
 import { Reducer } from "./reduce"
 import { Entry } from "./ui"
 
-type Layer = Geometry[]
+export type Layer = Geometry[]
+export type Layers = Layer[]
 
-export const layerGeometry: Reducer<Layer[]> = {
+export const layerGeometry: Reducer<Layers> = {
     initial: () => [],
-    combine: (accumulator: Layer[], entry: Entry) => {
-        const needed = entry.z - accumulator.length + 1
+    combine: (layers: Layers, entry: Entry) => {
+        const needed = entry.z - layers.length + 1
         for (let i = 0; i < needed; ++i) {
-            accumulator.push([])
+            layers.push([])
         }
-        accumulator[entry.z].push(entry.geometry)
-        return accumulator
+        layers[entry.z].push(entry.geometry)
+        return layers
     }
 }

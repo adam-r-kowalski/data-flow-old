@@ -3,6 +3,7 @@ import { container, containerLayout, containerGeometry } from '../src/ui/contain
 import { padding } from '../src/padding'
 import { layerGeometry } from '../src/layerGeometry'
 import { reduce } from '../src/reduce'
+import { batchGeometry } from '../src/batchGeometry'
 
 test("container layout", () => {
     const ui = container({
@@ -84,6 +85,42 @@ test("container layers", () => {
     ]
     expect(layers).toEqual(expectedLayers)
 })
+
+test("container batches", () => {
+    const ui = container({
+        width: 50,
+        height: 50,
+        color: rgba(255, 0, 0, 255)
+    })
+    const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
+    const layout = ui.layout(constraints)
+    const offsets = { x: 0, y: 0 }
+    const geometry = ui.geometry(layout, offsets)
+    const layers = reduce(ui, layout, geometry, layerGeometry)
+    const batches = batchGeometry(layers)
+    const expectedBatches = [
+        {
+            vertices: [
+                0, 0,
+                0, 50,
+                50, 0,
+                50, 50,
+            ],
+            colors: [
+                255, 0, 0, 255,
+                255, 0, 0, 255,
+                255, 0, 0, 255,
+                255, 0, 0, 255,
+            ],
+            vertexIndices: [
+                0, 1, 2,
+                1, 2, 3
+            ]
+        }
+    ]
+    expect(batches).toEqual(expectedBatches)
+})
+
 
 test("container within container layout", () => {
     const ui = container({ padding: padding(5) },
@@ -170,4 +207,40 @@ test("container within container layers", () => {
         [childGeometry],
     ]
     expect(layers).toEqual(expectedLayers)
+})
+
+test("container within container batches", () => {
+    const ui = container({ padding: padding(5) },
+        container({
+            width: 50,
+            height: 50,
+            color: rgba(255, 0, 0, 255)
+        }))
+    const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
+    const layout = ui.layout(constraints)
+    const offsets = { x: 0, y: 0 }
+    const geometry = ui.geometry(layout, offsets)
+    const layers = reduce(ui, layout, geometry, layerGeometry)
+    const batches = batchGeometry(layers)
+    const expectedBatches = [
+        {
+            vertices: [
+                5, 5,
+                5, 55,
+                55, 5,
+                55, 55,
+            ],
+            colors: [
+                255, 0, 0, 255,
+                255, 0, 0, 255,
+                255, 0, 0, 255,
+                255, 0, 0, 255,
+            ],
+            vertexIndices: [
+                0, 1, 2,
+                1, 2, 3
+            ]
+        }
+    ]
+    expect(batches).toEqual(expectedBatches)
 })

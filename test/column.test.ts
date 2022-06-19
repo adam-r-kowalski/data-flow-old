@@ -20,7 +20,7 @@ test("column layout", () => {
     ])
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
     const layout = ui.layout(constraints)
-    const expectedLayout = columnLayout({ width: 50, height: 100 }, [
+    const expectedLayout = columnLayout({ width: 50, height: 100 }, 100, [
         containerLayout({ width: 50, height: 50 }),
         containerLayout({ width: 50, height: 50 }),
     ])

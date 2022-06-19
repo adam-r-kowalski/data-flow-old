@@ -1,17 +1,18 @@
 import { Entry, UI } from "."
-import { CrossAxisAlignment } from "../alignment"
+import { CrossAxisAlignment, MainAxisAlignment } from "../alignment"
 import { Geometry, Offset, Position } from "../geometry"
 import { Constraints, Layout, Size } from "../layout"
 
 export class RowLayout {
     constructor(
         readonly size: Size,
+        readonly totalChildWidth: number,
         readonly children: Layout[]
     ) { }
 }
 
-export const rowLayout = (size: Size, children: Layout[]) =>
-    new RowLayout(size, children)
+export const rowLayout = (size: Size, totalChildWidth: number, children: Layout[]) =>
+    new RowLayout(size, totalChildWidth, children)
 
 export class RowGeometry {
     constructor(
@@ -28,6 +29,7 @@ export const rowGeometry = (position: Position, children: Geometry[]) =>
 
 export class Row {
     constructor(
+        readonly mainAxisAlignment: MainAxisAlignment,
         readonly crossAxisAlignment: CrossAxisAlignment,
         readonly children: UI[]
     ) { }
@@ -36,27 +38,51 @@ export class Row {
         const initialChildren: Layout[] = []
         const initial = {
             children: initialChildren,
-            width: 0,
+            totalChildWidth: 0,
             height: 0
         }
         const result = this.children.reduce((acc, child) => {
             const layout = child.layout(constraints)
             acc.children.push(layout)
-            acc.width += layout.size.width
+            acc.totalChildWidth += layout.size.width
             acc.height = Math.max(acc.height, layout.size.height)
             return acc
         }, initial)
-        const { children, width, height } = result
-        return rowLayout({ width, height }, children)
+        const { children, totalChildWidth, height } = result
+        const width = this.mainAxisAlignment == MainAxisAlignment.START ? totalChildWidth : constraints.maxWidth
+        return rowLayout({ width, height }, totalChildWidth, children)
     }
 
     geometry(layout: Layout, offset: Offset) {
         const rowLayout = (layout as RowLayout)
         const initialChildren: Geometry[] = []
+        const freeSpaceX = layout.size.width - rowLayout.totalChildWidth
         const initial = {
             children: initialChildren,
-            x: offset.x,
+            x: (() => {
+                switch (this.mainAxisAlignment) {
+                    case MainAxisAlignment.START: return offset.x
+                    case MainAxisAlignment.CENTER: return offset.x + freeSpaceX / 2
+                    case MainAxisAlignment.END: return offset.x + freeSpaceX
+                    case MainAxisAlignment.SPACE_EVENLY: return offset.x + freeSpaceX / (this.children.length + 1)
+                    case MainAxisAlignment.SPACE_BETWEEN: return offset.x
+                }
+            })(),
         }
+        const addXStart = (childLayout: Layout) => childLayout.size.width
+        const addXCenter = (childLayout: Layout) => childLayout.size.width
+        const addXEnd = (childLayout: Layout) => childLayout.size.width
+        const addXSpaceEvenly = (childLayout: Layout) => childLayout.size.width + freeSpaceX / (this.children.length + 1)
+        const addXSpaceBetween = (childLayout: Layout) => childLayout.size.width + freeSpaceX / (this.children.length - 1)
+        const addX = (() => {
+            switch (this.mainAxisAlignment) {
+                case MainAxisAlignment.START: return addXStart
+                case MainAxisAlignment.CENTER: return addXCenter
+                case MainAxisAlignment.END: return addXEnd
+                case MainAxisAlignment.SPACE_EVENLY: return addXSpaceEvenly
+                case MainAxisAlignment.SPACE_BETWEEN: return addXSpaceBetween
+            }
+        })()
         const offsetYStart = (_: Layout) => offset.y
         const offsetYCenter = (childLayout: Layout) => offset.y + layout.size.height / 2 - childLayout.size.height / 2
         const offsetYEnd = (childLayout: Layout) => offset.y + layout.size.height - childLayout.size.height
@@ -71,7 +97,7 @@ export class Row {
             const childLayout = rowLayout.children[i]
             const childOffset = { x: acc.x, y: offsetY(childLayout) }
             acc.children.push(child.geometry(childLayout, childOffset))
-            acc.x += childLayout.size.width
+            acc.x += addX(childLayout)
             return acc
         }, initial)
         return rowGeometry({ x: offset.x, y: offset.y }, result.children)
@@ -90,6 +116,7 @@ export class Row {
 }
 
 interface Properties {
+    readonly mainAxisAlignment?: MainAxisAlignment
     readonly crossAxisAlignment?: CrossAxisAlignment
 }
 
@@ -102,5 +129,9 @@ export const row: Overload = (...args: any[]): Row => {
     const [properties, children] = (() =>
         args[0] instanceof Array ? [{}, args[0]] : [args[0], args[1]]
     )()
-    return new Row(properties.crossAxisAlignment ?? CrossAxisAlignment.START, children)
+    return new Row(
+        properties.mainAxisAlignment ?? MainAxisAlignment.START,
+        properties.crossAxisAlignment ?? CrossAxisAlignment.START,
+        children
+    )
 }

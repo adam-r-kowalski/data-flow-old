@@ -1,5 +1,5 @@
 import { Entry, UI } from "."
-import { Alignment } from "../alignment"
+import { CrossAxisAlignment } from "../alignment"
 import { Geometry, Offset, Position } from "../geometry"
 import { Constraints, Layout, Size } from "../layout"
 
@@ -28,7 +28,7 @@ export const rowGeometry = (position: Position, children: Geometry[]) =>
 
 export class Row {
     constructor(
-        readonly crossAxisAlignment: Alignment,
+        readonly crossAxisAlignment: CrossAxisAlignment,
         readonly children: UI[]
     ) { }
 
@@ -57,9 +57,19 @@ export class Row {
             children: initialChildren,
             x: offset.x,
         }
+        const offsetYStart = (_: Layout) => offset.y
+        const offsetYCenter = (childLayout: Layout) => offset.y + layout.size.height / 2 - childLayout.size.height / 2
+        const offsetYEnd = (childLayout: Layout) => offset.y + layout.size.height - childLayout.size.height
+        const offsetY = (() => {
+            switch (this.crossAxisAlignment) {
+                case CrossAxisAlignment.START: return offsetYStart
+                case CrossAxisAlignment.CENTER: return offsetYCenter
+                case CrossAxisAlignment.END: return offsetYEnd
+            }
+        })()
         const result = this.children.reduce((acc, child, i) => {
             const childLayout = rowLayout.children[i]
-            const childOffset = { x: acc.x, y: offset.y }
+            const childOffset = { x: acc.x, y: offsetY(childLayout) }
             acc.children.push(child.geometry(childLayout, childOffset))
             acc.x += childLayout.size.width
             return acc
@@ -80,7 +90,7 @@ export class Row {
 }
 
 interface Properties {
-    readonly crossAxisAlignment?: Alignment
+    readonly crossAxisAlignment?: CrossAxisAlignment
 }
 
 type Overload = {
@@ -92,5 +102,5 @@ export const row: Overload = (...args: any[]): Row => {
     const [properties, children] = (() =>
         args[0] instanceof Array ? [{}, args[0]] : [args[0], args[1]]
     )()
-    return new Row(properties.crossAxisAlignment ?? Alignment.START, children)
+    return new Row(properties.crossAxisAlignment ?? CrossAxisAlignment.START, children)
 }

@@ -1,4 +1,4 @@
-export enum Alignment {
+export enum CrossAxisAlignment {
     START,
     CENTER,
     END

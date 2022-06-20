@@ -1,9 +1,6 @@
-import { Batch, batchGeometry } from "../batchGeometry";
-import { layerGeometry } from "../layerGeometry";
+import { Batch } from "../batchGeometry";
 import { Size } from "../layout";
 import { Mat3 } from "../linear_algebra";
-import { reduce } from "../reduce";
-import { UI } from "../ui";
 
 interface Attribute {
     location: number

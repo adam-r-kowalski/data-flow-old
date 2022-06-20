@@ -5,6 +5,8 @@ import { reduce } from "../src/reduce"
 import { container, containerGeometry, containerLayout } from "../src/ui/container"
 import { column, columnGeometry, columnLayout } from "../src/ui/column"
 import { CrossAxisAlignment, MainAxisAlignment } from "../src/alignment"
+import { render } from "../src/render"
+import { mockRenderer } from "../src/renderer/mock"
 
 test("column layout", () => {
     const ui = column([
@@ -206,6 +208,58 @@ test("column batch", () => {
     ]
     expect(batches).toEqual(expectedBatches)
 })
+
+test("column render", () => {
+    const renderer = mockRenderer({ width: 500, height: 500 })
+    const ui = column([
+        container({
+            width: 50,
+            height: 50,
+            color: rgba(255, 0, 0, 255)
+        }),
+        container({
+            width: 50,
+            height: 50,
+            color: rgba(0, 255, 0, 255)
+        })
+    ])
+    render(renderer, ui)
+    expect(renderer.clearCount).toEqual(1)
+    expect(renderer.batches).toEqual([
+        {
+            vertices: [
+                0, 0,
+                0, 50,
+                50, 0,
+                50, 50,
+
+                0, 50,
+                0, 100,
+                50, 50,
+                50, 100,
+            ],
+            colors: [
+                255, 0, 0, 255,
+                255, 0, 0, 255,
+                255, 0, 0, 255,
+                255, 0, 0, 255,
+
+                0, 255, 0, 255,
+                0, 255, 0, 255,
+                0, 255, 0, 255,
+                0, 255, 0, 255,
+            ],
+            vertexIndices: [
+                0, 1, 2,
+                1, 2, 3,
+
+                4, 5, 6,
+                5, 6, 7
+            ]
+        }
+    ])
+})
+
 
 test("column cross axis alignment start layout", () => {
     const ui = column({ crossAxisAlignment: CrossAxisAlignment.START }, [

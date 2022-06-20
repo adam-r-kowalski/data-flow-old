@@ -1,6 +1,5 @@
 import { batchGeometry } from "./batchGeometry"
 import { layerGeometry } from "./layerGeometry"
-import { Mat3 } from "./linear_algebra"
 import { reduce } from "./reduce"
 import { Renderer } from "./renderer"
 import { UI } from "./ui"
@@ -19,7 +18,6 @@ export const render = (renderer: Renderer, ui: UI) => {
     const geometry = ui.geometry(layout, offsets)
     const layers = reduce(ui, layout, geometry, layerGeometry)
     const batches = batchGeometry(layers)
-    renderer.projection = Mat3.projection(width, height)
     for (const batch of batches) {
         renderer.draw(batch)
     }

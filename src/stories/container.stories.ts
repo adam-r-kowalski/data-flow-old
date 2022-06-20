@@ -1,6 +1,7 @@
 import { rgba } from "../color"
 import { padding } from "../padding"
-import { webGL2Renderer } from "../renderer"
+import { render } from "../render"
+import { webGL2Renderer } from "../renderer/webgl2"
 import { container } from "../ui/container"
 
 export default {
@@ -14,8 +15,8 @@ export const singleContainer = () => {
         height: 50,
         color: rgba(255, 0, 0, 255)
     })
-    renderer.render(ui)
-    return renderer.element
+    render(renderer, ui)
+    return renderer.canvas
 }
 
 export const nestedContainer = () => {
@@ -25,8 +26,8 @@ export const nestedContainer = () => {
         height: 50,
         color: rgba(255, 0, 0, 255)
     }))
-    renderer.render(ui)
-    return renderer.element
+    render(renderer, ui)
+    return renderer.canvas
 }
 
 export const nestedContainerWithColor = () => {
@@ -34,6 +35,6 @@ export const nestedContainerWithColor = () => {
     const ui = container({ padding: padding(20), color: rgba(255, 0, 0, 255) },
         container({ padding: padding(20), color: rgba(0, 255, 0, 255) },
             container({ width: 50, height: 50, color: rgba(0, 0, 255, 255) })))
-    renderer.render(ui)
-    return renderer.element
+    render(renderer, ui)
+    return renderer.canvas
 }

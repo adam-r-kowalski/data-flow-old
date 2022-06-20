@@ -1,8 +1,9 @@
 import { rgba } from "../color"
-import { webGL2Renderer } from "../renderer"
+import { webGL2Renderer } from "../renderer/webgl2"
 import { container } from "../ui/container"
 import { column } from "../ui/column"
 import { CrossAxisAlignment, MainAxisAlignment } from "../alignment"
+import { render } from "../render"
 
 export default {
     title: 'column'
@@ -27,8 +28,8 @@ export const columnWithThreeContainers = () => {
             color: rgba(0, 0, 255, 255)
         })
     ])
-    renderer.render(ui)
-    return renderer.element
+    render(renderer, ui)
+    return renderer.canvas
 }
 
 export const columnCrossAxisAlignmentStart = () => {
@@ -50,8 +51,8 @@ export const columnCrossAxisAlignmentStart = () => {
             color: rgba(0, 0, 255, 255)
         })
     ])
-    renderer.render(ui)
-    return renderer.element
+    render(renderer, ui)
+    return renderer.canvas
 }
 
 export const columnCrossAxisAlignmentCenter = () => {
@@ -73,8 +74,8 @@ export const columnCrossAxisAlignmentCenter = () => {
             color: rgba(0, 0, 255, 255)
         })
     ])
-    renderer.render(ui)
-    return renderer.element
+    render(renderer, ui)
+    return renderer.canvas
 }
 
 export const columnCrossAxisAlignmentEnd = () => {
@@ -96,8 +97,8 @@ export const columnCrossAxisAlignmentEnd = () => {
             color: rgba(0, 0, 255, 255)
         })
     ])
-    renderer.render(ui)
-    return renderer.element
+    render(renderer, ui)
+    return renderer.canvas
 }
 
 export const columnMainAxisAlignmentStart = () => {
@@ -119,8 +120,8 @@ export const columnMainAxisAlignmentStart = () => {
             color: rgba(0, 0, 255, 255)
         })
     ])
-    renderer.render(ui)
-    return renderer.element
+    render(renderer, ui)
+    return renderer.canvas
 }
 
 export const columnMainAxisAlignmentCenter = () => {
@@ -142,8 +143,8 @@ export const columnMainAxisAlignmentCenter = () => {
             color: rgba(0, 0, 255, 255)
         })
     ])
-    renderer.render(ui)
-    return renderer.element
+    render(renderer, ui)
+    return renderer.canvas
 }
 
 export const columnMainAxisAlignmentEnd = () => {
@@ -165,8 +166,8 @@ export const columnMainAxisAlignmentEnd = () => {
             color: rgba(0, 0, 255, 255)
         })
     ])
-    renderer.render(ui)
-    return renderer.element
+    render(renderer, ui)
+    return renderer.canvas
 }
 
 export const columnMainAxisAlignmentSpaceEvenly = () => {
@@ -188,8 +189,8 @@ export const columnMainAxisAlignmentSpaceEvenly = () => {
             color: rgba(0, 0, 255, 255)
         })
     ])
-    renderer.render(ui)
-    return renderer.element
+    render(renderer, ui)
+    return renderer.canvas
 }
 
 export const columnMainAxisAlignmentSpaceBetween = () => {
@@ -211,8 +212,8 @@ export const columnMainAxisAlignmentSpaceBetween = () => {
             color: rgba(0, 0, 255, 255)
         })
     ])
-    renderer.render(ui)
-    return renderer.element
+    render(renderer, ui)
+    return renderer.canvas
 }
 
 export const columnMainAxisAlignmentCenterCrossAxisAlignmentCenter = () => {
@@ -234,6 +235,6 @@ export const columnMainAxisAlignmentCenterCrossAxisAlignmentCenter = () => {
             color: rgba(0, 0, 255, 255)
         })
     ])
-    renderer.render(ui)
-    return renderer.element
+    render(renderer, ui)
+    return renderer.canvas
 }

@@ -1,6 +1,7 @@
 import { CrossAxisAlignment, MainAxisAlignment } from "../alignment"
 import { rgba } from "../color"
-import { webGL2Renderer } from "../renderer"
+import { render } from "../render"
+import { webGL2Renderer } from "../renderer/webgl2"
 import { container } from "../ui/container"
 import { row } from "../ui/row"
 
@@ -27,8 +28,8 @@ export const rowWithThreeContainers = () => {
             color: rgba(0, 0, 255, 255)
         })
     ])
-    renderer.render(ui)
-    return renderer.element
+    render(renderer, ui)
+    return renderer.canvas
 }
 
 export const rowCrossAxisAlignmentStart = () => {
@@ -50,8 +51,8 @@ export const rowCrossAxisAlignmentStart = () => {
             color: rgba(0, 0, 255, 255)
         })
     ])
-    renderer.render(ui)
-    return renderer.element
+    render(renderer, ui)
+    return renderer.canvas
 }
 
 export const rowCrossAxisAlignmentCenter = () => {
@@ -73,8 +74,8 @@ export const rowCrossAxisAlignmentCenter = () => {
             color: rgba(0, 0, 255, 255)
         })
     ])
-    renderer.render(ui)
-    return renderer.element
+    render(renderer, ui)
+    return renderer.canvas
 }
 
 export const rowCrossAxisAlignmentEnd = () => {
@@ -96,8 +97,8 @@ export const rowCrossAxisAlignmentEnd = () => {
             color: rgba(0, 0, 255, 255)
         })
     ])
-    renderer.render(ui)
-    return renderer.element
+    render(renderer, ui)
+    return renderer.canvas
 }
 
 export const rowMainAxisAlignmentStart = () => {
@@ -119,8 +120,8 @@ export const rowMainAxisAlignmentStart = () => {
             color: rgba(0, 0, 255, 255)
         })
     ])
-    renderer.render(ui)
-    return renderer.element
+    render(renderer, ui)
+    return renderer.canvas
 }
 
 export const rowMainAxisAlignmentCenter = () => {
@@ -142,8 +143,8 @@ export const rowMainAxisAlignmentCenter = () => {
             color: rgba(0, 0, 255, 255)
         })
     ])
-    renderer.render(ui)
-    return renderer.element
+    render(renderer, ui)
+    return renderer.canvas
 }
 
 export const rowMainAxisAlignmentEnd = () => {
@@ -165,8 +166,8 @@ export const rowMainAxisAlignmentEnd = () => {
             color: rgba(0, 0, 255, 255)
         })
     ])
-    renderer.render(ui)
-    return renderer.element
+    render(renderer, ui)
+    return renderer.canvas
 }
 
 export const rowMainAxisAlignmentSpaceEvenly = () => {
@@ -188,8 +189,8 @@ export const rowMainAxisAlignmentSpaceEvenly = () => {
             color: rgba(0, 0, 255, 255)
         })
     ])
-    renderer.render(ui)
-    return renderer.element
+    render(renderer, ui)
+    return renderer.canvas
 }
 
 export const rowMainAxisAlignmentSpaceBetween = () => {
@@ -211,10 +212,9 @@ export const rowMainAxisAlignmentSpaceBetween = () => {
             color: rgba(0, 0, 255, 255)
         })
     ])
-    renderer.render(ui)
-    return renderer.element
+    render(renderer, ui)
+    return renderer.canvas
 }
-
 
 export const rowMainAxisAlignmentCenterCrossAxisAlignmentCenter = () => {
     const renderer = webGL2Renderer({ width: 500, height: 500 })
@@ -235,6 +235,6 @@ export const rowMainAxisAlignmentCenterCrossAxisAlignmentCenter = () => {
             color: rgba(0, 0, 255, 255)
         })
     ])
-    renderer.render(ui)
-    return renderer.element
+    render(renderer, ui)
+    return renderer.canvas
 }

@@ -1,9 +1,9 @@
-import { batchGeometry } from "./batchGeometry";
-import { layerGeometry } from "./layerGeometry";
-import { Size } from "./layout";
-import { Mat3 } from "./linear_algebra";
-import { reduce } from "./reduce";
-import { UI } from "./ui";
+import { Batch, batchGeometry } from "../batchGeometry";
+import { layerGeometry } from "../layerGeometry";
+import { Size } from "../layout";
+import { Mat3 } from "../linear_algebra";
+import { reduce } from "../reduce";
+import { UI } from "../ui";
 
 interface Attribute {
     location: number
@@ -29,39 +29,44 @@ interface Program {
 }
 
 export class WebGL2Renderer {
+    _size: Size
+
     constructor(
-        public element: HTMLCanvasElement,
+        public canvas: HTMLCanvasElement,
         public gl: WebGL2RenderingContext,
-        public size: Size,
         public program: Program
     ) { }
 
-    render(ui: UI) {
-        const { gl, program, size } = this
-        const { attributes, uniforms } = program
-        const { width, height } = size
+    clear() {
+        const { gl } = this
         gl.clear(gl.COLOR_BUFFER_BIT)
-        const constraints = {
-            minWidth: 0,
-            maxWidth: width,
-            minHeight: 0,
-            maxHeight: height
-        }
-        const layout = ui.layout(constraints)
-        const offsets = { x: 0, y: 0 }
-        const geometry = ui.geometry(layout, offsets)
-        const layers = reduce(ui, layout, geometry, layerGeometry)
-        const batches = batchGeometry(layers)
-        gl.uniformMatrix3fv(uniforms.projection, /*transpose*/true, Mat3.projection(width, height).data)
-        for (const { vertices, colors, vertexIndices } of batches) {
-            gl.bindBuffer(gl.ARRAY_BUFFER, attributes.vertices.buffer)
-            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW)
-            gl.bindBuffer(gl.ARRAY_BUFFER, attributes.colors.buffer)
-            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW)
-            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, attributes.vertexIndices)
-            gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(vertexIndices), gl.STATIC_DRAW)
-            gl.drawElements(gl.TRIANGLES, /*count*/vertexIndices.length, /*type*/gl.UNSIGNED_SHORT, /*offset*/0)
-        }
+    }
+
+    set size(size: Size) {
+        const { gl, program } = this
+        const { uniforms } = program
+        const { canvas } = gl
+        gl.uniformMatrix3fv(uniforms.projection, /*transpose*/true, Mat3.projection(size).data)
+        canvas.width = size.width * window.devicePixelRatio
+        canvas.height = size.height * window.devicePixelRatio
+        canvas.style.width = `${size.width}px`
+        canvas.style.height = `${size.height}px`
+        gl.viewport(0, 0, canvas.width, canvas.height)
+        this._size = size
+    }
+
+    get size() { return this._size }
+
+    draw({ vertices, colors, vertexIndices }: Batch) {
+        const { gl, program } = this
+        const { attributes } = program
+        gl.bindBuffer(gl.ARRAY_BUFFER, attributes.vertices.buffer)
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW)
+        gl.bindBuffer(gl.ARRAY_BUFFER, attributes.colors.buffer)
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW)
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, attributes.vertexIndices)
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(vertexIndices), gl.STATIC_DRAW)
+        gl.drawElements(gl.TRIANGLES, /*count*/vertexIndices.length, /*type*/gl.UNSIGNED_SHORT, /*offset*/0)
     }
 }
 
@@ -174,10 +179,6 @@ const createProgram = (gl: WebGL2RenderingContext): Program => {
 
 export const webGL2Renderer = (size: Size) => {
     const canvas = document.createElement('canvas')
-    canvas.width = size.width * window.devicePixelRatio
-    canvas.height = size.height * window.devicePixelRatio
-    canvas.style.width = `${size.width}px`
-    canvas.style.height = `${size.height}px`
     canvas.style.touchAction = 'none'
     const gl = canvas.getContext('webgl2')!
     gl.enable(gl.BLEND)
@@ -185,7 +186,8 @@ export const webGL2Renderer = (size: Size) => {
     gl.depthMask(false)
     gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true)
     gl.clearColor(0, 0, 0, 1)
-    gl.viewport(0, 0, canvas.width, canvas.height)
     const program = createProgram(gl)
-    return new WebGL2Renderer(canvas, gl, size, program)
+    const renderer = new WebGL2Renderer(canvas, gl, program)
+    renderer.size = size
+    return renderer
 }

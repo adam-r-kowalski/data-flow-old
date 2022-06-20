@@ -1,7 +1,8 @@
 import { rgba } from "../color"
-import { webGL2Renderer } from "../renderer"
+import { webGL2Renderer } from "../renderer/webgl2"
 import { container } from "../ui/container"
 import { center } from "../ui/center"
+import { render } from "../render"
 
 export default {
     title: 'center'
@@ -16,6 +17,6 @@ export const centeredContainer = () => {
             color: rgba(255, 0, 0, 255)
         })
     )
-    renderer.render(ui)
-    return renderer.element
+    render(renderer, ui)
+    return renderer.canvas
 }

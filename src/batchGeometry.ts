@@ -1,12 +1,12 @@
 import { Layers } from "./layerGeometry";
 
-interface Batch {
+export interface Batch {
     vertices: number[]
     colors: number[]
     vertexIndices: number[]
 }
 
-export const batchGeometry = (layers: Layers) => {
+export const batchGeometry = (layers: Layers): Batch[] => {
     const batch: Batch = {
         vertices: [],
         colors: [],

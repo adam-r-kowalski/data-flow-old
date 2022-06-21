@@ -4,6 +4,7 @@ import { padding } from '../src/padding'
 import { layerGeometry } from '../src/layerGeometry'
 import { reduce } from '../src/reduce'
 import { batchGeometry } from '../src/batchGeometry'
+import { mockMeasureText } from '../src/renderer/mock'
 
 test("container layout", () => {
     const ui = container({
@@ -12,7 +13,7 @@ test("container layout", () => {
         color: rgba(255, 0, 0, 255)
     })
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
-    const layout = ui.layout(constraints)
+    const layout = ui.layout(constraints, mockMeasureText)
     const expectedLayout = containerLayout({ width: 50, height: 50 })
     expect(layout).toEqual(expectedLayout)
 })
@@ -24,7 +25,7 @@ test("container geometry", () => {
         color: rgba(255, 0, 0, 255)
     })
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
-    const layout = ui.layout(constraints)
+    const layout = ui.layout(constraints, mockMeasureText)
     const offsets = { x: 0, y: 0 }
     const geometry = ui.geometry(layout, offsets)
     const expectedGeometry = containerGeometry({
@@ -56,7 +57,7 @@ test("container layers", () => {
         color: rgba(255, 0, 0, 255)
     })
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
-    const layout = ui.layout(constraints)
+    const layout = ui.layout(constraints, mockMeasureText)
     const offsets = { x: 0, y: 0 }
     const geometry = ui.geometry(layout, offsets)
     const layers = reduce(ui, layout, geometry, layerGeometry)
@@ -93,7 +94,7 @@ test("container batches", () => {
         color: rgba(255, 0, 0, 255)
     })
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
-    const layout = ui.layout(constraints)
+    const layout = ui.layout(constraints, mockMeasureText)
     const offsets = { x: 0, y: 0 }
     const geometry = ui.geometry(layout, offsets)
     const layers = reduce(ui, layout, geometry, layerGeometry)
@@ -130,7 +131,7 @@ test("container within container layout", () => {
             color: rgba(255, 0, 0, 255)
         }))
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
-    const layout = ui.layout(constraints)
+    const layout = ui.layout(constraints, mockMeasureText)
     const expectedLayout = containerLayout({ width: 60, height: 60 },
         containerLayout({ width: 50, height: 50 }))
     expect(layout).toEqual(expectedLayout)
@@ -144,7 +145,7 @@ test("container within container geometry", () => {
             color: rgba(255, 0, 0, 255)
         }))
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
-    const layout = ui.layout(constraints)
+    const layout = ui.layout(constraints, mockMeasureText)
     const offsets = { x: 0, y: 0 }
     const geometry = ui.geometry(layout, offsets)
     const expectedGeometry = containerGeometry({ position: { x: 0, y: 0 } },
@@ -178,7 +179,7 @@ test("container within container layers", () => {
             color: rgba(255, 0, 0, 255)
         }))
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
-    const layout = ui.layout(constraints)
+    const layout = ui.layout(constraints, mockMeasureText)
     const offsets = { x: 0, y: 0 }
     const geometry = ui.geometry(layout, offsets)
     const layers = reduce(ui, layout, geometry, layerGeometry)
@@ -217,7 +218,7 @@ test("container within container batches", () => {
             color: rgba(255, 0, 0, 255)
         }))
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
-    const layout = ui.layout(constraints)
+    const layout = ui.layout(constraints, mockMeasureText)
     const offsets = { x: 0, y: 0 }
     const geometry = ui.geometry(layout, offsets)
     const layers = reduce(ui, layout, geometry, layerGeometry)

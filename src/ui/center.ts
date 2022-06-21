@@ -1,6 +1,6 @@
 import { Geometry, Offset, Position } from "../geometry"
 import { Constraints, Layout, Size } from "../layout"
-import { Entry, UI } from "../ui"
+import { Entry, MeasureText, UI } from "../ui"
 
 export class CenterLayout {
     constructor(
@@ -28,8 +28,8 @@ export const centerGeometry = (position: Position, child: Geometry) =>
 export class Center {
     constructor(readonly child: UI) { }
 
-    layout(constraints: Constraints) {
-        const layout = this.child.layout(constraints)
+    layout(constraints: Constraints, measureText: MeasureText) {
+        const layout = this.child.layout(constraints, measureText)
         const width = constraints.maxWidth
         const height = constraints.maxHeight
         return centerLayout({ width, height }, layout)

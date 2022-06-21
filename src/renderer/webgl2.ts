@@ -1,6 +1,7 @@
 import { Batch } from "../batchGeometry";
 import { Size } from "../layout";
 import { Mat3 } from "../linear_algebra";
+import { Font } from "../ui";
 
 interface Attribute {
     location: number
@@ -65,6 +66,8 @@ export class WebGL2Renderer {
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(vertexIndices), gl.STATIC_DRAW)
         gl.drawElements(gl.TRIANGLES, /*count*/vertexIndices.length, /*type*/gl.UNSIGNED_SHORT, /*offset*/0)
     }
+
+    measureText(font: Font, str: string) { return { width: 10, height: 10 } }
 }
 
 

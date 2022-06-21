@@ -1,5 +1,5 @@
 import { Geometry, Offset } from "../geometry";
-import { Constraints, Layout, Size } from "../layout";
+import { Constraints, Layout } from "../layout";
 
 export interface Entry {
     readonly ui: UI
@@ -13,10 +13,10 @@ export interface Font {
     readonly size: number
 }
 
-export type MeasureText = (font: Font, str: string) => Size
+export type TextWidth = (font: Font, str: string) => number[]
 
 export interface UI {
-    layout: (constraints: Constraints, measureText: MeasureText) => Layout
+    layout: (constraints: Constraints, textWidth: TextWidth) => Layout
     geometry: (layout: Layout, offset: Offset) => Geometry
     traverse: (layout: Layout, geometry: Geometry, z: number) => Generator<Entry>
 }

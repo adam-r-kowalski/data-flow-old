@@ -1,13 +1,16 @@
-import { MeasureText, Font } from "."
+import { TextWidth, Font } from "."
 import { Color, rgba } from "../color"
 import { Constraints, Size } from "../layout"
 
 export class TextLayout {
-    constructor(readonly size: Size) { }
+    constructor(
+        readonly widths: number[],
+        readonly size: Size
+    ) { }
 }
 
-export const textLayout = (size: Size) =>
-    new TextLayout(size)
+export const textLayout = (widths: number[], size: Size) =>
+    new TextLayout(widths, size)
 
 export class Text {
     constructor(
@@ -16,9 +19,12 @@ export class Text {
         readonly str: string
     ) { }
 
-    layout(_: Constraints, measureText: MeasureText) {
+    layout(_: Constraints, textWidth: TextWidth) {
         const { font, str } = this
-        return textLayout(measureText(font, str))
+        const widths = textWidth(font, str)
+        const width = widths.reduce((acc, width) => acc + width)
+        const size = { width, height: font.size }
+        return textLayout(widths, size)
     }
 }
 

@@ -6,5 +6,5 @@ export interface Renderer {
     size: Size
     clear: () => void
     draw: (batch: Batch) => void
-    measureText: (font: Font, str: string) => Size
+    textWidth: (font: Font, str: string) => number[]
 }

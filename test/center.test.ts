@@ -4,7 +4,7 @@ import { layerGeometry } from '../src/layerGeometry'
 import { reduce } from '../src/reduce'
 import { batchGeometry } from '../src/batchGeometry'
 import { center, centerGeometry, centerLayout } from '../src/ui/center'
-import { mockMeasureText } from '../src/renderer/mock'
+import { mockTextWidth } from '../src/renderer/mock'
 
 
 test("center layout", () => {
@@ -15,7 +15,7 @@ test("center layout", () => {
             color: rgba(255, 0, 0, 255)
         }))
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
-    const layout = ui.layout(constraints, mockMeasureText)
+    const layout = ui.layout(constraints, mockTextWidth)
     const expectedLayout = centerLayout({ width: 100, height: 100 },
         containerLayout({ width: 50, height: 50 }))
     expect(layout).toEqual(expectedLayout)
@@ -29,7 +29,7 @@ test("center geometry", () => {
             color: rgba(255, 0, 0, 255)
         }))
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
-    const layout = ui.layout(constraints, mockMeasureText)
+    const layout = ui.layout(constraints, mockTextWidth)
     const offsets = { x: 0, y: 0 }
     const geometry = ui.geometry(layout, offsets)
     const expectedGeometry = centerGeometry({ x: 0, y: 0 },
@@ -63,7 +63,7 @@ test("center layers", () => {
             color: rgba(255, 0, 0, 255)
         }))
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
-    const layout = ui.layout(constraints, mockMeasureText)
+    const layout = ui.layout(constraints, mockTextWidth)
     const offsets = { x: 0, y: 0 }
     const geometry = ui.geometry(layout, offsets)
     const layers = reduce(ui, layout, geometry, layerGeometry)
@@ -101,7 +101,7 @@ test("center batches", () => {
             color: rgba(255, 0, 0, 255)
         }))
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
-    const layout = ui.layout(constraints, mockMeasureText)
+    const layout = ui.layout(constraints, mockTextWidth)
     const offsets = { x: 0, y: 0 }
     const geometry = ui.geometry(layout, offsets)
     const layers = reduce(ui, layout, geometry, layerGeometry)

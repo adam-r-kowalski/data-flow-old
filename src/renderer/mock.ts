@@ -2,8 +2,8 @@ import { Batch } from "../batchGeometry"
 import { Size } from "../layout"
 import { Font } from "../ui"
 
-export const mockMeasureText = (font: Font, str: string): Size =>
-    ({ width: str.length * font.size, height: font.size })
+export const mockTextWidth = (font: Font, str: string): number[] =>
+    Array.from<number>({ length: str.length }).fill(font.size)
 
 export class MockRenderer {
     constructor(
@@ -20,8 +20,8 @@ export class MockRenderer {
         this.batches.push(batch)
     }
 
-    measureText(font: Font, str: string) {
-        return mockMeasureText(font, str)
+    textWidth(font: Font, str: string) {
+        return mockTextWidth(font, str)
     }
 }
 

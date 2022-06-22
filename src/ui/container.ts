@@ -17,8 +17,10 @@ export const containerLayout = (size: Size, child?: Layout) =>
 export class ContainerGeometry {
     constructor(
         readonly position: Position,
-        readonly vertices: number[],
+        readonly textureIndex: number,
+        readonly textureCoordinates: number[],
         readonly colors: number[],
+        readonly vertices: number[],
         readonly vertexIndices: number[],
         readonly child?: Geometry
     ) { }
@@ -26,16 +28,20 @@ export class ContainerGeometry {
 
 interface GeometryData {
     readonly position: Position
-    readonly vertices?: number[]
+    readonly textureIndex?: number
+    readonly textureCoordinates?: number[]
     readonly colors?: number[]
+    readonly vertices?: number[]
     readonly vertexIndices?: number[]
 }
 
 export const containerGeometry = (data: GeometryData, child?: Geometry) =>
     new ContainerGeometry(
         data.position,
-        data.vertices ?? [],
+        data.textureIndex ?? 0,
+        data.textureCoordinates ?? [],
         data.colors ?? [],
+        data.vertices ?? [],
         data.vertexIndices ?? [],
         child
     )

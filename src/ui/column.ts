@@ -17,15 +17,17 @@ export const columnLayout = (size: Size, totalChildHeight: number, children: Lay
 export class ColumnGeometry {
     constructor(
         readonly position: Position,
-        readonly vertices: number[],
+        readonly textureIndex: number,
+        readonly textureCoordinates: number[],
         readonly colors: number[],
+        readonly vertices: number[],
         readonly vertexIndices: number[],
         readonly children: Geometry[]
     ) { }
 }
 
 export const columnGeometry = (position: Position, children: Geometry[]) =>
-    new ColumnGeometry(position, [], [], [], children)
+    new ColumnGeometry(position, 0, [], [], [], [], children)
 
 export class Column {
     constructor(

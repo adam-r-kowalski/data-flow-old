@@ -15,15 +15,17 @@ export const centerLayout = (size: Size, child: Layout) =>
 export class CenterGeometry {
     constructor(
         readonly position: Position,
-        readonly vertices: number[],
+        readonly textureIndex: number,
+        readonly textureCoordinates: number[],
         readonly colors: number[],
+        readonly vertices: number[],
         readonly vertexIndices: number[],
         readonly child: Geometry
     ) { }
 }
 
 export const centerGeometry = (position: Position, child: Geometry) =>
-    new CenterGeometry(position, [], [], [], child)
+    new CenterGeometry(position, 0, [], [], [], [], child)
 
 export class Center {
     constructor(readonly child: UI) { }

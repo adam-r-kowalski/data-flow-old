@@ -10,7 +10,9 @@ export interface Position {
 
 export interface Geometry {
     position: Position
-    vertices: number[]
+    textureIndex: number
+    textureCoordinates: number[]
     colors: number[]
+    vertices: number[]
     vertexIndices: number[]
 }

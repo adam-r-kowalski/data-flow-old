@@ -17,15 +17,17 @@ export const rowLayout = (size: Size, totalChildWidth: number, children: Layout[
 export class RowGeometry {
     constructor(
         readonly position: Position,
-        readonly vertices: number[],
+        readonly textureIndex: number,
+        readonly textureCoordinates: number[],
         readonly colors: number[],
+        readonly vertices: number[],
         readonly vertexIndices: number[],
         readonly children: Geometry[]
     ) { }
 }
 
 export const rowGeometry = (position: Position, children: Geometry[]) =>
-    new RowGeometry(position, [], [], [], children)
+    new RowGeometry(position, 0, [], [], [], [], children)
 
 export class Row {
     constructor(

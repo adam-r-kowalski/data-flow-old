@@ -67,7 +67,13 @@ export class WebGL2Renderer {
         gl.drawElements(gl.TRIANGLES, /*count*/vertexIndices.length, /*type*/gl.UNSIGNED_SHORT, /*offset*/0)
     }
 
-    textWidth(font: Font, str: string) { return [] }
+    measureText(font: Font, str: string) {
+        return {
+            widths: [],
+            textureIndex: 0,
+            textureCoordinates: [],
+        }
+    }
 }
 
 

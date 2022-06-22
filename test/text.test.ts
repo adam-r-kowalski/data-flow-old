@@ -9,20 +9,23 @@ test("text layout", () => {
         widths: [24, 24, 24],
         textureIndex: 1,
         textureCoordinates: [
-            0, 0,
-            0, 1,
-            1, 0,
-            1, 1,
+            [
+                0, 0,
+                0, 1,
+                1, 0,
+                1, 1,
+            ], [
+                1, 0,
+                1, 1,
+                2, 0,
+                2, 1,
+            ], [
+                2, 0,
+                2, 1,
+                3, 0,
+                3, 1,
+            ]
 
-            1, 0,
-            1, 1,
-            2, 0,
-            2, 1,
-
-            2, 0,
-            2, 1,
-            3, 0,
-            3, 1,
         ]
     }
     const expectedLayout = textLayout(measurements, { width: 24 * 3, height: 24 })

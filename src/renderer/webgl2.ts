@@ -1,7 +1,7 @@
 import { Batch } from "../batchGeometry";
 import { Size } from "../layout";
 import { Mat3 } from "../linear_algebra";
-import { Font } from "../ui";
+import { Font, TextMeasurements } from "../ui";
 
 interface Attribute {
     location: number
@@ -26,13 +26,90 @@ interface Program {
     uniforms: Uniforms
 }
 
+type DevicePixelRatio = number
+
+const nearestPowerOfTwo = (x: number): number => {
+    let current = 1
+    while (current < x) {
+        current <<= 1
+    }
+    return current
+}
+
+const createTextMeasurements = (gl: WebGL2RenderingContext, font: Font, dpr: DevicePixelRatio) => {
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d')!
+    const totalCells = 256
+    const rows = Math.sqrt(totalCells)
+    const size = nearestPowerOfTwo(font.size * rows)
+    const cellSize = size / rows
+    canvas.width = size * dpr
+    canvas.height = size * dpr
+    canvas.style.width = `${size}px`
+    canvas.style.height = `${size}px`
+    ctx.scale(dpr, dpr)
+    ctx.textAlign = 'left'
+    ctx.textBaseline = 'top'
+    ctx.font = font.family
+    ctx.fillStyle = 'white'
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+    const height = font.size
+    const widths: number[] = []
+    const textureCoordinates: number[][] = []
+    for (let i = 0; i < totalCells; ++i) {
+        const c = String.fromCharCode(i)
+        const metric = ctx.measureText(c)
+        const width = Math.ceil(metric.width)
+        const x = i % rows * cellSize
+        const y = Math.floor(i / rows) * cellSize
+        ctx.fillText(c, x, y)
+        widths.push(width)
+        const x0 = x / size
+        const x1 = (x + width) / size
+        const y0 = y / size
+        const y1 = (y + height) / size
+        textureCoordinates.push([
+            x0, y0,
+            x0, y1,
+            x1, y0,
+            x1, y1
+        ])
+    }
+    const texture = gl.createTexture()!
+    gl.bindTexture(gl.TEXTURE_2D, texture)
+    gl.texImage2D(
+        gl.TEXTURE_2D,
+      /*mipLevel*/0,
+      /*internalformat*/gl.RGBA,
+      /*srcFormat*/gl.RGBA,
+      /*srcType*/gl.UNSIGNED_BYTE,
+      /*source*/canvas
+    )
+    gl.generateMipmap(gl.TEXTURE_2D)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+    return { widths, textureCoordinates, texture }
+}
+
+const mapString = <T>(str: string, f: (c: string, i: number) => T): Array<T> => {
+    let result = []
+    for (let i = 0; i < str.length; ++i) {
+        result.push(f(str[i], i))
+    }
+    return result
+}
+
+type Key = [Font, DevicePixelRatio]
+
 export class WebGL2Renderer {
     _size: Size
 
     constructor(
         public canvas: HTMLCanvasElement,
         public gl: WebGL2RenderingContext,
-        public program: Program
+        public program: Program,
+        public textures: WebGLTexture[],
+        public textMeasurementsCache: Map<Key, TextMeasurements>,
     ) { }
 
     clear() {
@@ -68,10 +145,24 @@ export class WebGL2Renderer {
     }
 
     measureText(font: Font, str: string) {
+        const { gl } = this
+        const dpr = window.devicePixelRatio
+        const key: Key = [font, dpr]
+        const { widths, textureIndex, textureCoordinates } = (() => {
+            const measurements = this.textMeasurementsCache.get(key)
+            if (measurements) return measurements
+            const { texture, widths, textureCoordinates } = createTextMeasurements(gl, font, dpr)
+            const textureIndex = this.textures.length
+            this.textures.push(texture)
+            const newMeasurements = { widths, textureIndex, textureCoordinates }
+            this.textMeasurementsCache.set(key, newMeasurements)
+            return newMeasurements
+        })()
+        const indices = mapString(str, c => c.charCodeAt(0))
         return {
-            widths: [],
-            textureIndex: 0,
-            textureCoordinates: [],
+            widths: indices.map(i => widths[i]),
+            textureIndex,
+            textureCoordinates: indices.map(i => textureCoordinates[i]),
         }
     }
 }
@@ -193,7 +284,22 @@ export const webGL2Renderer = (size: Size) => {
     gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true)
     gl.clearColor(0, 0, 0, 1)
     const program = createProgram(gl)
-    const renderer = new WebGL2Renderer(canvas, gl, program)
+    const texture = gl.createTexture()!
+    gl.bindTexture(gl.TEXTURE_2D, texture)
+    gl.texImage2D(
+        gl.TEXTURE_2D,
+      /*mipLevel*/0,
+      /*internalformat*/gl.RGBA,
+      /*width*/1,
+      /*height*/1,
+      /*border*/0,
+      /*srcFormat*/gl.RGBA,
+      /*srcType*/gl.UNSIGNED_BYTE,
+      /*data*/new Uint8Array([255, 255, 255, 255])
+    )
+    const textures = [texture]
+    const textMeasurementsCache = new Map()
+    const renderer = new WebGL2Renderer(canvas, gl, program, textures, textMeasurementsCache)
     renderer.size = size
     return renderer
 }

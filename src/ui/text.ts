@@ -108,7 +108,7 @@ export class Text {
         return textGeometry({
             position: { x: offset.x, y: offset.y },
             textureIndex,
-            textureCoordinates,
+            textureCoordinates: textureCoordinates.flat(),
             colors: colors(widths.length, this.color),
             vertices: vertices(widths, this.font.size),
             vertexIndices: vertexIndices(widths.length)

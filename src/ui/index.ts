@@ -16,7 +16,7 @@ export interface Font {
 export interface TextMeasurements {
     widths: number[]
     textureIndex: number
-    textureCoordinates: number[]
+    textureCoordinates: number[][]
 }
 
 export type MeasureText = (font: Font, str: string) => TextMeasurements

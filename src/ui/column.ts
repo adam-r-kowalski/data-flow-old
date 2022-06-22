@@ -1,4 +1,4 @@
-import { Entry, TextWidth, UI } from "."
+import { Entry, MeasureText, UI } from "."
 import { CrossAxisAlignment, MainAxisAlignment } from "../alignment"
 import { Geometry, Offset, Position } from "../geometry"
 import { Constraints, Layout, Size } from "../layout"
@@ -34,7 +34,7 @@ export class Column {
         readonly children: UI[]
     ) { }
 
-    layout(constraints: Constraints, textWidth: TextWidth) {
+    layout(constraints: Constraints, measureText: MeasureText) {
         const initialChildren: Layout[] = []
         const initial = {
             children: initialChildren,
@@ -42,7 +42,7 @@ export class Column {
             totalChildHeight: 0
         }
         const result = this.children.reduce((acc, child) => {
-            const layout = child.layout(constraints, textWidth)
+            const layout = child.layout(constraints, measureText)
             acc.children.push(layout)
             acc.totalChildHeight += layout.size.height
             acc.width = Math.max(acc.width, layout.size.width)

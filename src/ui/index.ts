@@ -13,10 +13,16 @@ export interface Font {
     readonly size: number
 }
 
-export type TextWidth = (font: Font, str: string) => number[]
+export interface TextMeasurements {
+    widths: number[]
+    textureIndex: number
+    textureCoordinates: number[]
+}
+
+export type MeasureText = (font: Font, str: string) => TextMeasurements
 
 export interface UI {
-    layout: (constraints: Constraints, textWidth: TextWidth) => Layout
+    layout: (constraints: Constraints, measureText: MeasureText) => Layout
     geometry: (layout: Layout, offset: Offset) => Geometry
     traverse: (layout: Layout, geometry: Geometry, z: number) => Generator<Entry>
 }

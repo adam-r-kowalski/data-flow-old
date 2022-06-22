@@ -13,7 +13,7 @@ export const render = (renderer: Renderer, ui: UI) => {
         minHeight: 0,
         maxHeight: height
     }
-    const layout = ui.layout(constraints, renderer.textWidth)
+    const layout = ui.layout(constraints, renderer.measureText)
     const offsets = { x: 0, y: 0 }
     const geometry = ui.geometry(layout, offsets)
     const layers = reduce(ui, layout, geometry, layerGeometry)

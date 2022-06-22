@@ -2,7 +2,7 @@ import { Color } from "../color"
 import { Geometry, Offset, Position } from "../geometry"
 import { Constraints, Layout, Size } from "../layout"
 import { Padding, padding as paddingAll } from "../padding"
-import { Entry, TextWidth, UI } from "../ui"
+import { Entry, MeasureText, UI } from "../ui"
 
 export class ContainerLayout {
     constructor(
@@ -24,7 +24,7 @@ export class ContainerGeometry {
     ) { }
 }
 
-export interface GeometryData {
+interface GeometryData {
     readonly position: Position
     readonly vertices?: number[]
     readonly colors?: number[]
@@ -49,9 +49,9 @@ export class Container {
         readonly child?: UI
     ) { }
 
-    layout(constraints: Constraints, textWidth: TextWidth) {
+    layout(constraints: Constraints, measureText: MeasureText) {
         if (this.child) {
-            const layout = this.child.layout(constraints, textWidth)
+            const layout = this.child.layout(constraints, measureText)
             const { left, top } = this.padding
             const width = layout.size.width + left + this.padding.right
             const height = layout.size.height + top + this.padding.bottom

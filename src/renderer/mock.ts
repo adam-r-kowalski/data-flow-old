@@ -1,9 +1,25 @@
 import { Batch } from "../batchGeometry"
 import { Size } from "../layout"
-import { Font } from "../ui"
+import { Font, TextMeasurements } from "../ui"
 
-export const mockTextWidth = (font: Font, str: string): number[] =>
-    Array.from<number>({ length: str.length }).fill(font.size)
+export const mockMeasureText = (font: Font, str: string): TextMeasurements => {
+    const textureCoordinates: number[] = []
+    let offset = 0
+    for (const _ of str) {
+        textureCoordinates.push(
+            offset + 0, 0,
+            offset + 0, 1,
+            offset + 1, 0,
+            offset + 1, 1,
+        )
+        offset += 1
+    }
+    return {
+        widths: Array.from<number>({ length: str.length }).fill(font.size),
+        textureIndex: 1,
+        textureCoordinates
+    }
+}
 
 export class MockRenderer {
     constructor(
@@ -20,8 +36,8 @@ export class MockRenderer {
         this.batches.push(batch)
     }
 
-    textWidth(font: Font, str: string) {
-        return mockTextWidth(font, str)
+    measureText(font: Font, str: string) {
+        return mockMeasureText(font, str)
     }
 }
 

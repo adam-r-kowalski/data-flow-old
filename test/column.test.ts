@@ -6,7 +6,7 @@ import { container, containerGeometry, containerLayout } from "../src/ui/contain
 import { column, columnGeometry, columnLayout } from "../src/ui/column"
 import { CrossAxisAlignment, MainAxisAlignment } from "../src/alignment"
 import { render } from "../src/render"
-import { mockTextWidth, mockRenderer } from "../src/renderer/mock"
+import { mockMeasureText, mockRenderer } from "../src/renderer/mock"
 
 test("column layout", () => {
     const ui = column([
@@ -22,7 +22,7 @@ test("column layout", () => {
         })
     ])
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
-    const layout = ui.layout(constraints, mockTextWidth)
+    const layout = ui.layout(constraints, mockMeasureText)
     const expectedLayout = columnLayout({ width: 50, height: 100 }, 100, [
         containerLayout({ width: 50, height: 50 }),
         containerLayout({ width: 50, height: 50 }),
@@ -44,7 +44,7 @@ test("column geometry", () => {
         })
     ])
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
-    const layout = ui.layout(constraints, mockTextWidth)
+    const layout = ui.layout(constraints, mockMeasureText)
     const offsets = { x: 0, y: 0 }
     const geometry = ui.geometry(layout, offsets)
     const expectedGeometry = columnGeometry({ x: 0, y: 0 }, [
@@ -104,7 +104,7 @@ test("column layers", () => {
         })
     ])
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
-    const layout = ui.layout(constraints, mockTextWidth)
+    const layout = ui.layout(constraints, mockMeasureText)
     const offsets = { x: 0, y: 0 }
     const geometry = ui.geometry(layout, offsets)
     const layers = reduce(ui, layout, geometry, layerGeometry)
@@ -168,7 +168,7 @@ test("column batch", () => {
         })
     ])
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
-    const layout = ui.layout(constraints, mockTextWidth)
+    const layout = ui.layout(constraints, mockMeasureText)
     const offsets = { x: 0, y: 0 }
     const geometry = ui.geometry(layout, offsets)
     const layers = reduce(ui, layout, geometry, layerGeometry)
@@ -280,7 +280,7 @@ test("column cross axis alignment start layout", () => {
         })
     ])
     const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
-    const layout = ui.layout(constraints, mockTextWidth)
+    const layout = ui.layout(constraints, mockMeasureText)
     const expectedLayout = columnLayout({ width: 100, height: 200 }, 200, [
         containerLayout({ width: 50, height: 50 }),
         containerLayout({ width: 100, height: 100 }),
@@ -308,7 +308,7 @@ test("column cross axis alignment start geometry", () => {
         })
     ])
     const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
-    const layout = ui.layout(constraints, mockTextWidth)
+    const layout = ui.layout(constraints, mockMeasureText)
     const offsets = { x: 0, y: 0 }
     const geometry = ui.geometry(layout, offsets)
     const expectedGeometry = columnGeometry({ x: 0, y: 0 }, [
@@ -392,7 +392,7 @@ test("column cross axis alignment center layout", () => {
         })
     ])
     const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
-    const layout = ui.layout(constraints, mockTextWidth)
+    const layout = ui.layout(constraints, mockMeasureText)
     const expectedLayout = columnLayout({ width: 100, height: 200 }, 200, [
         containerLayout({ width: 50, height: 50 }),
         containerLayout({ width: 100, height: 100 }),
@@ -420,7 +420,7 @@ test("column cross axis alignment center geometry", () => {
         })
     ])
     const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
-    const layout = ui.layout(constraints, mockTextWidth)
+    const layout = ui.layout(constraints, mockMeasureText)
     const offsets = { x: 0, y: 0 }
     const geometry = ui.geometry(layout, offsets)
     const expectedGeometry = columnGeometry({ x: 0, y: 0 }, [
@@ -504,7 +504,7 @@ test("column cross axis alignment end layout", () => {
         })
     ])
     const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
-    const layout = ui.layout(constraints, mockTextWidth)
+    const layout = ui.layout(constraints, mockMeasureText)
     const expectedLayout = columnLayout({ width: 100, height: 200 }, 200, [
         containerLayout({ width: 50, height: 50 }),
         containerLayout({ width: 100, height: 100 }),
@@ -532,7 +532,7 @@ test("column cross axis alignment end geometry", () => {
         })
     ])
     const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
-    const layout = ui.layout(constraints, mockTextWidth)
+    const layout = ui.layout(constraints, mockMeasureText)
     const offsets = { x: 0, y: 0 }
     const geometry = ui.geometry(layout, offsets)
     const expectedGeometry = columnGeometry({ x: 0, y: 0 }, [
@@ -616,7 +616,7 @@ test("column main axis alignment start layout", () => {
         })
     ])
     const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
-    const layout = ui.layout(constraints, mockTextWidth)
+    const layout = ui.layout(constraints, mockMeasureText)
     const expectedLayout = columnLayout({ width: 100, height: 200 }, 200, [
         containerLayout({ width: 50, height: 50 }),
         containerLayout({ width: 100, height: 100 }),
@@ -644,7 +644,7 @@ test("column main axis alignment start geometry", () => {
         })
     ])
     const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
-    const layout = ui.layout(constraints, mockTextWidth)
+    const layout = ui.layout(constraints, mockMeasureText)
     const offsets = { x: 0, y: 0 }
     const geometry = ui.geometry(layout, offsets)
     const expectedGeometry = columnGeometry({ x: 0, y: 0 }, [
@@ -728,7 +728,7 @@ test("column main axis alignment center layout", () => {
         })
     ])
     const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
-    const layout = ui.layout(constraints, mockTextWidth)
+    const layout = ui.layout(constraints, mockMeasureText)
     const expectedLayout = columnLayout({ width: 100, height: 500 }, 200, [
         containerLayout({ width: 50, height: 50 }),
         containerLayout({ width: 100, height: 100 }),
@@ -756,7 +756,7 @@ test("column main axis alignment center geometry", () => {
         })
     ])
     const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
-    const layout = ui.layout(constraints, mockTextWidth)
+    const layout = ui.layout(constraints, mockMeasureText)
     const offsets = { x: 0, y: 0 }
     const geometry = ui.geometry(layout, offsets)
     const expectedGeometry = columnGeometry({ x: 0, y: 0 }, [
@@ -840,7 +840,7 @@ test("column main axis alignment end layout", () => {
         })
     ])
     const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
-    const layout = ui.layout(constraints, mockTextWidth)
+    const layout = ui.layout(constraints, mockMeasureText)
     const expectedLayout = columnLayout({ width: 100, height: 500 }, 200, [
         containerLayout({ width: 50, height: 50 }),
         containerLayout({ width: 100, height: 100 }),
@@ -868,7 +868,7 @@ test("column main axis alignment end geometry", () => {
         })
     ])
     const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
-    const layout = ui.layout(constraints, mockTextWidth)
+    const layout = ui.layout(constraints, mockMeasureText)
     const offsets = { x: 0, y: 0 }
     const geometry = ui.geometry(layout, offsets)
     const expectedGeometry = columnGeometry({ x: 0, y: 0 }, [
@@ -952,7 +952,7 @@ test("column main axis alignment space between layout", () => {
         })
     ])
     const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
-    const layout = ui.layout(constraints, mockTextWidth)
+    const layout = ui.layout(constraints, mockMeasureText)
     const expectedLayout = columnLayout({ width: 100, height: 500 }, 200, [
         containerLayout({ width: 50, height: 50 }),
         containerLayout({ width: 100, height: 100 }),
@@ -980,7 +980,7 @@ test("column main axis alignment space between geometry", () => {
         })
     ])
     const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
-    const layout = ui.layout(constraints, mockTextWidth)
+    const layout = ui.layout(constraints, mockMeasureText)
     const offsets = { x: 0, y: 0 }
     const geometry = ui.geometry(layout, offsets)
     const expectedGeometry = columnGeometry({ x: 0, y: 0 }, [
@@ -1064,7 +1064,7 @@ test("column main axis alignment space evenly layout", () => {
         })
     ])
     const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
-    const layout = ui.layout(constraints, mockTextWidth)
+    const layout = ui.layout(constraints, mockMeasureText)
     const expectedLayout = columnLayout({ width: 100, height: 500 }, 200, [
         containerLayout({ width: 50, height: 50 }),
         containerLayout({ width: 100, height: 100 }),
@@ -1092,7 +1092,7 @@ test("column main axis alignment space evenly geometry", () => {
         })
     ])
     const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
-    const layout = ui.layout(constraints, mockTextWidth)
+    const layout = ui.layout(constraints, mockMeasureText)
     const offsets = { x: 0, y: 0 }
     const geometry = ui.geometry(layout, offsets)
     const expectedGeometry = columnGeometry({ x: 0, y: 0 }, [

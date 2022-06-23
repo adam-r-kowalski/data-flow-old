@@ -1,6 +1,6 @@
-import { Font, MeasureText, TextMeasurements } from "."
+import { Entry, Font, MeasureText, TextMeasurements } from "."
 import { Color, rgba } from "../color"
-import { Offset, Position } from "../geometry"
+import { Geometry, Offset, Position } from "../geometry"
 import { Constraints, Layout, Size } from "../layout"
 
 export class TextLayout {
@@ -34,17 +34,21 @@ interface GeometryData {
     readonly vertexIndices: number[]
 }
 
-const vertices = (widths: number[], height: number) => {
+const vertices = (widths: number[], height: number, offset: Offset) => {
     const result = []
-    let offset = 0
+    let offsetX = offset.x
+    const y0 = offset.y
+    const y1 = offset.y + height
     for (const width of widths) {
+        const x0 = offsetX
+        const x1 = offsetX + width
         result.push(
-            offset, 0,
-            offset, height,
-            offset + width, 0,
-            offset + width, height
+            x0, y0,
+            x0, y1,
+            x1, y0,
+            x1, y1
         )
-        offset += width
+        offsetX += width
     }
     return result
 }
@@ -110,10 +114,14 @@ export class Text {
             textureIndex,
             textureCoordinates: textureCoordinates.flat(),
             colors: colors(widths.length, this.color),
-            vertices: vertices(widths, this.font.size),
+            vertices: vertices(widths, this.font.size, offset),
             vertexIndices: vertexIndices(widths.length)
         })
 
+    }
+
+    *traverse(layout: Layout, geometry: Geometry, z: number): Generator<Entry> {
+        yield { ui: this, layout, geometry, z }
     }
 }
 

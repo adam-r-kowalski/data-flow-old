@@ -10,12 +10,14 @@ interface Attribute {
 
 interface Attributes {
     vertices: Attribute
-    colors: Attribute
     vertexIndices: WebGLBuffer
+    colors: Attribute
+    textureCoordinates: Attribute
 }
 
 interface Uniforms {
     projection: WebGLUniformLocation
+    texture: WebGLUniformLocation
 }
 
 interface Program {
@@ -50,7 +52,7 @@ const createTextMeasurements = (gl: WebGL2RenderingContext, font: Font, dpr: Dev
     ctx.scale(dpr, dpr)
     ctx.textAlign = 'left'
     ctx.textBaseline = 'top'
-    ctx.font = font.family
+    ctx.font = `${font.size}px ${font.family}`
     ctx.fillStyle = 'white'
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
     const height = font.size
@@ -99,8 +101,6 @@ const mapString = <T>(str: string, f: (c: string, i: number) => T): Array<T> => 
     return result
 }
 
-type Key = [Font, DevicePixelRatio]
-
 export class WebGL2Renderer {
     _size: Size
 
@@ -109,10 +109,10 @@ export class WebGL2Renderer {
         public gl: WebGL2RenderingContext,
         public program: Program,
         public textures: WebGLTexture[],
-        public textMeasurementsCache: Map<Key, TextMeasurements>,
+        public textMeasurementsCache: Map<string, TextMeasurements>,
     ) { }
 
-    clear() {
+    clear = () => {
         const { gl } = this
         gl.clear(gl.COLOR_BUFFER_BIT)
     }
@@ -132,32 +132,38 @@ export class WebGL2Renderer {
 
     get size() { return this._size }
 
-    draw({ vertices, colors, vertexIndices }: Batch) {
-        const { gl, program } = this
+    draw = ({ vertices, colors, vertexIndices, textureCoordinates, textureIndex }: Batch) => {
+        const { gl, program, textures } = this
         const { attributes } = program
+        const texture = textures[textureIndex]
+        gl.bindTexture(gl.TEXTURE_2D, texture)
         gl.bindBuffer(gl.ARRAY_BUFFER, attributes.vertices.buffer)
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW)
         gl.bindBuffer(gl.ARRAY_BUFFER, attributes.colors.buffer)
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW)
+        gl.bindBuffer(gl.ARRAY_BUFFER, attributes.textureCoordinates.buffer)
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoordinates), gl.STATIC_DRAW)
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, attributes.vertexIndices)
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(vertexIndices), gl.STATIC_DRAW)
         gl.drawElements(gl.TRIANGLES, /*count*/vertexIndices.length, /*type*/gl.UNSIGNED_SHORT, /*offset*/0)
     }
 
-    measureText(font: Font, str: string) {
+    getTextureMeasurements = (font: Font, dpr: DevicePixelRatio) => {
         const { gl } = this
+        const key = `${dpr} ${font.size} ${font.family}`
+        const measurements = this.textMeasurementsCache.get(key)
+        if (measurements) return measurements
+        const { texture, widths, textureCoordinates } = createTextMeasurements(gl, font, dpr)
+        const textureIndex = this.textures.length
+        this.textures.push(texture)
+        const newMeasurements = { widths, textureIndex, textureCoordinates }
+        this.textMeasurementsCache.set(key, newMeasurements)
+        return newMeasurements
+    }
+
+    measureText = (font: Font, str: string) => {
         const dpr = window.devicePixelRatio
-        const key: Key = [font, dpr]
-        const { widths, textureIndex, textureCoordinates } = (() => {
-            const measurements = this.textMeasurementsCache.get(key)
-            if (measurements) return measurements
-            const { texture, widths, textureCoordinates } = createTextMeasurements(gl, font, dpr)
-            const textureIndex = this.textures.length
-            this.textures.push(texture)
-            const newMeasurements = { widths, textureIndex, textureCoordinates }
-            this.textMeasurementsCache.set(key, newMeasurements)
-            return newMeasurements
-        })()
+        const { widths, textureIndex, textureCoordinates } = this.getTextureMeasurements(font, dpr)
         const indices = mapString(str, c => c.charCodeAt(0))
         return {
             widths: indices.map(i => widths[i]),
@@ -167,19 +173,22 @@ export class WebGL2Renderer {
     }
 }
 
-
-const createVertexShader = (gl: WebGL2RenderingContext, { vertices, colors }: Attributes): WebGLShader => {
+const createVertexShader = (gl: WebGL2RenderingContext, attributes: Attributes): WebGLShader => {
+    const { vertices, colors, textureCoordinates } = attributes
     const vertexShaderSource = `#version 300 es
   uniform mat3 u_projection;
 
   layout(location = ${vertices.location}) in vec2 a_vertex;
   layout(location = ${colors.location}) in vec4 a_color;
+  layout(location = ${textureCoordinates.location}) in vec2 a_textureCoordinates;
 
   out vec4 v_color;
+  out vec2 v_textureCoordinates;
 
   void main() {
     gl_Position = vec4((u_projection * vec3(a_vertex, 1)).xy, 0, 1);
     v_color = a_color / 255.0;
+    v_textureCoordinates = a_textureCoordinates;
   }
   `
     const vertexShader = gl.createShader(gl.VERTEX_SHADER)!
@@ -192,12 +201,15 @@ const createFragmentShader = (gl: WebGL2RenderingContext): WebGLShader => {
     const fragmentShaderSource = `#version 300 es
   precision highp float;
 
+  uniform sampler2D u_texture;
+
   in vec4 v_color;
+  in vec2 v_textureCoordinates;
 
   out vec4 fragColor;
   
   void main() {
-    fragColor = v_color;
+    fragColor = texture(u_texture, v_textureCoordinates) * v_color;
   }
   `
     const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER)!
@@ -234,6 +246,19 @@ const bindColors = (gl: WebGL2RenderingContext, program: WebGLProgram, { locatio
     )
 }
 
+const bindTextureCoordinates = (gl: WebGL2RenderingContext, program: WebGLProgram, { location, buffer }: Attribute) => {
+    gl.bindAttribLocation(program, location, 'a_textureCoordinates')
+    gl.enableVertexAttribArray(location)
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
+    gl.vertexAttribPointer(
+        location,
+        /*size*/2,
+        /*type*/gl.FLOAT,
+        /*normalize*/false,
+        /*stride*/0,
+        /*offset*/0
+    )
+}
 
 const createProgram = (gl: WebGL2RenderingContext): Program => {
     const attributes: Attributes = {
@@ -243,6 +268,10 @@ const createProgram = (gl: WebGL2RenderingContext): Program => {
         },
         colors: {
             location: 1,
+            buffer: gl.createBuffer()!
+        },
+        textureCoordinates: {
+            location: 2,
             buffer: gl.createBuffer()!
         },
         vertexIndices: gl.createBuffer()!
@@ -262,8 +291,10 @@ const createProgram = (gl: WebGL2RenderingContext): Program => {
     gl.bindVertexArray(vertexArrayObject)
     bindVertices(gl, program, attributes.vertices)
     bindColors(gl, program, attributes.colors)
+    bindTextureCoordinates(gl, program, attributes.textureCoordinates)
     const uniforms = {
-        projection: gl.getUniformLocation(program, 'u_projection')!
+        projection: gl.getUniformLocation(program, 'u_projection')!,
+        texture: gl.getUniformLocation(program, 'u_texture')!
     }
     return {
         vertexShader,
@@ -279,8 +310,9 @@ export const webGL2Renderer = (size: Size) => {
     canvas.style.touchAction = 'none'
     const gl = canvas.getContext('webgl2')!
     gl.enable(gl.BLEND)
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+    gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
     gl.depthMask(false)
+    gl.activeTexture(gl.TEXTURE0)
     gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true)
     gl.clearColor(0, 0, 0, 1)
     const program = createProgram(gl)

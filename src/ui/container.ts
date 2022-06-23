@@ -35,16 +35,18 @@ interface GeometryData {
     readonly vertexIndices?: number[]
 }
 
-export const containerGeometry = (data: GeometryData, child?: Geometry) =>
-    new ContainerGeometry(
+export const containerGeometry = (data: GeometryData, child?: Geometry) => {
+    const vertices = data.vertices ?? []
+    return new ContainerGeometry(
         data.position,
         data.textureIndex ?? 0,
-        data.textureCoordinates ?? [],
+        data.textureCoordinates ?? Array.from<number>({ length: vertices.length }).fill(0),
         data.colors ?? [],
-        data.vertices ?? [],
+        vertices,
         data.vertexIndices ?? [],
         child
     )
+}
 
 export class Container {
     constructor(
@@ -56,15 +58,21 @@ export class Container {
     ) { }
 
     layout(constraints: Constraints, measureText: MeasureText) {
+        const { left, top, right, bottom } = this.padding
         if (this.child) {
             const layout = this.child.layout(constraints, measureText)
-            const { left, top } = this.padding
-            const width = layout.size.width + left + this.padding.right
-            const height = layout.size.height + top + this.padding.bottom
+            const width = layout.size.width + left + right
+            const height = layout.size.height + top + bottom
             return containerLayout({ width, height }, layout)
         }
-        const width = this.width ?? constraints.maxWidth
-        const height = this.height ?? constraints.maxHeight
+        const width = (() => {
+            if (this.width) return this.width + left + right
+            return constraints.maxWidth
+        })()
+        const height = (() => {
+            if (this.height) return this.height + top + bottom
+            return constraints.maxHeight
+        })()
         return containerLayout({ width, height })
     }
 

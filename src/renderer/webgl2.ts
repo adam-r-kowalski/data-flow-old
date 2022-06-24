@@ -310,7 +310,7 @@ export const webGL2Renderer = (size: Size) => {
     canvas.style.touchAction = 'none'
     const gl = canvas.getContext('webgl2')!
     gl.enable(gl.BLEND)
-    gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
     gl.depthMask(false)
     gl.activeTexture(gl.TEXTURE0)
     gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true)

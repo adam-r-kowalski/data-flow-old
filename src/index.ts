@@ -26,42 +26,42 @@ const spacer = (size: number) =>
 
 const inputs = () =>
     column([
-        row([
+        row({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             container({
                 width: 24,
                 height: 24,
                 color: theme.input
             }),
-            spacer(5),
+            spacer(10),
             text("Long In 0")
         ]),
-        spacer(5),
-        row([
+        spacer(10),
+        row({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             container({
                 width: 24,
                 height: 24,
                 color: theme.input
             }),
-            spacer(5),
+            spacer(10),
             text("In 0")
         ])
     ])
 
 const outputs = () =>
     column({ crossAxisAlignment: CrossAxisAlignment.END }, [
-        row([
+        row({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             text("Out 0"),
-            spacer(5),
+            spacer(10),
             container({
                 width: 24,
                 height: 24,
                 color: theme.input
             }),
         ]),
-        spacer(5),
-        row([
+        spacer(10),
+        row({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             text("Long Out 1"),
-            spacer(5),
+            spacer(10),
             container({
                 width: 24,
                 height: 24,
@@ -76,7 +76,7 @@ const ui = stack([
         container({ color: theme.node, padding: padding(5) },
             column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
                 text("Node"),
-                spacer(5),
+                spacer(10),
                 row([
                     inputs(),
                     spacer(30),

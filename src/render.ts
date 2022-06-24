@@ -18,8 +18,5 @@ export const render = (renderer: Renderer, ui: UI) => {
     const geometry = ui.geometry(layout, offsets)
     const layers = reduce(ui, layout, geometry, layerGeometry)
     const batches = batchGeometry(layers)
-    for (const batch of batches) {
-        console.log(batch)
-        renderer.draw(batch)
-    }
+    for (const batch of batches) renderer.draw(batch)
 }

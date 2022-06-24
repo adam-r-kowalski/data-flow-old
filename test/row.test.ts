@@ -107,49 +107,48 @@ test("row layers", () => {
     const offsets = { x: 0, y: 0 }
     const geometry = ui.geometry(layout, offsets)
     const layers = reduce(ui, layout, geometry, layerGeometry)
-    const expectedLayers = [
-        [],
-        [
-            containerGeometry({
-                position: { x: 0, y: 0 },
-                vertices: [
-                    0, 0,
-                    0, 50,
-                    50, 0,
-                    50, 50,
-                ],
-                colors: [
-                    255, 0, 0, 255,
-                    255, 0, 0, 255,
-                    255, 0, 0, 255,
-                    255, 0, 0, 255,
-                ],
-                vertexIndices: [
-                    0, 1, 2,
-                    1, 2, 3
-                ]
-            }),
-            containerGeometry({
-                position: { x: 50, y: 0 },
-                vertices: [
-                    50, 0,
-                    50, 50,
-                    100, 0,
-                    100, 50,
-                ],
-                colors: [
-                    0, 255, 0, 255,
-                    0, 255, 0, 255,
-                    0, 255, 0, 255,
-                    0, 255, 0, 255,
-                ],
-                vertexIndices: [
-                    0, 1, 2,
-                    1, 2, 3
-                ]
-            })
-        ]
-    ]
+    const layer = new Map()
+    layer.set(0, [
+        containerGeometry({
+            position: { x: 0, y: 0 },
+            vertices: [
+                0, 0,
+                0, 50,
+                50, 0,
+                50, 50,
+            ],
+            colors: [
+                255, 0, 0, 255,
+                255, 0, 0, 255,
+                255, 0, 0, 255,
+                255, 0, 0, 255,
+            ],
+            vertexIndices: [
+                0, 1, 2,
+                1, 2, 3
+            ]
+        }),
+        containerGeometry({
+            position: { x: 50, y: 0 },
+            vertices: [
+                50, 0,
+                50, 50,
+                100, 0,
+                100, 50,
+            ],
+            colors: [
+                0, 255, 0, 255,
+                0, 255, 0, 255,
+                0, 255, 0, 255,
+                0, 255, 0, 255,
+            ],
+            vertexIndices: [
+                0, 1, 2,
+                1, 2, 3
+            ]
+        })
+    ])
+    const expectedLayers = [new Map(), layer]
     expect(layers).toEqual(expectedLayers)
 })
 
@@ -202,6 +201,18 @@ test("row batch", () => {
 
                 4, 5, 6,
                 5, 6, 7
+            ],
+            textureIndex: 0,
+            textureCoordinates: [
+                0, 0,
+                0, 0,
+                0, 0,
+                0, 0,
+
+                0, 0,
+                0, 0,
+                0, 0,
+                0, 0,
             ]
         }
     ]

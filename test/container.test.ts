@@ -61,29 +61,29 @@ test("container layers", () => {
     const offsets = { x: 0, y: 0 }
     const geometry = ui.geometry(layout, offsets)
     const layers = reduce(ui, layout, geometry, layerGeometry)
-    const expectedLayers = [
-        [
-            containerGeometry({
-                position: { x: 0, y: 0 },
-                vertices: [
-                    0, 0,
-                    0, 50,
-                    50, 0,
-                    50, 50,
-                ],
-                colors: [
-                    255, 0, 0, 255,
-                    255, 0, 0, 255,
-                    255, 0, 0, 255,
-                    255, 0, 0, 255,
-                ],
-                vertexIndices: [
-                    0, 1, 2,
-                    1, 2, 3
-                ]
-            })
-        ]
-    ]
+    const layer = new Map()
+    layer.set(0, [
+        containerGeometry({
+            position: { x: 0, y: 0 },
+            vertices: [
+                0, 0,
+                0, 50,
+                50, 0,
+                50, 50,
+            ],
+            colors: [
+                255, 0, 0, 255,
+                255, 0, 0, 255,
+                255, 0, 0, 255,
+                255, 0, 0, 255,
+            ],
+            vertexIndices: [
+                0, 1, 2,
+                1, 2, 3
+            ]
+        })
+    ])
+    const expectedLayers = [layer]
     expect(layers).toEqual(expectedLayers)
 })
 
@@ -116,6 +116,13 @@ test("container batches", () => {
             vertexIndices: [
                 0, 1, 2,
                 1, 2, 3
+            ],
+            textureIndex: 0,
+            textureCoordinates: [
+                0, 0,
+                0, 0,
+                0, 0,
+                0, 0,
             ]
         }
     ]
@@ -203,10 +210,11 @@ test("container within container layers", () => {
         ]
     })
     const parentGeometry = containerGeometry({ position: { x: 0, y: 0 } }, childGeometry)
-    const expectedLayers = [
-        [parentGeometry],
-        [childGeometry],
-    ]
+    const layer0 = new Map()
+    layer0.set(0, [parentGeometry])
+    const layer1 = new Map()
+    layer1.set(0, [childGeometry])
+    const expectedLayers = [layer0, layer1]
     expect(layers).toEqual(expectedLayers)
 })
 
@@ -240,6 +248,13 @@ test("container within container batches", () => {
             vertexIndices: [
                 0, 1, 2,
                 1, 2, 3
+            ],
+            textureIndex: 0,
+            textureCoordinates: [
+                0, 0,
+                0, 0,
+                0, 0,
+                0, 0,
             ]
         }
     ]

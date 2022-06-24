@@ -2,7 +2,7 @@ import { rgba } from '../src/color'
 import { container, containerLayout, containerGeometry } from '../src/ui/container'
 import { layerGeometry } from '../src/layerGeometry'
 import { reduce } from '../src/reduce'
-import { batchGeometry } from '../src/batchGeometry'
+import { Batch, batchGeometry } from '../src/batchGeometry'
 import { center, centerGeometry, centerLayout } from '../src/ui/center'
 import { mockMeasureText } from '../src/renderer/mock'
 
@@ -86,10 +86,9 @@ test("center layers", () => {
             1, 2, 3
         ]
     })
-    const expectedLayers = [
-        [],
-        [childGeometry],
-    ]
+    const layer = new Map()
+    layer.set(0, [childGeometry])
+    const expectedLayers = [new Map(), layer]
     expect(layers).toEqual(expectedLayers)
 })
 
@@ -106,7 +105,7 @@ test("center batches", () => {
     const geometry = ui.geometry(layout, offsets)
     const layers = reduce(ui, layout, geometry, layerGeometry)
     const batches = batchGeometry(layers)
-    const expectedBatches = [
+    const expectedBatches: Batch[] = [
         {
             vertices: [
                 25, 25,
@@ -123,6 +122,13 @@ test("center batches", () => {
             vertexIndices: [
                 0, 1, 2,
                 1, 2, 3
+            ],
+            textureIndex: 0,
+            textureCoordinates: [
+                0, 0,
+                0, 0,
+                0, 0,
+                0, 0,
             ]
         }
     ]

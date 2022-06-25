@@ -53,6 +53,8 @@ export class Container {
         readonly padding: Padding,
         readonly width?: number,
         readonly height?: number,
+        readonly x?: number,
+        readonly y?: number,
         readonly color?: Color,
         readonly child?: UI
     ) { }
@@ -77,7 +79,7 @@ export class Container {
     }
 
     geometry(layout: Layout, offset: Offset) {
-        const position = { x: offset.x, y: offset.y }
+        const position = { x: offset.x + (this.x ?? 0), y: offset.y + (this.y ?? 0) }
         const data = (() => {
             if (this.color) {
                 const x0 = position.x
@@ -138,9 +140,19 @@ interface Properties {
     readonly padding?: Padding
     readonly width?: number
     readonly height?: number
+    readonly x?: number
+    readonly y?: number
     readonly color?: Color
     readonly child?: UI
 }
 
-export const container = ({ padding, width, height, color }: Properties, child?: UI): Container =>
-    new Container(padding ?? paddingAll(0), width, height, color, child)
+export const container = ({ padding, width, height, color, x, y }: Properties, child?: UI): Container =>
+    new Container(
+        padding ?? paddingAll(0),
+        width,
+        height,
+        x,
+        y,
+        color,
+        child
+    )

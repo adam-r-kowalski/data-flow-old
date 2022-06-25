@@ -27,7 +27,7 @@ test("container geometry", () => {
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
     const layout = ui.layout(constraints, mockMeasureText)
     const offsets = { x: 0, y: 0 }
-    const geometry = ui.geometry(layout, offsets)
+    const { geometry } = ui.geometry(layout, offsets, { activeCameraIndex: 0, nextCameraIndex: 1 })
     const expectedGeometry = containerGeometry({
         position: { x: 0, y: 0 },
         vertices: [
@@ -45,7 +45,8 @@ test("container geometry", () => {
         vertexIndices: [
             0, 1, 2,
             1, 2, 3
-        ]
+        ],
+        cameraIndex: Array(4).fill(0)
     })
     expect(geometry).toEqual(expectedGeometry)
 })
@@ -59,7 +60,7 @@ test("container layers", () => {
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
     const layout = ui.layout(constraints, mockMeasureText)
     const offsets = { x: 0, y: 0 }
-    const geometry = ui.geometry(layout, offsets)
+    const { geometry } = ui.geometry(layout, offsets, { activeCameraIndex: 0, nextCameraIndex: 1 })
     const layers = reduce(ui, layout, geometry, layerGeometry)
     const layer = new Map()
     layer.set(0, [
@@ -80,7 +81,8 @@ test("container layers", () => {
             vertexIndices: [
                 0, 1, 2,
                 1, 2, 3
-            ]
+            ],
+            cameraIndex: Array(4).fill(0)
         })
     ])
     const expectedLayers = [layer]
@@ -96,7 +98,7 @@ test("container batches", () => {
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
     const layout = ui.layout(constraints, mockMeasureText)
     const offsets = { x: 0, y: 0 }
-    const geometry = ui.geometry(layout, offsets)
+    const { geometry } = ui.geometry(layout, offsets, { activeCameraIndex: 0, nextCameraIndex: 1 })
     const layers = reduce(ui, layout, geometry, layerGeometry)
     const batches = batchGeometry(layers)
     const expectedBatches = [
@@ -123,7 +125,8 @@ test("container batches", () => {
                 0, 0,
                 0, 0,
                 0, 0,
-            ]
+            ],
+            cameraIndex: Array(4).fill(0)
         }
     ]
     expect(batches).toEqual(expectedBatches)
@@ -154,7 +157,7 @@ test("container within container geometry", () => {
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
     const layout = ui.layout(constraints, mockMeasureText)
     const offsets = { x: 0, y: 0 }
-    const geometry = ui.geometry(layout, offsets)
+    const { geometry } = ui.geometry(layout, offsets, { activeCameraIndex: 0, nextCameraIndex: 1 })
     const expectedGeometry = containerGeometry({ position: { x: 0, y: 0 } },
         containerGeometry({
             position: { x: 5, y: 5 },
@@ -173,7 +176,8 @@ test("container within container geometry", () => {
             vertexIndices: [
                 0, 1, 2,
                 1, 2, 3
-            ]
+            ],
+            cameraIndex: Array(4).fill(0)
         }))
     expect(geometry).toEqual(expectedGeometry)
 })
@@ -188,7 +192,7 @@ test("container within container layers", () => {
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
     const layout = ui.layout(constraints, mockMeasureText)
     const offsets = { x: 0, y: 0 }
-    const geometry = ui.geometry(layout, offsets)
+    const { geometry } = ui.geometry(layout, offsets, { activeCameraIndex: 0, nextCameraIndex: 1 })
     const layers = reduce(ui, layout, geometry, layerGeometry)
     const childGeometry = containerGeometry({
         position: { x: 5, y: 5 },
@@ -207,14 +211,12 @@ test("container within container layers", () => {
         vertexIndices: [
             0, 1, 2,
             1, 2, 3
-        ]
+        ],
+        cameraIndex: Array(4).fill(0)
     })
-    const parentGeometry = containerGeometry({ position: { x: 0, y: 0 } }, childGeometry)
-    const layer0 = new Map()
-    layer0.set(0, [parentGeometry])
-    const layer1 = new Map()
-    layer1.set(0, [childGeometry])
-    const expectedLayers = [layer0, layer1]
+    const layer = new Map()
+    layer.set(0, [childGeometry])
+    const expectedLayers = [new Map(), layer]
     expect(layers).toEqual(expectedLayers)
 })
 
@@ -228,7 +230,7 @@ test("container within container batches", () => {
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
     const layout = ui.layout(constraints, mockMeasureText)
     const offsets = { x: 0, y: 0 }
-    const geometry = ui.geometry(layout, offsets)
+    const { geometry } = ui.geometry(layout, offsets, { activeCameraIndex: 0, nextCameraIndex: 1 })
     const layers = reduce(ui, layout, geometry, layerGeometry)
     const batches = batchGeometry(layers)
     const expectedBatches = [
@@ -255,7 +257,8 @@ test("container within container batches", () => {
                 0, 0,
                 0, 0,
                 0, 0,
-            ]
+            ],
+            cameraIndex: Array(4).fill(0)
         }
     ]
     expect(batches).toEqual(expectedBatches)

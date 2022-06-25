@@ -31,7 +31,7 @@ test("center geometry", () => {
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
     const layout = ui.layout(constraints, mockMeasureText)
     const offsets = { x: 0, y: 0 }
-    const geometry = ui.geometry(layout, offsets)
+    const { geometry } = ui.geometry(layout, offsets, { activeCameraIndex: 0, nextCameraIndex: 1 })
     const expectedGeometry = centerGeometry({ x: 0, y: 0 },
         containerGeometry({
             position: { x: 25, y: 25 },
@@ -50,7 +50,8 @@ test("center geometry", () => {
             vertexIndices: [
                 0, 1, 2,
                 1, 2, 3
-            ]
+            ],
+            cameraIndex: [0, 0, 0, 0]
         }))
     expect(geometry).toEqual(expectedGeometry)
 })
@@ -65,7 +66,7 @@ test("center layers", () => {
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
     const layout = ui.layout(constraints, mockMeasureText)
     const offsets = { x: 0, y: 0 }
-    const geometry = ui.geometry(layout, offsets)
+    const { geometry } = ui.geometry(layout, offsets, { activeCameraIndex: 0, nextCameraIndex: 1 })
     const layers = reduce(ui, layout, geometry, layerGeometry)
     const childGeometry = containerGeometry({
         position: { x: 25, y: 25 },
@@ -84,7 +85,8 @@ test("center layers", () => {
         vertexIndices: [
             0, 1, 2,
             1, 2, 3
-        ]
+        ],
+        cameraIndex: [0, 0, 0, 0]
     })
     const layer = new Map()
     layer.set(0, [childGeometry])
@@ -102,7 +104,7 @@ test("center batches", () => {
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
     const layout = ui.layout(constraints, mockMeasureText)
     const offsets = { x: 0, y: 0 }
-    const geometry = ui.geometry(layout, offsets)
+    const { geometry } = ui.geometry(layout, offsets, { activeCameraIndex: 0, nextCameraIndex: 1 })
     const layers = reduce(ui, layout, geometry, layerGeometry)
     const batches = batchGeometry(layers)
     const expectedBatches: Batch[] = [
@@ -129,7 +131,8 @@ test("center batches", () => {
                 0, 0,
                 0, 0,
                 0, 0,
-            ]
+            ],
+            cameraIndex: [0, 0, 0, 0]
         }
     ]
     expect(batches).toEqual(expectedBatches)

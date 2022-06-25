@@ -14,3 +14,9 @@ export const reduce = <T>(ui: UI, layout: Layout, geometry: Geometry, reducer: R
     }
     return accumulator
 }
+
+export const composeReducers = <T, U>(a: Reducer<T>, b: Reducer<U>): Reducer<[T, U]> => ({
+    initial: () => [a.initial(), b.initial()],
+    combine: ([a_acc, b_acc]: [T, U], entry: Entry): [T, U] =>
+        [a.combine(a_acc, entry), b.combine(b_acc, entry)]
+})

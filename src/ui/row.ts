@@ -1,4 +1,4 @@
-import { Entry, MeasureText, UI } from "."
+import { CameraStack, Entry, MeasureText, UI } from "."
 import { CrossAxisAlignment, MainAxisAlignment } from "../alignment"
 import { Geometry, Offset, Position } from "../geometry"
 import { Constraints, Layout, Size } from "../layout"
@@ -22,12 +22,13 @@ export class RowGeometry {
         readonly colors: number[],
         readonly vertices: number[],
         readonly vertexIndices: number[],
+        readonly cameraIndex: number[],
         readonly children: Geometry[]
     ) { }
 }
 
 export const rowGeometry = (position: Position, children: Geometry[]) =>
-    new RowGeometry(position, 0, [], [], [], [], children)
+    new RowGeometry(position, 0, [], [], [], [], [], children)
 
 export class Row {
     constructor(
@@ -55,7 +56,7 @@ export class Row {
         return rowLayout({ width, height }, totalChildWidth, children)
     }
 
-    geometry(layout: Layout, offset: Offset) {
+    geometry(layout: Layout, offset: Offset, cameraStack: CameraStack) {
         const rowLayout = (layout as RowLayout)
         const initialChildren: Geometry[] = []
         const freeSpaceX = layout.size.width - rowLayout.totalChildWidth
@@ -70,6 +71,7 @@ export class Row {
                     case MainAxisAlignment.SPACE_BETWEEN: return offset.x
                 }
             })(),
+            cameraStack
         }
         const addXStart = (childLayout: Layout) => childLayout.size.width
         const addXCenter = (childLayout: Layout) => childLayout.size.width
@@ -98,16 +100,22 @@ export class Row {
         const result = this.children.reduce((acc, child, i) => {
             const childLayout = rowLayout.children[i]
             const childOffset = { x: acc.x, y: offsetY(childLayout) }
-            acc.children.push(child.geometry(childLayout, childOffset))
+            const { geometry, nextCameraIndex } = child.geometry(childLayout, childOffset, acc.cameraStack)
+            acc.children.push(geometry)
             acc.x += addX(childLayout)
+            acc.cameraStack.nextCameraIndex = nextCameraIndex
             return acc
         }, initial)
-        return rowGeometry({ x: offset.x, y: offset.y }, result.children)
+        return {
+            geometry: rowGeometry({ x: offset.x, y: offset.y }, result.children),
+            nextCameraIndex: result.cameraStack.nextCameraIndex
+        }
     }
 
     *traverse(layout: Layout, geometry: Geometry, z: number): Generator<Entry> {
         const childrenLayout = (layout as RowLayout).children
         const childrenGeometry = (geometry as RowGeometry).children
+        yield { ui: this, layout, geometry, z }
         const nextZ = z + 1
         let i = 0
         for (const child of this.children) {

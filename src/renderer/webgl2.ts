@@ -13,11 +13,13 @@ interface Attributes {
     vertexIndices: WebGLBuffer
     colors: Attribute
     textureCoordinates: Attribute
+    cameraIndex: Attribute
 }
 
 interface Uniforms {
     projection: WebGLUniformLocation
     texture: WebGLUniformLocation
+    cameras: WebGLUniformLocation
 }
 
 interface Program {
@@ -103,6 +105,7 @@ const mapString = <T>(str: string, f: (c: string, i: number) => T): Array<T> => 
 
 export class WebGL2Renderer {
     _size: Size
+    _cameras: Mat3[]
 
     constructor(
         public canvas: HTMLCanvasElement,
@@ -132,7 +135,18 @@ export class WebGL2Renderer {
 
     get size() { return this._size }
 
-    draw = ({ vertices, colors, vertexIndices, textureCoordinates, textureIndex }: Batch) => {
+    set cameras(cameras: Mat3[]) {
+        const { gl, program } = this
+        const { uniforms } = program
+        const data: number[] = []
+        for (const camera of cameras) data.push(...camera.data)
+        gl.uniformMatrix3fv(uniforms.cameras, /*transpose*/true, data)
+        this._cameras = cameras
+    }
+
+    get cameras() { return this._cameras }
+
+    draw = ({ vertices, colors, vertexIndices, textureCoordinates, textureIndex, cameraIndex }: Batch) => {
         const { gl, program, textures } = this
         const { attributes } = program
         const texture = textures[textureIndex]
@@ -143,6 +157,8 @@ export class WebGL2Renderer {
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW)
         gl.bindBuffer(gl.ARRAY_BUFFER, attributes.textureCoordinates.buffer)
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoordinates), gl.STATIC_DRAW)
+        gl.bindBuffer(gl.ARRAY_BUFFER, attributes.cameraIndex.buffer)
+        gl.bufferData(gl.ARRAY_BUFFER, new Uint8Array(cameraIndex), gl.STATIC_DRAW)
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, attributes.vertexIndices)
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(vertexIndices), gl.STATIC_DRAW)
         gl.drawElements(gl.TRIANGLES, /*count*/vertexIndices.length, /*type*/gl.UNSIGNED_SHORT, /*offset*/0)
@@ -174,19 +190,23 @@ export class WebGL2Renderer {
 }
 
 const createVertexShader = (gl: WebGL2RenderingContext, attributes: Attributes): WebGLShader => {
-    const { vertices, colors, textureCoordinates } = attributes
+    const { vertices, colors, textureCoordinates, cameraIndex } = attributes
     const vertexShaderSource = `#version 300 es
   uniform mat3 u_projection;
+  uniform mat3 u_cameras[256];
 
   layout(location = ${vertices.location}) in vec2 a_vertex;
   layout(location = ${colors.location}) in vec4 a_color;
   layout(location = ${textureCoordinates.location}) in vec2 a_textureCoordinates;
+  layout(location = ${cameraIndex.location}) in uint a_cameraIndex;
 
   out vec4 v_color;
   out vec2 v_textureCoordinates;
 
   void main() {
-    gl_Position = vec4((u_projection * vec3(a_vertex, 1)).xy, 0, 1);
+    mat3 camera = u_cameras[a_cameraIndex];
+    mat3 transform = u_projection * inverse(camera);
+    gl_Position = vec4((transform * vec3(a_vertex, 1)).xy, 0, 1);
     v_color = a_color / 255.0;
     v_textureCoordinates = a_textureCoordinates;
   }
@@ -260,6 +280,19 @@ const bindTextureCoordinates = (gl: WebGL2RenderingContext, program: WebGLProgra
     )
 }
 
+const bindCameraIndex = (gl: WebGL2RenderingContext, program: WebGLProgram, { location, buffer }: Attribute) => {
+    gl.bindAttribLocation(program, location, 'a_cameraIndex')
+    gl.enableVertexAttribArray(location)
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
+    gl.vertexAttribIPointer(
+        location,
+        /*size*/1,
+        /*type*/gl.UNSIGNED_BYTE,
+        /*stride*/0,
+        /*offset*/0
+    )
+}
+
 const createProgram = (gl: WebGL2RenderingContext): Program => {
     const attributes: Attributes = {
         vertices: {
@@ -272,6 +305,10 @@ const createProgram = (gl: WebGL2RenderingContext): Program => {
         },
         textureCoordinates: {
             location: 2,
+            buffer: gl.createBuffer()!
+        },
+        cameraIndex: {
+            location: 3,
             buffer: gl.createBuffer()!
         },
         vertexIndices: gl.createBuffer()!
@@ -292,9 +329,11 @@ const createProgram = (gl: WebGL2RenderingContext): Program => {
     bindVertices(gl, program, attributes.vertices)
     bindColors(gl, program, attributes.colors)
     bindTextureCoordinates(gl, program, attributes.textureCoordinates)
-    const uniforms = {
+    bindCameraIndex(gl, program, attributes.cameraIndex)
+    const uniforms: Uniforms = {
         projection: gl.getUniformLocation(program, 'u_projection')!,
-        texture: gl.getUniformLocation(program, 'u_texture')!
+        texture: gl.getUniformLocation(program, 'u_texture')!,
+        cameras: gl.getUniformLocation(program, 'u_cameras')!
     }
     return {
         vertexShader,

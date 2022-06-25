@@ -6,6 +6,7 @@ export interface Batch {
     colors: number[]
     textureIndex: number
     textureCoordinates: number[]
+    cameraIndex: number[]
 }
 
 const newBatch = (textureIndex: number): Batch => ({
@@ -14,6 +15,7 @@ const newBatch = (textureIndex: number): Batch => ({
     vertexIndices: [],
     textureIndex,
     textureCoordinates: [],
+    cameraIndex: []
 })
 
 export const batchGeometry = (layers: Layers): Batch[] => {
@@ -33,6 +35,7 @@ export const batchGeometry = (layers: Layers): Batch[] => {
                     batch.vertexIndices.push(index + offset)
                 }
                 batch.textureCoordinates.push(...geometry.textureCoordinates)
+                batch.cameraIndex.push(...geometry.cameraIndex)
             }
         }
     }

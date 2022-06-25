@@ -21,8 +21,20 @@ export interface TextMeasurements {
 
 export type MeasureText = (font: Font, str: string) => TextMeasurements
 
+export type CameraIndex = number
+
+export interface CameraStack {
+    activeCameraIndex: CameraIndex
+    nextCameraIndex: CameraIndex
+}
+
+interface GeometryResult {
+    geometry: Geometry
+    nextCameraIndex: CameraIndex
+}
+
 export interface UI {
     layout: (constraints: Constraints, measureText: MeasureText) => Layout
-    geometry: (layout: Layout, offset: Offset) => Geometry
+    geometry: (layout: Layout, offset: Offset, cameraStack: CameraStack) => GeometryResult,
     traverse: (layout: Layout, geometry: Geometry, z: number) => Generator<Entry>
 }

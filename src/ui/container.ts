@@ -2,7 +2,7 @@ import { Color } from "../color"
 import { Geometry, Offset, Position } from "../geometry"
 import { Constraints, Layout, Size } from "../layout"
 import { Padding, padding as paddingAll } from "../padding"
-import { Entry, MeasureText, UI } from "../ui"
+import { CameraStack, Entry, MeasureText, UI } from "../ui"
 
 export class ContainerLayout {
     constructor(
@@ -22,6 +22,7 @@ export class ContainerGeometry {
         readonly colors: number[],
         readonly vertices: number[],
         readonly vertexIndices: number[],
+        readonly cameraIndex: number[],
         readonly child?: Geometry
     ) { }
 }
@@ -33,6 +34,7 @@ interface GeometryData {
     readonly colors?: number[]
     readonly vertices?: number[]
     readonly vertexIndices?: number[]
+    readonly cameraIndex?: number[]
 }
 
 export const containerGeometry = (data: GeometryData, child?: Geometry) => {
@@ -44,6 +46,7 @@ export const containerGeometry = (data: GeometryData, child?: Geometry) => {
         data.colors ?? [],
         vertices,
         data.vertexIndices ?? [],
+        data.cameraIndex ?? [],
         child
     )
 }
@@ -78,7 +81,7 @@ export class Container {
         return containerLayout({ width, height })
     }
 
-    geometry(layout: Layout, offset: Offset) {
+    geometry(layout: Layout, offset: Offset, cameraStack: CameraStack) {
         const position = { x: offset.x + (this.x ?? 0), y: offset.y + (this.y ?? 0) }
         const data = (() => {
             if (this.color) {
@@ -105,6 +108,7 @@ export class Container {
                         0, 1, 2,
                         1, 2, 3
                     ],
+                    cameraIndex: Array(4).fill(cameraStack.activeCameraIndex)
                 }
             }
             return {
@@ -112,6 +116,7 @@ export class Container {
                 vertices: [],
                 colors: [],
                 vertexIndices: [],
+                cameraIndex: [],
             }
         })()
         if (this.child) {
@@ -120,10 +125,16 @@ export class Container {
                 x: offset.x + this.padding.left,
                 y: offset.y + this.padding.top
             }
-            const childGeometry = this.child.geometry(childLayout, childOffset)
-            return containerGeometry(data, childGeometry)
+            const { geometry, nextCameraIndex } = this.child.geometry(childLayout, childOffset, cameraStack)
+            return {
+                geometry: containerGeometry(data, geometry),
+                nextCameraIndex
+            }
         }
-        return containerGeometry(data)
+        return {
+            geometry: containerGeometry(data),
+            nextCameraIndex: cameraStack.nextCameraIndex
+        }
     }
 
     *traverse(layout: Layout, geometry: Geometry, z: number): Generator<Entry> {

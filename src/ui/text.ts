@@ -1,4 +1,4 @@
-import { Entry, Font, MeasureText, TextMeasurements } from "."
+import { CameraStack, Entry, Font, MeasureText, TextMeasurements } from "."
 import { Color, rgba } from "../color"
 import { Geometry, Offset, Position } from "../geometry"
 import { Constraints, Layout, Size } from "../layout"
@@ -22,6 +22,7 @@ export class TextGeometry {
         readonly colors: number[],
         readonly vertices: number[],
         readonly vertexIndices: number[],
+        readonly cameraIndex: number[],
     ) { }
 }
 
@@ -32,6 +33,7 @@ interface GeometryData {
     readonly colors: number[]
     readonly vertices: number[]
     readonly vertexIndices: number[]
+    readonly cameraIndex: number[]
 }
 
 const vertices = (widths: number[], height: number, offset: Offset) => {
@@ -88,6 +90,7 @@ export const textGeometry = (data: GeometryData) =>
         data.colors,
         data.vertices,
         data.vertexIndices,
+        data.cameraIndex,
     )
 
 export class Text {
@@ -105,19 +108,20 @@ export class Text {
         return textLayout(measurements, size)
     }
 
-    geometry(layout: Layout, offset: Offset) {
+    geometry(layout: Layout, offset: Offset, cameraStack: CameraStack) {
         const textLayout = layout as TextLayout
         const { measurements } = textLayout
         const { textureIndex, textureCoordinates, widths } = measurements
-        return textGeometry({
+        const geometry = textGeometry({
             position: { x: offset.x, y: offset.y },
             textureIndex,
             textureCoordinates: textureCoordinates.flat(),
             colors: colors(widths.length, this.color),
             vertices: vertices(widths, this.font.size, offset),
-            vertexIndices: vertexIndices(widths.length)
+            vertexIndices: vertexIndices(widths.length),
+            cameraIndex: Array(widths.length * 4).fill(cameraStack.activeCameraIndex)
         })
-
+        return { geometry, nextCameraIndex: cameraStack.nextCameraIndex }
     }
 
     *traverse(layout: Layout, geometry: Geometry, z: number): Generator<Entry> {

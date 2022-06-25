@@ -1,5 +1,7 @@
 import { Batch } from "../batchGeometry"
+import { Cameras } from "../gatherCameras"
 import { Size } from "../layout"
+import { Mat3 } from "../linear_algebra"
 import { Font, TextMeasurements } from "../ui"
 
 export const mockMeasureText = (font: Font, str: string): TextMeasurements => {
@@ -24,6 +26,7 @@ export const mockMeasureText = (font: Font, str: string): TextMeasurements => {
 export class MockRenderer {
     constructor(
         public size: Size,
+        public cameras: Cameras,
         public clearCount: number,
         public batches: Batch[]
     ) { }
@@ -42,5 +45,5 @@ export class MockRenderer {
 }
 
 export const mockRenderer = (size: Size) => {
-    return new MockRenderer(size, 0, [])
+    return new MockRenderer(size, [Mat3.identity()], 0, [])
 }

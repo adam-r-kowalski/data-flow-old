@@ -25,7 +25,6 @@ test("text layout", () => {
                 3, 0,
                 3, 1,
             ]
-
         ]
     }
     const expectedLayout = textLayout(measurements, { width: 24 * 3, height: 24 })
@@ -37,7 +36,7 @@ test("text geometry", () => {
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
     const layout = ui.layout(constraints, mockMeasureText)
     const offset = { x: 0, y: 0 }
-    const geometry = ui.geometry(layout, offset)
+    const { geometry } = ui.geometry(layout, offset, { activeCameraIndex: 0, nextCameraIndex: 1 })
     const expectedGeometry = textGeometry({
         position: { x: 0, y: 0 },
         textureIndex: 1,
@@ -99,6 +98,7 @@ test("text geometry", () => {
             8, 9, 10,
             9, 10, 11,
         ],
+        cameraIndex: Array(12).fill(0)
     })
     expect(geometry).toEqual(expectedGeometry)
 })

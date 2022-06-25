@@ -1,3 +1,5 @@
+import { Mat3 } from "./linear_algebra"
+
 export interface Offset {
     x: number
     y: number
@@ -15,4 +17,6 @@ export interface Geometry {
     colors: number[]
     vertices: number[]
     vertexIndices: number[]
+    cameraIndex: number[]
+    camera?: Mat3
 }

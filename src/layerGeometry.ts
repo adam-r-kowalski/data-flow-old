@@ -9,6 +9,7 @@ export type Layers = Layer[]
 export const layerGeometry: Reducer<Layers> = {
     initial: () => [],
     combine: (layers: Layers, entry: Entry) => {
+        if (entry.geometry.vertices.length == 0) return layers
         const needed = entry.z - layers.length + 1
         for (let i = 0; i < needed; ++i) layers.push(new Map())
         const layer = layers[entry.z]

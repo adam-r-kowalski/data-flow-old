@@ -16,7 +16,6 @@ export const sceneLayout = (size: Size, children: Layout[]) =>
 export class SceneGeometry {
     constructor(
         readonly position: Position,
-        readonly camera: Mat3,
         readonly textureIndex: number,
         readonly textureCoordinates: number[],
         readonly colors: number[],
@@ -27,14 +26,12 @@ export class SceneGeometry {
     ) { }
 }
 
-export const sceneGeometry = (position: Position, camera: Mat3, children: Geometry[]) =>
-    new SceneGeometry(position, camera, 0, [], [], [], [], [], children)
+export const sceneGeometry = (position: Position, children: Geometry[]) =>
+    new SceneGeometry(position, 0, [], [], [], [], [], children)
 
 export class Scene {
     constructor(
-        readonly x: number,
-        readonly y: number,
-        readonly zoom: number,
+        readonly camera: Mat3,
         readonly children: UI[]
     ) { }
 
@@ -62,13 +59,8 @@ export class Scene {
             acc.cameraStack.nextCameraIndex = nextCameraIndex
             return acc
         }, initial)
-        const camera = new Mat3([
-            1, 0, this.x,
-            0, 1, this.y,
-            0, 0, 1
-        ])
         return {
-            geometry: sceneGeometry(position, camera, result.children),
+            geometry: sceneGeometry(position, result.children),
             nextCameraIndex: result.cameraStack.nextCameraIndex
         }
     }
@@ -86,24 +78,8 @@ export class Scene {
 }
 
 interface Properties {
-    x?: number
-    y?: number
-    zoom?: number
+    camera: Mat3
 }
 
-type Overload = {
-    (children: UI[]): Scene
-    (properties: Properties, children: UI[]): Scene
-}
-
-export const scene: Overload = (...args: any[]): Scene => {
-    const [properties, children] = (() =>
-        args[0] instanceof Array ? [{}, args[0]] : [args[0], args[1]]
-    )()
-    return new Scene(
-        properties.x ?? 0,
-        properties.y ?? 0,
-        properties.zoom ?? 1,
-        children
-    )
-}
+export const scene = (properties: Properties, children: UI[]): Scene =>
+    new Scene(properties.camera, children)

@@ -1,5 +1,6 @@
 import { Geometry, Offset } from "../geometry";
 import { Constraints, Layout } from "../layout";
+import { Mat3 } from "../linear_algebra";
 
 export interface Entry {
     readonly ui: UI
@@ -34,6 +35,7 @@ interface GeometryResult {
 }
 
 export interface UI {
+    camera?: Mat3
     layout: (constraints: Constraints, measureText: MeasureText) => Layout
     geometry: (layout: Layout, offset: Offset, cameraStack: CameraStack) => GeometryResult,
     traverse: (layout: Layout, geometry: Geometry, z: number) => Generator<Entry>

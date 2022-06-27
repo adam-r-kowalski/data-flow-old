@@ -1,5 +1,6 @@
-import { CameraStack, Entry, MeasureText, UI } from "."
-import { Geometry, Offset, Position } from "../geometry"
+import { Entry, MeasureText, UI } from "."
+import { CameraStack } from "../camera_stack"
+import { Geometry, Offset, WorldSpace } from "../geometry"
 import { Constraints, Layout, Size } from "../layout"
 
 export class StackLayout {
@@ -14,7 +15,7 @@ export const stackLayout = (size: Size, children: Layout[]) =>
 
 export class StackGeometry {
     constructor(
-        readonly position: Position,
+        readonly worldSpace: WorldSpace,
         readonly textureIndex: number,
         readonly textureCoordinates: number[],
         readonly colors: number[],
@@ -25,8 +26,8 @@ export class StackGeometry {
     ) { }
 }
 
-export const stackGeometry = (position: Position, children: Geometry[]) =>
-    new StackGeometry(position, 0, [], [], [], [], [], children)
+export const stackGeometry = (worldSpace: WorldSpace, children: Geometry[]) =>
+    new StackGeometry(worldSpace, 0, [], [], [], [], [], children)
 
 export class Stack {
     constructor(readonly children: UI[]) { }
@@ -40,18 +41,14 @@ export class Stack {
 
     geometry(layout: Layout, offset: Offset, cameraStack: CameraStack) {
         const stackLayout = (layout as StackLayout)
-        const initialChildren: Geometry[] = []
-        const initial = { children: initialChildren, cameraStack }
-        const result = this.children.reduce((acc, c, i) => {
-            const { geometry, nextCameraIndex } = c.geometry(stackLayout.children[i], offset, acc.cameraStack)
-            acc.children.push(geometry)
-            acc.cameraStack.nextCameraIndex = nextCameraIndex
-            return acc
-        }, initial)
-        return {
-            geometry: stackGeometry({ x: offset.x, y: offset.y }, result.children),
-            nextCameraIndex: result.cameraStack.nextCameraIndex
-        }
+        const children = this.children.map((c, i) => c.geometry(stackLayout.children[i], offset, cameraStack))
+        const worldSpace = cameraStack.transformWorldSpace({
+            x0: offset.x,
+            y0: offset.y,
+            x1: offset.x + layout.size.width,
+            y1: offset.y + layout.size.height,
+        })
+        return stackGeometry(worldSpace, children)
     }
 
     *traverse(layout: Layout, geometry: Geometry, z: number): Generator<Entry> {

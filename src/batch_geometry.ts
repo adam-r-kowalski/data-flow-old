@@ -1,4 +1,4 @@
-import { Layers } from "./layerGeometry";
+import { Layers } from "./renderer/render"
 
 export interface Batch {
     vertices: number[]

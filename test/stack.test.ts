@@ -5,7 +5,7 @@ import { mockMeasureText } from '../src/renderer/mock'
 import { stack, stackGeometry, stackLayout } from '../src/ui/stack'
 import { reduce } from '../src/reduce'
 import { layerGeometry } from '../src/layerGeometry'
-import { Batch, batchGeometry } from '../src/batchGeometry'
+import { Batch, batchGeometry } from '../src/batch_geometry'
 
 
 test("stack layout", () => {

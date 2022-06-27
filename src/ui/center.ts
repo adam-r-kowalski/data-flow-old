@@ -1,6 +1,7 @@
-import { Geometry, Offset, Position } from "../geometry"
+import { CameraStack } from "../camera_stack"
+import { Geometry, Offset, WorldSpace } from "../geometry"
 import { Constraints, Layout, Size } from "../layout"
-import { CameraStack, Entry, MeasureText, UI } from "../ui"
+import { Entry, MeasureText, UI } from "../ui"
 
 export class CenterLayout {
     constructor(
@@ -14,7 +15,7 @@ export const centerLayout = (size: Size, child: Layout) =>
 
 export class CenterGeometry {
     constructor(
-        readonly position: Position,
+        readonly worldSpace: WorldSpace,
         readonly textureIndex: number,
         readonly textureCoordinates: number[],
         readonly colors: number[],
@@ -25,8 +26,8 @@ export class CenterGeometry {
     ) { }
 }
 
-export const centerGeometry = (position: Position, child: Geometry) =>
-    new CenterGeometry(position, 0, [], [], [], [], [], child)
+export const centerGeometry = (worldSpace: WorldSpace, child: Geometry) =>
+    new CenterGeometry(worldSpace, 0, [], [], [], [], [], child)
 
 export class Center {
     constructor(readonly child: UI) { }
@@ -39,17 +40,19 @@ export class Center {
     }
 
     geometry(layout: Layout, offset: Offset, cameraStack: CameraStack) {
-        const position = { x: offset.x, y: offset.y }
+        const worldSpace = cameraStack.transformWorldSpace({
+            x0: offset.x,
+            y0: offset.y,
+            x1: offset.x + layout.size.width,
+            y1: offset.y + layout.size.height,
+        })
         const childLayout = (layout as CenterLayout).child
         const childOffset = {
             x: offset.x + layout.size.width / 2 - childLayout.size.width / 2,
             y: offset.y + layout.size.height / 2 - childLayout.size.height / 2
         }
-        const { geometry, nextCameraIndex } = this.child.geometry(childLayout, childOffset, cameraStack)
-        return {
-            geometry: centerGeometry(position, geometry),
-            nextCameraIndex
-        }
+        const childGeometry = this.child.geometry(childLayout, childOffset, cameraStack)
+        return centerGeometry(worldSpace, childGeometry)
     }
 
     *traverse(layout: Layout, geometry: Geometry, z: number): Generator<Entry> {

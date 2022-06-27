@@ -3,13 +3,15 @@ export interface Offset {
     y: number
 }
 
-export interface Position {
-    x: number
-    y: number
+export interface WorldSpace {
+    x0: number
+    y0: number
+    x1: number
+    y1: number
 }
 
 export interface Geometry {
-    position: Position
+    worldSpace: WorldSpace
     textureIndex: number
     textureCoordinates: number[]
     colors: number[]

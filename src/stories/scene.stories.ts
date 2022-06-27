@@ -1,7 +1,7 @@
 import { rgba } from "../color"
 import { webGL2Renderer } from "../renderer/webgl2"
 import { container } from "../ui/container"
-import { render } from "../render"
+import { render } from "../renderer/render"
 import { scene } from "../ui/scene"
 import { Mat3 } from "../linear_algebra"
 

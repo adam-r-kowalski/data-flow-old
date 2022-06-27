@@ -1,7 +1,7 @@
 import { CrossAxisAlignment } from "../alignment"
 import { rgba } from "../color"
 import { padding } from "../padding"
-import { render } from "../render"
+import { render } from "../renderer/render"
 import { webGL2Renderer } from "../renderer/webgl2"
 import { center } from "../ui/center"
 import { column } from "../ui/column"

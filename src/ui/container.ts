@@ -1,8 +1,9 @@
+import { CameraStack } from "../camera_stack"
 import { Color } from "../color"
-import { Geometry, Offset, Position } from "../geometry"
+import { Geometry, Offset, WorldSpace } from "../geometry"
 import { Constraints, Layout, Size } from "../layout"
 import { Padding, padding as paddingAll } from "../padding"
-import { CameraStack, Entry, MeasureText, UI } from "../ui"
+import { Entry, MeasureText, OnClick, UI } from "../ui"
 
 export class ContainerLayout {
     constructor(
@@ -16,7 +17,7 @@ export const containerLayout = (size: Size, child?: Layout) =>
 
 export class ContainerGeometry {
     constructor(
-        readonly position: Position,
+        readonly worldSpace: WorldSpace,
         readonly textureIndex: number,
         readonly textureCoordinates: number[],
         readonly colors: number[],
@@ -28,7 +29,7 @@ export class ContainerGeometry {
 }
 
 interface GeometryData {
-    readonly position: Position
+    readonly worldSpace: WorldSpace
     readonly textureIndex?: number
     readonly textureCoordinates?: number[]
     readonly colors?: number[]
@@ -40,7 +41,7 @@ interface GeometryData {
 export const containerGeometry = (data: GeometryData, child?: Geometry) => {
     const vertices = data.vertices ?? []
     return new ContainerGeometry(
-        data.position,
+        data.worldSpace,
         data.textureIndex ?? 0,
         data.textureCoordinates ?? Array.from<number>({ length: vertices.length }).fill(0),
         data.colors ?? [],
@@ -59,6 +60,7 @@ export class Container {
         readonly x?: number,
         readonly y?: number,
         readonly color?: Color,
+        readonly onClick?: OnClick,
         readonly child?: UI
     ) { }
 
@@ -82,16 +84,16 @@ export class Container {
     }
 
     geometry(layout: Layout, offset: Offset, cameraStack: CameraStack) {
-        const position = { x: offset.x + (this.x ?? 0), y: offset.y + (this.y ?? 0) }
+        const x0 = offset.x + (this.x ?? 0)
+        const x1 = x0 + layout.size.width
+        const y0 = offset.y + (this.y ?? 0)
+        const y1 = y0 + layout.size.height
+        const worldSpace = cameraStack.transformWorldSpace({ x0, x1, y0, y1 })
         const data = (() => {
             if (this.color) {
-                const x0 = position.x
-                const x1 = position.x + layout.size.width
-                const y0 = position.y
-                const y1 = position.y + layout.size.height
                 const { r, g, b, a } = this.color.rgba()
                 return {
-                    position,
+                    worldSpace,
                     vertices: [
                         x0, y0,
                         x0, y1,
@@ -108,11 +110,11 @@ export class Container {
                         0, 1, 2,
                         1, 2, 3
                     ],
-                    cameraIndex: Array(4).fill(cameraStack.activeCameraIndex)
+                    cameraIndex: Array(4).fill(cameraStack.activeCamera())
                 }
             }
             return {
-                position,
+                worldSpace,
                 vertices: [],
                 colors: [],
                 vertexIndices: [],
@@ -122,22 +124,16 @@ export class Container {
         if (this.child) {
             const childLayout = (layout as ContainerLayout).child!
             const childOffset = {
-                x: offset.x + this.padding.left,
-                y: offset.y + this.padding.top
+                x: x0 + this.padding.left,
+                y: y0 + this.padding.top
             }
-            const { geometry, nextCameraIndex } = this.child.geometry(childLayout, childOffset, cameraStack)
-            return {
-                geometry: containerGeometry(data, geometry),
-                nextCameraIndex
-            }
+            const childGeometry = this.child.geometry(childLayout, childOffset, cameraStack)
+            return containerGeometry(data, childGeometry)
         }
-        return {
-            geometry: containerGeometry(data),
-            nextCameraIndex: cameraStack.nextCameraIndex
-        }
+        return containerGeometry(data)
     }
 
-    *traverse(layout: Layout, geometry: Geometry, z: number): Generator<Entry> {
+    * traverse(layout: Layout, geometry: Geometry, z: number): Generator<Entry> {
         yield { ui: this, layout, geometry, z }
         if (this.child) {
             const childLayout = (layout as ContainerLayout).child!
@@ -154,10 +150,10 @@ interface Properties {
     readonly x?: number
     readonly y?: number
     readonly color?: Color
-    readonly child?: UI
+    readonly onClick?: OnClick
 }
 
-export const container = ({ padding, width, height, color, x, y }: Properties, child?: UI): Container =>
+export const container = ({ padding, width, height, color, x, y, onClick }: Properties, child?: UI): Container =>
     new Container(
         padding ?? paddingAll(0),
         width,
@@ -165,5 +161,6 @@ export const container = ({ padding, width, height, color, x, y }: Properties, c
         x,
         y,
         color,
+        onClick,
         child
     )

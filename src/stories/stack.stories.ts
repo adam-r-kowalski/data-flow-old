@@ -1,5 +1,5 @@
 import { rgba } from "../color"
-import { render } from "../render"
+import { render } from "../renderer/render"
 import { webGL2Renderer } from "../renderer/webgl2"
 import { center } from "../ui/center"
 import { container } from "../ui/container"

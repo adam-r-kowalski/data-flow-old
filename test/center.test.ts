@@ -1,10 +1,11 @@
 import { rgba } from '../src/color'
 import { container, containerLayout, containerGeometry } from '../src/ui/container'
-import { layerGeometry } from '../src/layerGeometry'
 import { reduce } from '../src/reduce'
-import { Batch, batchGeometry } from '../src/batchGeometry'
+import { Batch, batchGeometry } from '../src/batch_geometry'
 import { center, centerGeometry, centerLayout } from '../src/ui/center'
 import { mockMeasureText } from '../src/renderer/mock'
+import { CameraStack } from '../src/camera_stack'
+import { layerGeometry } from '../src/renderer/render'
 
 
 test("center layout", () => {
@@ -31,10 +32,11 @@ test("center geometry", () => {
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
     const layout = ui.layout(constraints, mockMeasureText)
     const offsets = { x: 0, y: 0 }
-    const { geometry } = ui.geometry(layout, offsets, { activeCameraIndex: 0, nextCameraIndex: 1 })
-    const expectedGeometry = centerGeometry({ x: 0, y: 0 },
+    const cameraStack = new CameraStack()
+    const geometry = ui.geometry(layout, offsets, cameraStack)
+    const expectedGeometry = centerGeometry({ x0: 0, y0: 0, x1: 100, y1: 100 },
         containerGeometry({
-            position: { x: 25, y: 25 },
+            worldSpace: { x0: 25, y0: 25, x1: 75, y1: 75 },
             vertices: [
                 25, 25,
                 25, 75,
@@ -66,10 +68,11 @@ test("center layers", () => {
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
     const layout = ui.layout(constraints, mockMeasureText)
     const offsets = { x: 0, y: 0 }
-    const { geometry } = ui.geometry(layout, offsets, { activeCameraIndex: 0, nextCameraIndex: 1 })
+    const cameraStack = new CameraStack()
+    const geometry = ui.geometry(layout, offsets, cameraStack)
     const layers = reduce(ui, layout, geometry, layerGeometry)
     const childGeometry = containerGeometry({
-        position: { x: 25, y: 25 },
+        worldSpace: { x0: 25, y0: 25, x1: 75, y1: 75 },
         vertices: [
             25, 25,
             25, 75,
@@ -104,7 +107,8 @@ test("center batches", () => {
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
     const layout = ui.layout(constraints, mockMeasureText)
     const offsets = { x: 0, y: 0 }
-    const { geometry } = ui.geometry(layout, offsets, { activeCameraIndex: 0, nextCameraIndex: 1 })
+    const cameraStack = new CameraStack()
+    const geometry = ui.geometry(layout, offsets, cameraStack)
     const layers = reduce(ui, layout, geometry, layerGeometry)
     const batches = batchGeometry(layers)
     const expectedBatches: Batch[] = [

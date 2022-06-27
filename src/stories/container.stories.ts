@@ -1,6 +1,6 @@
 import { rgba } from "../color"
 import { padding } from "../padding"
-import { render } from "../render"
+import { render } from "../renderer/render"
 import { webGL2Renderer } from "../renderer/webgl2"
 import { container } from "../ui/container"
 

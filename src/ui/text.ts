@@ -1,6 +1,7 @@
-import { CameraStack, Entry, Font, MeasureText, TextMeasurements } from "."
+import { Entry, Font, MeasureText, TextMeasurements } from "."
+import { CameraStack } from "../camera_stack"
 import { Color, rgba } from "../color"
-import { Geometry, Offset, Position } from "../geometry"
+import { Geometry, Offset, WorldSpace } from "../geometry"
 import { Constraints, Layout, Size } from "../layout"
 
 export class TextLayout {
@@ -16,7 +17,7 @@ export const textLayout = (measurements: TextMeasurements, size: Size) =>
 
 export class TextGeometry {
     constructor(
-        readonly position: Position,
+        readonly worldSpace: WorldSpace,
         readonly textureIndex: number,
         readonly textureCoordinates: number[],
         readonly colors: number[],
@@ -27,7 +28,7 @@ export class TextGeometry {
 }
 
 interface GeometryData {
-    readonly position: Position
+    readonly worldSpace: WorldSpace
     readonly textureIndex: number
     readonly textureCoordinates: number[]
     readonly colors: number[]
@@ -84,7 +85,7 @@ const vertexIndices = (n: number) => {
 
 export const textGeometry = (data: GeometryData) =>
     new TextGeometry(
-        data.position,
+        data.worldSpace,
         data.textureIndex,
         data.textureCoordinates,
         data.colors,
@@ -112,16 +113,20 @@ export class Text {
         const textLayout = layout as TextLayout
         const { measurements } = textLayout
         const { textureIndex, textureCoordinates, widths } = measurements
-        const geometry = textGeometry({
-            position: { x: offset.x, y: offset.y },
+        return textGeometry({
+            worldSpace: cameraStack.transformWorldSpace({
+                x0: offset.x,
+                y0: offset.y,
+                x1: offset.x + layout.size.width,
+                y1: offset.y + layout.size.height
+            }),
             textureIndex,
             textureCoordinates: textureCoordinates.flat(),
             colors: colors(widths.length, this.color),
             vertices: vertices(widths, this.font.size, offset),
             vertexIndices: vertexIndices(widths.length),
-            cameraIndex: Array(widths.length * 4).fill(cameraStack.activeCameraIndex)
+            cameraIndex: Array(widths.length * 4).fill(cameraStack.activeCamera())
         })
-        return { geometry, nextCameraIndex: cameraStack.nextCameraIndex }
     }
 
     *traverse(layout: Layout, geometry: Geometry, z: number): Generator<Entry> {

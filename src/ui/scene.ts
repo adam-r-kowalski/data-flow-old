@@ -1,7 +1,8 @@
-import { Geometry, Offset, Position } from "../geometry"
+import { CameraStack } from "../camera_stack"
+import { Geometry, Offset, WorldSpace } from "../geometry"
 import { Constraints, Layout, Size } from "../layout"
 import { Mat3 } from "../linear_algebra"
-import { CameraStack, Entry, MeasureText, UI } from "../ui"
+import { Entry, MeasureText, UI } from "../ui"
 
 export class SceneLayout {
     constructor(
@@ -15,7 +16,7 @@ export const sceneLayout = (size: Size, children: Layout[]) =>
 
 export class SceneGeometry {
     constructor(
-        readonly position: Position,
+        readonly worldSpace: WorldSpace,
         readonly textureIndex: number,
         readonly textureCoordinates: number[],
         readonly colors: number[],
@@ -26,8 +27,8 @@ export class SceneGeometry {
     ) { }
 }
 
-export const sceneGeometry = (position: Position, children: Geometry[]) =>
-    new SceneGeometry(position, 0, [], [], [], [], [], children)
+export const sceneGeometry = (worldSpace: WorldSpace, children: Geometry[]) =>
+    new SceneGeometry(worldSpace, 0, [], [], [], [], [], children)
 
 export class Scene {
     constructor(
@@ -42,27 +43,17 @@ export class Scene {
         return sceneLayout({ width, height }, children)
     }
 
-    geometry(layout: Layout, offset: Offset, { nextCameraIndex }: CameraStack) {
-        const position = { x: offset.x, y: offset.y }
+    geometry(layout: Layout, offset: Offset, cameraStack: CameraStack) {
+        const worldSpace = cameraStack.transformWorldSpace({
+            x0: offset.x,
+            y0: offset.y,
+            x1: offset.x + layout.size.width,
+            y1: offset.y + layout.size.height
+        })
         const childrenLayout = (layout as SceneLayout).children
-        const initialChildren: Geometry[] = []
-        const initial = {
-            children: initialChildren,
-            cameraStack: {
-                activeCameraIndex: nextCameraIndex,
-                nextCameraIndex: nextCameraIndex + 1
-            }
-        }
-        const result = this.children.reduce((acc, c, i) => {
-            const { geometry, nextCameraIndex } = c.geometry(childrenLayout[i], offset, acc.cameraStack)
-            acc.children.push(geometry)
-            acc.cameraStack.nextCameraIndex = nextCameraIndex
-            return acc
-        }, initial)
-        return {
-            geometry: sceneGeometry(position, result.children),
-            nextCameraIndex: result.cameraStack.nextCameraIndex
-        }
+        cameraStack.pushCamera(this.camera)
+        const children = this.children.map((c, i) => c.geometry(childrenLayout[i], offset, cameraStack))
+        return sceneGeometry(worldSpace, children)
     }
 
     *traverse(layout: Layout, geometry: Geometry, z: number): Generator<Entry> {

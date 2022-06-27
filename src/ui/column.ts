@@ -1,6 +1,7 @@
-import { CameraStack, Entry, MeasureText, UI } from "."
+import { Entry, MeasureText, UI } from "."
 import { CrossAxisAlignment, MainAxisAlignment } from "../alignment"
-import { Geometry, Offset, Position } from "../geometry"
+import { CameraStack } from "../camera_stack"
+import { Geometry, Offset, WorldSpace } from "../geometry"
 import { Constraints, Layout, Size } from "../layout"
 
 export class ColumnLayout {
@@ -16,7 +17,7 @@ export const columnLayout = (size: Size, totalChildHeight: number, children: Lay
 
 export class ColumnGeometry {
     constructor(
-        readonly position: Position,
+        readonly worldSpace: WorldSpace,
         readonly textureIndex: number,
         readonly textureCoordinates: number[],
         readonly colors: number[],
@@ -27,8 +28,8 @@ export class ColumnGeometry {
     ) { }
 }
 
-export const columnGeometry = (position: Position, children: Geometry[]) =>
-    new ColumnGeometry(position, 0, [], [], [], [], [], children)
+export const columnGeometry = (worldSpace: WorldSpace, children: Geometry[]) =>
+    new ColumnGeometry(worldSpace, 0, [], [], [], [], [], children)
 
 export class Column {
     constructor(
@@ -71,7 +72,6 @@ export class Column {
                     case MainAxisAlignment.SPACE_BETWEEN: return offset.y
                 }
             })(),
-            cameraStack
         }
         const addYStart = (childLayout: Layout) => childLayout.size.height
         const addYCenter = (childLayout: Layout) => childLayout.size.height
@@ -100,16 +100,18 @@ export class Column {
         const result = this.children.reduce((acc, child, i) => {
             const childLayout = columnLayout.children[i]
             const childOffset = { x: offsetX(childLayout), y: acc.y }
-            const { geometry, nextCameraIndex } = child.geometry(childLayout, childOffset, acc.cameraStack)
-            acc.children.push(geometry)
+            const childGeometry = child.geometry(childLayout, childOffset, cameraStack)
+            acc.children.push(childGeometry)
             acc.y += addY(childLayout)
-            acc.cameraStack.nextCameraIndex = nextCameraIndex
             return acc
         }, initial)
-        return {
-            geometry: columnGeometry({ x: offset.x, y: offset.y }, result.children),
-            nextCameraIndex: result.cameraStack.nextCameraIndex
-        }
+        const worldSpace = cameraStack.transformWorldSpace({
+            x0: offset.x,
+            y0: offset.y,
+            x1: offset.x + layout.size.width,
+            y1: offset.y + layout.size.height
+        })
+        return columnGeometry(worldSpace, result.children)
     }
 
     *traverse(layout: Layout, geometry: Geometry, z: number): Generator<Entry> {

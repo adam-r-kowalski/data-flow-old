@@ -1,4 +1,5 @@
-import { Batch } from "../batchGeometry";
+import { ClickHandlers } from ".";
+import { Batch } from "../batch_geometry";
 import { Size } from "../layout";
 import { Mat3 } from "../linear_algebra";
 import { Font, TextMeasurements } from "../ui";
@@ -113,6 +114,7 @@ export class WebGL2Renderer {
         public program: Program,
         public textures: WebGLTexture[],
         public textMeasurementsCache: Map<string, TextMeasurements>,
+        public clickHandlers: ClickHandlers
     ) { }
 
     clear = () => {
@@ -370,7 +372,7 @@ export const webGL2Renderer = (size: Size) => {
     )
     const textures = [texture]
     const textMeasurementsCache = new Map()
-    const renderer = new WebGL2Renderer(canvas, gl, program, textures, textMeasurementsCache)
+    const renderer = new WebGL2Renderer(canvas, gl, program, textures, textMeasurementsCache, [])
     renderer.size = size
     return renderer
 }

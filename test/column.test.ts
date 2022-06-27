@@ -1,12 +1,12 @@
-import { Batch, batchGeometry } from "../src/batchGeometry"
+import { Batch, batchGeometry } from "../src/batch_geometry"
 import { rgba } from "../src/color"
-import { layerGeometry } from "../src/layerGeometry"
 import { reduce } from "../src/reduce"
 import { container, containerGeometry, containerLayout } from "../src/ui/container"
 import { column, columnGeometry, columnLayout } from "../src/ui/column"
 import { CrossAxisAlignment, MainAxisAlignment } from "../src/alignment"
-import { render } from "../src/render"
 import { mockMeasureText, mockRenderer } from "../src/renderer/mock"
+import { CameraStack } from "../src/camera_stack"
+import { layerGeometry } from "../src/renderer/render"
 
 test("column layout", () => {
     const ui = column([
@@ -46,10 +46,11 @@ test("column geometry", () => {
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
     const layout = ui.layout(constraints, mockMeasureText)
     const offsets = { x: 0, y: 0 }
-    const { geometry } = ui.geometry(layout, offsets, { activeCameraIndex: 0, nextCameraIndex: 1 })
-    const expectedGeometry = columnGeometry({ x: 0, y: 0 }, [
+    const cameraStack = new CameraStack()
+    const geometry = ui.geometry(layout, offsets, cameraStack)
+    const expectedGeometry = columnGeometry({ x0: 0, y0: 0, x1: 100, y1: 100 }, [
         containerGeometry({
-            position: { x: 0, y: 0 },
+            worldSpace: { x0: 0, y0: 0, x1: 50, y1: 50, },
             vertices: [
                 0, 0,
                 0, 50,
@@ -69,7 +70,7 @@ test("column geometry", () => {
             cameraIndex: Array(4).fill(0)
         }),
         containerGeometry({
-            position: { x: 0, y: 50 },
+            worldSpace: { x0: 0, y0: 50, x1: 50, y1: 100 },
             vertices: [
                 0, 50,
                 0, 100,
@@ -108,7 +109,8 @@ test("column layers", () => {
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
     const layout = ui.layout(constraints, mockMeasureText)
     const offsets = { x: 0, y: 0 }
-    const { geometry } = ui.geometry(layout, offsets, { activeCameraIndex: 0, nextCameraIndex: 1 })
+    const cameraStack = new CameraStack()
+    const geometry = ui.geometry(layout, offsets, cameraStack)
     const layers = reduce(ui, layout, geometry, layerGeometry)
     const layer = new Map()
     layer.set(0, [

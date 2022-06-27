@@ -3,7 +3,7 @@ import { container, containerLayout, containerGeometry } from '../src/ui/contain
 import { padding } from '../src/padding'
 import { layerGeometry } from '../src/layerGeometry'
 import { reduce } from '../src/reduce'
-import { batchGeometry } from '../src/batchGeometry'
+import { batchGeometry } from '../src/batch_geometry'
 import { mockMeasureText } from '../src/renderer/mock'
 
 test("container layout", () => {

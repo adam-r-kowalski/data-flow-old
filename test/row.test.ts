@@ -1,5 +1,5 @@
 import { CrossAxisAlignment, MainAxisAlignment } from "../src/alignment"
-import { batchGeometry } from "../src/batchGeometry"
+import { batchGeometry } from "../src/batch_geometry"
 import { rgba } from "../src/color"
 import { layerGeometry } from "../src/layerGeometry"
 import { reduce } from "../src/reduce"

@@ -99,7 +99,6 @@ test("matrix vector multiplication by identity", () => {
     expect(c.data).toEqual(b.data)
 })
 
-
 test("scale vector", () => {
     const a = Mat3.scale(2, 2)
     const b = new Vec3([1, 2, 1])

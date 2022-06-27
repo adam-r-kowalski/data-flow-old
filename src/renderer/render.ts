@@ -14,16 +14,7 @@ export type Layers = Layer[]
 
 interface Accumulator {
     layers: Layers,
-    cameras: Cameras,
     clickHandlers: ClickHandlers
-}
-
-export const gatherCameras: Reducer<Cameras> = {
-    initial: () => [Mat3.identity()],
-    combine: (cameras: Cameras, entry: Entry) => {
-        if (entry.ui.camera) cameras.push(entry.ui.camera)
-        return cameras
-    }
 }
 
 export const layerGeometry: Reducer<Layers> = {
@@ -62,13 +53,11 @@ export const gatherOnClickHandlers: Reducer<ClickHandlers> = {
 const reducer: Reducer<Accumulator> = {
     initial: () => ({
         layers: layerGeometry.initial(),
-        cameras: gatherCameras.initial(),
         clickHandlers: gatherOnClickHandlers.initial(),
     }),
     combine: (acc: Accumulator, entry: Entry) => {
         return {
             layers: layerGeometry.combine(acc.layers, entry),
-            cameras: gatherCameras.combine(acc.cameras, entry),
             clickHandlers: gatherOnClickHandlers.combine(acc.clickHandlers, entry),
         }
     }
@@ -87,9 +76,9 @@ export const onRender = <R extends Renderer>(renderer: R, { ui }: Render): R => 
     const offsets = { x: 0, y: 0 }
     const cameraStack = new CameraStack()
     const geometry = ui.geometry(layout, offsets, cameraStack)
-    const { layers, cameras, clickHandlers } = reduce(ui, layout, geometry, reducer)
+    const { layers, clickHandlers } = reduce(ui, layout, geometry, reducer)
     const batches = batchGeometry(layers)
-    renderer.cameras = cameras
+    renderer.cameras = cameraStack.cameras
     renderer.clickHandlers = clickHandlers
     for (const batch of batches) renderer.draw(batch)
     return renderer

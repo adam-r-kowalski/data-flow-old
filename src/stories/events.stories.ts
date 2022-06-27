@@ -1,3 +1,5 @@
+import { action } from '@storybook/addon-actions'
+
 import { rgba } from "../color"
 import { webGL2Renderer } from "../renderer/webgl2"
 import { container } from "../ui/container"
@@ -19,7 +21,7 @@ export const clickable = () => {
             color: rgba(255, 0, 0, 255),
             x: 100,
             y: 200,
-            onClick: () => console.log('clicked a')
+            onClick: () => action('clicked a')
         }),
         container({
             width: 50,
@@ -27,14 +29,14 @@ export const clickable = () => {
             color: rgba(0, 255, 0, 255),
             x: 300,
             y: 250,
-            onClick: () => console.log('clicked b')
+            onClick: () => action('clicked b')
         }),
     ])
     renderer = dispatchRendererEvent(renderer, {
         kind: RendererEventKind.RENDER,
         ui
     })
-    document.addEventListener('pointerdown', p => {
+    renderer.canvas.addEventListener('pointerdown', p => {
         dispatchRendererEvent(renderer, {
             kind: RendererEventKind.MOUSE_CLICK,
             x: p.clientX,

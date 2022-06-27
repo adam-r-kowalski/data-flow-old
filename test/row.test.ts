@@ -1,9 +1,10 @@
 import { CrossAxisAlignment, MainAxisAlignment } from "../src/alignment"
 import { batchGeometry } from "../src/batch_geometry"
+import { CameraStack } from "../src/camera_stack"
 import { rgba } from "../src/color"
-import { layerGeometry } from "../src/layerGeometry"
 import { reduce } from "../src/reduce"
 import { mockMeasureText } from "../src/renderer/mock"
+import { layerGeometry } from "../src/renderer/render"
 import { container, containerGeometry, containerLayout } from "../src/ui/container"
 import { row, rowGeometry, rowLayout } from "../src/ui/row"
 
@@ -45,10 +46,10 @@ test("row geometry", () => {
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
     const layout = ui.layout(constraints, mockMeasureText)
     const offsets = { x: 0, y: 0 }
-    const { geometry } = ui.geometry(layout, offsets, { activeCameraIndex: 0, nextCameraIndex: 1 })
-    const expectedGeometry = rowGeometry({ x: 0, y: 0 }, [
+    const geometry = ui.geometry(layout, offsets, new CameraStack())
+    const expectedGeometry = rowGeometry({ x0: 0, y0: 0, x1: 100, y1: 50 }, [
         containerGeometry({
-            position: { x: 0, y: 0 },
+            worldSpace: { x0: 0, y0: 0, x1: 50, y1: 50 },
             vertices: [
                 0, 0,
                 0, 50,
@@ -68,7 +69,7 @@ test("row geometry", () => {
             cameraIndex: Array(4).fill(0)
         }),
         containerGeometry({
-            position: { x: 50, y: 0 },
+            worldSpace: { x0: 50, y0: 0, x1: 100, y1: 50 },
             vertices: [
                 50, 0,
                 50, 50,
@@ -107,12 +108,12 @@ test("row layers", () => {
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
     const layout = ui.layout(constraints, mockMeasureText)
     const offsets = { x: 0, y: 0 }
-    const { geometry } = ui.geometry(layout, offsets, { activeCameraIndex: 0, nextCameraIndex: 1 })
+    const geometry = ui.geometry(layout, offsets, new CameraStack())
     const layers = reduce(ui, layout, geometry, layerGeometry)
     const layer = new Map()
     layer.set(0, [
         containerGeometry({
-            position: { x: 0, y: 0 },
+            worldSpace: { x0: 0, y0: 0, x1: 50, y1: 50 },
             vertices: [
                 0, 0,
                 0, 50,
@@ -132,7 +133,7 @@ test("row layers", () => {
             cameraIndex: Array(4).fill(0)
         }),
         containerGeometry({
-            position: { x: 50, y: 0 },
+            worldSpace: { x0: 50, y0: 0, x1: 100, y1: 50 },
             vertices: [
                 50, 0,
                 50, 50,
@@ -172,7 +173,7 @@ test("row batch", () => {
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
     const layout = ui.layout(constraints, mockMeasureText)
     const offsets = { x: 0, y: 0 }
-    const { geometry } = ui.geometry(layout, offsets, { activeCameraIndex: 0, nextCameraIndex: 1 })
+    const geometry = ui.geometry(layout, offsets, new CameraStack())
     const layers = reduce(ui, layout, geometry, layerGeometry)
     const batches = batchGeometry(layers)
     const expectedBatches = [
@@ -273,10 +274,10 @@ test("row cross axis alignment start geometry", () => {
     const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
     const layout = ui.layout(constraints, mockMeasureText)
     const offsets = { x: 0, y: 0 }
-    const { geometry } = ui.geometry(layout, offsets, { activeCameraIndex: 0, nextCameraIndex: 1 })
-    const expectedGeometry = rowGeometry({ x: 0, y: 0 }, [
+    const geometry = ui.geometry(layout, offsets, new CameraStack())
+    const expectedGeometry = rowGeometry({ x0: 0, y0: 0, x1: 200, y1: 100 }, [
         containerGeometry({
-            position: { x: 0, y: 0 },
+            worldSpace: { x0: 0, y0: 0, x1: 50, y1: 50 },
             vertices: [
                 0, 0,
                 0, 50,
@@ -296,7 +297,7 @@ test("row cross axis alignment start geometry", () => {
             cameraIndex: Array(4).fill(0)
         }),
         containerGeometry({
-            position: { x: 50, y: 0 },
+            worldSpace: { x0: 50, y0: 0, x1: 150, y1: 100 },
             vertices: [
                 50, 0,
                 50, 100,
@@ -316,7 +317,7 @@ test("row cross axis alignment start geometry", () => {
             cameraIndex: Array(4).fill(0)
         }),
         containerGeometry({
-            position: { x: 150, y: 0 },
+            worldSpace: { x0: 150, y0: 0, x1: 200, y1: 50 },
             vertices: [
                 150, 0,
                 150, 50,
@@ -388,10 +389,10 @@ test("row cross axis alignment center geometry", () => {
     const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
     const layout = ui.layout(constraints, mockMeasureText)
     const offsets = { x: 0, y: 0 }
-    const { geometry } = ui.geometry(layout, offsets, { activeCameraIndex: 0, nextCameraIndex: 1 })
-    const expectedGeometry = rowGeometry({ x: 0, y: 0 }, [
+    const geometry = ui.geometry(layout, offsets, new CameraStack())
+    const expectedGeometry = rowGeometry({ x0: 0, y0: 0, x1: 200, y1: 100 }, [
         containerGeometry({
-            position: { x: 0, y: 25 },
+            worldSpace: { x0: 0, y0: 25, x1: 50, y1: 75 },
             vertices: [
                 0, 25,
                 0, 75,
@@ -411,7 +412,7 @@ test("row cross axis alignment center geometry", () => {
             cameraIndex: Array(4).fill(0)
         }),
         containerGeometry({
-            position: { x: 50, y: 0 },
+            worldSpace: { x0: 50, y0: 0, x1: 150, y1: 100 },
             vertices: [
                 50, 0,
                 50, 100,
@@ -431,7 +432,7 @@ test("row cross axis alignment center geometry", () => {
             cameraIndex: Array(4).fill(0)
         }),
         containerGeometry({
-            position: { x: 150, y: 25 },
+            worldSpace: { x0: 150, y0: 25, x1: 200, y1: 75 },
             vertices: [
                 150, 25,
                 150, 75,
@@ -503,10 +504,10 @@ test("row cross axis alignment end geometry", () => {
     const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
     const layout = ui.layout(constraints, mockMeasureText)
     const offsets = { x: 0, y: 0 }
-    const { geometry } = ui.geometry(layout, offsets, { activeCameraIndex: 0, nextCameraIndex: 1 })
-    const expectedGeometry = rowGeometry({ x: 0, y: 0 }, [
+    const geometry = ui.geometry(layout, offsets, new CameraStack())
+    const expectedGeometry = rowGeometry({ x0: 0, y0: 0, x1: 200, y1: 100 }, [
         containerGeometry({
-            position: { x: 0, y: 50 },
+            worldSpace: { x0: 0, y0: 50, x1: 50, y1: 100 },
             vertices: [
                 0, 50,
                 0, 100,
@@ -526,7 +527,7 @@ test("row cross axis alignment end geometry", () => {
             cameraIndex: Array(4).fill(0)
         }),
         containerGeometry({
-            position: { x: 50, y: 0 },
+            worldSpace: { x0: 50, y0: 0, x1: 150, y1: 100 },
             vertices: [
                 50, 0,
                 50, 100,
@@ -546,7 +547,7 @@ test("row cross axis alignment end geometry", () => {
             cameraIndex: Array(4).fill(0)
         }),
         containerGeometry({
-            position: { x: 150, y: 50 },
+            worldSpace: { x0: 150, y0: 50, x1: 200, y1: 100 },
             vertices: [
                 150, 50,
                 150, 100,
@@ -618,10 +619,10 @@ test("row main axis alignment start geometry", () => {
     const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
     const layout = ui.layout(constraints, mockMeasureText)
     const offsets = { x: 0, y: 0 }
-    const { geometry } = ui.geometry(layout, offsets, { activeCameraIndex: 0, nextCameraIndex: 1 })
-    const expectedGeometry = rowGeometry({ x: 0, y: 0 }, [
+    const geometry = ui.geometry(layout, offsets, new CameraStack())
+    const expectedGeometry = rowGeometry({ x0: 0, y0: 0, x1: 200, y1: 100 }, [
         containerGeometry({
-            position: { x: 0, y: 0 },
+            worldSpace: { x0: 0, y0: 0, x1: 50, y1: 50 },
             vertices: [
                 0, 0,
                 0, 50,
@@ -641,7 +642,7 @@ test("row main axis alignment start geometry", () => {
             cameraIndex: Array(4).fill(0)
         }),
         containerGeometry({
-            position: { x: 50, y: 0 },
+            worldSpace: { x0: 50, y0: 0, x1: 150, y1: 100 },
             vertices: [
                 50, 0,
                 50, 100,
@@ -661,7 +662,7 @@ test("row main axis alignment start geometry", () => {
             cameraIndex: Array(4).fill(0)
         }),
         containerGeometry({
-            position: { x: 150, y: 0 },
+            worldSpace: { x0: 150, y0: 0, x1: 200, y1: 50 },
             vertices: [
                 150, 0,
                 150, 50,
@@ -733,10 +734,10 @@ test("row main axis alignment center geometry", () => {
     const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
     const layout = ui.layout(constraints, mockMeasureText)
     const offsets = { x: 0, y: 0 }
-    const { geometry } = ui.geometry(layout, offsets, { activeCameraIndex: 0, nextCameraIndex: 1 })
-    const expectedGeometry = rowGeometry({ x: 0, y: 0 }, [
+    const geometry = ui.geometry(layout, offsets, new CameraStack())
+    const expectedGeometry = rowGeometry({ x0: 0, y0: 0, x1: 500, y1: 100 }, [
         containerGeometry({
-            position: { x: 150, y: 0 },
+            worldSpace: { x0: 150, y0: 0, x1: 200, y1: 50 },
             vertices: [
                 150, 0,
                 150, 50,
@@ -756,7 +757,7 @@ test("row main axis alignment center geometry", () => {
             cameraIndex: Array(4).fill(0)
         }),
         containerGeometry({
-            position: { x: 200, y: 0 },
+            worldSpace: { x0: 200, y0: 0, x1: 300, y1: 100 },
             vertices: [
                 200, 0,
                 200, 100,
@@ -776,7 +777,7 @@ test("row main axis alignment center geometry", () => {
             cameraIndex: Array(4).fill(0)
         }),
         containerGeometry({
-            position: { x: 300, y: 0 },
+            worldSpace: { x0: 300, y0: 0, x1: 350, y1: 50 },
             vertices: [
                 300, 0,
                 300, 50,
@@ -848,10 +849,10 @@ test("row main axis alignment end geometry", () => {
     const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
     const layout = ui.layout(constraints, mockMeasureText)
     const offsets = { x: 0, y: 0 }
-    const { geometry } = ui.geometry(layout, offsets, { activeCameraIndex: 0, nextCameraIndex: 1 })
-    const expectedGeometry = rowGeometry({ x: 0, y: 0 }, [
+    const geometry = ui.geometry(layout, offsets, new CameraStack())
+    const expectedGeometry = rowGeometry({ x0: 0, y0: 0, x1: 500, y1: 100 }, [
         containerGeometry({
-            position: { x: 300, y: 0 },
+            worldSpace: { x0: 300, y0: 0, x1: 350, y1: 50 },
             vertices: [
                 300, 0,
                 300, 50,
@@ -871,7 +872,7 @@ test("row main axis alignment end geometry", () => {
             cameraIndex: Array(4).fill(0)
         }),
         containerGeometry({
-            position: { x: 350, y: 0 },
+            worldSpace: { x0: 350, y0: 0, x1: 450, y1: 100 },
             vertices: [
                 350, 0,
                 350, 100,
@@ -891,7 +892,7 @@ test("row main axis alignment end geometry", () => {
             cameraIndex: Array(4).fill(0)
         }),
         containerGeometry({
-            position: { x: 450, y: 0 },
+            worldSpace: { x0: 450, y0: 0, x1: 500, y1: 50 },
             vertices: [
                 450, 0,
                 450, 50,
@@ -963,10 +964,10 @@ test("row main axis alignment space between geometry", () => {
     const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
     const layout = ui.layout(constraints, mockMeasureText)
     const offsets = { x: 0, y: 0 }
-    const { geometry } = ui.geometry(layout, offsets, { activeCameraIndex: 0, nextCameraIndex: 1 })
-    const expectedGeometry = rowGeometry({ x: 0, y: 0 }, [
+    const geometry = ui.geometry(layout, offsets, new CameraStack())
+    const expectedGeometry = rowGeometry({ x0: 0, y0: 0, x1: 500, y1: 100 }, [
         containerGeometry({
-            position: { x: 0, y: 0 },
+            worldSpace: { x0: 0, y0: 0, x1: 50, y1: 50 },
             vertices: [
                 0, 0,
                 0, 50,
@@ -986,7 +987,7 @@ test("row main axis alignment space between geometry", () => {
             cameraIndex: Array(4).fill(0)
         }),
         containerGeometry({
-            position: { x: 200, y: 0 },
+            worldSpace: { x0: 200, y0: 0, x1: 300, y1: 100 },
             vertices: [
                 200, 0,
                 200, 100,
@@ -1006,7 +1007,7 @@ test("row main axis alignment space between geometry", () => {
             cameraIndex: Array(4).fill(0)
         }),
         containerGeometry({
-            position: { x: 450, y: 0 },
+            worldSpace: { x0: 450, y0: 0, x1: 500, y1: 50 },
             vertices: [
                 450, 0,
                 450, 50,
@@ -1078,10 +1079,10 @@ test("row main axis alignment space evenly geometry", () => {
     const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
     const layout = ui.layout(constraints, mockMeasureText)
     const offsets = { x: 0, y: 0 }
-    const { geometry } = ui.geometry(layout, offsets, { activeCameraIndex: 0, nextCameraIndex: 1 })
-    const expectedGeometry = rowGeometry({ x: 0, y: 0 }, [
+    const geometry = ui.geometry(layout, offsets, new CameraStack())
+    const expectedGeometry = rowGeometry({ x0: 0, y0: 0, x1: 500, y1: 100 }, [
         containerGeometry({
-            position: { x: 75, y: 0 },
+            worldSpace: { x0: 75, y0: 0, x1: 125, y1: 50 },
             vertices: [
                 75, 0,
                 75, 50,
@@ -1101,7 +1102,7 @@ test("row main axis alignment space evenly geometry", () => {
             cameraIndex: Array(4).fill(0)
         }),
         containerGeometry({
-            position: { x: 200, y: 0 },
+            worldSpace: { x0: 200, y0: 0, x1: 300, y1: 100 },
             vertices: [
                 200, 0,
                 200, 100,
@@ -1121,7 +1122,7 @@ test("row main axis alignment space evenly geometry", () => {
             cameraIndex: Array(4).fill(0)
         }),
         containerGeometry({
-            position: { x: 375, y: 0 },
+            worldSpace: { x0: 375, y0: 0, x1: 425, y1: 50 },
             vertices: [
                 375, 0,
                 375, 50,

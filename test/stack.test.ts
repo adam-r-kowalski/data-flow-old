@@ -4,8 +4,9 @@ import { center, centerGeometry, centerLayout } from '../src/ui/center'
 import { mockMeasureText } from '../src/renderer/mock'
 import { stack, stackGeometry, stackLayout } from '../src/ui/stack'
 import { reduce } from '../src/reduce'
-import { layerGeometry } from '../src/layerGeometry'
 import { Batch, batchGeometry } from '../src/batch_geometry'
+import { CameraStack } from '../src/camera_stack'
+import { layerGeometry } from '../src/renderer/render'
 
 
 test("stack layout", () => {
@@ -43,10 +44,10 @@ test("stack geometry", () => {
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
     const layout = ui.layout(constraints, mockMeasureText)
     const offsets = { x: 0, y: 0 }
-    const { geometry } = ui.geometry(layout, offsets, { activeCameraIndex: 0, nextCameraIndex: 1 })
-    const expectedGeometry = stackGeometry({ x: 0, y: 0 }, [
+    const geometry = ui.geometry(layout, offsets, new CameraStack())
+    const expectedGeometry = stackGeometry({ x0: 0, y0: 0, x1: 100, y1: 100 }, [
         containerGeometry({
-            position: { x: 0, y: 0 },
+            worldSpace: { x0: 0, y0: 0, x1: 100, y1: 100 },
             vertices: [
                 0, 0,
                 0, 100,
@@ -65,9 +66,9 @@ test("stack geometry", () => {
             ],
             cameraIndex: Array(4).fill(0)
         }),
-        centerGeometry({ x: 0, y: 0 },
+        centerGeometry({ x0: 0, y0: 0, x1: 100, y1: 100 },
             containerGeometry({
-                position: { x: 25, y: 25 },
+                worldSpace: { x0: 25, y0: 25, x1: 75, y1: 75 },
                 vertices: [
                     25, 25,
                     25, 75,
@@ -105,11 +106,11 @@ test("stack layers", () => {
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
     const layout = ui.layout(constraints, mockMeasureText)
     const offsets = { x: 0, y: 0 }
-    const { geometry } = ui.geometry(layout, offsets, { activeCameraIndex: 0, nextCameraIndex: 1 })
+    const geometry = ui.geometry(layout, offsets, new CameraStack())
     const layers = reduce(ui, layout, geometry, layerGeometry)
     const layer0 = new Map()
     layer0.set(0, [containerGeometry({
-        position: { x: 0, y: 0 },
+        worldSpace: { x0: 0, y0: 0, x1: 100, y1: 100 },
         vertices: [
             0, 0,
             0, 100,
@@ -130,7 +131,7 @@ test("stack layers", () => {
     })])
     const layer2 = new Map()
     layer2.set(0, [containerGeometry({
-        position: { x: 25, y: 25 },
+        worldSpace: { x0: 25, y0: 25, x1: 75, y1: 75 },
         vertices: [
             25, 25,
             25, 75,
@@ -167,7 +168,7 @@ test("stack batches", () => {
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
     const layout = ui.layout(constraints, mockMeasureText)
     const offsets = { x: 0, y: 0 }
-    const { geometry } = ui.geometry(layout, offsets, { activeCameraIndex: 0, nextCameraIndex: 1 })
+    const geometry = ui.geometry(layout, offsets, new CameraStack())
     const layers = reduce(ui, layout, geometry, layerGeometry)
     const batches = batchGeometry(layers)
     const expectedBatches: Batch[] = [

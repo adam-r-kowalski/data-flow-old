@@ -1,3 +1,4 @@
+import { CameraStack } from '../src/camera_stack'
 import { mockMeasureText } from '../src/renderer/mock'
 import { text, textGeometry, textLayout } from '../src/ui/text'
 
@@ -36,9 +37,9 @@ test("text geometry", () => {
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
     const layout = ui.layout(constraints, mockMeasureText)
     const offset = { x: 0, y: 0 }
-    const { geometry } = ui.geometry(layout, offset, { activeCameraIndex: 0, nextCameraIndex: 1 })
+    const geometry = ui.geometry(layout, offset, new CameraStack())
     const expectedGeometry = textGeometry({
-        position: { x: 0, y: 0 },
+        worldSpace: { x0: 0, y0: 0, x1: 24 * 3, y1: 24 },
         textureIndex: 1,
         textureCoordinates: [
             0, 0,

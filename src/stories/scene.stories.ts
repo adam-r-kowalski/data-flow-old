@@ -10,7 +10,7 @@ export default {
 }
 
 export const sceneCamera = () => {
-    const renderer = webGL2Renderer({ width: 500, height: 500 })
+    let renderer = webGL2Renderer({ width: 500, height: 500 })
     const ui = scene({ camera: Mat3.identity() }, [
         container({
             width: 50,
@@ -27,12 +27,12 @@ export const sceneCamera = () => {
             y: 250
         }),
     ])
-    render(renderer, ui)
+    renderer = render(renderer, ui)
     return renderer.canvas
 }
 
 export const sceneTranslated = () => {
-    const renderer = webGL2Renderer({ width: 500, height: 500 })
+    let renderer = webGL2Renderer({ width: 500, height: 500 })
     const ui = scene({ camera: Mat3.translate(100, 0) }, [
         container({
             width: 50,
@@ -49,12 +49,12 @@ export const sceneTranslated = () => {
             y: 250
         }),
     ])
-    render(renderer, ui)
+    renderer = render(renderer, ui)
     return renderer.canvas
 }
 
 export const sceneScaled = () => {
-    const renderer = webGL2Renderer({ width: 500, height: 500 })
+    let renderer = webGL2Renderer({ width: 500, height: 500 })
     const ui = scene({ camera: Mat3.scale(2, 2) }, [
         container({
             width: 50,
@@ -71,12 +71,12 @@ export const sceneScaled = () => {
             y: 250
         }),
     ])
-    render(renderer, ui)
+    renderer = render(renderer, ui)
     return renderer.canvas
 }
 
 export const sceneScaledAndTranslated = () => {
-    const renderer = webGL2Renderer({ width: 500, height: 500 })
+    let renderer = webGL2Renderer({ width: 500, height: 500 })
     const ui = scene({ camera: Mat3.translate(-100, -200).matMul(Mat3.scale(2, 2)) }, [
         container({
             width: 50,
@@ -93,6 +93,6 @@ export const sceneScaledAndTranslated = () => {
             y: 250
         }),
     ])
-    render(renderer, ui)
+    renderer = render(renderer, ui)
     return renderer.canvas
 }

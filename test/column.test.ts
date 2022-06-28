@@ -6,9 +6,7 @@ import { column, columnGeometry, columnLayout } from "../src/ui/column"
 import { CrossAxisAlignment, MainAxisAlignment } from "../src/alignment"
 import { mockMeasureText, mockRenderer } from "../src/renderer/mock"
 import { CameraStack } from "../src/camera_stack"
-import { layerGeometry } from "../src/renderer/render"
-import { dispatchRendererEvent } from "../src/renderer/dispatch"
-import { RendererEventKind } from "../src/renderer/events"
+import { layerGeometry, render } from "../src/renderer/render"
 
 test("column layout", () => {
     const ui = column([
@@ -243,10 +241,7 @@ test("column render", () => {
             color: rgba(0, 255, 0, 255)
         })
     ])
-    renderer = dispatchRendererEvent(renderer, {
-        kind: RendererEventKind.RENDER,
-        ui
-    })
+    renderer = render(renderer, ui)
     expect(renderer.clearCount).toEqual(1)
     expect(renderer.batches).toEqual([
         {

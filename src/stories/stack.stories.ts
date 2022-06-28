@@ -10,7 +10,7 @@ export default {
 }
 
 export const stackContainerAndCenteredContainer = () => {
-    const renderer = webGL2Renderer({ width: 500, height: 500 })
+    let renderer = webGL2Renderer({ width: 500, height: 500 })
     const ui = stack([
         container({ color: rgba(255, 0, 0, 255) }),
         center(
@@ -20,6 +20,6 @@ export const stackContainerAndCenteredContainer = () => {
                 color: rgba(0, 255, 0, 255)
             })),
     ])
-    render(renderer, ui)
+    renderer = render(renderer, ui)
     return renderer.canvas
 }

@@ -5,8 +5,8 @@ import { webGL2Renderer } from "../renderer/webgl2"
 import { container } from "../ui/container"
 import { scene } from "../ui/scene"
 import { Mat3 } from "../linear_algebra"
-import { dispatchRendererEvent } from "../renderer/dispatch"
-import { RendererEventKind } from "../renderer/events"
+import { render } from '../renderer/render'
+import { pointerDown } from '../renderer/pointer_down'
 
 export default {
     title: 'events'
@@ -21,7 +21,7 @@ export const clickable = () => {
             color: rgba(255, 0, 0, 255),
             x: 100,
             y: 200,
-            onClick: () => action('clicked a')
+            onClick: action('clicked red')
         }),
         container({
             width: 50,
@@ -29,19 +29,12 @@ export const clickable = () => {
             color: rgba(0, 255, 0, 255),
             x: 300,
             y: 250,
-            onClick: () => action('clicked b')
+            onClick: action('clicked green')
         }),
     ])
-    renderer = dispatchRendererEvent(renderer, {
-        kind: RendererEventKind.RENDER,
-        ui
-    })
-    renderer.canvas.addEventListener('pointerdown', p => {
-        dispatchRendererEvent(renderer, {
-            kind: RendererEventKind.MOUSE_CLICK,
-            x: p.clientX,
-            y: p.clientY,
-        })
+    renderer = render(renderer, ui)
+    document.addEventListener('pointerdown', p => {
+        renderer = pointerDown(renderer, { x: p.clientX, y: p.clientY })
     })
     return renderer.canvas
 }

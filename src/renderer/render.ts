@@ -4,8 +4,7 @@ import { CameraStack } from "../camera_stack"
 import { Geometry } from "../geometry"
 import { Mat3 } from "../linear_algebra"
 import { reduce, Reducer } from "../reduce"
-import { Entry } from "../ui"
-import { Render } from "./events"
+import { Entry, UI } from "../ui"
 
 export type Cameras = Mat3[]
 export type TextureIndex = number
@@ -63,7 +62,7 @@ const reducer: Reducer<Accumulator> = {
     }
 }
 
-export const onRender = <R extends Renderer>(renderer: R, { ui }: Render): R => {
+export const render = <R extends Renderer>(renderer: R, ui: UI): R => {
     const { width, height } = renderer.size
     renderer.clear()
     const constraints = {

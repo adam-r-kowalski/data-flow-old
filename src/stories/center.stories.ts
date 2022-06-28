@@ -9,7 +9,7 @@ export default {
 }
 
 export const centeredContainer = () => {
-    const renderer = webGL2Renderer({ width: 500, height: 500 })
+    let renderer = webGL2Renderer({ width: 500, height: 500 })
     const ui = center(
         container({
             width: 50,
@@ -17,6 +17,6 @@ export const centeredContainer = () => {
             color: rgba(255, 0, 0, 255)
         })
     )
-    render(renderer, ui)
+    renderer = render(renderer, ui)
     return renderer.canvas
 }

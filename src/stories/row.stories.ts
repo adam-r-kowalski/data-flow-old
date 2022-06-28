@@ -1,7 +1,6 @@
 import { CrossAxisAlignment, MainAxisAlignment } from "../alignment"
 import { rgba } from "../color"
-import { dispatchRendererEvent } from "../renderer/dispatch"
-import { RendererEventKind } from "../renderer/events"
+import { render } from "../renderer/render"
 import { webGL2Renderer } from "../renderer/webgl2"
 import { container } from "../ui/container"
 import { row } from "../ui/row"
@@ -29,10 +28,7 @@ export const rowWithThreeContainers = () => {
             color: rgba(0, 0, 255, 255)
         })
     ])
-    renderer = dispatchRendererEvent(renderer, {
-        kind: RendererEventKind.RENDER,
-        ui
-    })
+    renderer = render(renderer, ui)
     return renderer.canvas
 }
 
@@ -55,10 +51,7 @@ export const rowCrossAxisAlignmentStart = () => {
             color: rgba(0, 0, 255, 255)
         })
     ])
-    renderer = dispatchRendererEvent(renderer, {
-        kind: RendererEventKind.RENDER,
-        ui
-    })
+    renderer = render(renderer, ui)
     return renderer.canvas
 }
 
@@ -81,10 +74,7 @@ export const rowCrossAxisAlignmentCenter = () => {
             color: rgba(0, 0, 255, 255)
         })
     ])
-    renderer = dispatchRendererEvent(renderer, {
-        kind: RendererEventKind.RENDER,
-        ui
-    })
+    renderer = render(renderer, ui)
     return renderer.canvas
 }
 
@@ -107,10 +97,7 @@ export const rowCrossAxisAlignmentEnd = () => {
             color: rgba(0, 0, 255, 255)
         })
     ])
-    renderer = dispatchRendererEvent(renderer, {
-        kind: RendererEventKind.RENDER,
-        ui
-    })
+    renderer = render(renderer, ui)
     return renderer.canvas
 }
 
@@ -133,10 +120,7 @@ export const rowMainAxisAlignmentStart = () => {
             color: rgba(0, 0, 255, 255)
         })
     ])
-    renderer = dispatchRendererEvent(renderer, {
-        kind: RendererEventKind.RENDER,
-        ui
-    })
+    renderer = render(renderer, ui)
     return renderer.canvas
 }
 
@@ -159,10 +143,7 @@ export const rowMainAxisAlignmentCenter = () => {
             color: rgba(0, 0, 255, 255)
         })
     ])
-    renderer = dispatchRendererEvent(renderer, {
-        kind: RendererEventKind.RENDER,
-        ui
-    })
+    renderer = render(renderer, ui)
     return renderer.canvas
 }
 
@@ -185,10 +166,7 @@ export const rowMainAxisAlignmentEnd = () => {
             color: rgba(0, 0, 255, 255)
         })
     ])
-    renderer = dispatchRendererEvent(renderer, {
-        kind: RendererEventKind.RENDER,
-        ui
-    })
+    renderer = render(renderer, ui)
     return renderer.canvas
 }
 
@@ -211,10 +189,7 @@ export const rowMainAxisAlignmentSpaceEvenly = () => {
             color: rgba(0, 0, 255, 255)
         })
     ])
-    renderer = dispatchRendererEvent(renderer, {
-        kind: RendererEventKind.RENDER,
-        ui
-    })
+    renderer = render(renderer, ui)
     return renderer.canvas
 }
 
@@ -237,10 +212,7 @@ export const rowMainAxisAlignmentSpaceBetween = () => {
             color: rgba(0, 0, 255, 255)
         })
     ])
-    renderer = dispatchRendererEvent(renderer, {
-        kind: RendererEventKind.RENDER,
-        ui
-    })
+    renderer = render(renderer, ui)
     return renderer.canvas
 }
 
@@ -263,9 +235,6 @@ export const rowMainAxisAlignmentCenterCrossAxisAlignmentCenter = () => {
             color: rgba(0, 0, 255, 255)
         })
     ])
-    renderer = dispatchRendererEvent(renderer, {
-        kind: RendererEventKind.RENDER,
-        ui
-    })
+    renderer = render(renderer, ui)
     return renderer.canvas
 }

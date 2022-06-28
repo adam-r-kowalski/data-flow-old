@@ -30,7 +30,7 @@ export class MockRenderer {
         public cameras: Cameras,
         public clickHandlers: ClickHandlers,
         public clearCount: number,
-        public batches: Batch[]
+        public batches: Batch[],
     ) { }
 
     clear() {

@@ -2,7 +2,6 @@ import { CameraStack } from "../camera_stack";
 import { Geometry, Offset } from "../geometry";
 import { Constraints, Layout } from "../layout";
 import { Mat3 } from "../linear_algebra";
-import { MouseClick } from "../renderer/events";
 
 export interface Entry {
     readonly ui: UI
@@ -24,7 +23,13 @@ export interface TextMeasurements {
 
 export type MeasureText = (font: Font, str: string) => TextMeasurements
 
-export type OnClick = (click: MouseClick) => void
+export interface Pointer {
+    x: number
+    y: number
+    id: number
+}
+
+export type OnClick = (pointer: Pointer) => void
 
 export interface UI {
     camera?: Mat3

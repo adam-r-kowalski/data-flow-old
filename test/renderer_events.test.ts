@@ -29,7 +29,7 @@ test("click first container", () => {
         }),
     ])
     renderer = render(renderer, ui)
-    renderer = pointerDown(renderer, { x: 125, y: 225 })
+    renderer = pointerDown(renderer, { x: 125, y: 225, id: 0 })
     expect(aClickCount).toEqual(1)
     expect(bClickCount).toEqual(0)
 })
@@ -57,7 +57,7 @@ test("click second container", () => {
         }),
     ])
     renderer = render(renderer, ui)
-    renderer = pointerDown(renderer, { x: 325, y: 275 })
+    renderer = pointerDown(renderer, { x: 325, y: 275, id: 0 })
     expect(aClickCount).toEqual(0)
     expect(bClickCount).toEqual(1)
 })
@@ -85,7 +85,7 @@ test("click translated container", () => {
         }),
     ])
     renderer = render(renderer, ui)
-    renderer = pointerDown(renderer, { x: 25, y: 225 })
+    renderer = pointerDown(renderer, { x: 25, y: 225, id: 0 })
     expect(aClickCount).toEqual(1)
     expect(bClickCount).toEqual(0)
 })

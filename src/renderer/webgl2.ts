@@ -114,7 +114,7 @@ export class WebGL2Renderer {
         public program: Program,
         public textures: WebGLTexture[],
         public textMeasurementsCache: Map<string, TextMeasurements>,
-        public clickHandlers: ClickHandlers
+        public clickHandlers: ClickHandlers,
     ) { }
 
     clear = () => {
@@ -370,9 +370,7 @@ export const webGL2Renderer = (size: Size) => {
       /*srcType*/gl.UNSIGNED_BYTE,
       /*data*/new Uint8Array([255, 255, 255, 255])
     )
-    const textures = [texture]
-    const textMeasurementsCache = new Map()
-    const renderer = new WebGL2Renderer(canvas, gl, program, textures, textMeasurementsCache, [])
+    const renderer = new WebGL2Renderer(canvas, gl, program, [texture], new Map(), [])
     renderer.size = size
     return renderer
 }

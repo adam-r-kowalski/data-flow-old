@@ -34,7 +34,7 @@ export const clickable = () => {
     ])
     renderer = render(renderer, ui)
     document.addEventListener('pointerdown', p => {
-        renderer = pointerDown(renderer, { x: p.clientX, y: p.clientY })
+        renderer = pointerDown(renderer, { x: p.clientX, y: p.clientY, id: p.pointerId })
     })
     return renderer.canvas
 }

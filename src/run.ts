@@ -36,9 +36,9 @@ export const run = <State, Event>(state: State, view: View<State, Event>, update
         }
     }
     const dispatch = (event: Event) => {
-        const result = update(state, event)
-        state = result.state
-        if (result.rerender) scheduleRender()
+        const { state: newState, rerender } = update(state, event)
+        state = newState
+        if (rerender) scheduleRender()
     }
     document.body.appendChild(renderer.canvas)
     document.addEventListener("pointerdown", p => {

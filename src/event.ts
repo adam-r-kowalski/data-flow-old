@@ -7,7 +7,6 @@ export enum EventKind {
     POINTER_DOWN,
     POINTER_UP,
     CLICKED_NODE,
-    FRAME_TIME,
 }
 
 export interface PointerMove {
@@ -81,7 +80,6 @@ const clickedNode = (state: State, event: ClickedNode) => {
     }
     state.draggedNode = lastIndex
     return { state, rerender: true }
-
 }
 
 export const update = (state: State, event: Event) => {

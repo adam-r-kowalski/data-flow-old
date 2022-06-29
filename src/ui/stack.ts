@@ -57,7 +57,10 @@ export class Stack {
         yield { ui: this, layout, geometry, z }
         let i = 0
         for (const child of this.children) {
-            yield* child.traverse(childrenLayout[i], childrenGeometry[i], z)
+            for (const entry of child.traverse(childrenLayout[i], childrenGeometry[i], z)) {
+                yield entry
+                z = Math.max(z, entry.z)
+            }
             i += 1
             z += 1
         }

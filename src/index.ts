@@ -29,9 +29,11 @@ interface Theme {
 
 interface State {
     nodes: Node[]
-    theme: Theme
     dragging: boolean
     draggedNode: number | null
+    pointers: Pointer[]
+    camera: Mat3
+    theme: Theme
 }
 
 type Dispatch = (event: Event) => void
@@ -83,8 +85,8 @@ const nodeUi = (dispatch: Dispatch, theme: Theme, { name, x, y, inputs, outputs 
     return container({
         color: theme.node,
         padding: padding(10),
-        x,
-        y, onClick: () => dispatch({
+        x, y,
+        onClick: () => dispatch({
             kind: EventKind.CLICKED_NODE,
             index: index
         })
@@ -99,9 +101,9 @@ const nodeUi = (dispatch: Dispatch, theme: Theme, { name, x, y, inputs, outputs 
 
 const ui = (dispatch: Dispatch, state: State) => stack([
     container({ color: state.theme.background }),
-    scene({ camera: Mat3.identity() },
+    scene({ camera: state.camera },
         state.nodes.map((node, i) => nodeUi(dispatch, state.theme, node, i))
-    )
+    ),
 ])
 
 const transformPointer = (p: PointerEvent): Pointer => ({
@@ -115,6 +117,7 @@ enum EventKind {
     POINTER_DOWN,
     POINTER_UP,
     CLICKED_NODE,
+    FRAME_TIME,
 }
 
 interface PointerMove {
@@ -137,32 +140,61 @@ interface ClickedNode {
     index: number
 }
 
-
 type Event =
-    PointerMove
+    | PointerMove
     | PointerDown
     | PointerUp
     | ClickedNode
 
-const update = (state: State, event: Event): State => {
+interface UpdateResult {
+    state: State
+    rerender: boolean
+}
+
+const update = (state: State, event: Event): UpdateResult => {
     switch (event.kind) {
-        case EventKind.POINTER_DOWN:
-            state.dragging = true
-            return state
-        case EventKind.POINTER_UP:
-            state.dragging = false
-            state.draggedNode = null
-            return state
-        case EventKind.POINTER_MOVE:
-            if (state.dragging && state.draggedNode !== null) {
-                const node = state.nodes[state.draggedNode]
-                node.x = event.pointer.x
-                node.y = event.pointer.y
+        case EventKind.POINTER_DOWN: {
+            state.pointers.push(event.pointer)
+            if (state.pointers.length === 1) state.dragging = true
+            return { state, rerender: false }
+        }
+        case EventKind.POINTER_UP: {
+            const index = state.pointers.findIndex(p => p.id === event.pointer.id)
+            state.pointers.splice(index, 1)
+            if (state.pointers.length === 0) {
+                state.dragging = false
+                state.draggedNode = null
             }
-            return state
-        case EventKind.CLICKED_NODE:
-            state.draggedNode = event.index
-            return state
+            return { state, rerender: false }
+        }
+        case EventKind.POINTER_MOVE: {
+            if (!state.dragging) return { state, rerender: false }
+            const index = state.pointers.findIndex(p => p.id === event.pointer.id)
+            const pointer = state.pointers[index]
+            state.pointers[index] = event.pointer
+            const dx = event.pointer.x - pointer.x
+            const dy = event.pointer.y - pointer.y
+            if (state.pointers.length === 1) {
+                if (state.draggedNode !== null) {
+                    const node = state.nodes[state.draggedNode]
+                    node.x += dx
+                    node.y += dy
+                } else {
+                    state.camera = state.camera.matMul(Mat3.translate(-dx, -dy))
+                }
+            }
+            return { state, rerender: true }
+        }
+        case EventKind.CLICKED_NODE: {
+            const lastIndex = state.nodes.length - 1
+            if (event.index !== lastIndex) {
+                const node = state.nodes[lastIndex]
+                state.nodes[lastIndex] = state.nodes[event.index]
+                state.nodes[event.index] = node
+            }
+            state.draggedNode = lastIndex
+            return { state, rerender: true }
+        }
     }
 }
 
@@ -172,8 +204,7 @@ const run = (state: State) => {
         height: window.innerHeight
     })
     let renderQueued = false
-    const dispatch = (event: Event) => {
-        state = update(state, event)
+    const scheduleRender = () => {
         if (!renderQueued) {
             renderQueued = true
             requestAnimationFrame(() => {
@@ -181,6 +212,11 @@ const run = (state: State) => {
                 renderQueued = false
             })
         }
+    }
+    const dispatch = (event: Event) => {
+        const result = update(state, event)
+        state = result.state
+        if (result.rerender) scheduleRender()
     }
     document.body.appendChild(renderer.canvas)
     if (typeof PointerEvent.prototype.getCoalescedEvents === 'function') {
@@ -214,7 +250,11 @@ const run = (state: State) => {
             pointer: transformPointer(p)
         })
     })
-    requestAnimationFrame(() => renderer = render(renderer, ui(dispatch, state)))
+    window.addEventListener("resize", () => {
+        renderer.size = { width: window.innerWidth, height: window.innerHeight }
+        scheduleRender()
+    })
+    scheduleRender()
 }
 
 run({
@@ -243,9 +283,11 @@ run({
     ],
     dragging: false,
     draggedNode: null,
+    pointers: [],
+    camera: Mat3.identity(),
     theme: {
         background: rgba(1, 22, 39, 255),
-        node: rgba(0, 191, 249, 50),
+        node: rgba(41, 95, 120, 255),
         input: rgba(188, 240, 192, 255)
     },
 })

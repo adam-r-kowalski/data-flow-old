@@ -53,6 +53,7 @@ export class Scene {
         const childrenLayout = (layout as SceneLayout).children
         cameraStack.pushCamera(this.camera)
         const children = this.children.map((c, i) => c.geometry(childrenLayout[i], offset, cameraStack))
+        cameraStack.popCamera()
         return sceneGeometry(worldSpace, children)
     }
 
@@ -62,8 +63,12 @@ export class Scene {
         yield { ui: this, layout, geometry, z }
         let i = 0
         for (const child of this.children) {
-            yield* child.traverse(childrenLayout[i], childrenGeometry[i], z)
+            for (const entry of child.traverse(childrenLayout[i], childrenGeometry[i], z)) {
+                yield entry
+                z = Math.max(z, entry.z)
+            }
             i++
+            z++
         }
     }
 }

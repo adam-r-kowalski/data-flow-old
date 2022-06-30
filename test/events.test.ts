@@ -8,20 +8,20 @@ const initialState = (): State => ({
         {
             name: "Source",
             inputs: [],
-            outputs: ["Out 1", "Out 2"],
+            outputs: [{ name: "Out 1", selected: false }, { name: "Out 2", selected: false }],
             x: 100,
             y: 200
         },
         {
             name: "Transform",
-            inputs: ["In 1", "In 2"],
-            outputs: ["Out 1", "Out 2"],
+            inputs: [{ name: "In 1", selected: false }, { name: "In 2", selected: false }],
+            outputs: [{ name: "Out 1", selected: false }, { name: "Out 2", selected: false }],
             x: 400,
             y: 300
         },
         {
             name: "Sink",
-            inputs: ["In 1", "In 2"],
+            inputs: [{ name: "In 1", selected: false }, { name: "In 2", selected: false }],
             outputs: [],
             x: 800,
             y: 250
@@ -33,10 +33,13 @@ const initialState = (): State => ({
     pointerDistance: 0,
     pointerCenter: [0, 0],
     camera: Mat3.identity(),
+    selectedInput: null,
+    selectedOutput: null,
     theme: {
         background: rgba(1, 22, 39, 255),
         node: rgba(41, 95, 120, 255),
-        input: rgba(188, 240, 192, 255)
+        input: rgba(188, 240, 192, 255),
+        selectedInput: rgba(175, 122, 208, 255)
     },
 })
 
@@ -82,28 +85,28 @@ test("click node", () => {
         kind: EventKind.CLICKED_NODE,
         index: 0
     })
-    expect(state1.draggedNode).toEqual(2)
+    expect(state1.draggedNode).toEqual(0)
     expect(state1.nodes).toEqual([
         {
-            name: "Sink",
-            inputs: ["In 1", "In 2"],
-            outputs: [],
-            x: 800,
-            y: 250
+            name: "Source",
+            inputs: [],
+            outputs: [{ name: "Out 1", selected: false }, { name: "Out 2", selected: false }],
+            x: 100,
+            y: 200
         },
         {
             name: "Transform",
-            inputs: ["In 1", "In 2"],
-            outputs: ["Out 1", "Out 2"],
+            inputs: [{ name: "In 1", selected: false }, { name: "In 2", selected: false }],
+            outputs: [{ name: "Out 1", selected: false }, { name: "Out 2", selected: false }],
             x: 400,
             y: 300
         },
         {
-            name: "Source",
-            inputs: [],
-            outputs: ["Out 1", "Out 2"],
-            x: 100,
-            y: 200
+            name: "Sink",
+            inputs: [{ name: "In 1", selected: false }, { name: "In 2", selected: false }],
+            outputs: [],
+            x: 800,
+            y: 250
         },
     ])
     expect(rerender).toEqual(true)
@@ -173,25 +176,25 @@ test("pointer move after clicking node pointer down", () => {
     expect(state3.camera.data).toEqual(initialState().camera.data)
     expect(state3.nodes).toEqual([
         {
-            name: "Sink",
-            inputs: ["In 1", "In 2"],
-            outputs: [],
-            x: 800,
-            y: 250
+            name: "Source",
+            inputs: [],
+            outputs: [{ name: "Out 1", selected: false }, { name: "Out 2", selected: false }],
+            x: 150,
+            y: 275
         },
         {
             name: "Transform",
-            inputs: ["In 1", "In 2"],
-            outputs: ["Out 1", "Out 2"],
+            inputs: [{ name: "In 1", selected: false }, { name: "In 2", selected: false }],
+            outputs: [{ name: "Out 1", selected: false }, { name: "Out 2", selected: false }],
             x: 400,
             y: 300
         },
         {
-            name: "Source",
-            inputs: [],
-            outputs: ["Out 1", "Out 2"],
-            x: 150,
-            y: 275
+            name: "Sink",
+            inputs: [{ name: "In 1", selected: false }, { name: "In 2", selected: false }],
+            outputs: [],
+            x: 800,
+            y: 250
         },
     ])
     expect(rerender).toEqual(true)
@@ -230,25 +233,25 @@ test("pointer move after clicking node, pointer down, then pointer up", () => {
     expect(state4.camera.data).toEqual(initialState().camera.data)
     expect(state4.nodes).toEqual([
         {
-            name: "Sink",
-            inputs: ["In 1", "In 2"],
-            outputs: [],
-            x: 800,
-            y: 250
+            name: "Source",
+            inputs: [],
+            outputs: [{ name: "Out 1", selected: false }, { name: "Out 2", selected: false }],
+            x: 100,
+            y: 200
         },
         {
             name: "Transform",
-            inputs: ["In 1", "In 2"],
-            outputs: ["Out 1", "Out 2"],
+            inputs: [{ name: "In 1", selected: false }, { name: "In 2", selected: false }],
+            outputs: [{ name: "Out 1", selected: false }, { name: "Out 2", selected: false }],
             x: 400,
             y: 300
         },
         {
-            name: "Source",
-            inputs: [],
-            outputs: ["Out 1", "Out 2"],
-            x: 100,
-            y: 200
+            name: "Sink",
+            inputs: [{ name: "In 1", selected: false }, { name: "In 2", selected: false }],
+            outputs: [],
+            x: 800,
+            y: 250
         },
     ])
     expect(rerender).toEqual(false)

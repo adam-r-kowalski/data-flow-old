@@ -30,6 +30,8 @@ const initialState = (): State => ({
     dragging: false,
     draggedNode: null,
     pointers: [],
+    pointerDistance: 0,
+    pointerCenter: [0, 0],
     camera: Mat3.identity(),
     theme: {
         background: rgba(1, 22, 39, 255),

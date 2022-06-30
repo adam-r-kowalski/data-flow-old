@@ -108,6 +108,8 @@ const initialState: State = {
     dragging: false,
     draggedNode: null,
     pointers: [],
+    pointerDistance: 0,
+    pointerCenter: [0, 0],
     camera: Mat3.identity(),
     theme: {
         background: rgba(1, 22, 39, 255),
@@ -148,4 +150,22 @@ document.addEventListener("pointerup", p => {
         kind: EventKind.POINTER_UP,
         pointer: transformPointer(p)
     })
+})
+
+document.addEventListener('wheel', e => {
+    e.preventDefault()
+    dispatch({
+        kind: EventKind.WHEEL,
+        x: e.clientX,
+        y: e.clientY,
+        deltaY: e.deltaY
+    })
+}, { passive: false })
+
+document.addEventListener('contextmenu', e => {
+    e.preventDefault()
+})
+
+document.addEventListener('touchend', () => {
+    document.body.requestFullscreen()
 })

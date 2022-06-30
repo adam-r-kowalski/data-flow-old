@@ -21,6 +21,8 @@ export interface State {
     dragging: boolean
     draggedNode: number | null
     pointers: Pointer[]
+    pointerDistance: number
+    pointerCenter: [number, number]
     camera: Mat3
     theme: Theme
 }

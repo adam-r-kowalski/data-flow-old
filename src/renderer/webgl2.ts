@@ -195,7 +195,7 @@ const createVertexShader = (gl: WebGL2RenderingContext, attributes: Attributes):
     const { vertices, colors, textureCoordinates, cameraIndex } = attributes
     const vertexShaderSource = `#version 300 es
   uniform mat3 u_projection;
-  uniform mat3 u_cameras[256];
+  uniform mat3 u_cameras[8];
 
   layout(location = ${vertices.location}) in vec2 a_vertex;
   layout(location = ${colors.location}) in vec4 a_color;

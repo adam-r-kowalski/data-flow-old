@@ -11,6 +11,7 @@ export const pointerDown = <R extends Renderer>(renderer: R, pointer: Pointer): 
         for (const { onClick, worldSpace } of renderer.clickHandlers[i - 1]) {
             if (inWorldSpace(worldSpace, pointer)) {
                 onClick(pointer)
+                return renderer
             }
         }
     }

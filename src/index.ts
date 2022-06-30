@@ -4,7 +4,7 @@ import { Event, EventKind, update } from "./event"
 import { Mat3 } from "./linear_algebra"
 import { padding } from "./padding"
 import { Dispatch, run, transformPointer } from "./run"
-import { Node, State, Theme } from "./state"
+import { Input, Node, Output, State, Theme } from "./state"
 import { UI } from "./ui"
 import { column } from "./ui/column"
 import { container } from "./ui/container"
@@ -24,39 +24,59 @@ const intersperse = <T>(array: T[], seperator: T): T[] => {
     return result
 }
 
-const inputUi = (theme: Theme, input: string): UI =>
+const inputUi = (theme: Theme, { name, selected }: Input, nodeIndex: number, inputIndex: number): UI =>
     row({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
         container({
             width: 24,
             height: 24,
-            color: theme.input
+            color: selected ? theme.selectedInput : theme.input,
+            onClick: () => dispatch({
+                kind: EventKind.CLICKED_INPUT,
+                nodeIndex,
+                inputIndex
+            })
         }),
         spacer(10),
-        text(input)
+        text(name)
     ])
 
-const inputsUi = (theme: Theme, inputs: string[]) =>
-    column(intersperse(inputs.map(input => inputUi(theme, input)), spacer(10)))
+const inputsUi = (theme: Theme, inputs: Input[], nodeIndex: number) =>
+    column(
+        intersperse(
+            inputs.map((input, inputIndex) => inputUi(theme, input, nodeIndex, inputIndex)),
+            spacer(10)
+        )
+    )
 
-const outputUi = (theme: Theme, output: string): UI =>
+const outputUi = (theme: Theme, { name, selected }: Output, nodeIndex: number, outputIndex: number): UI =>
     row({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
-        text(output),
+        text(name),
         spacer(10),
         container({
             width: 24,
             height: 24,
-            color: theme.input
+            color: selected ? theme.selectedInput : theme.input,
+            onClick: () => dispatch({
+                kind: EventKind.CLICKED_OUTPUT,
+                nodeIndex,
+                outputIndex
+            })
         }),
     ])
 
-const outputsUi = (theme: Theme, outputs: string[]) =>
-    column(intersperse(outputs.map(output => outputUi(theme, output)), spacer(10)))
+const outputsUi = (theme: Theme, outputs: Output[], nodeIndex: number) =>
+    column(
+        intersperse(
+            outputs.map((output, outputIndex) => outputUi(theme, output, nodeIndex, outputIndex)),
+            spacer(10)
+        )
+    )
 
 const nodeUi = (dispatch: Dispatch<Event>, theme: Theme, { name, x, y, inputs, outputs }: Node, index: number) => {
     const rowEntries: UI[] = []
-    if (inputs.length) rowEntries.push(inputsUi(theme, inputs))
+    if (inputs.length) rowEntries.push(inputsUi(theme, inputs, index))
     if (inputs.length && outputs.length) rowEntries.push(spacer(30))
-    if (outputs.length) rowEntries.push(outputsUi(theme, outputs))
+    if (outputs.length) rowEntries.push(outputsUi(theme, outputs, index))
     return container({
         color: theme.node,
         padding: padding(10),
@@ -74,32 +94,40 @@ const nodeUi = (dispatch: Dispatch<Event>, theme: Theme, { name, x, y, inputs, o
     )
 }
 
-const view = (dispatch: Dispatch<Event>, state: State) => stack([
-    container({ color: state.theme.background }),
-    scene({ camera: state.camera },
-        state.nodes.map((node, i) => nodeUi(dispatch, state.theme, node, i))
-    ),
-])
+const view = (dispatch: Dispatch<Event>, state: State) => {
+    const nodes: UI[] = []
+    state.nodes.forEach((node, i) => {
+        if (i !== state.draggedNode) nodes.push(nodeUi(dispatch, state.theme, node, i))
+    })
+    if (state.draggedNode !== null) {
+        const i = state.draggedNode
+        nodes.push(nodeUi(dispatch, state.theme, state.nodes[i], i))
+    }
+    return stack([
+        container({ color: state.theme.background }),
+        scene({ camera: state.camera }, nodes),
+    ])
+}
 
 const initialState: State = {
     nodes: [
         {
             name: "Source",
             inputs: [],
-            outputs: ["Out 1", "Out 2"],
+            outputs: [{ name: "Out 1", selected: false }, { name: "Out 2", selected: false }],
             x: 100,
             y: 200
         },
         {
             name: "Transform",
-            inputs: ["In 1", "In 2"],
-            outputs: ["Out 1", "Out 2"],
+            inputs: [{ name: "In 1", selected: false }, { name: "In 2", selected: false }],
+            outputs: [{ name: "Out 1", selected: false }, { name: "Out 2", selected: false }],
             x: 400,
             y: 300
         },
         {
             name: "Sink",
-            inputs: ["In 1", "In 2"],
+            inputs: [{ name: "In 1", selected: false }, { name: "In 2", selected: false }],
             outputs: [],
             x: 800,
             y: 250
@@ -111,10 +139,13 @@ const initialState: State = {
     pointerDistance: 0,
     pointerCenter: [0, 0],
     camera: Mat3.identity(),
+    selectedInput: null,
+    selectedOutput: null,
     theme: {
         background: rgba(1, 22, 39, 255),
         node: rgba(41, 95, 120, 255),
-        input: rgba(188, 240, 192, 255)
+        input: rgba(188, 240, 192, 255),
+        selectedInput: rgba(175, 122, 208, 255)
     },
 }
 

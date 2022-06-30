@@ -8,6 +8,8 @@ export enum EventKind {
     POINTER_UP,
     CLICKED_NODE,
     WHEEL,
+    CLICKED_INPUT,
+    CLICKED_OUTPUT,
 }
 
 export interface PointerMove {
@@ -37,12 +39,26 @@ export interface Wheel {
     deltaY: number
 }
 
+export interface ClickedInput {
+    kind: EventKind.CLICKED_INPUT
+    nodeIndex: number
+    inputIndex: number
+}
+
+export interface ClickedOutput {
+    kind: EventKind.CLICKED_OUTPUT
+    nodeIndex: number
+    outputIndex: number
+}
+
 export type Event =
     | PointerMove
     | PointerDown
     | PointerUp
     | ClickedNode
     | Wheel
+    | ClickedInput
+    | ClickedOutput
 
 
 const pointerDown = (state: State, event: PointerDown) => {
@@ -107,13 +123,7 @@ const pointerMove = (state: State, event: PointerMove) => {
 }
 
 const clickedNode = (state: State, event: ClickedNode) => {
-    const lastIndex = state.nodes.length - 1
-    if (event.index !== lastIndex) {
-        const node = state.nodes[lastIndex]
-        state.nodes[lastIndex] = state.nodes[event.index]
-        state.nodes[event.index] = node
-    }
-    state.draggedNode = lastIndex
+    state.draggedNode = event.index
     return { state, rerender: true }
 }
 
@@ -127,6 +137,24 @@ const wheel = (state: State, event: Wheel) => {
     return { state, rerender: true }
 }
 
+const clickedInput = (state: State, event: ClickedInput) => {
+    if (state.selectedInput) {
+        state.nodes[state.selectedInput[0]].inputs[state.selectedInput[1]].selected = false
+    }
+    state.nodes[event.nodeIndex].inputs[event.inputIndex].selected = true
+    state.selectedInput = [event.nodeIndex, event.inputIndex]
+    return { state, rerender: true }
+}
+
+const clickedOutput = (state: State, event: ClickedOutput) => {
+    if (state.selectedOutput) {
+        state.nodes[state.selectedOutput[0]].outputs[state.selectedOutput[1]].selected = false
+    }
+    state.nodes[event.nodeIndex].outputs[event.outputIndex].selected = true
+    state.selectedOutput = [event.nodeIndex, event.outputIndex]
+    return { state, rerender: true }
+}
+
 export const update = (state: State, event: Event) => {
     switch (event.kind) {
         case EventKind.POINTER_DOWN: return pointerDown(state, event)
@@ -134,5 +162,7 @@ export const update = (state: State, event: Event) => {
         case EventKind.POINTER_MOVE: return pointerMove(state, event)
         case EventKind.CLICKED_NODE: return clickedNode(state, event)
         case EventKind.WHEEL: return wheel(state, event)
+        case EventKind.CLICKED_INPUT: return clickedInput(state, event)
+        case EventKind.CLICKED_OUTPUT: return clickedOutput(state, event)
     }
 }

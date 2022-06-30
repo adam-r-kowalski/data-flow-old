@@ -49,21 +49,6 @@ export const gatherOnClickHandlers: Reducer<ClickHandlers> = {
     }
 }
 
-export const gatherOnDragHandlers: Reducer<ClickHandlers> = {
-    initial: () => [],
-    combine: (handlers: ClickHandlers, entry: Entry) => {
-        if (!entry.ui.onClick) return handlers
-        const needed = entry.z - handlers.length + 1
-        for (let i = 0; i < needed; ++i) handlers.push([])
-        handlers[entry.z].push({
-            onClick: entry.ui.onClick,
-            worldSpace: entry.geometry.worldSpace
-        })
-        return handlers
-    }
-}
-
-
 const reducer: Reducer<Accumulator> = {
     initial: () => ({
         layers: layerGeometry.initial(),

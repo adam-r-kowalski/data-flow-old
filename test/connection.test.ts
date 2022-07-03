@@ -3,7 +3,7 @@ import { rgba } from "../src/color"
 import { Mat3 } from "../src/linear_algebra"
 import { reduce } from "../src/reduce"
 import { mockMeasureText } from "../src/renderer/mock"
-import { buildIdToWorldSpace } from "../src/renderer/render"
+import { reducer } from "../src/renderer/render"
 import { container } from "../src/ui/container"
 import { scene } from "../src/ui/scene"
 
@@ -36,9 +36,10 @@ test("connection in scene", () => {
     const layout = ui.layout(constraints, mockMeasureText)
     const offsets = { x: 0, y: 0 }
     const geometry = ui.geometry(layout, offsets, new CameraStack())
-    const idToWorldSpace = reduce(ui, layout, geometry, buildIdToWorldSpace)
+    const { idToWorldSpace, connections } = reduce(ui, layout, geometry, reducer)
     expect(idToWorldSpace).toEqual({
         'a': { x0: 100, y0: 100, x1: 150, y1: 150 },
         'b': { x0: 300, y0: 300, x1: 350, y1: 350 },
     })
+    expect(connections).toEqual([{ from: 'a', to: 'b' }])
 })

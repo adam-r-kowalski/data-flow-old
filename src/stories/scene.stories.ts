@@ -11,88 +11,100 @@ export default {
 
 export const sceneCamera = () => {
     let renderer = webGL2Renderer({ width: 500, height: 500 })
-    const ui = scene({ camera: Mat3.identity() }, [
-        container({
-            width: 50,
-            height: 50,
-            color: rgba(255, 0, 0, 255),
-            x: 100,
-            y: 200
-        }),
-        container({
-            width: 50,
-            height: 50,
-            color: rgba(0, 255, 0, 255),
-            x: 300,
-            y: 250
-        }),
-    ])
+    const ui = scene({
+        camera: Mat3.identity(),
+        children: [
+            container({
+                width: 50,
+                height: 50,
+                color: rgba(255, 0, 0, 255),
+                x: 100,
+                y: 200
+            }),
+            container({
+                width: 50,
+                height: 50,
+                color: rgba(0, 255, 0, 255),
+                x: 300,
+                y: 250
+            }),
+        ]
+    })
     renderer = render(renderer, ui)
     return renderer.canvas
 }
 
 export const sceneTranslated = () => {
     let renderer = webGL2Renderer({ width: 500, height: 500 })
-    const ui = scene({ camera: Mat3.translate(100, 0) }, [
-        container({
-            width: 50,
-            height: 50,
-            color: rgba(255, 0, 0, 255),
-            x: 100,
-            y: 200
-        }),
-        container({
-            width: 50,
-            height: 50,
-            color: rgba(0, 255, 0, 255),
-            x: 300,
-            y: 250
-        }),
-    ])
+    const ui = scene({
+        camera: Mat3.translate(100, 0),
+        children: [
+            container({
+                width: 50,
+                height: 50,
+                color: rgba(255, 0, 0, 255),
+                x: 100,
+                y: 200
+            }),
+            container({
+                width: 50,
+                height: 50,
+                color: rgba(0, 255, 0, 255),
+                x: 300,
+                y: 250
+            }),
+        ]
+    })
     renderer = render(renderer, ui)
     return renderer.canvas
 }
 
 export const sceneScaled = () => {
     let renderer = webGL2Renderer({ width: 500, height: 500 })
-    const ui = scene({ camera: Mat3.scale(2, 2) }, [
-        container({
-            width: 50,
-            height: 50,
-            color: rgba(255, 0, 0, 255),
-            x: 100,
-            y: 200
-        }),
-        container({
-            width: 50,
-            height: 50,
-            color: rgba(0, 255, 0, 255),
-            x: 300,
-            y: 250
-        }),
-    ])
+    const ui = scene({
+        camera: Mat3.scale(2, 2),
+        children: [
+            container({
+                width: 50,
+                height: 50,
+                color: rgba(255, 0, 0, 255),
+                x: 100,
+                y: 200
+            }),
+            container({
+                width: 50,
+                height: 50,
+                color: rgba(0, 255, 0, 255),
+                x: 300,
+                y: 250
+            }),
+        ]
+    })
     renderer = render(renderer, ui)
     return renderer.canvas
 }
 
 export const sceneScaledAndTranslated = () => {
     let renderer = webGL2Renderer({ width: 500, height: 500 })
-    const ui = scene({ camera: Mat3.translate(-100, -200).matMul(Mat3.scale(2, 2)) }, [
-        container({
-            width: 50,
-            height: 50,
-            color: rgba(255, 0, 0, 255),
-            x: 100,
-            y: 200
-        }),
-        container({
-            width: 50,
-            height: 50,
-            color: rgba(0, 255, 0, 255),
-            x: 300,
-            y: 250
-        }),
-    ])
+    const ui = scene({
+        camera: Mat3.translate(-100, -200).matMul(Mat3.scale(2, 2)),
+        children: [
+            container({
+                width: 50,
+                height: 50,
+                color: rgba(255, 0, 0, 255),
+                x: 100,
+                y: 200
+            }),
+            container({
+                width: 50,
+                height: 50,
+                color: rgba(0, 255, 0, 255),
+                x: 300,
+                y: 250
+            }),
+        ]
+    })
     renderer = render(renderer, ui)
     return renderer.canvas
 }

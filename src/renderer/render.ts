@@ -4,16 +4,19 @@ import { CameraStack } from "../camera_stack"
 import { Geometry, WorldSpace } from "../geometry"
 import { Mat3 } from "../linear_algebra"
 import { reduce, Reducer } from "../reduce"
-import { Entry, UI } from "../ui"
+import { Connection, Entry, UI } from "../ui"
 
 export type Cameras = Mat3[]
 export type TextureIndex = number
 export type Layer = Map<TextureIndex, Geometry[]>
 export type Layers = Layer[]
+export type IdToWorldSpace = { [id: string]: WorldSpace }
 
 interface Accumulator {
     layers: Layers,
-    clickHandlers: ClickHandlers
+    clickHandlers: ClickHandlers,
+    idToWorldSpace: IdToWorldSpace
+    connections: Connection[]
 }
 
 export const layerGeometry: Reducer<Layers> = {
@@ -49,7 +52,6 @@ export const gatherOnClickHandlers: Reducer<ClickHandlers> = {
     }
 }
 
-type IdToWorldSpace = { [id: string]: WorldSpace }
 
 export const buildIdToWorldSpace: Reducer<IdToWorldSpace> = {
     initial: () => ({}),
@@ -60,16 +62,29 @@ export const buildIdToWorldSpace: Reducer<IdToWorldSpace> = {
     }
 }
 
+export const gatherConnections: Reducer<Connection[]> = {
+    initial: () => [],
+    combine: (connections: Connection[], entry: Entry) => {
+        if (!entry.ui.connections) return connections
+        connections.push(...entry.ui.connections)
+        return connections
+    }
+}
 
-const reducer: Reducer<Accumulator> = {
+
+export const reducer: Reducer<Accumulator> = {
     initial: () => ({
         layers: layerGeometry.initial(),
         clickHandlers: gatherOnClickHandlers.initial(),
+        idToWorldSpace: buildIdToWorldSpace.initial(),
+        connections: gatherConnections.initial()
     }),
     combine: (acc: Accumulator, entry: Entry) => {
         return {
             layers: layerGeometry.combine(acc.layers, entry),
             clickHandlers: gatherOnClickHandlers.combine(acc.clickHandlers, entry),
+            idToWorldSpace: buildIdToWorldSpace.combine(acc.idToWorldSpace, entry),
+            connections: gatherConnections.combine(acc.connections, entry)
         }
     }
 }

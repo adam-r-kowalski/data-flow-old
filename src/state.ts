@@ -2,14 +2,26 @@ import { Color } from "./color"
 import { Mat3 } from "./linear_algebra"
 import { Pointer } from "./ui"
 
+export interface InputPath {
+    nodeIndex: number
+    inputIndex: number
+}
+
+export interface OutputPath {
+    nodeIndex: number
+    outputIndex: number
+}
+
 export interface Input {
     name: string
     selected: boolean
+    edgeIndices: number[]
 }
 
 export interface Output {
     name: string
     selected: boolean
+    edgeIndices: number[]
 }
 
 export interface Node {
@@ -20,6 +32,16 @@ export interface Node {
     y: number
 }
 
+export interface Edge {
+    input: InputPath
+    output: OutputPath
+}
+
+export interface Graph {
+    nodes: Node[]
+    edges: Edge[]
+}
+
 export interface Theme {
     background: Color
     node: Color
@@ -28,14 +50,14 @@ export interface Theme {
 }
 
 export interface State {
-    nodes: Node[]
+    graph: Graph
     dragging: boolean
     draggedNode: number | null
     pointers: Pointer[]
     pointerDistance: number
     pointerCenter: [number, number]
-    selectedInput: [number, number] | null
-    selectedOutput: [number, number] | null
+    selectedOutput: OutputPath | null
+    selectedInput: InputPath | null
     camera: Mat3
     theme: Theme
 }

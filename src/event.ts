@@ -1,5 +1,5 @@
 import { Mat3, Vec3 } from "./linear_algebra"
-import { State } from "./state"
+import { InputPath, OutputPath, State } from "./state"
 import { Pointer } from "./ui"
 
 export enum EventKind {
@@ -41,14 +41,12 @@ export interface Wheel {
 
 export interface ClickedInput {
     kind: EventKind.CLICKED_INPUT
-    nodeIndex: number
-    inputIndex: number
+    inputPath: InputPath
 }
 
 export interface ClickedOutput {
     kind: EventKind.CLICKED_OUTPUT
-    nodeIndex: number
-    outputIndex: number
+    outputPath: OutputPath
 }
 
 export type Event =
@@ -88,7 +86,7 @@ const pointerMove = (state: State, event: PointerMove) => {
         const dy = event.pointer.y - pointer.y
         if (state.draggedNode !== null) {
             const scaling = state.camera.vecMul(new Vec3([0, 1, 0])).length()
-            const node = state.nodes[state.draggedNode]
+            const node = state.graph.nodes[state.draggedNode]
             node.x += dx * scaling
             node.y += dy * scaling
         } else {
@@ -138,20 +136,66 @@ const wheel = (state: State, event: Wheel) => {
 }
 
 const clickedInput = (state: State, event: ClickedInput) => {
-    if (state.selectedInput) {
-        state.nodes[state.selectedInput[0]].inputs[state.selectedInput[1]].selected = false
+    state.draggedNode = event.inputPath.nodeIndex
+    if (state.selectedOutput) {
+        const edgeIndex = state.graph.edges.length
+        state.graph.edges.push({
+            input: event.inputPath,
+            output: state.selectedOutput
+        })
+        {
+            const { nodeIndex, outputIndex } = state.selectedOutput
+            const output = state.graph.nodes[nodeIndex].outputs[outputIndex]
+            output.edgeIndices.push(edgeIndex)
+            output.selected = false
+        }
+        {
+            const { nodeIndex, inputIndex } = event.inputPath
+            const input = state.graph.nodes[nodeIndex].inputs[inputIndex]
+            input.edgeIndices.push(edgeIndex)
+        }
+        state.selectedOutput = null
+        return { state, rerender: true }
     }
-    state.nodes[event.nodeIndex].inputs[event.inputIndex].selected = true
-    state.selectedInput = [event.nodeIndex, event.inputIndex]
+    if (state.selectedInput) {
+        const { nodeIndex, inputIndex } = state.selectedInput
+        state.graph.nodes[nodeIndex].inputs[inputIndex].selected = false
+    }
+    const { nodeIndex, inputIndex } = event.inputPath
+    state.graph.nodes[nodeIndex].inputs[inputIndex].selected = true
+    state.selectedInput = event.inputPath
     return { state, rerender: true }
 }
 
 const clickedOutput = (state: State, event: ClickedOutput) => {
-    if (state.selectedOutput) {
-        state.nodes[state.selectedOutput[0]].outputs[state.selectedOutput[1]].selected = false
+    state.draggedNode = event.outputPath.nodeIndex
+    if (state.selectedInput) {
+        const edgeIndex = state.graph.edges.length
+        state.graph.edges.push({
+            input: state.selectedInput,
+            output: event.outputPath
+        })
+        {
+            const { nodeIndex, inputIndex } = state.selectedInput
+            const input = state.graph.nodes[nodeIndex].inputs[inputIndex]
+            input.edgeIndices.push(edgeIndex)
+            input.selected = false
+        }
+        {
+            const { nodeIndex, outputIndex } = event.outputPath
+            const output = state.graph.nodes[nodeIndex].outputs[outputIndex]
+            output.edgeIndices.push(edgeIndex)
+        }
+        state.selectedInput = null
+        return { state, rerender: true }
     }
-    state.nodes[event.nodeIndex].outputs[event.outputIndex].selected = true
-    state.selectedOutput = [event.nodeIndex, event.outputIndex]
+    if (state.selectedOutput) {
+        const { nodeIndex, outputIndex } = state.selectedOutput
+        state.graph.nodes[nodeIndex].outputs[outputIndex].selected = false
+    }
+    const { nodeIndex, outputIndex } = event.outputPath
+    state.graph.nodes[nodeIndex].outputs[outputIndex].selected = true
+    state.selectedOutput = event.outputPath
     return { state, rerender: true }
 }
 

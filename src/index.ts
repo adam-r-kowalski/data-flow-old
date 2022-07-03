@@ -32,8 +32,7 @@ const inputUi = (theme: Theme, { name, selected }: Input, nodeIndex: number, inp
             color: selected ? theme.selectedInput : theme.input,
             onClick: () => dispatch({
                 kind: EventKind.CLICKED_INPUT,
-                nodeIndex,
-                inputIndex
+                inputPath: { nodeIndex: nodeIndex, inputIndex: inputIndex }
             })
         }),
         spacer(10),
@@ -58,8 +57,7 @@ const outputUi = (theme: Theme, { name, selected }: Output, nodeIndex: number, o
             color: selected ? theme.selectedInput : theme.input,
             onClick: () => dispatch({
                 kind: EventKind.CLICKED_OUTPUT,
-                nodeIndex,
-                outputIndex
+                outputPath: { nodeIndex: nodeIndex, outputIndex: outputIndex }
             })
         }),
     ])
@@ -95,13 +93,14 @@ const nodeUi = (dispatch: Dispatch<Event>, theme: Theme, { name, x, y, inputs, o
 }
 
 const view = (dispatch: Dispatch<Event>, state: State) => {
+    console.log(state.graph.edges)
     const nodes: UI[] = []
-    state.nodes.forEach((node, i) => {
+    state.graph.nodes.forEach((node, i) => {
         if (i !== state.draggedNode) nodes.push(nodeUi(dispatch, state.theme, node, i))
     })
     if (state.draggedNode !== null) {
         const i = state.draggedNode
-        nodes.push(nodeUi(dispatch, state.theme, state.nodes[i], i))
+        nodes.push(nodeUi(dispatch, state.theme, state.graph.nodes[i], i))
     }
     return stack([
         container({ color: state.theme.background }),
@@ -110,37 +109,52 @@ const view = (dispatch: Dispatch<Event>, state: State) => {
 }
 
 const initialState: State = {
-    nodes: [
-        {
-            name: "Source",
-            inputs: [],
-            outputs: [{ name: "Out 1", selected: false }, { name: "Out 2", selected: false }],
-            x: 100,
-            y: 200
-        },
-        {
-            name: "Transform",
-            inputs: [{ name: "In 1", selected: false }, { name: "In 2", selected: false }],
-            outputs: [{ name: "Out 1", selected: false }, { name: "Out 2", selected: false }],
-            x: 400,
-            y: 300
-        },
-        {
-            name: "Sink",
-            inputs: [{ name: "In 1", selected: false }, { name: "In 2", selected: false }],
-            outputs: [],
-            x: 800,
-            y: 250
-        },
-    ],
+    graph: {
+        nodes: [
+            {
+                name: "Source",
+                inputs: [],
+                outputs: [
+                    { name: "Out 1", selected: false, edgeIndices: [] },
+                    { name: "Out 2", selected: false, edgeIndices: [] }
+                ],
+                x: 100,
+                y: 200
+            },
+            {
+                name: "Transform",
+                inputs: [
+                    { name: "In 1", selected: false, edgeIndices: [] },
+                    { name: "In 2", selected: false, edgeIndices: [] }
+                ],
+                outputs: [
+                    { name: "Out 1", selected: false, edgeIndices: [] },
+                    { name: "Out 2", selected: false, edgeIndices: [] }
+                ],
+                x: 400,
+                y: 300
+            },
+            {
+                name: "Sink",
+                inputs: [
+                    { name: "In 1", selected: false, edgeIndices: [] },
+                    { name: "In 2", selected: false, edgeIndices: [] }
+                ],
+                outputs: [],
+                x: 800,
+                y: 250
+            },
+        ],
+        edges: []
+    },
     dragging: false,
     draggedNode: null,
     pointers: [],
     pointerDistance: 0,
     pointerCenter: [0, 0],
     camera: Mat3.identity(),
-    selectedInput: null,
     selectedOutput: null,
+    selectedInput: null,
     theme: {
         background: rgba(1, 22, 39, 255),
         node: rgba(41, 95, 120, 255),
@@ -189,7 +203,7 @@ document.addEventListener('wheel', e => {
         kind: EventKind.WHEEL,
         x: e.clientX,
         y: e.clientY,
-        deltaY: e.deltaY
+        deltaY: e.deltaY,
     })
 }, { passive: false })
 

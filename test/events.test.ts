@@ -4,29 +4,44 @@ import { Mat3 } from "../src/linear_algebra"
 import { State } from "../src/state"
 
 const initialState = (): State => ({
-    nodes: [
-        {
-            name: "Source",
-            inputs: [],
-            outputs: [{ name: "Out 1", selected: false }, { name: "Out 2", selected: false }],
-            x: 100,
-            y: 200
-        },
-        {
-            name: "Transform",
-            inputs: [{ name: "In 1", selected: false }, { name: "In 2", selected: false }],
-            outputs: [{ name: "Out 1", selected: false }, { name: "Out 2", selected: false }],
-            x: 400,
-            y: 300
-        },
-        {
-            name: "Sink",
-            inputs: [{ name: "In 1", selected: false }, { name: "In 2", selected: false }],
-            outputs: [],
-            x: 800,
-            y: 250
-        },
-    ],
+    graph: {
+        nodes: [
+            {
+                name: "Source",
+                inputs: [],
+                outputs: [
+                    { name: "Out 1", selected: false, edgeIndices: [] },
+                    { name: "Out 2", selected: false, edgeIndices: [] },
+                ],
+                x: 100,
+                y: 200
+            },
+            {
+                name: "Transform",
+                inputs: [
+                    { name: "In 1", selected: false, edgeIndices: [] },
+                    { name: "In 2", selected: false, edgeIndices: [] }
+                ],
+                outputs: [
+                    { name: "Out 1", selected: false, edgeIndices: [] },
+                    { name: "Out 2", selected: false, edgeIndices: [] }
+                ],
+                x: 400,
+                y: 300
+            },
+            {
+                name: "Sink",
+                inputs: [
+                    { name: "In 1", selected: false, edgeIndices: [] },
+                    { name: "In 2", selected: false, edgeIndices: [] }
+                ],
+                outputs: [],
+                x: 800,
+                y: 250
+            },
+        ],
+        edges: []
+    },
     dragging: false,
     draggedNode: null,
     pointers: [],
@@ -86,24 +101,36 @@ test("click node", () => {
         index: 0
     })
     expect(state1.draggedNode).toEqual(0)
-    expect(state1.nodes).toEqual([
+    expect(state1.graph.nodes).toEqual([
         {
             name: "Source",
             inputs: [],
-            outputs: [{ name: "Out 1", selected: false }, { name: "Out 2", selected: false }],
+            outputs: [
+                { name: "Out 1", selected: false, edgeIndices: [] },
+                { name: "Out 2", selected: false, edgeIndices: [] }
+            ],
             x: 100,
             y: 200
         },
         {
             name: "Transform",
-            inputs: [{ name: "In 1", selected: false }, { name: "In 2", selected: false }],
-            outputs: [{ name: "Out 1", selected: false }, { name: "Out 2", selected: false }],
+            inputs: [
+                { name: "In 1", selected: false, edgeIndices: [] },
+                { name: "In 2", selected: false, edgeIndices: [] }
+            ],
+            outputs: [
+                { name: "Out 1", selected: false, edgeIndices: [] },
+                { name: "Out 2", selected: false, edgeIndices: [] }
+            ],
             x: 400,
             y: 300
         },
         {
             name: "Sink",
-            inputs: [{ name: "In 1", selected: false }, { name: "In 2", selected: false }],
+            inputs: [
+                { name: "In 1", selected: false, edgeIndices: [] },
+                { name: "In 2", selected: false, edgeIndices: [] }
+            ],
             outputs: [],
             x: 800,
             y: 250
@@ -124,7 +151,7 @@ test("pointer move before pointer down does nothing", () => {
         pointer
     })
     expect(state1.camera.data).toEqual(initialState().camera.data)
-    expect(state1.nodes).toEqual(initialState().nodes)
+    expect(state1.graph.nodes).toEqual(initialState().graph.nodes)
     expect(rerender).toEqual(false)
 })
 
@@ -147,7 +174,7 @@ test("pointer move after pointer down", () => {
         }
     })
     expect(state2.camera.data).toEqual(Mat3.translate(-50, -75).data)
-    expect(state2.nodes).toEqual(initialState().nodes)
+    expect(state2.graph.nodes).toEqual(initialState().graph.nodes)
     expect(rerender).toEqual(true)
 })
 
@@ -174,24 +201,36 @@ test("pointer move after clicking node pointer down", () => {
         }
     })
     expect(state3.camera.data).toEqual(initialState().camera.data)
-    expect(state3.nodes).toEqual([
+    expect(state3.graph.nodes).toEqual([
         {
             name: "Source",
             inputs: [],
-            outputs: [{ name: "Out 1", selected: false }, { name: "Out 2", selected: false }],
+            outputs: [
+                { name: "Out 1", selected: false, edgeIndices: [] },
+                { name: "Out 2", selected: false, edgeIndices: [] }
+            ],
             x: 150,
             y: 275
         },
         {
             name: "Transform",
-            inputs: [{ name: "In 1", selected: false }, { name: "In 2", selected: false }],
-            outputs: [{ name: "Out 1", selected: false }, { name: "Out 2", selected: false }],
+            inputs: [
+                { name: "In 1", selected: false, edgeIndices: [] },
+                { name: "In 2", selected: false, edgeIndices: [] }
+            ],
+            outputs: [
+                { name: "Out 1", selected: false, edgeIndices: [] },
+                { name: "Out 2", selected: false, edgeIndices: [] }
+            ],
             x: 400,
             y: 300
         },
         {
             name: "Sink",
-            inputs: [{ name: "In 1", selected: false }, { name: "In 2", selected: false }],
+            inputs: [
+                { name: "In 1", selected: false, edgeIndices: [] },
+                { name: "In 2", selected: false, edgeIndices: [] }
+            ],
             outputs: [],
             x: 800,
             y: 250
@@ -231,24 +270,36 @@ test("pointer move after clicking node, pointer down, then pointer up", () => {
         }
     })
     expect(state4.camera.data).toEqual(initialState().camera.data)
-    expect(state4.nodes).toEqual([
+    expect(state4.graph.nodes).toEqual([
         {
             name: "Source",
             inputs: [],
-            outputs: [{ name: "Out 1", selected: false }, { name: "Out 2", selected: false }],
+            outputs: [
+                { name: "Out 1", selected: false, edgeIndices: [] },
+                { name: "Out 2", selected: false, edgeIndices: [] }
+            ],
             x: 100,
             y: 200
         },
         {
             name: "Transform",
-            inputs: [{ name: "In 1", selected: false }, { name: "In 2", selected: false }],
-            outputs: [{ name: "Out 1", selected: false }, { name: "Out 2", selected: false }],
+            inputs: [
+                { name: "In 1", selected: false, edgeIndices: [] },
+                { name: "In 2", selected: false, edgeIndices: [] }
+            ],
+            outputs: [
+                { name: "Out 1", selected: false, edgeIndices: [] },
+                { name: "Out 2", selected: false, edgeIndices: [] }
+            ],
             x: 400,
             y: 300
         },
         {
             name: "Sink",
-            inputs: [{ name: "In 1", selected: false }, { name: "In 2", selected: false }],
+            inputs: [
+                { name: "In 1", selected: false, edgeIndices: [] },
+                { name: "In 2", selected: false, edgeIndices: [] }
+            ],
             outputs: [],
             x: 800,
             y: 250

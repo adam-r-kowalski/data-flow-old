@@ -30,10 +30,16 @@ export class SceneGeometry {
 export const sceneGeometry = (worldSpace: WorldSpace, children: Geometry[]) =>
     new SceneGeometry(worldSpace, 0, [], [], [], [], [], children)
 
+interface Connection {
+    from: string
+    to: string
+}
+
 export class Scene {
     constructor(
         readonly camera: Mat3,
-        readonly children: UI[]
+        readonly children: UI[],
+        readonly connections: Connection[]
     ) { }
 
     layout(constraints: Constraints, measureText: MeasureText) {
@@ -75,7 +81,9 @@ export class Scene {
 
 interface Properties {
     camera: Mat3
+    children: UI[]
+    connections?: Connection[]
 }
 
-export const scene = (properties: Properties, children: UI[]): Scene =>
-    new Scene(properties.camera, children)
+export const scene = (properties: Properties): Scene =>
+    new Scene(properties.camera, properties.children, properties.connections ?? [])

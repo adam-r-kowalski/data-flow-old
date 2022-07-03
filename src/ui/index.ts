@@ -31,9 +31,12 @@ export interface Pointer {
 
 export type OnClick = (pointer: Pointer) => void
 
+export type Id = string
+
 export interface UI {
     camera?: Mat3
     onClick?: OnClick
+    id?: Id
     layout: (constraints: Constraints, measureText: MeasureText) => Layout
     geometry: (layout: Layout, offset: Offset, cameraStack: CameraStack) => Geometry,
     traverse: (layout: Layout, geometry: Geometry, z: number) => Generator<Entry>

@@ -3,7 +3,7 @@ import { Color } from "../color"
 import { Geometry, Offset, WorldSpace } from "../geometry"
 import { Constraints, Layout, Size } from "../layout"
 import { Padding, padding as paddingAll } from "../padding"
-import { Entry, MeasureText, OnClick, UI } from "../ui"
+import { Entry, Id, MeasureText, OnClick, UI } from "../ui"
 
 export class ContainerLayout {
     constructor(
@@ -61,6 +61,7 @@ export class Container {
         readonly y?: number,
         readonly color?: Color,
         readonly onClick?: OnClick,
+        readonly id?: Id,
         readonly child?: UI
     ) { }
 
@@ -151,9 +152,10 @@ interface Properties {
     readonly y?: number
     readonly color?: Color
     readonly onClick?: OnClick
+    readonly id?: Id
 }
 
-export const container = ({ padding, width, height, color, x, y, onClick }: Properties, child?: UI): Container =>
+export const container = ({ padding, width, height, color, x, y, onClick, id }: Properties, child?: UI): Container =>
     new Container(
         padding ?? paddingAll(0),
         width,
@@ -162,5 +164,6 @@ export const container = ({ padding, width, height, color, x, y, onClick }: Prop
         y,
         color,
         onClick,
+        id,
         child
     )

@@ -104,7 +104,7 @@ const view = (dispatch: Dispatch<Event>, state: State) => {
     }
     return stack([
         container({ color: state.theme.background }),
-        scene({ camera: state.camera }, nodes),
+        scene({ camera: state.camera, children: nodes }),
     ])
 }
 

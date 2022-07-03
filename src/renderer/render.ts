@@ -1,7 +1,7 @@
 import { ClickHandlers, Renderer } from "."
 import { batchGeometry } from "../batch_geometry"
 import { CameraStack } from "../camera_stack"
-import { Geometry } from "../geometry"
+import { Geometry, WorldSpace } from "../geometry"
 import { Mat3 } from "../linear_algebra"
 import { reduce, Reducer } from "../reduce"
 import { Entry, UI } from "../ui"
@@ -48,6 +48,18 @@ export const gatherOnClickHandlers: Reducer<ClickHandlers> = {
         return handlers
     }
 }
+
+type IdToWorldSpace = { [id: string]: WorldSpace }
+
+export const buildIdToWorldSpace: Reducer<IdToWorldSpace> = {
+    initial: () => ({}),
+    combine: (lookup: IdToWorldSpace, entry: Entry) => {
+        if (!entry.ui.id) return lookup
+        lookup[entry.ui.id] = entry.geometry.worldSpace
+        return lookup
+    }
+}
+
 
 const reducer: Reducer<Accumulator> = {
     initial: () => ({

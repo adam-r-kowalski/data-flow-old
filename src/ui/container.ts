@@ -1,128 +1,169 @@
-import {
-    Layout,
-    Constraints,
-    Geometry,
-    Size,
-    Child,
-    Offset,
-    Color,
-    Vertices,
-    TextureCoordinates,
-    Colors,
-    VertexIndices,
-    Padding,
-    Width,
-    Height,
-    WorldSpace,
-    Translate,
-    OnDragCallback,
-    OnClickCallback,
-    OnClick,
-    OnDrag,
-    CameraIndices
-} from "../components";
-import { ECS, Entity } from "../ecs";
-import { Layers } from "../layers";
+import { CameraStack } from "../camera_stack"
+import { Color } from "../color"
+import { Geometry, Offset, WorldSpace } from "../geometry"
+import { Constraints, Layout, Size } from "../layout"
+import { Padding, padding as paddingAll } from "../padding"
+import { Entry, Id, MeasureText, OnClick, UI } from "../ui"
 
-
-const layout = (self: Entity, constraints: Constraints) => {
-    const padding = self.get(Padding)!.value
-    const child = self.get(Child)
-    const { x, y } = self.get(Translate)!
-    const offset = new Offset(x, y)
-    if (child) {
-        const childSize = child.entity.get(Layout)!.layout(child.entity, constraints)
-        const size = new Size(
-            Math.min(constraints.maxWidth, childSize.width + 2 * padding),
-            Math.min(constraints.maxHeight, childSize.height + 2 * padding),
-        )
-        child.entity.update(Offset, offset => {
-            offset.x = padding
-            offset.y = padding
-        })
-        self.set(constraints, size, offset)
-        return size
-    }
-    const width = (() => {
-        const c = self.get(Width)
-        return c !== undefined ? c.value : constraints.maxWidth
-    })()
-    const height = (() => {
-        const c = self.get(Height)
-        return c !== undefined ? c.value : constraints.maxHeight
-    })()
-    const size = new Size(width, height)
-    self.set(constraints, size, offset)
-    return size
+export class ContainerLayout {
+    constructor(
+        readonly size: Size,
+        readonly child?: Layout
+    ) { }
 }
 
-const geometry = (self: Entity, parentOffset: Offset, layers: Layers, z: number) => {
-    const offset = parentOffset.add(self.get(Offset)!)
-    const { width, height } = self.get(Size)!
-    const x0 = offset.x
-    const x1 = x0 + width
-    const y0 = offset.y
-    const y1 = y0 + height
-    const color = self.get(Color)
-    if (color) {
-        const { r, g, b, a } = color
-        layers.push({ z, texture: 0, entity: self })
-        self.set(
-            new Vertices([
-                x0, y0,
-                x0, y1,
-                x1, y0,
-                x1, y1,
-            ]),
-            new TextureCoordinates(Array(8).fill(0)),
-            new Colors([
-                r, g, b, a,
-                r, g, b, a,
-                r, g, b, a,
-                r, g, b, a,
-            ]),
-            new VertexIndices([
-                0, 1, 2,
-                1, 2, 3,
-            ]),
-            new CameraIndices(Array(4).fill(layers.cameraForEntity.get(self)))
-        )
+export const containerLayout = (size: Size, child?: Layout) =>
+    new ContainerLayout(size, child)
+
+export class ContainerGeometry {
+    constructor(
+        readonly worldSpace: WorldSpace,
+        readonly textureIndex: number,
+        readonly textureCoordinates: number[],
+        readonly colors: number[],
+        readonly vertices: number[],
+        readonly vertexIndices: number[],
+        readonly cameraIndex: number[],
+        readonly child?: Geometry
+    ) { }
+}
+
+interface GeometryData {
+    readonly worldSpace: WorldSpace
+    readonly textureIndex?: number
+    readonly textureCoordinates?: number[]
+    readonly colors?: number[]
+    readonly vertices?: number[]
+    readonly vertexIndices?: number[]
+    readonly cameraIndex?: number[]
+}
+
+export const containerGeometry = (data: GeometryData, child?: Geometry) => {
+    const vertices = data.vertices ?? []
+    return new ContainerGeometry(
+        data.worldSpace,
+        data.textureIndex ?? 0,
+        data.textureCoordinates ?? Array.from<number>({ length: vertices.length }).fill(0),
+        data.colors ?? [],
+        vertices,
+        data.vertexIndices ?? [],
+        data.cameraIndex ?? [],
+        child
+    )
+}
+
+export class Container {
+    constructor(
+        readonly padding: Padding,
+        readonly width?: number,
+        readonly height?: number,
+        readonly x?: number,
+        readonly y?: number,
+        readonly color?: Color,
+        readonly onClick?: OnClick,
+        readonly id?: Id,
+        readonly child?: UI
+    ) { }
+
+    layout(constraints: Constraints, measureText: MeasureText) {
+        const { left, top, right, bottom } = this.padding
+        if (this.child) {
+            const layout = this.child.layout(constraints, measureText)
+            const width = layout.size.width + left + right
+            const height = layout.size.height + top + bottom
+            return containerLayout({ width, height }, layout)
+        }
+        const width = (() => {
+            if (this.width) return this.width + left + right
+            return constraints.maxWidth
+        })()
+        const height = (() => {
+            if (this.height) return this.height + top + bottom
+            return constraints.maxHeight
+        })()
+        return containerLayout({ width, height })
     }
-    const child = self.get(Child)
-    if (child) {
-        child.entity.get(Geometry)!.geometry(child.entity, offset, layers, z + 1)
+
+    geometry(layout: Layout, offset: Offset, cameraStack: CameraStack) {
+        const x0 = offset.x + (this.x ?? 0)
+        const x1 = x0 + layout.size.width
+        const y0 = offset.y + (this.y ?? 0)
+        const y1 = y0 + layout.size.height
+        const worldSpace = cameraStack.transformWorldSpace({ x0, x1, y0, y1 })
+        const data = (() => {
+            if (this.color) {
+                const { r, g, b, a } = this.color.rgba()
+                return {
+                    worldSpace,
+                    vertices: [
+                        x0, y0,
+                        x0, y1,
+                        x1, y0,
+                        x1, y1,
+                    ],
+                    colors: [
+                        r, g, b, a,
+                        r, g, b, a,
+                        r, g, b, a,
+                        r, g, b, a,
+                    ],
+                    vertexIndices: [
+                        0, 1, 2,
+                        1, 2, 3
+                    ],
+                    cameraIndex: Array(4).fill(cameraStack.activeCamera())
+                }
+            }
+            return {
+                worldSpace,
+                vertices: [],
+                colors: [],
+                vertexIndices: [],
+                cameraIndex: [],
+            }
+        })()
+        if (this.child) {
+            const childLayout = (layout as ContainerLayout).child!
+            const childOffset = {
+                x: x0 + this.padding.left,
+                y: y0 + this.padding.top
+            }
+            const childGeometry = this.child.geometry(childLayout, childOffset, cameraStack)
+            return containerGeometry(data, childGeometry)
+        }
+        return containerGeometry(data)
     }
-    self.set(new WorldSpace(x0, y0, width, height))
+
+    * traverse(layout: Layout, geometry: Geometry, z: number): Generator<Entry> {
+        yield { ui: this, layout, geometry, z }
+        if (this.child) {
+            const childLayout = (layout as ContainerLayout).child!
+            const childGeometry = (geometry as ContainerGeometry).child!
+            yield* this.child.traverse(childLayout, childGeometry, z + 1)
+        }
+    }
 }
 
 interface Properties {
-    color?: Color
-    padding?: number
-    width?: number
-    height?: number
-    x?: number
-    y?: number
-    onDrag?: OnDragCallback
-    onClick?: OnClickCallback
+    readonly padding?: Padding
+    readonly width?: number
+    readonly height?: number
+    readonly x?: number
+    readonly y?: number
+    readonly color?: Color
+    readonly onClick?: OnClick
+    readonly id?: Id
 }
 
-type Overload = {
-    (ecs: ECS, properties: Properties): Entity
-    (ecs: ECS, properties: Properties, child: Entity): Entity
-}
-
-export const container: Overload = (ecs: ECS, properties: Properties, child?: Entity) => {
-    const entity = ecs.entity(
-        new Layout(layout),
-        new Geometry(geometry),
-        new Padding(properties.padding ?? 0),
-        new Translate(properties.x ?? 0, properties.y ?? 0)
+export const container = ({ padding, width, height, color, x, y, onClick, id }: Properties, child?: UI): Container =>
+    new Container(
+        padding ?? paddingAll(0),
+        width,
+        height,
+        x,
+        y,
+        color,
+        onClick,
+        id,
+        child
     )
-    if (properties.width !== undefined) entity.set(new Width(properties.width))
-    if (properties.height !== undefined) entity.set(new Height(properties.height))
-    if (child !== undefined) entity.set(new Child(child))
-    if (properties.color !== undefined) entity.set(properties.color)
-    if (properties.onDrag !== undefined) entity.set(new OnDrag(properties.onDrag))
-    if (properties.onClick !== undefined) entity.set(new OnClick(properties.onClick))
-    return entity
-}

@@ -1,3 +1,5 @@
+import { Size } from "./layout"
+
 export class Vec3 {
     constructor(public data: number[]) { }
 
@@ -16,19 +18,25 @@ export class Mat3 {
         0, 0, 1,
     ])
 
-    static projection = (width: number, height: number) => new Mat3([
+    static projection = ({ width, height }: Size) => new Mat3([
         2 / width, 0, -1,
         0, -2 / height, 1,
         0, 0, 1
     ])
 
-    static translation = (x: number, y: number) => new Mat3([
+    static translate = (x: number, y: number) => new Mat3([
         1, 0, x,
         0, 1, y,
         0, 0, 1
     ])
 
-    static rotation = (radians: number) => {
+    static scale = (x: number, y: number) => new Mat3([
+        x, 0, 0,
+        0, y, 0,
+        0, 0, 1
+    ])
+
+    static rotate = (radians: number) => {
         const c = Math.cos(radians)
         const s = Math.sin(radians)
         return new Mat3([
@@ -37,12 +45,6 @@ export class Mat3 {
             0, 0, 1
         ])
     }
-
-    static scaling = (x: number, y: number) => new Mat3([
-        x, 0, 0,
-        0, y, 0,
-        0, 0, 1
-    ])
 
     matMul = (other: Mat3) => {
         const a = this.data

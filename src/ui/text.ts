@@ -1,127 +1,161 @@
-import {
-    Layout,
-    Text,
-    FontSize,
-    FontFamily,
-    Constraints,
-    Color,
-    Offset,
-    Geometry,
-    Size,
-    Vertices,
-    TextureCoordinates,
-    Colors,
-    VertexIndices,
-    WorldSpace,
-    CameraIndices,
-} from "../components";
-import { ECS, Entity } from "../ecs";
-import { Layers } from "../layers";
-import { Renderer } from "../renderer";
+import { Entry, Font, MeasureText, TextMeasurements } from "."
+import { CameraStack } from "../camera_stack"
+import { Color, rgba } from "../color"
+import { Geometry, Offset, WorldSpace } from "../geometry"
+import { Constraints, Layout, Size } from "../layout"
 
-const textSize = (renderer: Renderer, entity: Entity) => {
-    const text = entity.get(Text)!.value
-    const fontSize = entity.get(FontSize)!.value
-    const fontFamily = entity.get(FontFamily)!.value
-    const atlas = renderer.fontAtlas(fontFamily, fontSize)
-    let size = new Size(0, 0)
-    for (const c of text) {
-        const metric = atlas.metric(c)
-        size.width += metric.width
-        size.height = Math.max(metric.height, size.height)
-    }
-    return size
+export class TextLayout {
+    constructor(
+        readonly measurements: TextMeasurements,
+        readonly size: Size
+    ) { }
 }
 
-const textGeometry = (renderer: Renderer, entity: Entity, offset: Offset, layers: Layers, z: number): number => {
-    const text = entity.get(Text)!.value
-    const fontSize = entity.get(FontSize)!.value
-    const fontFamily = entity.get(FontFamily)!.value
-    const { r, g, b, a } = entity.get(Color)!
-    const atlas = renderer.fontAtlas(fontFamily, fontSize)
-    let x = 0
-    let indexOffset = 0
-    const vertices: number[] = []
-    const textureCoordinates: number[] = []
-    const colors: number[] = []
-    const indices: number[] = []
-    for (const c of text) {
-        const metric = atlas.metric(c)
-        const x0 = offset.x + x
-        const x1 = x0 + metric.width
-        const y0 = offset.y
-        const y1 = y0 + metric.height
-        vertices.push(
+export const textLayout = (measurements: TextMeasurements, size: Size) =>
+    new TextLayout(measurements, size)
+
+
+export class TextGeometry {
+    constructor(
+        readonly worldSpace: WorldSpace,
+        readonly textureIndex: number,
+        readonly textureCoordinates: number[],
+        readonly colors: number[],
+        readonly vertices: number[],
+        readonly vertexIndices: number[],
+        readonly cameraIndex: number[],
+    ) { }
+}
+
+interface GeometryData {
+    readonly worldSpace: WorldSpace
+    readonly textureIndex: number
+    readonly textureCoordinates: number[]
+    readonly colors: number[]
+    readonly vertices: number[]
+    readonly vertexIndices: number[]
+    readonly cameraIndex: number[]
+}
+
+const vertices = (widths: number[], height: number, offset: Offset) => {
+    const result = []
+    let offsetX = offset.x
+    const y0 = offset.y
+    const y1 = offset.y + height
+    for (const width of widths) {
+        const x0 = offsetX
+        const x1 = offsetX + width
+        result.push(
             x0, y0,
             x0, y1,
             x1, y0,
-            x1, y1,
+            x1, y1
         )
-        textureCoordinates.push(
-            metric.x, metric.y,
-            metric.x, metric.y + metric.height,
-            metric.x + metric.width, metric.y,
-            metric.x + metric.width, metric.y + metric.height,
-        )
-        colors.push(
-            r, g, b, a,
-            r, g, b, a,
-            r, g, b, a,
-            r, g, b, a,
-        )
-        indices.push(
-            indexOffset + 0, indexOffset + 1, indexOffset + 2,
-            indexOffset + 1, indexOffset + 2, indexOffset + 3,
-        )
-        x += metric.width
-        indexOffset += 4
+        offsetX += width
     }
-    layers.push({ z, entity, texture: atlas.texture })
-    entity.set(
-        new Vertices(vertices),
-        new TextureCoordinates(textureCoordinates),
-        new Colors(colors),
-        new VertexIndices(indices),
-        new CameraIndices(Array(vertices.length / 2).fill(layers.cameraForEntity.get(entity)))
+    return result
+}
+
+const colors = (n: number, color: Color) => {
+    const result = []
+    const { r, g, b, a } = color.rgba()
+    for (let i = 0; i < n; ++i) {
+        result.push(
+            r, g, b, a,
+            r, g, b, a,
+            r, g, b, a,
+            r, g, b, a,
+        )
+    }
+    return result
+}
+
+const vertexIndices = (n: number) => {
+    const result = []
+    let offset = 0
+    for (let i = 0; i < n; ++i) {
+        result.push(
+            offset, offset + 1, offset + 2,
+            offset + 1, offset + 2, offset + 3
+        )
+        offset += 4
+    }
+    return result
+}
+
+export const textGeometry = (data: GeometryData) =>
+    new TextGeometry(
+        data.worldSpace,
+        data.textureIndex,
+        data.textureCoordinates,
+        data.colors,
+        data.vertices,
+        data.vertexIndices,
+        data.cameraIndex,
     )
-    return atlas.texture
-}
 
-const layout = (self: Entity, constraints: Constraints) => {
-    const size = textSize(self.ecs.get(Renderer)!, self)
-    self.set(constraints, size, new Offset(0, 0))
-    return size
-}
+export class Text {
+    constructor(
+        readonly font: Font,
+        readonly color: Color,
+        readonly str: string
+    ) { }
 
-const geometry = (self: Entity, parentOffset: Offset, layers: Layers, z: number) => {
-    const { width, height } = self.get(Size)!
-    const offset = parentOffset.add(self.get(Offset)!)
-    textGeometry(self.ecs.get(Renderer)!, self, offset, layers, z)
-    self.set(new WorldSpace(offset.x, offset.y, width, height))
+    layout(_: Constraints, measureText: MeasureText) {
+        const { font, str } = this
+        const measurements = measureText(font, str)
+        const width = measurements.widths.reduce((acc, width) => acc + width)
+        const size = { width, height: font.size }
+        return textLayout(measurements, size)
+    }
+
+    geometry(layout: Layout, offset: Offset, cameraStack: CameraStack) {
+        const textLayout = layout as TextLayout
+        const { measurements } = textLayout
+        const { textureIndex, textureCoordinates, widths } = measurements
+        return textGeometry({
+            worldSpace: cameraStack.transformWorldSpace({
+                x0: offset.x,
+                y0: offset.y,
+                x1: offset.x + layout.size.width,
+                y1: offset.y + layout.size.height
+            }),
+            textureIndex,
+            textureCoordinates: textureCoordinates.flat(),
+            colors: colors(widths.length, this.color),
+            vertices: vertices(widths, this.font.size, offset),
+            vertexIndices: vertexIndices(widths.length),
+            cameraIndex: Array(widths.length * 4).fill(cameraStack.activeCamera())
+        })
+    }
+
+    *traverse(layout: Layout, geometry: Geometry, z: number): Generator<Entry> {
+        yield { ui: this, layout, geometry, z }
+    }
 }
 
 interface Properties {
-    fontSize?: number
-    fontFamily?: number
-    color?: Color
+    readonly font?: string
+    readonly size?: number
+    readonly color?: Color
 }
 
 type Overload = {
-    (ecs: ECS, data: string): Entity
-    (ecs: ECS, properties: Properties, data: string): Entity
+    (str: String): Text
+    (properties: Properties, str: String): Text
 }
 
-export const text: Overload = (ecs: ECS, ...args: any[]): Entity => {
-    const [properties, data] = (() => {
-        if (typeof args[0] === 'string') return [{}, args[0]]
-        return [args[0], args[1]]
-    })()
-    return ecs.entity(
-        new Text(data),
-        new FontSize(properties.fontSize ?? 28),
-        new FontFamily(properties.fontFamily ?? "monospace"),
-        properties.color ?? new Color(255, 255, 255, 255),
-        new Layout(layout),
-        new Geometry(geometry),
+export const text: Overload = (...args: any[]): Text => {
+    const [properties, str] = (() =>
+        typeof args[0] == 'string' ? [{}, args[0]] : [args[0], args[1]]
+    )()
+    const font = {
+        family: properties.font ?? "monospace",
+        size: properties.size ?? 24
+    }
+    return new Text(
+        font,
+        properties.color ?? rgba(255, 255, 255, 255),
+        str
     )
 }

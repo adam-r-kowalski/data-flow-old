@@ -1,50 +1,84 @@
-import {
-    Layout,
-    Constraints,
-    Geometry,
-    Size,
-    Offset,
-    Children,
-    Connections,
-    WorldSpace,
-    Camera,
-    Transform,
-} from "../components";
-import { ECS, Entity } from "../ecs";
-import { Layers } from "../layers";
-import { geometry as connectionGeometry } from './connection'
+import { CameraStack } from "../camera_stack"
+import { Geometry, Offset, WorldSpace } from "../geometry"
+import { Constraints, Layout, Size } from "../layout"
+import { Mat3 } from "../linear_algebra"
+import { Connection, Entry, MeasureText, UI } from "../ui"
 
-const layout = (self: Entity, constraints: Constraints) => {
-    for (const child of self.get(Children)!.entities) {
-        child.get(Layout)!.layout(child, constraints)
-    }
-    const size = new Size(constraints.maxWidth, constraints.maxHeight)
-    self.set(constraints, size, new Offset(0, 0))
-    return size
+export class SceneLayout {
+    constructor(
+        readonly size: Size,
+        readonly children: Layout[]
+    ) { }
 }
 
-const geometry = (self: Entity, parentOffset: Offset, layers: Layers, z: number) => {
-    const { width, height } = self.get(Size)!
-    const offset = parentOffset.add(self.get(Offset)!)
-    layers.pushCamera(self.get(Camera)!.entity.get(Transform)!.matrix)
-    for (const child of self.get(Children)!.entities) {
-        child.get(Geometry)!.geometry(child, offset, layers, z)
+export const sceneLayout = (size: Size, children: Layout[]) =>
+    new SceneLayout(size, children)
+
+export class SceneGeometry {
+    constructor(
+        readonly worldSpace: WorldSpace,
+        readonly textureIndex: number,
+        readonly textureCoordinates: number[],
+        readonly colors: number[],
+        readonly vertices: number[],
+        readonly vertexIndices: number[],
+        readonly cameraIndex: number[],
+        readonly children: Geometry[]
+    ) { }
+}
+
+export const sceneGeometry = (worldSpace: WorldSpace, children: Geometry[]) =>
+    new SceneGeometry(worldSpace, 0, [], [], [], [], [], children)
+
+export class Scene {
+    constructor(
+        readonly camera: Mat3,
+        readonly children: UI[],
+        readonly connections: Connection[]
+    ) { }
+
+    layout(constraints: Constraints, measureText: MeasureText) {
+        const children = this.children.map(c => c.layout(constraints, measureText))
+        const width = constraints.maxWidth
+        const height = constraints.maxHeight
+        return sceneLayout({ width, height }, children)
     }
-    connectionGeometry(self.get(Connections)!.entities, layers)
-    self.set(new WorldSpace(offset.x, offset.y, width, height))
+
+    geometry(layout: Layout, offset: Offset, cameraStack: CameraStack) {
+        const worldSpace = cameraStack.transformWorldSpace({
+            x0: offset.x,
+            y0: offset.y,
+            x1: offset.x + layout.size.width,
+            y1: offset.y + layout.size.height
+        })
+        const childrenLayout = (layout as SceneLayout).children
+        cameraStack.pushCamera(this.camera)
+        const children = this.children.map((c, i) => c.geometry(childrenLayout[i], offset, cameraStack))
+        cameraStack.popCamera()
+        return sceneGeometry(worldSpace, children)
+    }
+
+    *traverse(layout: Layout, geometry: Geometry, z: number): Generator<Entry> {
+        const childrenLayout = (layout as SceneLayout).children
+        const childrenGeometry = (geometry as SceneGeometry).children
+        yield { ui: this, layout, geometry, z }
+        let i = 0
+        for (const child of this.children) {
+            for (const entry of child.traverse(childrenLayout[i], childrenGeometry[i], z)) {
+                yield entry
+                z = Math.max(z, entry.z)
+            }
+            i++
+            z++
+        }
+    }
 }
 
 interface Properties {
-    children?: Entity[],
-    connections?: Entity[],
+    camera: Mat3
+    children: UI[]
+    connections?: Connection[]
 }
 
-export const scene = (ecs: ECS, properties?: Properties) => {
-    properties = properties ?? {}
-    return ecs.entity(
-        new Layout(layout),
-        new Geometry(geometry),
-        new Children(properties.children ?? []),
-        new Connections(properties.connections ?? []),
-    )
-}
+export const scene = (properties: Properties): Scene =>
+    new Scene(properties.camera, properties.children, properties.connections ?? [])

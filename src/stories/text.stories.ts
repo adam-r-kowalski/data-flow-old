@@ -91,7 +91,7 @@ export const weirdArangement = () => {
 export const node = () => {
     let renderer = webGL2Renderer({ width: 500, height: 500 })
     const ui = center(
-        container({ color: rgba(100, 150, 75, 255) },
+        container({ color: { red: 100, green: 150, blue: 75, alpha: 255 } },
             column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
                 container({ padding: padding(5) }, text("Source")),
                 row([

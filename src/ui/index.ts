@@ -2,7 +2,7 @@ import { CameraStack } from "../camera_stack";
 import { Color } from "../color";
 import { Geometry, Offset } from "../geometry";
 import { Constraints, Layout } from "../layout";
-import { Mat3 } from "../linear_algebra";
+import { Matrix3x3 } from "../linear_algebra/matrix3x3";
 
 export interface Entry {
     readonly ui: UI
@@ -42,7 +42,7 @@ export interface Connection {
 
 
 export interface UI {
-    camera?: Mat3
+    camera?: Matrix3x3
     onClick?: OnClick
     id?: Id
     connections?: Connection[]

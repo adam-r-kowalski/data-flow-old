@@ -55,3 +55,13 @@ export class MockRenderer {
 export const mockRenderer = (size: Size) => {
     return new MockRenderer(size, [identity()], [], 0, [], [])
 }
+
+
+
+export class MockDocument {
+}
+
+
+export const mockDocument = () => {
+    return new MockDocument()
+}

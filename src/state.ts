@@ -1,5 +1,5 @@
 import { Color } from "./color"
-import { Mat3 } from "./linear_algebra"
+import { Matrix3x3 } from "./linear_algebra/matrix3x3"
 import { Pointer } from "./ui"
 
 export interface InputPath {
@@ -59,6 +59,6 @@ export interface State {
     pointerCenter: [number, number]
     selectedOutput: OutputPath | null
     selectedInput: InputPath | null
-    camera: Mat3
+    camera: Matrix3x3
     theme: Theme
 }

@@ -1,6 +1,6 @@
 import { CrossAxisAlignment } from "./alignment"
 import { Event, EventKind, update } from "./event"
-import { Mat3 } from "./linear_algebra"
+import { identity } from "./linear_algebra/matrix3x3"
 import { padding } from "./padding"
 import { Dispatch, run, transformPointer } from "./run"
 import { Input, Node, Output, State, Theme } from "./state"
@@ -157,7 +157,7 @@ const initialState: State = {
     pointers: [],
     pointerDistance: 0,
     pointerCenter: [0, 0],
-    camera: Mat3.identity(),
+    camera: identity(),
     selectedOutput: null,
     selectedInput: null,
     theme: {

@@ -1,9 +1,9 @@
 import { ClickHandlers } from ".";
 import { Batch } from "./batch_geometry";
 import { Size } from "../layout";
-import { Mat3 } from "../linear_algebra";
 import { Font, TextMeasurements } from "../ui";
 import { Lines } from "./connection_geometry";
+import { Matrix3x3, projection } from "../linear_algebra/matrix3x3";
 
 interface Attribute {
     location: number
@@ -107,7 +107,7 @@ const mapString = <T>(str: string, f: (c: string, i: number) => T): Array<T> => 
 
 export class WebGL2Renderer {
     _size: Size
-    _cameras: Mat3[]
+    _cameras: Matrix3x3[]
 
     constructor(
         public canvas: HTMLCanvasElement,
@@ -127,7 +127,7 @@ export class WebGL2Renderer {
         const { gl, program } = this
         const { uniforms } = program
         const { canvas } = gl
-        gl.uniformMatrix3fv(uniforms.projection, /*transpose*/true, Mat3.projection(size).data)
+        gl.uniformMatrix3fv(uniforms.projection, /*transpose*/true, projection(size))
         canvas.width = size.width * window.devicePixelRatio
         canvas.height = size.height * window.devicePixelRatio
         canvas.style.width = `${size.width}px`
@@ -138,11 +138,11 @@ export class WebGL2Renderer {
 
     get size() { return this._size }
 
-    set cameras(cameras: Mat3[]) {
+    set cameras(cameras: Matrix3x3[]) {
         const { gl, program } = this
         const { uniforms } = program
         const data: number[] = []
-        for (const camera of cameras) data.push(...camera.data)
+        for (const camera of cameras) data.push(...camera)
         gl.uniformMatrix3fv(uniforms.cameras, /*transpose*/true, data)
         this._cameras = cameras
     }

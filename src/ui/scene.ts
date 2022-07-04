@@ -1,7 +1,7 @@
 import { CameraStack } from "../camera_stack"
 import { Geometry, Offset, WorldSpace } from "../geometry"
 import { Constraints, Layout, Size } from "../layout"
-import { Mat3 } from "../linear_algebra"
+import { Matrix3x3 } from "../linear_algebra/matrix3x3"
 import { Connection, Entry, MeasureText, UI } from "../ui"
 
 export class SceneLayout {
@@ -32,7 +32,7 @@ export const sceneGeometry = (worldSpace: WorldSpace, children: Geometry[]) =>
 
 export class Scene {
     constructor(
-        readonly camera: Mat3,
+        readonly camera: Matrix3x3,
         readonly children: UI[],
         readonly connections: Connection[]
     ) { }
@@ -75,7 +75,7 @@ export class Scene {
 }
 
 interface Properties {
-    camera: Mat3
+    camera: Matrix3x3
     children: UI[]
     connections?: Connection[]
 }

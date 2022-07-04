@@ -1,4 +1,4 @@
-import { Mat3 } from "../src/linear_algebra"
+import { identity, translate } from "../src/linear_algebra/matrix3x3"
 import { mockRenderer } from "../src/renderer/mock"
 import { pointerDown } from "../src/renderer/pointer_down"
 import { render } from "../src/renderer/render"
@@ -13,7 +13,7 @@ test("click first container", () => {
     let aClickCount = 0
     let bClickCount = 0
     const ui = scene({
-        camera: Mat3.identity(),
+        camera: identity(),
         children: [
             container({
                 width: 50,
@@ -44,7 +44,7 @@ test("click second container", () => {
     let aClickCount = 0
     let bClickCount = 0
     const ui = scene({
-        camera: Mat3.identity(),
+        camera: identity(),
         children: [
             container({
                 width: 50,
@@ -75,7 +75,7 @@ test("click translated container", () => {
     let aClickCount = 0
     let bClickCount = 0
     const ui = scene({
-        camera: Mat3.translate(100, 0),
+        camera: translate(100, 0),
         children: [
             container({
                 width: 50,

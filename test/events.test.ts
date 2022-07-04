@@ -1,5 +1,5 @@
 import { EventKind, update } from "../src/event"
-import { Mat3 } from "../src/linear_algebra"
+import { identity, translate } from "../src/linear_algebra/matrix3x3"
 import { State } from "../src/state"
 
 const initialState = (): State => ({
@@ -46,7 +46,7 @@ const initialState = (): State => ({
     pointers: [],
     pointerDistance: 0,
     pointerCenter: [0, 0],
-    camera: Mat3.identity(),
+    camera: identity(),
     selectedInput: null,
     selectedOutput: null,
     theme: {
@@ -69,8 +69,10 @@ test("pointer down", () => {
         kind: EventKind.POINTER_DOWN,
         pointer
     })
-    expect(state1.dragging).toEqual(true)
-    expect(state1.pointers).toEqual([pointer])
+    const expectedState = initialState()
+    expectedState.dragging = true
+    expectedState.pointers = [pointer]
+    expect(state1).toEqual(expectedState)
     expect(rerender).toEqual(false)
 })
 
@@ -89,8 +91,7 @@ test("pointer down then up", () => {
         kind: EventKind.POINTER_UP,
         pointer
     })
-    expect(state2.dragging).toEqual(false)
-    expect(state2.pointers).toEqual([])
+    expect(state2).toEqual(initialState())
     expect(rerender).toEqual(false)
 })
 
@@ -100,8 +101,9 @@ test("click node", () => {
         kind: EventKind.CLICKED_NODE,
         index: 0
     })
-    expect(state1.draggedNode).toEqual(0)
-    expect(state1.graph.nodes).toEqual([
+    const expectedState = initialState()
+    expectedState.draggedNode = 0
+    expectedState.graph.nodes = [
         {
             name: "Source",
             inputs: [],
@@ -135,7 +137,8 @@ test("click node", () => {
             x: 800,
             y: 250
         },
-    ])
+    ]
+    expect(state1).toEqual(expectedState)
     expect(rerender).toEqual(true)
 })
 
@@ -150,8 +153,7 @@ test("pointer move before pointer down does nothing", () => {
         kind: EventKind.POINTER_MOVE,
         pointer
     })
-    expect(state1.camera.data).toEqual(initialState().camera.data)
-    expect(state1.graph.nodes).toEqual(initialState().graph.nodes)
+    expect(state1).toEqual(initialState())
     expect(rerender).toEqual(false)
 })
 
@@ -173,7 +175,7 @@ test("pointer move after pointer down", () => {
             id: 0,
         }
     })
-    expect(state2.camera.data).toEqual(Mat3.translate(-50, -75).data)
+    expect(state2.camera).toEqual(translate(-50, -75))
     expect(state2.graph.nodes).toEqual(initialState().graph.nodes)
     expect(rerender).toEqual(true)
 })
@@ -200,7 +202,7 @@ test("pointer move after clicking node pointer down", () => {
             id: 0,
         }
     })
-    expect(state3.camera.data).toEqual(initialState().camera.data)
+    expect(state3.camera).toEqual(initialState().camera)
     expect(state3.graph.nodes).toEqual([
         {
             name: "Source",
@@ -269,7 +271,7 @@ test("pointer move after clicking node, pointer down, then pointer up", () => {
             id: 0,
         }
     })
-    expect(state4.camera.data).toEqual(initialState().camera.data)
+    expect(state4.camera).toEqual(initialState().camera)
     expect(state4.graph.nodes).toEqual([
         {
             name: "Source",

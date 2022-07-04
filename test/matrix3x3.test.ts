@@ -1,40 +1,40 @@
-import { Mat3, Vec3 } from "../src/linear_algebra"
+import { identity, inverse, multiplyMatrices, multiplyMatrixVector, rotate, scale, translate } from "../src/linear_algebra/matrix3x3"
 
 test("matrix multiplication by identity rhs", () => {
-    const a = new Mat3([
+    const a = [
         1, 2, 3,
         4, 5, 6,
         7, 8, 9
-    ])
-    const b = Mat3.identity()
-    const c = a.matMul(b)
-    expect(c.data).toEqual(a.data)
+    ]
+    const b = identity()
+    const c = multiplyMatrices(a, b)
+    expect(c).toEqual(a)
 })
 
 test("matrix multiplication by identity lhs", () => {
-    const a = new Mat3([
+    const a = [
         1, 2, 3,
         4, 5, 6,
         7, 8, 9
-    ])
-    const b = Mat3.identity()
-    const c = b.matMul(a)
-    expect(c.data).toEqual(a.data)
+    ]
+    const b = identity()
+    const c = multiplyMatrices(b, a)
+    expect(c).toEqual(a)
 })
 
 test("matrix multiplication", () => {
-    const a = new Mat3([
+    const a = [
         10, 20, 10,
         4, 5, 6,
         2, 3, 5
-    ])
-    const b = new Mat3([
+    ]
+    const b = [
         3, 2, 4,
         3, 3, 9,
         4, 4, 2
-    ])
-    const c = a.matMul(b)
-    expect(c.data).toEqual([
+    ]
+    const c = multiplyMatrices(a, b)
+    expect(c).toEqual([
         130, 120, 240,
         51, 47, 73,
         35, 33, 45
@@ -42,83 +42,83 @@ test("matrix multiplication", () => {
 })
 
 test("matrix inverse", () => {
-    const a = new Mat3([
+    const a = [
         1, 2, -1,
         2, 1, 2,
         -1, 2, 1
-    ])
-    const b = a.inverse()
+    ]
+    const b = inverse(a)
     const expected = [
         3 / 16, 1 / 4, -5 / 16,
         1 / 4, 0, 1 / 4,
         -5 / 16, 1 / 4, 3 / 16
     ]
-    b.data.forEach((value, index) =>
+    b.forEach((value, index) =>
         expect(value).toBeCloseTo(expected[index]!)
     )
 })
 
 test("matrix inverse of translate", () => {
-    const a = new Mat3([
+    const a = [
         1, 0, 5,
         0, 1, 10,
         0, 0, 1
-    ])
-    const b = a.inverse()
+    ]
+    const b = inverse(a)
     const expected = [
         1, 0, -5,
         0, 1, -10,
         0, 0, 1
     ]
-    b.data.forEach((value, index) =>
+    b.forEach((value, index) =>
         expect(value).toBeCloseTo(expected[index]!)
     )
 })
 
 test("matrix inverse of scale", () => {
-    const a = new Mat3([
+    const a = [
         2, 0, 0,
         0, 2, 0,
         0, 0, 1
-    ])
-    const b = a.inverse()
+    ]
+    const b = inverse(a)
     const expected = [
         1 / 2, 0, 0,
         0, 1 / 2, 0,
         0, 0, 1
     ]
-    b.data.forEach((value, index) =>
+    b.forEach((value, index) =>
         expect(value).toBeCloseTo(expected[index]!)
     )
 })
 
 test("matrix vector multiplication by identity", () => {
-    const a = Mat3.identity()
-    const b = new Vec3([1, 2, 3])
-    const c = a.vecMul(b)
-    expect(c.data).toEqual(b.data)
+    const a = identity()
+    const b = [1, 2, 3]
+    const c = multiplyMatrixVector(a, b)
+    expect(c).toEqual(b)
 })
 
 test("scale vector", () => {
-    const a = Mat3.scale(2, 2)
-    const b = new Vec3([1, 2, 1])
-    const c = a.vecMul(b)
-    expect(c.data).toEqual([2, 4, 1])
+    const a = scale(2, 2)
+    const b = [1, 2, 1]
+    const c = multiplyMatrixVector(a, b)
+    expect(c).toEqual([2, 4, 1])
 })
 
 test("translate vector", () => {
-    const a = Mat3.translate(2, 2)
-    const b = new Vec3([1, 2, 1])
-    const c = a.vecMul(b)
-    expect(c.data).toEqual([3, 4, 1])
+    const a = translate(2, 2)
+    const b = [1, 2, 1]
+    const c = multiplyMatrixVector(a, b)
+    expect(c).toEqual([3, 4, 1])
 })
 
 test("rotate vector", () => {
-    const a = Mat3.rotate(-Math.PI / 2)
-    const b = new Vec3([1, 0, 1])
-    const c = a.vecMul(b)
+    const a = rotate(-Math.PI / 2)
+    const b = [1, 0, 1]
+    const c = multiplyMatrixVector(a, b)
     const expected = [0, 1, 1]
-    c.data.forEach((value, index) =>
+    c.forEach((value, index) =>
         expect(value).toBeCloseTo(expected[index]!)
     )
 })

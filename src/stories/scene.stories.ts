@@ -2,7 +2,7 @@ import { webGL2Renderer } from "../renderer/webgl2"
 import { container } from "../ui/container"
 import { render } from "../renderer/render"
 import { scene } from "../ui/scene"
-import { Mat3 } from "../linear_algebra"
+import { identity, multiplyMatrices, scale, translate } from "../linear_algebra/matrix3x3"
 
 export default {
     title: 'scene'
@@ -14,7 +14,7 @@ const green = { red: 0, green: 255, blue: 0, alpha: 255 }
 export const sceneCamera = () => {
     let renderer = webGL2Renderer({ width: 500, height: 500 })
     const ui = scene({
-        camera: Mat3.identity(),
+        camera: identity(),
         children: [
             container({
                 width: 50,
@@ -39,7 +39,7 @@ export const sceneCamera = () => {
 export const sceneTranslated = () => {
     let renderer = webGL2Renderer({ width: 500, height: 500 })
     const ui = scene({
-        camera: Mat3.translate(100, 0),
+        camera: translate(100, 0),
         children: [
             container({
                 width: 50,
@@ -64,7 +64,7 @@ export const sceneTranslated = () => {
 export const sceneScaled = () => {
     let renderer = webGL2Renderer({ width: 500, height: 500 })
     const ui = scene({
-        camera: Mat3.scale(2, 2),
+        camera: scale(2, 2),
         children: [
             container({
                 width: 50,
@@ -89,7 +89,7 @@ export const sceneScaled = () => {
 export const sceneScaledAndTranslated = () => {
     let renderer = webGL2Renderer({ width: 500, height: 500 })
     const ui = scene({
-        camera: Mat3.translate(-100, -200).matMul(Mat3.scale(2, 2)),
+        camera: multiplyMatrices(translate(-100, -200), scale(2, 2)),
         children: [
             container({
                 width: 50,

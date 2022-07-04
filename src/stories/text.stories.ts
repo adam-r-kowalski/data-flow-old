@@ -1,5 +1,4 @@
 import { CrossAxisAlignment } from "../alignment"
-import { rgba } from "../color"
 import { padding } from "../padding"
 import { render } from "../renderer/render"
 import { webGL2Renderer } from "../renderer/webgl2"
@@ -13,6 +12,10 @@ export default {
     title: 'text'
 }
 
+const red = { red: 255, green: 0, blue: 0, alpha: 255 }
+const green = { red: 0, green: 255, blue: 0, alpha: 255 }
+const blue = { red: 0, green: 0, blue: 255, alpha: 255 }
+
 export const defaultFontAndSize = () => {
     let renderer = webGL2Renderer({ width: 500, height: 500 })
     const ui = text("Hello World")
@@ -22,7 +25,7 @@ export const defaultFontAndSize = () => {
 
 export const colored = () => {
     let renderer = webGL2Renderer({ width: 500, height: 500 })
-    const ui = text({ color: rgba(255, 0, 0, 255) }, "Hello World")
+    const ui = text({ color: red }, "Hello World")
     renderer = render(renderer, ui)
     return renderer.canvas
 }
@@ -51,7 +54,7 @@ export const centered = () => {
 export const centeredContained = () => {
     let renderer = webGL2Renderer({ width: 500, height: 500 })
     const ui = center(
-        container({ color: rgba(0, 255, 0, 255) },
+        container({ color: green },
             text("Hello World")))
     renderer = render(renderer, ui)
     return renderer.canvas
@@ -61,7 +64,7 @@ export const centeredColumn = () => {
     let renderer = webGL2Renderer({ width: 500, height: 500 })
     const ui = center(
         column([
-            container({ color: rgba(0, 255, 0, 255), width: 50, height: 50 }),
+            container({ color: green, width: 50, height: 50 }),
             text("Hello World"),
             text("Hello World"),
         ]))
@@ -75,10 +78,10 @@ export const weirdArangement = () => {
         column([
             text("Hello World"),
             row([
-                container({ color: rgba(255, 0, 0, 255), width: 50, height: 50 }),
-                container({ color: rgba(0, 255, 0, 255), width: 50, height: 50 }),
-                container({ color: rgba(0, 0, 255, 255), width: 50, height: 50 }),
-                container({ color: rgba(0, 255, 0, 255) }, text("Hello World")),
+                container({ color: red, width: 50, height: 50 }),
+                container({ color: green, width: 50, height: 50 }),
+                container({ color: blue, width: 50, height: 50 }),
+                container({ color: green }, text("Hello World")),
             ]),
         ]))
     renderer = render(renderer, ui)
@@ -95,13 +98,13 @@ export const node = () => {
                     column([
                         container({ padding: padding(5) },
                             row({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
-                                container({ width: 24, height: 24, color: rgba(255, 0, 0, 255) }),
+                                container({ width: 24, height: 24, color: red }),
                                 container({ width: 5, height: 5 }),
                                 text("Long Input 0"),
                             ])),
                         container({ padding: padding(5) },
                             row({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
-                                container({ width: 24, height: 24, color: rgba(255, 0, 0, 255) }),
+                                container({ width: 24, height: 24, color: red }),
                                 container({ width: 5, height: 5 }),
                                 text("In 1"),
                             ])),
@@ -112,13 +115,13 @@ export const node = () => {
                             row({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
                                 text("Out 0"),
                                 container({ width: 5, height: 5 }),
-                                container({ width: 24, height: 24, color: rgba(255, 0, 0, 255) }),
+                                container({ width: 24, height: 24, color: red }),
                             ])),
                         container({ padding: padding(5) },
                             row({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
                                 text("Long Output 1"),
                                 container({ width: 5, height: 5 }),
-                                container({ width: 24, height: 24, color: rgba(255, 0, 0, 255) }),
+                                container({ width: 24, height: 24, color: red }),
                             ])),
                     ])
 
@@ -132,8 +135,8 @@ export const node = () => {
 export const columnOfText = () => {
     let renderer = webGL2Renderer({ width: 500, height: 500 })
     const ui = column([
-        container({ color: rgba(255, 0, 0, 255) }, text({ font: "monospace" }, "monospace")),
-        container({ color: rgba(255, 0, 0, 255) }, text({ font: "sans-serif" }, "sans-serif")),
+        container({ color: red }, text({ font: "monospace" }, "monospace")),
+        container({ color: red }, text({ font: "sans-serif" }, "sans-serif")),
         text({ font: "sans-serif" }, "sans-serif"),
         text({ font: "serif" }, "serif"),
         text({ font: "arial" }, "arial"),

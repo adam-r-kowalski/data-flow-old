@@ -1,11 +1,14 @@
 import { CameraStack } from "../src/camera_stack"
-import { rgba } from "../src/color"
 import { Mat3 } from "../src/linear_algebra"
 import { reduce } from "../src/reduce"
 import { mockMeasureText } from "../src/renderer/mock"
 import { reducer } from "../src/renderer/render"
 import { container } from "../src/ui/container"
 import { scene } from "../src/ui/scene"
+
+const red = { red: 255, green: 0, blue: 0, alpha: 255 }
+const green = { red: 0, green: 255, blue: 0, alpha: 255 }
+const white = { red: 255, green: 255, blue: 255, alpha: 255 }
 
 test("connection in scene", () => {
     const ui = scene({
@@ -17,7 +20,7 @@ test("connection in scene", () => {
                 y: 100,
                 width: 50,
                 height: 50,
-                color: rgba(255, 0, 0, 255)
+                color: red
             }),
             container({
                 id: 'b',
@@ -25,11 +28,11 @@ test("connection in scene", () => {
                 y: 300,
                 width: 50,
                 height: 50,
-                color: rgba(0, 255, 0, 255)
+                color: green
             })
         ],
         connections: [
-            { from: 'a', to: 'b', color: rgba(255, 255, 255, 255) }
+            { from: 'a', to: 'b', color: white }
         ]
     })
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
@@ -41,7 +44,5 @@ test("connection in scene", () => {
         'a': { x0: 100, y0: 100, x1: 150, y1: 150 },
         'b': { x0: 300, y0: 300, x1: 350, y1: 350 },
     })
-    expect(connections.map(({ from, to }) => ({ from, to }))).toEqual([{
-        from: 'a', to: 'b'
-    }])
+    expect(connections).toEqual([{ from: 'a', to: 'b', color: white }])
 })

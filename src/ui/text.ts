@@ -1,6 +1,6 @@
 import { Entry, Font, MeasureText, TextMeasurements } from "."
 import { CameraStack } from "../camera_stack"
-import { Color, rgba } from "../color"
+import { Color } from "../color"
 import { Geometry, Offset, WorldSpace } from "../geometry"
 import { Constraints, Layout, Size } from "../layout"
 
@@ -56,15 +56,14 @@ const vertices = (widths: number[], height: number, offset: Offset) => {
     return result
 }
 
-const colors = (n: number, color: Color) => {
+const colors = (n: number, { red, green, blue, alpha }: Color) => {
     const result = []
-    const { r, g, b, a } = color.rgba()
     for (let i = 0; i < n; ++i) {
         result.push(
-            r, g, b, a,
-            r, g, b, a,
-            r, g, b, a,
-            r, g, b, a,
+            red, green, blue, alpha,
+            red, green, blue, alpha,
+            red, green, blue, alpha,
+            red, green, blue, alpha,
         )
     }
     return result
@@ -155,7 +154,7 @@ export const text: Overload = (...args: any[]): Text => {
     }
     return new Text(
         font,
-        properties.color ?? rgba(255, 255, 255, 255),
+        properties.color ?? { red: 255, green: 255, blue: 255, alpha: 255 },
         str
     )
 }

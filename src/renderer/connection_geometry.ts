@@ -60,8 +60,8 @@ export const connectionGeometry = (connections: Connection[], idToWorldSpace: Id
         for (const p of cubicBezier(ts, idToWorldSpace[from], idToWorldSpace[to])) {
             vertices.push(p)
         }
-        const { r, g, b, a } = color.rgba()
-        for (let i = 0; i < samples * 2; ++i) colors.push(r, g, b, a)
+        const { red, green, blue, alpha } = color
+        for (let i = 0; i < samples * 2; ++i) colors.push(red, green, blue, alpha)
     }
     return { vertices, colors }
 }

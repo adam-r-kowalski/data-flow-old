@@ -1,5 +1,4 @@
 import { CrossAxisAlignment } from "./alignment"
-import { rgba } from "./color"
 import { Event, EventKind, update } from "./event"
 import { Mat3 } from "./linear_algebra"
 import { padding } from "./padding"
@@ -162,11 +161,11 @@ const initialState: State = {
     selectedOutput: null,
     selectedInput: null,
     theme: {
-        background: rgba(1, 22, 39, 255),
-        node: rgba(41, 95, 120, 255),
-        input: rgba(188, 240, 192, 255),
-        selectedInput: rgba(175, 122, 208, 255),
-        connection: rgba(255, 255, 255, 255),
+        background: { red: 2, green: 22, blue: 39, alpha: 255 },
+        node: { red: 41, green: 95, blue: 120, alpha: 255 },
+        input: { red: 188, green: 240, blue: 192, alpha: 255 },
+        selectedInput: { red: 175, green: 122, blue: 208, alpha: 255 },
+        connection: { red: 255, green: 255, blue: 255, alpha: 255 },
     },
 }
 

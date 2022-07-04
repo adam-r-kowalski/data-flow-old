@@ -1,24 +1,27 @@
 import { CrossAxisAlignment, MainAxisAlignment } from "../src/alignment"
 import { batchGeometry } from "../src/renderer/batch_geometry"
 import { CameraStack } from "../src/camera_stack"
-import { rgba } from "../src/color"
 import { reduce } from "../src/reduce"
 import { mockMeasureText } from "../src/renderer/mock"
 import { layerGeometry } from "../src/renderer/render"
 import { container, containerGeometry, containerLayout } from "../src/ui/container"
 import { row, rowGeometry, rowLayout } from "../src/ui/row"
 
+const red = { red: 255, green: 0, blue: 0, alpha: 255 }
+const green = { red: 0, green: 255, blue: 0, alpha: 255 }
+const blue = { red: 0, green: 0, blue: 255, alpha: 255 }
+
 test("row layout", () => {
     const ui = row([
         container({
             width: 50,
             height: 50,
-            color: rgba(255, 0, 0, 255)
+            color: red
         }),
         container({
             width: 50,
             height: 50,
-            color: rgba(0, 255, 0, 255)
+            color: green
         })
     ])
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
@@ -35,12 +38,12 @@ test("row geometry", () => {
         container({
             width: 50,
             height: 50,
-            color: rgba(255, 0, 0, 255)
+            color: red
         }),
         container({
             width: 50,
             height: 50,
-            color: rgba(0, 255, 0, 255)
+            color: green
         })
     ])
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
@@ -97,12 +100,12 @@ test("row layers", () => {
         container({
             width: 50,
             height: 50,
-            color: rgba(255, 0, 0, 255)
+            color: red
         }),
         container({
             width: 50,
             height: 50,
-            color: rgba(0, 255, 0, 255)
+            color: green
         })
     ])
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
@@ -162,12 +165,12 @@ test("row batch", () => {
         container({
             width: 50,
             height: 50,
-            color: rgba(255, 0, 0, 255)
+            color: red
         }),
         container({
             width: 50,
             height: 50,
-            color: rgba(0, 255, 0, 255)
+            color: green
         })
     ])
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
@@ -230,17 +233,17 @@ test("row cross axis alignment start layout", () => {
         container({
             width: 50,
             height: 50,
-            color: rgba(255, 0, 0, 255)
+            color: red
         }),
         container({
             width: 100,
             height: 100,
-            color: rgba(0, 255, 0, 255)
+            color: green
         }),
         container({
             width: 50,
             height: 50,
-            color: rgba(0, 0, 255, 255)
+            color: blue
         })
     ])
     const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
@@ -258,17 +261,17 @@ test("row cross axis alignment start geometry", () => {
         container({
             width: 50,
             height: 50,
-            color: rgba(255, 0, 0, 255)
+            color: red
         }),
         container({
             width: 100,
             height: 100,
-            color: rgba(0, 255, 0, 255)
+            color: green
         }),
         container({
             width: 50,
             height: 50,
-            color: rgba(0, 0, 255, 255)
+            color: blue
         })
     ])
     const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
@@ -345,17 +348,17 @@ test("row cross axis alignment center layout", () => {
         container({
             width: 50,
             height: 50,
-            color: rgba(255, 0, 0, 255)
+            color: red
         }),
         container({
             width: 100,
             height: 100,
-            color: rgba(0, 255, 0, 255)
+            color: green
         }),
         container({
             width: 50,
             height: 50,
-            color: rgba(0, 0, 255, 255)
+            color: blue
         })
     ])
     const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
@@ -373,17 +376,17 @@ test("row cross axis alignment center geometry", () => {
         container({
             width: 50,
             height: 50,
-            color: rgba(255, 0, 0, 255)
+            color: red
         }),
         container({
             width: 100,
             height: 100,
-            color: rgba(0, 255, 0, 255)
+            color: green
         }),
         container({
             width: 50,
             height: 50,
-            color: rgba(0, 0, 255, 255)
+            color: blue
         })
     ])
     const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
@@ -460,17 +463,17 @@ test("row cross axis alignment end layout", () => {
         container({
             width: 50,
             height: 50,
-            color: rgba(255, 0, 0, 255)
+            color: red
         }),
         container({
             width: 100,
             height: 100,
-            color: rgba(0, 255, 0, 255)
+            color: green
         }),
         container({
             width: 50,
             height: 50,
-            color: rgba(0, 0, 255, 255)
+            color: blue
         })
     ])
     const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
@@ -488,17 +491,17 @@ test("row cross axis alignment end geometry", () => {
         container({
             width: 50,
             height: 50,
-            color: rgba(255, 0, 0, 255)
+            color: red
         }),
         container({
             width: 100,
             height: 100,
-            color: rgba(0, 255, 0, 255)
+            color: green
         }),
         container({
             width: 50,
             height: 50,
-            color: rgba(0, 0, 255, 255)
+            color: blue
         })
     ])
     const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
@@ -575,17 +578,17 @@ test("row main axis alignment start layout", () => {
         container({
             width: 50,
             height: 50,
-            color: rgba(255, 0, 0, 255)
+            color: red
         }),
         container({
             width: 100,
             height: 100,
-            color: rgba(0, 255, 0, 255)
+            color: green
         }),
         container({
             width: 50,
             height: 50,
-            color: rgba(0, 0, 255, 255)
+            color: blue
         })
     ])
     const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
@@ -603,17 +606,17 @@ test("row main axis alignment start geometry", () => {
         container({
             width: 50,
             height: 50,
-            color: rgba(255, 0, 0, 255)
+            color: red
         }),
         container({
             width: 100,
             height: 100,
-            color: rgba(0, 255, 0, 255)
+            color: green
         }),
         container({
             width: 50,
             height: 50,
-            color: rgba(0, 0, 255, 255)
+            color: blue
         })
     ])
     const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
@@ -690,17 +693,17 @@ test("row main axis alignment center layout", () => {
         container({
             width: 50,
             height: 50,
-            color: rgba(255, 0, 0, 255)
+            color: red
         }),
         container({
             width: 100,
             height: 100,
-            color: rgba(0, 255, 0, 255)
+            color: green
         }),
         container({
             width: 50,
             height: 50,
-            color: rgba(0, 0, 255, 255)
+            color: blue
         })
     ])
     const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
@@ -718,17 +721,17 @@ test("row main axis alignment center geometry", () => {
         container({
             width: 50,
             height: 50,
-            color: rgba(255, 0, 0, 255)
+            color: red
         }),
         container({
             width: 100,
             height: 100,
-            color: rgba(0, 255, 0, 255)
+            color: green
         }),
         container({
             width: 50,
             height: 50,
-            color: rgba(0, 0, 255, 255)
+            color: blue
         })
     ])
     const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
@@ -805,17 +808,17 @@ test("row main axis alignment end layout", () => {
         container({
             width: 50,
             height: 50,
-            color: rgba(255, 0, 0, 255)
+            color: red
         }),
         container({
             width: 100,
             height: 100,
-            color: rgba(0, 255, 0, 255)
+            color: green
         }),
         container({
             width: 50,
             height: 50,
-            color: rgba(0, 0, 255, 255)
+            color: blue
         })
     ])
     const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
@@ -833,17 +836,17 @@ test("row main axis alignment end geometry", () => {
         container({
             width: 50,
             height: 50,
-            color: rgba(255, 0, 0, 255)
+            color: red
         }),
         container({
             width: 100,
             height: 100,
-            color: rgba(0, 255, 0, 255)
+            color: green
         }),
         container({
             width: 50,
             height: 50,
-            color: rgba(0, 0, 255, 255)
+            color: blue
         })
     ])
     const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
@@ -920,17 +923,17 @@ test("row main axis alignment space between layout", () => {
         container({
             width: 50,
             height: 50,
-            color: rgba(255, 0, 0, 255)
+            color: red
         }),
         container({
             width: 100,
             height: 100,
-            color: rgba(0, 255, 0, 255)
+            color: green
         }),
         container({
             width: 50,
             height: 50,
-            color: rgba(0, 0, 255, 255)
+            color: blue
         })
     ])
     const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
@@ -948,17 +951,17 @@ test("row main axis alignment space between geometry", () => {
         container({
             width: 50,
             height: 50,
-            color: rgba(255, 0, 0, 255)
+            color: red
         }),
         container({
             width: 100,
             height: 100,
-            color: rgba(0, 255, 0, 255)
+            color: green
         }),
         container({
             width: 50,
             height: 50,
-            color: rgba(0, 0, 255, 255)
+            color: blue
         })
     ])
     const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
@@ -1035,17 +1038,17 @@ test("row main axis alignment space evenly layout", () => {
         container({
             width: 50,
             height: 50,
-            color: rgba(255, 0, 0, 255)
+            color: red
         }),
         container({
             width: 100,
             height: 100,
-            color: rgba(0, 255, 0, 255)
+            color: green
         }),
         container({
             width: 50,
             height: 50,
-            color: rgba(0, 0, 255, 255)
+            color: blue
         })
     ])
     const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
@@ -1063,17 +1066,17 @@ test("row main axis alignment space evenly geometry", () => {
         container({
             width: 50,
             height: 50,
-            color: rgba(255, 0, 0, 255)
+            color: red
         }),
         container({
             width: 100,
             height: 100,
-            color: rgba(0, 255, 0, 255)
+            color: green
         }),
         container({
             width: 50,
             height: 50,
-            color: rgba(0, 0, 255, 255)
+            color: blue
         })
     ])
     const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }

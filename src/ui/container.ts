@@ -92,7 +92,7 @@ export class Container {
         const worldSpace = cameraStack.transformWorldSpace({ x0, x1, y0, y1 })
         const data = (() => {
             if (this.color) {
-                const { r, g, b, a } = this.color.rgba()
+                const { red, green, blue, alpha } = this.color
                 return {
                     worldSpace,
                     vertices: [
@@ -102,10 +102,10 @@ export class Container {
                         x1, y1,
                     ],
                     colors: [
-                        r, g, b, a,
-                        r, g, b, a,
-                        r, g, b, a,
-                        r, g, b, a,
+                        red, green, blue, alpha,
+                        red, green, blue, alpha,
+                        red, green, blue, alpha,
+                        red, green, blue, alpha,
                     ],
                     vertexIndices: [
                         0, 1, 2,

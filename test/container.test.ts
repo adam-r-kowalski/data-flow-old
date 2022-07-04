@@ -1,4 +1,3 @@
-import { rgba } from '../src/color'
 import { container, containerLayout, containerGeometry } from '../src/ui/container'
 import { padding } from '../src/padding'
 import { reduce } from '../src/reduce'
@@ -7,11 +6,13 @@ import { mockMeasureText } from '../src/renderer/mock'
 import { CameraStack } from '../src/camera_stack'
 import { layerGeometry } from '../src/renderer/render'
 
+const red = { red: 255, green: 0, blue: 0, alpha: 255 }
+
 test("container layout", () => {
     const ui = container({
         width: 50,
         height: 50,
-        color: rgba(255, 0, 0, 255)
+        color: red
     })
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
     const layout = ui.layout(constraints, mockMeasureText)
@@ -23,7 +24,7 @@ test("container geometry", () => {
     const ui = container({
         width: 50,
         height: 50,
-        color: rgba(255, 0, 0, 255)
+        color: red
     })
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
     const layout = ui.layout(constraints, mockMeasureText)
@@ -56,7 +57,7 @@ test("container layers", () => {
     const ui = container({
         width: 50,
         height: 50,
-        color: rgba(255, 0, 0, 255)
+        color: red
     })
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
     const layout = ui.layout(constraints, mockMeasureText)
@@ -94,7 +95,7 @@ test("container batches", () => {
     const ui = container({
         width: 50,
         height: 50,
-        color: rgba(255, 0, 0, 255)
+        color: red
     })
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
     const layout = ui.layout(constraints, mockMeasureText)
@@ -139,7 +140,7 @@ test("container within container layout", () => {
         container({
             width: 50,
             height: 50,
-            color: rgba(255, 0, 0, 255)
+            color: red
         }))
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
     const layout = ui.layout(constraints, mockMeasureText)
@@ -153,7 +154,7 @@ test("container within container geometry", () => {
         container({
             width: 50,
             height: 50,
-            color: rgba(255, 0, 0, 255)
+            color: red
         }))
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
     const layout = ui.layout(constraints, mockMeasureText)
@@ -188,7 +189,7 @@ test("container within container layers", () => {
         container({
             width: 50,
             height: 50,
-            color: rgba(255, 0, 0, 255)
+            color: red
         }))
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
     const layout = ui.layout(constraints, mockMeasureText)
@@ -226,7 +227,7 @@ test("container within container batches", () => {
         container({
             width: 50,
             height: 50,
-            color: rgba(255, 0, 0, 255)
+            color: red
         }))
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
     const layout = ui.layout(constraints, mockMeasureText)

@@ -1,4 +1,3 @@
-import { rgba } from "../color"
 import { webGL2Renderer } from "../renderer/webgl2"
 import { container } from "../ui/container"
 import { column } from "../ui/column"
@@ -9,23 +8,27 @@ export default {
     title: 'column'
 }
 
+const red = { red: 255, green: 0, blue: 0, alpha: 255 }
+const green = { red: 0, green: 255, blue: 0, alpha: 255 }
+const blue = { red: 0, green: 0, blue: 255, alpha: 255 }
+
 export const columnWithThreeContainers = () => {
     let renderer = webGL2Renderer({ width: 500, height: 500 })
     const ui = column([
         container({
             width: 50,
             height: 50,
-            color: rgba(255, 0, 0, 255)
+            color: red
         }),
         container({
             width: 50,
             height: 100,
-            color: rgba(0, 255, 0, 255)
+            color: green
         }),
         container({
             width: 50,
             height: 50,
-            color: rgba(0, 0, 255, 255)
+            color: blue
         })
     ])
     renderer = render(renderer, ui)
@@ -38,17 +41,17 @@ export const columnCrossAxisAlignmentStart = () => {
         container({
             width: 50,
             height: 50,
-            color: rgba(255, 0, 0, 255)
+            color: red
         }),
         container({
             width: 100,
             height: 100,
-            color: rgba(0, 255, 0, 255)
+            color: green
         }),
         container({
             width: 50,
             height: 50,
-            color: rgba(0, 0, 255, 255)
+            color: blue
         })
     ])
     renderer = render(renderer, ui)
@@ -61,17 +64,17 @@ export const columnCrossAxisAlignmentCenter = () => {
         container({
             width: 50,
             height: 50,
-            color: rgba(255, 0, 0, 255)
+            color: red
         }),
         container({
             width: 100,
             height: 100,
-            color: rgba(0, 255, 0, 255)
+            color: green
         }),
         container({
             width: 50,
             height: 50,
-            color: rgba(0, 0, 255, 255)
+            color: blue
         })
     ])
     renderer = render(renderer, ui)
@@ -84,17 +87,17 @@ export const columnCrossAxisAlignmentEnd = () => {
         container({
             width: 50,
             height: 50,
-            color: rgba(255, 0, 0, 255)
+            color: red
         }),
         container({
             width: 100,
             height: 100,
-            color: rgba(0, 255, 0, 255)
+            color: green
         }),
         container({
             width: 50,
             height: 50,
-            color: rgba(0, 0, 255, 255)
+            color: blue
         })
     ])
     renderer = render(renderer, ui)
@@ -107,17 +110,17 @@ export const columnMainAxisAlignmentStart = () => {
         container({
             width: 50,
             height: 50,
-            color: rgba(255, 0, 0, 255)
+            color: red
         }),
         container({
             width: 100,
             height: 100,
-            color: rgba(0, 255, 0, 255)
+            color: green
         }),
         container({
             width: 50,
             height: 50,
-            color: rgba(0, 0, 255, 255)
+            color: blue
         })
     ])
     renderer = render(renderer, ui)
@@ -130,17 +133,17 @@ export const columnMainAxisAlignmentCenter = () => {
         container({
             width: 50,
             height: 50,
-            color: rgba(255, 0, 0, 255)
+            color: red
         }),
         container({
             width: 100,
             height: 100,
-            color: rgba(0, 255, 0, 255)
+            color: green
         }),
         container({
             width: 50,
             height: 50,
-            color: rgba(0, 0, 255, 255)
+            color: blue
         })
     ])
     renderer = render(renderer, ui)
@@ -153,17 +156,17 @@ export const columnMainAxisAlignmentEnd = () => {
         container({
             width: 50,
             height: 50,
-            color: rgba(255, 0, 0, 255)
+            color: red
         }),
         container({
             width: 100,
             height: 100,
-            color: rgba(0, 255, 0, 255)
+            color: green
         }),
         container({
             width: 50,
             height: 50,
-            color: rgba(0, 0, 255, 255)
+            color: blue
         })
     ])
     renderer = render(renderer, ui)
@@ -176,17 +179,17 @@ export const columnMainAxisAlignmentSpaceEvenly = () => {
         container({
             width: 50,
             height: 50,
-            color: rgba(255, 0, 0, 255)
+            color: red
         }),
         container({
             width: 100,
             height: 100,
-            color: rgba(0, 255, 0, 255)
+            color: green
         }),
         container({
             width: 50,
             height: 50,
-            color: rgba(0, 0, 255, 255)
+            color: blue
         })
     ])
     renderer = render(renderer, ui)
@@ -199,17 +202,17 @@ export const columnMainAxisAlignmentSpaceBetween = () => {
         container({
             width: 50,
             height: 50,
-            color: rgba(255, 0, 0, 255)
+            color: red
         }),
         container({
             width: 100,
             height: 100,
-            color: rgba(0, 255, 0, 255)
+            color: green
         }),
         container({
             width: 50,
             height: 50,
-            color: rgba(0, 0, 255, 255)
+            color: blue
         })
     ])
     renderer = render(renderer, ui)
@@ -222,17 +225,17 @@ export const columnMainAxisAlignmentCenterCrossAxisAlignmentCenter = () => {
         container({
             width: 50,
             height: 50,
-            color: rgba(255, 0, 0, 255)
+            color: red
         }),
         container({
             width: 100,
             height: 100,
-            color: rgba(0, 255, 0, 255)
+            color: green
         }),
         container({
             width: 50,
             height: 50,
-            color: rgba(0, 0, 255, 255)
+            color: blue
         })
     ])
     renderer = render(renderer, ui)

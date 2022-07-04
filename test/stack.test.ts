@@ -1,4 +1,3 @@
-import { rgba } from '../src/color'
 import { container, containerGeometry, containerLayout } from '../src/ui/container'
 import { center, centerGeometry, centerLayout } from '../src/ui/center'
 import { mockMeasureText } from '../src/renderer/mock'
@@ -8,15 +7,17 @@ import { Batch, batchGeometry } from '../src/renderer/batch_geometry'
 import { CameraStack } from '../src/camera_stack'
 import { layerGeometry } from '../src/renderer/render'
 
+const red = { red: 255, green: 0, blue: 0, alpha: 255 }
+const green = { red: 0, green: 255, blue: 0, alpha: 255 }
 
 test("stack layout", () => {
     const ui = stack([
-        container({ color: rgba(255, 0, 0, 255) }),
+        container({ color: red }),
         center(
             container({
                 width: 50,
                 height: 50,
-                color: rgba(0, 255, 0, 255)
+                color: green
             })
         )
     ])
@@ -32,12 +33,12 @@ test("stack layout", () => {
 
 test("stack geometry", () => {
     const ui = stack([
-        container({ color: rgba(255, 0, 0, 255) }),
+        container({ color: red }),
         center(
             container({
                 width: 50,
                 height: 50,
-                color: rgba(0, 255, 0, 255)
+                color: green
             })
         )
     ])
@@ -94,12 +95,12 @@ test("stack geometry", () => {
 
 test("stack layers", () => {
     const ui = stack([
-        container({ color: rgba(255, 0, 0, 255) }),
+        container({ color: red }),
         center(
             container({
                 width: 50,
                 height: 50,
-                color: rgba(0, 255, 0, 255)
+                color: green
             })
         )
     ])
@@ -156,12 +157,12 @@ test("stack layers", () => {
 
 test("stack batches", () => {
     const ui = stack([
-        container({ color: rgba(255, 0, 0, 255) }),
+        container({ color: red }),
         center(
             container({
                 width: 50,
                 height: 50,
-                color: rgba(0, 255, 0, 255)
+                color: green
             })
         )
     ])

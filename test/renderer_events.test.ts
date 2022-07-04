@@ -1,10 +1,12 @@
-import { rgba } from "../src/color"
 import { Mat3 } from "../src/linear_algebra"
 import { mockRenderer } from "../src/renderer/mock"
 import { pointerDown } from "../src/renderer/pointer_down"
 import { render } from "../src/renderer/render"
 import { container } from "../src/ui/container"
 import { scene } from "../src/ui/scene"
+
+const red = { red: 255, green: 0, blue: 0, alpha: 255 }
+const green = { red: 0, green: 255, blue: 0, alpha: 255 }
 
 test("click first container", () => {
     let renderer = mockRenderer({ width: 500, height: 500 })
@@ -16,7 +18,7 @@ test("click first container", () => {
             container({
                 width: 50,
                 height: 50,
-                color: rgba(255, 0, 0, 255),
+                color: red,
                 x: 100,
                 y: 200,
                 onClick: () => aClickCount++
@@ -24,7 +26,7 @@ test("click first container", () => {
             container({
                 width: 50,
                 height: 50,
-                color: rgba(0, 255, 0, 255),
+                color: green,
                 x: 300,
                 y: 250,
                 onClick: () => bClickCount++
@@ -47,7 +49,7 @@ test("click second container", () => {
             container({
                 width: 50,
                 height: 50,
-                color: rgba(255, 0, 0, 255),
+                color: red,
                 x: 100,
                 y: 200,
                 onClick: () => aClickCount++
@@ -55,7 +57,7 @@ test("click second container", () => {
             container({
                 width: 50,
                 height: 50,
-                color: rgba(0, 255, 0, 255),
+                color: green,
                 x: 300,
                 y: 250,
                 onClick: () => bClickCount++
@@ -78,7 +80,7 @@ test("click translated container", () => {
             container({
                 width: 50,
                 height: 50,
-                color: rgba(255, 0, 0, 255),
+                color: red,
                 x: 100,
                 y: 200,
                 onClick: () => aClickCount++
@@ -86,7 +88,7 @@ test("click translated container", () => {
             container({
                 width: 50,
                 height: 50,
-                color: rgba(0, 255, 0, 255),
+                color: green,
                 x: 300,
                 y: 250,
                 onClick: () => bClickCount++

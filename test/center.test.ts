@@ -1,4 +1,3 @@
-import { rgba } from '../src/color'
 import { container, containerLayout, containerGeometry } from '../src/ui/container'
 import { reduce } from '../src/reduce'
 import { Batch, batchGeometry } from '../src/renderer/batch_geometry'
@@ -7,13 +6,14 @@ import { mockMeasureText } from '../src/renderer/mock'
 import { CameraStack } from '../src/camera_stack'
 import { layerGeometry } from '../src/renderer/render'
 
+const red = { red: 255, green: 0, blue: 0, alpha: 255 }
 
 test("center layout", () => {
     const ui = center(
         container({
             width: 50,
             height: 50,
-            color: rgba(255, 0, 0, 255)
+            color: red
         }))
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
     const layout = ui.layout(constraints, mockMeasureText)
@@ -27,7 +27,7 @@ test("center geometry", () => {
         container({
             width: 50,
             height: 50,
-            color: rgba(255, 0, 0, 255)
+            color: red
         }))
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
     const layout = ui.layout(constraints, mockMeasureText)
@@ -63,7 +63,7 @@ test("center layers", () => {
         container({
             width: 50,
             height: 50,
-            color: rgba(255, 0, 0, 255)
+            color: red
         }))
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
     const layout = ui.layout(constraints, mockMeasureText)
@@ -102,7 +102,7 @@ test("center batches", () => {
         container({
             width: 50,
             height: 50,
-            color: rgba(255, 0, 0, 255)
+            color: red
         }))
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
     const layout = ui.layout(constraints, mockMeasureText)

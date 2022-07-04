@@ -1,7 +1,7 @@
-import { padding } from "../padding"
-import { render } from "../renderer/render"
-import { webGL2Renderer } from "../renderer/webgl2"
-import { container } from "../ui/container"
+import { padding } from "../src/padding"
+import { render } from "../src/renderer/render"
+import { webGL2Renderer } from "../src/renderer/webgl2"
+import { container } from "../src/ui/container"
 
 export default {
     title: 'container'

@@ -1,5 +1,5 @@
 import { CameraStack } from "../src/camera_stack"
-import { Mat3 } from "../src/linear_algebra"
+import { identity } from "../src/linear_algebra/matrix3x3"
 import { reduce } from "../src/reduce"
 import { mockMeasureText } from "../src/renderer/mock"
 import { reducer } from "../src/renderer/render"
@@ -12,7 +12,7 @@ const white = { red: 255, green: 255, blue: 255, alpha: 255 }
 
 test("connection in scene", () => {
     const ui = scene({
-        camera: Mat3.identity(),
+        camera: identity(),
         children: [
             container({
                 id: 'a',

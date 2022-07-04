@@ -2,13 +2,13 @@ import { ClickHandlers, Renderer } from "."
 import { batchGeometry } from "./batch_geometry"
 import { CameraStack } from "../camera_stack"
 import { Geometry } from "../geometry"
-import { Mat3 } from "../linear_algebra"
 import { reduce, Reducer } from "../reduce"
 import { Connection, Entry, UI } from "../ui"
 import { buildIdToWorldSpace, IdToWorldSpace } from "./id_to_world_space"
 import { connectionGeometry } from "./connection_geometry"
+import { Matrix3x3 } from "../linear_algebra/matrix3x3"
 
-export type Cameras = Mat3[]
+export type Cameras = Matrix3x3[]
 export type TextureIndex = number
 export type Layer = Map<TextureIndex, Geometry[]>
 export type Layers = Layer[]

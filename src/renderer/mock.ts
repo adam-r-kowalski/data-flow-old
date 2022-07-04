@@ -1,10 +1,10 @@
 import { ClickHandlers } from "."
 import { Batch } from "./batch_geometry"
 import { Size } from "../layout"
-import { Mat3 } from "../linear_algebra"
 import { Font, TextMeasurements } from "../ui"
 import { Cameras } from "./render"
 import { Lines } from "./connection_geometry"
+import { identity } from "../linear_algebra/matrix3x3"
 
 export const mockMeasureText = (font: Font, str: string): TextMeasurements => {
     const textureCoordinates: number[][] = []
@@ -53,5 +53,5 @@ export class MockRenderer {
 }
 
 export const mockRenderer = (size: Size) => {
-    return new MockRenderer(size, [Mat3.identity()], [], 0, [], [])
+    return new MockRenderer(size, [identity()], [], 0, [], [])
 }

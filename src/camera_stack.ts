@@ -1,5 +1,5 @@
 import { WorldSpace } from "./geometry"
-import { Mat3, Vec3 } from "./linear_algebra"
+import { identity, inverse, Matrix3x3, multiplyMatrixVector } from "./linear_algebra/matrix3x3"
 import { Cameras } from "./renderer/render"
 
 export type CameraIndex = number
@@ -7,32 +7,32 @@ export type CameraIndex = number
 export class CameraStack {
     cameras: Cameras
     stack: number[]
-    transform: Mat3
+    transform: Matrix3x3
 
     constructor() {
-        const camera = Mat3.identity()
-        this.cameras = [Mat3.identity()]
+        const camera = identity()
+        this.cameras = [identity()]
         this.stack = [0]
-        this.transform = camera.inverse()
+        this.transform = inverse(camera)
     }
 
-    pushCamera = (camera: Mat3) => {
+    pushCamera = (camera: Matrix3x3) => {
         const index = this.cameras.length
         this.cameras.push(camera)
         this.stack.push(index)
-        this.transform = camera.inverse()
+        this.transform = inverse(camera)
     }
 
     popCamera = () => {
         this.stack.pop()
-        this.transform = this.cameras[this.activeCamera()].inverse()
+        this.transform = inverse(this.cameras[this.activeCamera()])
     }
 
     activeCamera = () => this.stack.slice(-1)[0]
 
     transformWorldSpace = (worldSpace: WorldSpace): WorldSpace => {
-        const [x0, y0, _0] = this.transform.vecMul(new Vec3([worldSpace.x0, worldSpace.y0, 1])).data
-        const [x1, y1, _1] = this.transform.vecMul(new Vec3([worldSpace.x1, worldSpace.y1, 1])).data
+        const [x0, y0, _0] = multiplyMatrixVector(this.transform, [worldSpace.x0, worldSpace.y0, 1])
+        const [x1, y1, _1] = multiplyMatrixVector(this.transform, [worldSpace.x1, worldSpace.y1, 1])
         return { x0, y0, x1, y1 }
     }
 }

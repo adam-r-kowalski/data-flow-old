@@ -1,4 +1,5 @@
-import { Mat3, Vec3 } from "./linear_algebra"
+import { multiplyMatrices, multiplyMatrixVector, scale, translate } from "./linear_algebra/matrix3x3"
+import { length } from "./linear_algebra/vector3"
 import { InputPath, OutputPath, State } from "./state"
 import { Pointer } from "./ui"
 
@@ -85,12 +86,12 @@ const pointerMove = (state: State, event: PointerMove) => {
         const dx = event.pointer.x - pointer.x
         const dy = event.pointer.y - pointer.y
         if (state.draggedNode !== null) {
-            const scaling = state.camera.vecMul(new Vec3([0, 1, 0])).length()
+            const scaling = length(multiplyMatrixVector(state.camera, [0, 1, 0]))
             const node = state.graph.nodes[state.draggedNode]
             node.x += dx * scaling
             node.y += dy * scaling
         } else {
-            state.camera = state.camera.matMul(Mat3.translate(-dx, -dy))
+            state.camera = multiplyMatrices(state.camera, translate(-dx, -dy))
         }
         return { state, rerender: true }
     }
@@ -106,14 +107,12 @@ const pointerMove = (state: State, event: PointerMove) => {
         const y = (p0.y + p1.y) / 2
         state.pointerCenter = [x, y]
         if (previousDistance > 0) {
-            const move = Mat3.translate(x, y)
+            const move = translate(x, y)
             const zoom = Math.pow(2, (previousDistance - distance) * 0.01)
-            const scale = Mat3.scale(zoom, zoom)
-            const moveBack = Mat3.translate(-x, -y)
-            const transform = move.matMul(scale).matMul(moveBack)
+            const moveBack = translate(-x, -y)
             const dx = x - previousCenter[0]
             const dy = y - previousCenter[1]
-            state.camera = state.camera.matMul(transform).matMul(Mat3.translate(-dx, -dy))
+            state.camera = multiplyMatrices(state.camera, move, scale(zoom, zoom), moveBack, translate(-dx, -dy))
             return { state, rerender: true }
         } else return { state, rerender: false }
     }
@@ -126,12 +125,10 @@ const clickedNode = (state: State, event: ClickedNode) => {
 }
 
 const wheel = (state: State, event: Wheel) => {
-    const move = Mat3.translate(event.x, event.y)
+    const move = translate(event.x, event.y)
     const zoom = Math.pow(2, event.deltaY * 0.01)
-    const scale = Mat3.scale(zoom, zoom)
-    const moveBack = Mat3.translate(-event.x, -event.y)
-    const transform = move.matMul(scale).matMul(moveBack)
-    state.camera = state.camera.matMul(transform)
+    const moveBack = translate(-event.x, -event.y)
+    state.camera = multiplyMatrices(state.camera, move, scale(zoom, zoom), moveBack)
     return { state, rerender: true }
 }
 

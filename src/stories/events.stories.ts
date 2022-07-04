@@ -3,9 +3,9 @@ import { action } from '@storybook/addon-actions'
 import { webGL2Renderer } from "../renderer/webgl2"
 import { container } from "../ui/container"
 import { scene } from "../ui/scene"
-import { Mat3 } from "../linear_algebra"
 import { render } from '../renderer/render'
 import { pointerDown } from '../renderer/pointer_down'
+import { identity } from '../linear_algebra/matrix3x3'
 
 export default {
     title: 'events'
@@ -17,7 +17,7 @@ const green = { red: 0, green: 255, blue: 0, alpha: 255 }
 export const clickable = () => {
     let renderer = webGL2Renderer({ width: 500, height: 500 })
     const ui = scene({
-        camera: Mat3.identity(),
+        camera: identity(),
         children: [
             container({
                 width: 50,

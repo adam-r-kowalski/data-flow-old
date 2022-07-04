@@ -47,6 +47,7 @@ export interface Theme {
     node: Color
     input: Color
     selectedInput: Color
+    connection: Color
 }
 
 export interface State {

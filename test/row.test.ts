@@ -1,5 +1,5 @@
 import { CrossAxisAlignment, MainAxisAlignment } from "../src/alignment"
-import { batchGeometry } from "../src/batch_geometry"
+import { batchGeometry } from "../src/renderer/batch_geometry"
 import { CameraStack } from "../src/camera_stack"
 import { rgba } from "../src/color"
 import { reduce } from "../src/reduce"

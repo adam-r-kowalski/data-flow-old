@@ -1,4 +1,5 @@
 import { CameraStack } from "../camera_stack";
+import { Color } from "../color";
 import { Geometry, Offset } from "../geometry";
 import { Constraints, Layout } from "../layout";
 import { Mat3 } from "../linear_algebra";
@@ -36,6 +37,7 @@ export type Id = string
 export interface Connection {
     from: Id
     to: Id
+    color: Color
 }
 
 

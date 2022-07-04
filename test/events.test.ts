@@ -54,7 +54,8 @@ const initialState = (): State => ({
         background: rgba(1, 22, 39, 255),
         node: rgba(41, 95, 120, 255),
         input: rgba(188, 240, 192, 255),
-        selectedInput: rgba(175, 122, 208, 255)
+        selectedInput: rgba(175, 122, 208, 255),
+        connection: rgba(255, 255, 255, 255)
     },
 })
 

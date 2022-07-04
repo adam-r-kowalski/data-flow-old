@@ -1,9 +1,10 @@
 import { ClickHandlers } from "."
-import { Batch } from "../batch_geometry"
+import { Batch } from "./batch_geometry"
 import { Size } from "../layout"
 import { Mat3 } from "../linear_algebra"
 import { Font, TextMeasurements } from "../ui"
 import { Cameras } from "./render"
+import { Lines } from "./connection_geometry"
 
 export const mockMeasureText = (font: Font, str: string): TextMeasurements => {
     const textureCoordinates: number[][] = []
@@ -31,6 +32,7 @@ export class MockRenderer {
         public clickHandlers: ClickHandlers,
         public clearCount: number,
         public batches: Batch[],
+        public lines: Lines[]
     ) { }
 
     clear() {
@@ -41,11 +43,15 @@ export class MockRenderer {
         this.batches.push(batch)
     }
 
+    drawLines(lines: Lines) {
+        this.lines.push(lines)
+    }
+
     measureText(font: Font, str: string) {
         return mockMeasureText(font, str)
     }
 }
 
 export const mockRenderer = (size: Size) => {
-    return new MockRenderer(size, [Mat3.identity()], [], 0, [])
+    return new MockRenderer(size, [Mat3.identity()], [], 0, [], [])
 }

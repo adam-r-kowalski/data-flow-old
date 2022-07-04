@@ -4,7 +4,7 @@ import { center, centerGeometry, centerLayout } from '../src/ui/center'
 import { mockMeasureText } from '../src/renderer/mock'
 import { stack, stackGeometry, stackLayout } from '../src/ui/stack'
 import { reduce } from '../src/reduce'
-import { Batch, batchGeometry } from '../src/batch_geometry'
+import { Batch, batchGeometry } from '../src/renderer/batch_geometry'
 import { CameraStack } from '../src/camera_stack'
 import { layerGeometry } from '../src/renderer/render'
 

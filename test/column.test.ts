@@ -1,4 +1,4 @@
-import { Batch, batchGeometry } from "../src/batch_geometry"
+import { Batch, batchGeometry } from "../src/renderer/batch_geometry"
 import { rgba } from "../src/color"
 import { reduce } from "../src/reduce"
 import { container, containerGeometry, containerLayout } from "../src/ui/container"

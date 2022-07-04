@@ -5,7 +5,7 @@ import { Mat3 } from "./linear_algebra"
 import { padding } from "./padding"
 import { Dispatch, run, transformPointer } from "./run"
 import { Input, Node, Output, State, Theme } from "./state"
-import { UI } from "./ui"
+import { Connection, UI } from "./ui"
 import { column } from "./ui/column"
 import { container } from "./ui/container"
 import { row } from "./ui/row"
@@ -27,6 +27,7 @@ const intersperse = <T>(array: T[], seperator: T): T[] => {
 const inputUi = (theme: Theme, { name, selected }: Input, nodeIndex: number, inputIndex: number): UI =>
     row({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
         container({
+            id: `input ${nodeIndex} ${inputIndex}`,
             width: 24,
             height: 24,
             color: selected ? theme.selectedInput : theme.input,
@@ -52,6 +53,7 @@ const outputUi = (theme: Theme, { name, selected }: Output, nodeIndex: number, o
         text(name),
         spacer(10),
         container({
+            id: `output ${nodeIndex} ${outputIndex}`,
             width: 24,
             height: 24,
             color: selected ? theme.selectedInput : theme.input,
@@ -93,7 +95,6 @@ const nodeUi = (dispatch: Dispatch<Event>, theme: Theme, { name, x, y, inputs, o
 }
 
 const view = (dispatch: Dispatch<Event>, state: State) => {
-    console.log(state.graph.edges)
     const nodes: UI[] = []
     state.graph.nodes.forEach((node, i) => {
         if (i !== state.draggedNode) nodes.push(nodeUi(dispatch, state.theme, node, i))
@@ -102,9 +103,14 @@ const view = (dispatch: Dispatch<Event>, state: State) => {
         const i = state.draggedNode
         nodes.push(nodeUi(dispatch, state.theme, state.graph.nodes[i], i))
     }
+    const connections: Connection[] = state.graph.edges.map(({ input, output }) => ({
+        from: `output ${output.nodeIndex} ${output.outputIndex}`,
+        to: `input ${input.nodeIndex} ${input.inputIndex}`,
+        color: state.theme.connection
+    }))
     return stack([
         container({ color: state.theme.background }),
-        scene({ camera: state.camera, children: nodes }),
+        scene({ camera: state.camera, children: nodes, connections }),
     ])
 }
 
@@ -159,7 +165,8 @@ const initialState: State = {
         background: rgba(1, 22, 39, 255),
         node: rgba(41, 95, 120, 255),
         input: rgba(188, 240, 192, 255),
-        selectedInput: rgba(175, 122, 208, 255)
+        selectedInput: rgba(175, 122, 208, 255),
+        connection: rgba(255, 255, 255, 255),
     },
 }
 

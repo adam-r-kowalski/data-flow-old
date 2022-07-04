@@ -1,8 +1,9 @@
 import { ClickHandlers } from ".";
-import { Batch } from "../batch_geometry";
+import { Batch } from "./batch_geometry";
 import { Size } from "../layout";
 import { Mat3 } from "../linear_algebra";
 import { Font, TextMeasurements } from "../ui";
+import { Lines } from "./connection_geometry";
 
 interface Attribute {
     location: number
@@ -164,6 +165,23 @@ export class WebGL2Renderer {
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, attributes.vertexIndices)
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(vertexIndices), gl.STATIC_DRAW)
         gl.drawElements(gl.TRIANGLES, /*count*/vertexIndices.length, /*type*/gl.UNSIGNED_SHORT, /*offset*/0)
+    }
+
+    drawLines = ({ vertices, colors }: Lines) => {
+        const { gl, program, textures } = this
+        const { attributes } = program
+        const texture = textures[0]
+        const count = vertices.length / 2
+        gl.bindTexture(gl.TEXTURE_2D, texture)
+        gl.bindBuffer(gl.ARRAY_BUFFER, attributes.vertices.buffer)
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW)
+        gl.bindBuffer(gl.ARRAY_BUFFER, attributes.colors.buffer)
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW)
+        gl.bindBuffer(gl.ARRAY_BUFFER, attributes.textureCoordinates.buffer)
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(Array(count * 2).fill(0)), gl.STATIC_DRAW)
+        gl.bindBuffer(gl.ARRAY_BUFFER, attributes.cameraIndex.buffer)
+        gl.bufferData(gl.ARRAY_BUFFER, new Uint8Array(Array(count).fill(0)), gl.STATIC_DRAW)
+        gl.drawArrays(gl.LINES, /*first*/0, count)
     }
 
     getTextureMeasurements = (font: Font, dpr: DevicePixelRatio) => {

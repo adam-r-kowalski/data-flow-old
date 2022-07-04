@@ -29,7 +29,7 @@ test("connection in scene", () => {
             })
         ],
         connections: [
-            { from: 'a', to: 'b' }
+            { from: 'a', to: 'b', color: rgba(255, 255, 255, 255) }
         ]
     })
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
@@ -41,5 +41,7 @@ test("connection in scene", () => {
         'a': { x0: 100, y0: 100, x1: 150, y1: 150 },
         'b': { x0: 300, y0: 300, x1: 350, y1: 350 },
     })
-    expect(connections).toEqual([{ from: 'a', to: 'b' }])
+    expect(connections.map(({ from, to }) => ({ from, to }))).toEqual([{
+        from: 'a', to: 'b'
+    }])
 })

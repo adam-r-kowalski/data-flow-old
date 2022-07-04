@@ -1,7 +1,7 @@
 import { rgba } from '../src/color'
 import { container, containerLayout, containerGeometry } from '../src/ui/container'
 import { reduce } from '../src/reduce'
-import { Batch, batchGeometry } from '../src/batch_geometry'
+import { Batch, batchGeometry } from '../src/renderer/batch_geometry'
 import { center, centerGeometry, centerLayout } from '../src/ui/center'
 import { mockMeasureText } from '../src/renderer/mock'
 import { CameraStack } from '../src/camera_stack'

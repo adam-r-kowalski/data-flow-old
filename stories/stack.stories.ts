@@ -1,8 +1,8 @@
-import { render } from "../renderer/render"
-import { webGL2Renderer } from "../renderer/webgl2"
-import { center } from "../ui/center"
-import { container } from "../ui/container"
-import { stack } from "../ui/stack"
+import { render } from "../src/renderer/render"
+import { webGL2Renderer } from "../src/renderer/webgl2"
+import { center } from "../src/ui/center"
+import { container } from "../src/ui/container"
+import { stack } from "../src/ui/stack"
 
 export default {
     title: 'stack'

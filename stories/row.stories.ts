@@ -1,8 +1,8 @@
-import { CrossAxisAlignment, MainAxisAlignment } from "../alignment"
-import { render } from "../renderer/render"
-import { webGL2Renderer } from "../renderer/webgl2"
-import { container } from "../ui/container"
-import { row } from "../ui/row"
+import { CrossAxisAlignment, MainAxisAlignment } from "../src/alignment"
+import { render } from "../src/renderer/render"
+import { webGL2Renderer } from "../src/renderer/webgl2"
+import { container } from "../src/ui/container"
+import { row } from "../src/ui/row"
 
 export default {
     title: 'row'

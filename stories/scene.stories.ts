@@ -1,8 +1,8 @@
-import { webGL2Renderer } from "../renderer/webgl2"
-import { container } from "../ui/container"
-import { render } from "../renderer/render"
-import { scene } from "../ui/scene"
-import { identity, multiplyMatrices, scale, translate } from "../linear_algebra/matrix3x3"
+import { webGL2Renderer } from "../src/renderer/webgl2"
+import { container } from "../src/ui/container"
+import { render } from "../src/renderer/render"
+import { scene } from "../src/ui/scene"
+import { identity, multiplyMatrices, scale, translate } from "../src/linear_algebra/matrix3x3"
 
 export default {
     title: 'scene'

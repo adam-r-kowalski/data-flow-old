@@ -1,11 +1,11 @@
 import { action } from '@storybook/addon-actions'
 
-import { webGL2Renderer } from "../renderer/webgl2"
-import { container } from "../ui/container"
-import { scene } from "../ui/scene"
-import { render } from '../renderer/render'
-import { pointerDown } from '../renderer/pointer_down'
-import { identity } from '../linear_algebra/matrix3x3'
+import { webGL2Renderer } from "../src/renderer/webgl2"
+import { container } from "../src/ui/container"
+import { scene } from "../src/ui/scene"
+import { render } from '../src/renderer/render'
+import { pointerDown } from '../src/renderer/pointer_down'
+import { identity } from '../src/linear_algebra/matrix3x3'
 
 export default {
     title: 'events'

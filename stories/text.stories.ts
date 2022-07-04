@@ -1,12 +1,12 @@
-import { CrossAxisAlignment } from "../alignment"
-import { padding } from "../padding"
-import { render } from "../renderer/render"
-import { webGL2Renderer } from "../renderer/webgl2"
-import { center } from "../ui/center"
-import { column } from "../ui/column"
-import { container } from "../ui/container"
-import { row } from "../ui/row"
-import { text } from "../ui/text"
+import { CrossAxisAlignment } from "../src/alignment"
+import { padding } from "../src/padding"
+import { render } from "../src/renderer/render"
+import { webGL2Renderer } from "../src/renderer/webgl2"
+import { center } from "../src/ui/center"
+import { column } from "../src/ui/column"
+import { container } from "../src/ui/container"
+import { row } from "../src/ui/row"
+import { text } from "../src/ui/text"
 
 export default {
     title: 'text'

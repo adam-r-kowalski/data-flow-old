@@ -1,8 +1,8 @@
-import { webGL2Renderer } from "../renderer/webgl2"
-import { container } from "../ui/container"
-import { column } from "../ui/column"
-import { CrossAxisAlignment, MainAxisAlignment } from "../alignment"
-import { render } from "../renderer/render"
+import { webGL2Renderer } from "../src/renderer/webgl2"
+import { container } from "../src/ui/container"
+import { column } from "../src/ui/column"
+import { CrossAxisAlignment, MainAxisAlignment } from "../src/alignment"
+import { render } from "../src/renderer/render"
 
 export default {
     title: 'column'

@@ -30,7 +30,8 @@
                 "prebuild": "yarn rimraf dist",
                 "push": "yarn gh-pages -d dist",
                 "prepush": "yarn build",
-                "test": "yarn jest"
+                "test": "yarn jest",
+                "coverage": "yarn jest --coverage --collectCoverageFrom='./src/**'"
         },
         "dependencies": {}
 }

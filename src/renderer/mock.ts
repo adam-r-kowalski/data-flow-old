@@ -67,7 +67,7 @@ export class MockWebGL2Context {
     bufferData = (target: number, srcData: BufferSource | null, usage: number): void => { }
     attachShader = (program: MockProgram, shader: MockShader): void => { }
     linkProgram = (program: MockProgram): void => { }
-    getProgramParameter = (program: MockProgram, pname: number): any => { }
+    getProgramParameter = (program: MockProgram, pname: number): any => true
     getShaderInfoLog = (shader: MockShader): string | null => null
     useProgram = (program: MockProgram): void => { }
     createVertexArray = (): MockVertexArrayObject | null => new MockVertexArrayObject()

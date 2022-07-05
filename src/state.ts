@@ -59,6 +59,8 @@ export interface State {
     pointerCenter: [number, number]
     selectedOutput: OutputPath | null
     selectedInput: InputPath | null
+    potentialDoubleClick: boolean
+    showFinder: boolean
     camera: Matrix3x3
     theme: Theme
 }

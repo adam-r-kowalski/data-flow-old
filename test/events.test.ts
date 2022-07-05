@@ -56,6 +56,8 @@ const initialState = (): State => ({
         selectedInput: { red: 175, green: 122, blue: 208, alpha: 255 },
         connection: { red: 255, green: 255, blue: 255, alpha: 255 },
     },
+    potentialDoubleClick: false,
+    showFinder: false
 })
 
 test("pointer down", () => {
@@ -65,15 +67,16 @@ test("pointer down", () => {
         y: 0,
         id: 0,
     }
-    const { state: state1, rerender } = update(state, {
+    const { state: state1, render } = update(state, {
         kind: EventKind.POINTER_DOWN,
         pointer
     })
     const expectedState = initialState()
     expectedState.dragging = true
     expectedState.pointers = [pointer]
+    expectedState.potentialDoubleClick = true
     expect(state1).toEqual(expectedState)
-    expect(rerender).toEqual(false)
+    expect(render).toBeUndefined()
 })
 
 test("pointer down then up", () => {
@@ -87,17 +90,19 @@ test("pointer down then up", () => {
         kind: EventKind.POINTER_DOWN,
         pointer
     })
-    const { state: state2, rerender } = update(state1, {
+    const { state: state2, render } = update(state1, {
         kind: EventKind.POINTER_UP,
         pointer
     })
-    expect(state2).toEqual(initialState())
-    expect(rerender).toEqual(false)
+    const expectedState = initialState()
+    expectedState.potentialDoubleClick = true
+    expect(state2).toEqual(expectedState)
+    expect(render).toBeUndefined()
 })
 
 test("click node", () => {
     const state = initialState()
-    const { state: state1, rerender } = update(state, {
+    const { state: state1, render } = update(state, {
         kind: EventKind.CLICKED_NODE,
         index: 0
     })
@@ -139,7 +144,7 @@ test("click node", () => {
         },
     ]
     expect(state1).toEqual(expectedState)
-    expect(rerender).toEqual(true)
+    expect(render).toEqual(true)
 })
 
 test("pointer move before pointer down does nothing", () => {
@@ -149,12 +154,12 @@ test("pointer move before pointer down does nothing", () => {
         y: 0,
         id: 0,
     }
-    const { state: state1, rerender } = update(state, {
+    const { state: state1, render } = update(state, {
         kind: EventKind.POINTER_MOVE,
         pointer
     })
     expect(state1).toEqual(initialState())
-    expect(rerender).toEqual(false)
+    expect(render).toBeUndefined()
 })
 
 test("pointer move after pointer down", () => {
@@ -167,7 +172,7 @@ test("pointer move after pointer down", () => {
             id: 0,
         }
     })
-    const { state: state2, rerender } = update(state1, {
+    const { state: state2, render } = update(state1, {
         kind: EventKind.POINTER_MOVE,
         pointer: {
             x: 50,
@@ -177,7 +182,7 @@ test("pointer move after pointer down", () => {
     })
     expect(state2.camera).toEqual(translate(-50, -75))
     expect(state2.graph.nodes).toEqual(initialState().graph.nodes)
-    expect(rerender).toEqual(true)
+    expect(render).toEqual(true)
 })
 
 test("pointer move after clicking node pointer down", () => {
@@ -194,7 +199,7 @@ test("pointer move after clicking node pointer down", () => {
             id: 0,
         }
     })
-    const { state: state3, rerender } = update(state2, {
+    const { state: state3, render } = update(state2, {
         kind: EventKind.POINTER_MOVE,
         pointer: {
             x: 50,
@@ -238,7 +243,7 @@ test("pointer move after clicking node pointer down", () => {
             y: 250
         },
     ])
-    expect(rerender).toEqual(true)
+    expect(render).toEqual(true)
 })
 
 test("pointer move after clicking node, pointer down, then pointer up", () => {
@@ -263,7 +268,7 @@ test("pointer move after clicking node, pointer down, then pointer up", () => {
             id: 0,
         }
     })
-    const { state: state4, rerender } = update(state3, {
+    const { state: state4, render } = update(state3, {
         kind: EventKind.POINTER_MOVE,
         pointer: {
             x: 50,
@@ -307,5 +312,5 @@ test("pointer move after clicking node, pointer down, then pointer up", () => {
             y: 250
         },
     ])
-    expect(rerender).toEqual(false)
+    expect(render).toBeUndefined()
 })

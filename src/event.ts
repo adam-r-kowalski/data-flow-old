@@ -1,5 +1,6 @@
 import { multiplyMatrices, multiplyMatrixVector, scale, translate } from "./linear_algebra/matrix3x3"
 import { length } from "./linear_algebra/vector3"
+import { UpdateResult } from "./run"
 import { InputPath, OutputPath, State } from "./state"
 import { Pointer } from "./ui"
 
@@ -11,6 +12,8 @@ export enum EventKind {
     WHEEL,
     CLICKED_INPUT,
     CLICKED_OUTPUT,
+    DOUBLE_CLICK_TIMEOUT,
+    DOUBLE_CLICK
 }
 
 export interface PointerMove {
@@ -50,6 +53,14 @@ export interface ClickedOutput {
     outputPath: OutputPath
 }
 
+export interface DoubleClickTimeout {
+    kind: EventKind.DOUBLE_CLICK_TIMEOUT
+}
+
+export interface DoubleClick {
+    kind: EventKind.DOUBLE_CLICK
+}
+
 export type Event =
     | PointerMove
     | PointerDown
@@ -58,12 +69,27 @@ export type Event =
     | Wheel
     | ClickedInput
     | ClickedOutput
+    | DoubleClickTimeout
+    | DoubleClick
 
 
-const pointerDown = (state: State, event: PointerDown) => {
+const pointerDown = (state: State, event: PointerDown): UpdateResult<State, Event> => {
     state.pointers.push(event.pointer)
     if (state.pointers.length === 1) state.dragging = true
-    return { state, rerender: false }
+    if (state.potentialDoubleClick) {
+        return {
+            state,
+            dispatch: [{ kind: EventKind.DOUBLE_CLICK }]
+        }
+    } else {
+        state.potentialDoubleClick = true
+        return {
+            state,
+            schedule: [
+                { after: { milliseconds: 300 }, event: { kind: EventKind.DOUBLE_CLICK_TIMEOUT } }
+            ]
+        }
+    }
 }
 
 const pointerUp = (state: State, event: PointerUp) => {
@@ -74,7 +100,7 @@ const pointerUp = (state: State, event: PointerUp) => {
         state.draggedNode = null
         state.pointerDistance = 0
     }
-    return { state, rerender: false }
+    return { state }
 }
 
 const pointerMove = (state: State, event: PointerMove) => {
@@ -93,7 +119,7 @@ const pointerMove = (state: State, event: PointerMove) => {
         } else {
             state.camera = multiplyMatrices(state.camera, translate(-dx, -dy))
         }
-        return { state, rerender: true }
+        return { state, render: true }
     }
     if (state.pointers.length === 2) {
         const [p0, p1] = [state.pointers[0], state.pointers[1]]
@@ -113,15 +139,15 @@ const pointerMove = (state: State, event: PointerMove) => {
             const dx = x - previousCenter[0]
             const dy = y - previousCenter[1]
             state.camera = multiplyMatrices(state.camera, move, scale(zoom, zoom), moveBack, translate(-dx, -dy))
-            return { state, rerender: true }
-        } else return { state, rerender: false }
+            return { state, render: true }
+        } else return { state }
     }
-    return { state, rerender: false }
+    return { state }
 }
 
 const clickedNode = (state: State, event: ClickedNode) => {
     state.draggedNode = event.index
-    return { state, rerender: true }
+    return { state, render: true }
 }
 
 const wheel = (state: State, event: Wheel) => {
@@ -129,7 +155,7 @@ const wheel = (state: State, event: Wheel) => {
     const zoom = Math.pow(2, event.deltaY * 0.01)
     const moveBack = translate(-event.x, -event.y)
     state.camera = multiplyMatrices(state.camera, move, scale(zoom, zoom), moveBack)
-    return { state, rerender: true }
+    return { state, render: true }
 }
 
 const clickedInput = (state: State, event: ClickedInput) => {
@@ -152,7 +178,7 @@ const clickedInput = (state: State, event: ClickedInput) => {
             input.edgeIndices.push(edgeIndex)
         }
         state.selectedOutput = null
-        return { state, rerender: true }
+        return { state, render: true }
     }
     if (state.selectedInput) {
         const { nodeIndex, inputIndex } = state.selectedInput
@@ -161,7 +187,7 @@ const clickedInput = (state: State, event: ClickedInput) => {
     const { nodeIndex, inputIndex } = event.inputPath
     state.graph.nodes[nodeIndex].inputs[inputIndex].selected = true
     state.selectedInput = event.inputPath
-    return { state, rerender: true }
+    return { state, render: true }
 }
 
 const clickedOutput = (state: State, event: ClickedOutput) => {
@@ -184,7 +210,7 @@ const clickedOutput = (state: State, event: ClickedOutput) => {
             output.edgeIndices.push(edgeIndex)
         }
         state.selectedInput = null
-        return { state, rerender: true }
+        return { state, render: true }
     }
     if (state.selectedOutput) {
         const { nodeIndex, outputIndex } = state.selectedOutput
@@ -193,10 +219,24 @@ const clickedOutput = (state: State, event: ClickedOutput) => {
     const { nodeIndex, outputIndex } = event.outputPath
     state.graph.nodes[nodeIndex].outputs[outputIndex].selected = true
     state.selectedOutput = event.outputPath
-    return { state, rerender: true }
+    return { state, render: true }
 }
 
-export const update = (state: State, event: Event) => {
+const doubleClickTimeout = (state: State, event: DoubleClickTimeout) => {
+    if (state.potentialDoubleClick) {
+        state.potentialDoubleClick = false
+    }
+    return { state }
+}
+
+const doubleClick = (state: State, _: DoubleClick) => {
+    state.potentialDoubleClick = false
+    state.showFinder = true
+    return { state, render: true }
+}
+
+
+export const update = (state: State, event: Event): UpdateResult<State, Event> => {
     switch (event.kind) {
         case EventKind.POINTER_DOWN: return pointerDown(state, event)
         case EventKind.POINTER_UP: return pointerUp(state, event)
@@ -205,5 +245,7 @@ export const update = (state: State, event: Event) => {
         case EventKind.WHEEL: return wheel(state, event)
         case EventKind.CLICKED_INPUT: return clickedInput(state, event)
         case EventKind.CLICKED_OUTPUT: return clickedOutput(state, event)
+        case EventKind.DOUBLE_CLICK_TIMEOUT: return doubleClickTimeout(state, event)
+        case EventKind.DOUBLE_CLICK: return doubleClick(state, event)
     }
 }

@@ -69,8 +69,8 @@ export class Container {
         const { left, top, right, bottom } = this.padding
         if (this.child) {
             const layout = this.child.layout(constraints, measureText)
-            const width = layout.size.width + left + right
-            const height = layout.size.height + top + bottom
+            const width = this.width ?? layout.size.width + left + right
+            const height = this.height ?? layout.size.height + top + bottom
             return containerLayout({ width, height }, layout)
         }
         const width = (() => {

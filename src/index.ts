@@ -5,6 +5,7 @@ import { padding } from "./padding"
 import { Dispatch, run, transformPointer } from "./run"
 import { Input, Node, Output, State, Theme } from "./state"
 import { Connection, UI } from "./ui"
+import { center } from "./ui/center"
 import { column } from "./ui/column"
 import { container } from "./ui/container"
 import { row } from "./ui/row"
@@ -93,6 +94,22 @@ const nodeUi = (dispatch: Dispatch<Event>, theme: Theme, { name, x, y, inputs, o
     )
 }
 
+const finder = (theme: Theme) =>
+    center(
+        container({ color: theme.node, padding: padding(10) },
+            column([
+                container({ color: theme.background, width: 700, padding: padding(10) },
+                    text({ color: theme.input, size: 40 }, "Search Operations...")),
+                container({ width: 10, height: 10 }),
+                container({ padding: padding(10) }, text("Add")),
+                container({ padding: padding(10) }, text("Subtract")),
+                container({ padding: padding(10) }, text("Multiply")),
+                container({ padding: padding(10) }, text("Divide")),
+                container({ padding: padding(10) }, text("Equal")),
+            ])
+        )
+    )
+
 const view = (dispatch: Dispatch<Event>, state: State) => {
     const nodes: UI[] = []
     state.graph.nodes.forEach((node, i) => {
@@ -107,10 +124,12 @@ const view = (dispatch: Dispatch<Event>, state: State) => {
         to: `input ${input.nodeIndex} ${input.inputIndex}`,
         color: state.theme.connection
     }))
-    return stack([
+    const stacked: UI[] = [
         container({ color: state.theme.background }),
         scene({ camera: state.camera, children: nodes, connections }),
-    ])
+    ]
+    if (state.showFinder) stacked.push(finder(state.theme))
+    return stack(stacked)
 }
 
 const initialState: State = {
@@ -167,6 +186,8 @@ const initialState: State = {
         selectedInput: { red: 175, green: 122, blue: 208, alpha: 255 },
         connection: { red: 255, green: 255, blue: 255, alpha: 255 },
     },
+    potentialDoubleClick: false,
+    showFinder: false,
 }
 
 const dispatch = run(initialState, view, update)

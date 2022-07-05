@@ -13,12 +13,23 @@ export type Dispatch<Event> = (event: Event) => void
 
 type View<State, Event> = (dispatch: Dispatch<Event>, state: State) => UI
 
-interface UpdateResult<State> {
-    state: State
-    rerender: boolean
+interface Milliseconds {
+    milliseconds: number
 }
 
-type Update<State, Event> = (state: State, event: Event) => UpdateResult<State>
+interface Scheduled<Event> {
+    after: Milliseconds
+    event: Event
+}
+
+export interface UpdateResult<State, Event> {
+    state: State
+    render?: boolean
+    schedule?: Scheduled<Event>[]
+    dispatch?: Event[]
+}
+
+type Update<State, Event> = (state: State, event: Event) => UpdateResult<State, Event>
 
 export const run = <State, Event>(state: State, view: View<State, Event>, update: Update<State, Event>): Dispatch<Event> => {
     let renderer = webGL2Renderer({
@@ -38,9 +49,14 @@ export const run = <State, Event>(state: State, view: View<State, Event>, update
         }
     }
     const dispatch = (event: Event) => {
-        const { state: newState, rerender } = update(state, event)
+        const { state: newState, render, schedule, dispatch: dispatchEvents } = update(state, event)
         state = newState
-        if (rerender) scheduleRender()
+        if (render) scheduleRender()
+        for (const { after, event } of schedule ?? []) {
+            const { milliseconds } = after
+            setTimeout(() => dispatch(event), milliseconds)
+        }
+        for (const event of dispatchEvents ?? []) dispatch(event)
     }
     document.body.appendChild(renderer.canvas as HTMLCanvasElement)
     document.addEventListener("pointerdown", p => {

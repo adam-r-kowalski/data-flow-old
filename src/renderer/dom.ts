@@ -1,5 +1,3 @@
-import { VisitNodeObject } from "@babel/traverse"
-
 export interface Style {
     touchAction: 'none'
     width: string
@@ -30,7 +28,7 @@ export interface UniformLocation {
 
 }
 
-type TexImage2D = {
+export type TexImage2D = {
     (
         target: number,
         level: number,
@@ -146,7 +144,7 @@ export interface CanvasContext {
     fillText: (text: string, x: number, y: number) => void
 }
 
-type GetContext = {
+export type GetContext = {
     (contextId: 'webgl2'): WebGL2Context | null
     (contextId: '2d'): CanvasContext | null
 }
@@ -160,4 +158,8 @@ export interface Canvas {
 
 export interface Document {
     createElement: (tagName: 'canvas') => Canvas
+}
+
+export interface Window {
+    devicePixelRatio: number
 }

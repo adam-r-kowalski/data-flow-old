@@ -1,15 +1,24 @@
 import { identity, translate } from "../src/linear_algebra/matrix3x3"
-import { mockRenderer } from "../src/renderer/mock"
+import { mockDocument, mockWindow } from "../src/renderer/mock"
 import { pointerDown } from "../src/renderer/pointer_down"
 import { render } from "../src/renderer/render"
+import { webGL2Renderer } from "../src/renderer/webgl2"
 import { container } from "../src/ui/container"
 import { scene } from "../src/ui/scene"
 
 const red = { red: 255, green: 0, blue: 0, alpha: 255 }
 const green = { red: 0, green: 255, blue: 0, alpha: 255 }
 
+const mockRenderer = () => webGL2Renderer({
+    width: 500,
+    height: 500,
+    document: mockDocument(),
+    window: mockWindow()
+})
+
+
 test("click first container", () => {
-    let renderer = mockRenderer({ width: 500, height: 500 })
+    let renderer = mockRenderer()
     let aClickCount = 0
     let bClickCount = 0
     const ui = scene({
@@ -40,7 +49,7 @@ test("click first container", () => {
 })
 
 test("click second container", () => {
-    let renderer = mockRenderer({ width: 500, height: 500 })
+    let renderer = mockRenderer()
     let aClickCount = 0
     let bClickCount = 0
     const ui = scene({
@@ -71,7 +80,7 @@ test("click second container", () => {
 })
 
 test("click translated container", () => {
-    let renderer = mockRenderer({ width: 500, height: 500 })
+    let renderer = mockRenderer()
     let aClickCount = 0
     let bClickCount = 0
     const ui = scene({

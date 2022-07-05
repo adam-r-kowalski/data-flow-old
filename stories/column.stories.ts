@@ -13,7 +13,7 @@ const green = { red: 0, green: 255, blue: 0, alpha: 255 }
 const blue = { red: 0, green: 0, blue: 255, alpha: 255 }
 
 export const columnWithThreeContainers = () => {
-    let renderer = webGL2Renderer({ width: 500, height: 500 })
+    let renderer = webGL2Renderer({ width: 500, height: 500, document, window })
     const ui = column([
         container({
             width: 50,
@@ -36,7 +36,7 @@ export const columnWithThreeContainers = () => {
 }
 
 export const columnCrossAxisAlignmentStart = () => {
-    let renderer = webGL2Renderer({ width: 500, height: 500 })
+    let renderer = webGL2Renderer({ width: 500, height: 500, document, window })
     const ui = column({ crossAxisAlignment: CrossAxisAlignment.START }, [
         container({
             width: 50,
@@ -59,7 +59,7 @@ export const columnCrossAxisAlignmentStart = () => {
 }
 
 export const columnCrossAxisAlignmentCenter = () => {
-    let renderer = webGL2Renderer({ width: 500, height: 500 })
+    let renderer = webGL2Renderer({ width: 500, height: 500, document, window })
     const ui = column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
         container({
             width: 50,
@@ -82,7 +82,7 @@ export const columnCrossAxisAlignmentCenter = () => {
 }
 
 export const columnCrossAxisAlignmentEnd = () => {
-    let renderer = webGL2Renderer({ width: 500, height: 500 })
+    let renderer = webGL2Renderer({ width: 500, height: 500, document, window })
     const ui = column({ crossAxisAlignment: CrossAxisAlignment.END }, [
         container({
             width: 50,
@@ -105,7 +105,7 @@ export const columnCrossAxisAlignmentEnd = () => {
 }
 
 export const columnMainAxisAlignmentStart = () => {
-    let renderer = webGL2Renderer({ width: 500, height: 500 })
+    let renderer = webGL2Renderer({ width: 500, height: 500, document, window })
     const ui = column({ mainAxisAlignment: MainAxisAlignment.START }, [
         container({
             width: 50,
@@ -128,7 +128,7 @@ export const columnMainAxisAlignmentStart = () => {
 }
 
 export const columnMainAxisAlignmentCenter = () => {
-    let renderer = webGL2Renderer({ width: 500, height: 500 })
+    let renderer = webGL2Renderer({ width: 500, height: 500, document, window })
     const ui = column({ mainAxisAlignment: MainAxisAlignment.CENTER }, [
         container({
             width: 50,
@@ -151,7 +151,7 @@ export const columnMainAxisAlignmentCenter = () => {
 }
 
 export const columnMainAxisAlignmentEnd = () => {
-    let renderer = webGL2Renderer({ width: 500, height: 500 })
+    let renderer = webGL2Renderer({ width: 500, height: 500, document, window })
     const ui = column({ mainAxisAlignment: MainAxisAlignment.END }, [
         container({
             width: 50,
@@ -174,7 +174,7 @@ export const columnMainAxisAlignmentEnd = () => {
 }
 
 export const columnMainAxisAlignmentSpaceEvenly = () => {
-    let renderer = webGL2Renderer({ width: 500, height: 500 })
+    let renderer = webGL2Renderer({ width: 500, height: 500, document, window })
     const ui = column({ mainAxisAlignment: MainAxisAlignment.SPACE_EVENLY }, [
         container({
             width: 50,
@@ -197,7 +197,7 @@ export const columnMainAxisAlignmentSpaceEvenly = () => {
 }
 
 export const columnMainAxisAlignmentSpaceBetween = () => {
-    let renderer = webGL2Renderer({ width: 500, height: 500 })
+    let renderer = webGL2Renderer({ width: 500, height: 500, document, window })
     const ui = column({ mainAxisAlignment: MainAxisAlignment.SPACE_BETWEEN }, [
         container({
             width: 50,
@@ -220,7 +220,7 @@ export const columnMainAxisAlignmentSpaceBetween = () => {
 }
 
 export const columnMainAxisAlignmentCenterCrossAxisAlignmentCenter = () => {
-    let renderer = webGL2Renderer({ width: 500, height: 500 })
+    let renderer = webGL2Renderer({ width: 500, height: 500, document, window })
     const ui = column({ mainAxisAlignment: MainAxisAlignment.CENTER, crossAxisAlignment: CrossAxisAlignment.CENTER }, [
         container({
             width: 50,

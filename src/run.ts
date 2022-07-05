@@ -23,7 +23,9 @@ type Update<State, Event> = (state: State, event: Event) => UpdateResult<State>
 export const run = <State, Event>(state: State, view: View<State, Event>, update: Update<State, Event>): Dispatch<Event> => {
     let renderer = webGL2Renderer({
         width: window.innerWidth,
-        height: window.innerHeight
+        height: window.innerHeight,
+        window,
+        document
     })
     let renderQueued = false
     const scheduleRender = () => {
@@ -40,7 +42,7 @@ export const run = <State, Event>(state: State, view: View<State, Event>, update
         state = newState
         if (rerender) scheduleRender()
     }
-    document.body.appendChild(renderer.canvas)
+    document.body.appendChild(renderer.canvas as HTMLCanvasElement)
     document.addEventListener("pointerdown", p => {
         renderer = pointerDown(renderer, transformPointer(p))
     })

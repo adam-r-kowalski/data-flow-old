@@ -1,30 +1,51 @@
 import { CameraStack } from '../src/camera_stack'
-import { mockMeasureText } from '../src/renderer/mock'
+import { mockDocument, mockWindow } from '../src/renderer/mock'
+import { webGL2Renderer } from '../src/renderer/webgl2'
 import { text, textGeometry, textLayout } from '../src/ui/text'
 
+const mockRenderer = () => webGL2Renderer({
+    width: 500,
+    height: 500,
+    document: mockDocument(),
+    window: mockWindow()
+})
+
 test("text layout", () => {
+    const renderer = mockRenderer()
     const ui = text("abc")
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
-    const layout = ui.layout(constraints, mockMeasureText)
+    const layout = ui.layout(constraints, renderer.measureText)
     const measurements = {
         widths: [24, 24, 24],
         textureIndex: 1,
         textureCoordinates: [
             [
-                0, 0,
-                0, 1,
-                1, 0,
-                1, 1,
+                0.0625,
+                0.375,
+                0.0625,
+                0.421875,
+                0.109375,
+                0.375,
+                0.109375,
+                0.421875,
             ], [
-                1, 0,
-                1, 1,
-                2, 0,
-                2, 1,
+                0.125,
+                0.375,
+                0.125,
+                0.421875,
+                0.171875,
+                0.375,
+                0.171875,
+                0.421875,
             ], [
-                2, 0,
-                2, 1,
-                3, 0,
-                3, 1,
+                0.1875,
+                0.375,
+                0.1875,
+                0.421875,
+                0.234375,
+                0.375,
+                0.234375,
+                0.421875,
             ]
         ]
     }
@@ -33,29 +54,42 @@ test("text layout", () => {
 })
 
 test("text geometry", () => {
+    const renderer = mockRenderer()
     const ui = text("abc")
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
-    const layout = ui.layout(constraints, mockMeasureText)
+    const layout = ui.layout(constraints, renderer.measureText)
     const offset = { x: 0, y: 0 }
     const geometry = ui.geometry(layout, offset, new CameraStack())
     const expectedGeometry = textGeometry({
         worldSpace: { x0: 0, y0: 0, x1: 24 * 3, y1: 24 },
         textureIndex: 1,
         textureCoordinates: [
-            0, 0,
-            0, 1,
-            1, 0,
-            1, 1,
+            0.0625,
+            0.375,
+            0.0625,
+            0.421875,
+            0.109375,
+            0.375,
+            0.109375,
+            0.421875,
 
-            1, 0,
-            1, 1,
-            2, 0,
-            2, 1,
+            0.125,
+            0.375,
+            0.125,
+            0.421875,
+            0.171875,
+            0.375,
+            0.171875,
+            0.421875,
 
-            2, 0,
-            2, 1,
-            3, 0,
-            3, 1,
+            0.1875,
+            0.375,
+            0.1875,
+            0.421875,
+            0.234375,
+            0.375,
+            0.234375,
+            0.421875,
         ],
         colors: [
             255, 255, 255, 255,

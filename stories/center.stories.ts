@@ -8,7 +8,7 @@ export default {
 }
 
 export const centeredContainer = () => {
-    let renderer = webGL2Renderer({ width: 500, height: 500 })
+    let renderer = webGL2Renderer({ width: 500, height: 500, window, document })
     const ui = center(
         container({
             width: 50,

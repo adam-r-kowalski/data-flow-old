@@ -4,7 +4,7 @@ import { Size } from "../layout";
 import { Font, TextMeasurements } from "../ui";
 import { Lines } from "./connection_geometry";
 import { Matrix3x3, projection } from "../linear_algebra/matrix3x3";
-import { Document, WebGL2Context, Buffer, UniformLocation, Shader, Program, Canvas, Texture } from "./document";
+import { Document, WebGL2Context, Buffer, UniformLocation, Shader, Program, Canvas, Texture, Window } from "./dom";
 
 interface Attribute {
     location: number
@@ -111,6 +111,7 @@ export class WebGL2Renderer {
     _cameras: Matrix3x3[]
 
     constructor(
+        public window: Window,
         public document: Document,
         public canvas: Canvas,
         public gl: WebGL2Context,
@@ -126,7 +127,7 @@ export class WebGL2Renderer {
     }
 
     set size(size: Size) {
-        const { gl, program } = this
+        const { gl, program, window } = this
         const { uniforms } = program
         const { canvas } = gl
         gl.uniformMatrix3fv(uniforms.projection, /*transpose*/true, projection(size))
@@ -200,6 +201,7 @@ export class WebGL2Renderer {
     }
 
     measureText = (font: Font, str: string) => {
+        const { window } = this
         const dpr = window.devicePixelRatio
         const { widths, textureIndex, textureCoordinates } = this.getTextureMeasurements(font, dpr)
         const indices = mapString(str, c => c.charCodeAt(0))
@@ -315,7 +317,7 @@ const bindCameraIndex = (gl: WebGL2Context, program: Program, { location, buffer
     )
 }
 
-const createProgram = (gl: WebGL2Context): Program => {
+const createProgram = (gl: WebGL2Context): ProgramData => {
     const attributes: Attributes = {
         vertices: {
             location: 0,
@@ -370,9 +372,10 @@ interface Parameters {
     width: number
     height: number
     document: Document
+    window: Window
 }
 
-export const webGL2Renderer = ({ width, height, document }: Parameters) => {
+export const webGL2Renderer = ({ width, height, document, window }: Parameters) => {
     const canvas = document.createElement('canvas')
     canvas.style.touchAction = 'none'
     const gl = canvas.getContext('webgl2')!
@@ -396,7 +399,7 @@ export const webGL2Renderer = ({ width, height, document }: Parameters) => {
       /*srcType*/gl.UNSIGNED_BYTE,
       /*data*/new Uint8Array([255, 255, 255, 255])
     )
-    const renderer = new WebGL2Renderer(document, canvas, gl, program, [texture], new Map(), [])
+    const renderer = new WebGL2Renderer(window, document, canvas, gl, program, [texture], new Map(), [])
     renderer.size = { width, height }
     return renderer
 }

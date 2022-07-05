@@ -17,42 +17,42 @@ const green = { red: 0, green: 255, blue: 0, alpha: 255 }
 const blue = { red: 0, green: 0, blue: 255, alpha: 255 }
 
 export const defaultFontAndSize = () => {
-    let renderer = webGL2Renderer({ width: 500, height: 500 })
+    let renderer = webGL2Renderer({ width: 500, height: 500, document, window })
     const ui = text("Hello World")
     renderer = render(renderer, ui)
     return renderer.canvas
 }
 
 export const colored = () => {
-    let renderer = webGL2Renderer({ width: 500, height: 500 })
+    let renderer = webGL2Renderer({ width: 500, height: 500, document, window })
     const ui = text({ color: red }, "Hello World")
     renderer = render(renderer, ui)
     return renderer.canvas
 }
 
 export const sansSerif = () => {
-    let renderer = webGL2Renderer({ width: 500, height: 500 })
+    let renderer = webGL2Renderer({ width: 500, height: 500, document, window })
     const ui = text({ font: 'sans-serif' }, "Hello World")
     renderer = render(renderer, ui)
     return renderer.canvas
 }
 
 export const largeSerif = () => {
-    let renderer = webGL2Renderer({ width: 500, height: 500 })
+    let renderer = webGL2Renderer({ width: 500, height: 500, document, window })
     const ui = text({ font: 'serif', size: 72 }, "Hello World")
     renderer = render(renderer, ui)
     return renderer.canvas
 }
 
 export const centered = () => {
-    let renderer = webGL2Renderer({ width: 500, height: 500 })
+    let renderer = webGL2Renderer({ width: 500, height: 500, document, window })
     const ui = center(text("Hello World"))
     renderer = render(renderer, ui)
     return renderer.canvas
 }
 
 export const centeredContained = () => {
-    let renderer = webGL2Renderer({ width: 500, height: 500 })
+    let renderer = webGL2Renderer({ width: 500, height: 500, document, window })
     const ui = center(
         container({ color: green },
             text("Hello World")))
@@ -61,7 +61,7 @@ export const centeredContained = () => {
 }
 
 export const centeredColumn = () => {
-    let renderer = webGL2Renderer({ width: 500, height: 500 })
+    let renderer = webGL2Renderer({ width: 500, height: 500, document, window })
     const ui = center(
         column([
             container({ color: green, width: 50, height: 50 }),
@@ -73,7 +73,7 @@ export const centeredColumn = () => {
 }
 
 export const weirdArangement = () => {
-    let renderer = webGL2Renderer({ width: 500, height: 500 })
+    let renderer = webGL2Renderer({ width: 500, height: 500, document, window })
     const ui = center(
         column([
             text("Hello World"),
@@ -89,7 +89,7 @@ export const weirdArangement = () => {
 }
 
 export const node = () => {
-    let renderer = webGL2Renderer({ width: 500, height: 500 })
+    let renderer = webGL2Renderer({ width: 500, height: 500, document, window })
     const ui = center(
         container({ color: { red: 100, green: 150, blue: 75, alpha: 255 } },
             column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
@@ -133,7 +133,7 @@ export const node = () => {
 }
 
 export const columnOfText = () => {
-    let renderer = webGL2Renderer({ width: 500, height: 500 })
+    let renderer = webGL2Renderer({ width: 500, height: 500, document, window })
     const ui = column([
         container({ color: red }, text({ font: "monospace" }, "monospace")),
         container({ color: red }, text({ font: "sans-serif" }, "sans-serif")),

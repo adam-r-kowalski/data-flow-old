@@ -12,7 +12,7 @@ const green = { red: 0, green: 255, blue: 0, alpha: 255 }
 const blue = { red: 0, green: 0, blue: 255, alpha: 255 }
 
 export const singleContainer = () => {
-    let renderer = webGL2Renderer({ width: 500, height: 500 })
+    let renderer = webGL2Renderer({ width: 500, height: 500, document, window })
     const ui = container({
         width: 50,
         height: 50,
@@ -23,7 +23,7 @@ export const singleContainer = () => {
 }
 
 export const nestedContainer = () => {
-    let renderer = webGL2Renderer({ width: 500, height: 500 })
+    let renderer = webGL2Renderer({ width: 500, height: 500, document, window })
     const ui = container({ padding: padding(20) }, container({
         width: 50,
         height: 50,
@@ -34,7 +34,7 @@ export const nestedContainer = () => {
 }
 
 export const nestedContainerWithColor = () => {
-    let renderer = webGL2Renderer({ width: 500, height: 500 })
+    let renderer = webGL2Renderer({ width: 500, height: 500, document, window })
     const ui = container({ padding: padding(20), color: red },
         container({ padding: padding(20), color: green },
             container({ width: 50, height: 50, color: blue })))

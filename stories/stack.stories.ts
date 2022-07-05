@@ -12,7 +12,7 @@ const red = { red: 255, green: 0, blue: 0, alpha: 255 }
 const green = { red: 0, green: 255, blue: 0, alpha: 255 }
 
 export const stackContainerAndCenteredContainer = () => {
-    let renderer = webGL2Renderer({ width: 500, height: 500 })
+    let renderer = webGL2Renderer({ width: 500, height: 500, document, window })
     const ui = stack([
         container({ color: red }),
         center(

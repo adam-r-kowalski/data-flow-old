@@ -4,30 +4,31 @@ import { Size } from "../layout";
 import { Font, TextMeasurements } from "../ui";
 import { Lines } from "./connection_geometry";
 import { Matrix3x3, projection } from "../linear_algebra/matrix3x3";
+import { Document, WebGL2Context, Buffer, UniformLocation, Shader, Program, Canvas, Texture, Window } from "./dom";
 
 interface Attribute {
     location: number
-    buffer: WebGLBuffer
+    buffer: Buffer
 }
 
 interface Attributes {
     vertices: Attribute
-    vertexIndices: WebGLBuffer
+    vertexIndices: Buffer
     colors: Attribute
     textureCoordinates: Attribute
     cameraIndex: Attribute
 }
 
 interface Uniforms {
-    projection: WebGLUniformLocation
-    texture: WebGLUniformLocation
-    cameras: WebGLUniformLocation
+    projection: UniformLocation
+    texture: UniformLocation
+    cameras: UniformLocation
 }
 
-interface Program {
-    vertexShader: WebGLShader
-    fragmentShader: WebGLShader
-    program: WebGLProgram
+interface ProgramData {
+    vertexShader: Shader
+    fragmentShader: Shader
+    program: Program
     attributes: Attributes
     uniforms: Uniforms
 }
@@ -42,7 +43,7 @@ const nearestPowerOfTwo = (x: number): number => {
     return current
 }
 
-const createTextMeasurements = (gl: WebGL2RenderingContext, font: Font, dpr: DevicePixelRatio) => {
+const createTextMeasurements = (document: Document, gl: WebGL2Context, font: Font, dpr: DevicePixelRatio) => {
     const canvas = document.createElement('canvas')
     const ctx = canvas.getContext('2d')!
     const totalCells = 256
@@ -110,10 +111,12 @@ export class WebGL2Renderer {
     _cameras: Matrix3x3[]
 
     constructor(
-        public canvas: HTMLCanvasElement,
-        public gl: WebGL2RenderingContext,
-        public program: Program,
-        public textures: WebGLTexture[],
+        public window: Window,
+        public document: Document,
+        public canvas: Canvas,
+        public gl: WebGL2Context,
+        public program: ProgramData,
+        public textures: Texture[],
         public textMeasurementsCache: Map<string, TextMeasurements>,
         public clickHandlers: ClickHandlers,
     ) { }
@@ -124,7 +127,7 @@ export class WebGL2Renderer {
     }
 
     set size(size: Size) {
-        const { gl, program } = this
+        const { gl, program, window } = this
         const { uniforms } = program
         const { canvas } = gl
         gl.uniformMatrix3fv(uniforms.projection, /*transpose*/true, projection(size))
@@ -185,11 +188,11 @@ export class WebGL2Renderer {
     }
 
     getTextureMeasurements = (font: Font, dpr: DevicePixelRatio) => {
-        const { gl } = this
+        const { document, gl } = this
         const key = `${dpr} ${font.size} ${font.family}`
         const measurements = this.textMeasurementsCache.get(key)
         if (measurements) return measurements
-        const { texture, widths, textureCoordinates } = createTextMeasurements(gl, font, dpr)
+        const { texture, widths, textureCoordinates } = createTextMeasurements(document, gl, font, dpr)
         const textureIndex = this.textures.length
         this.textures.push(texture)
         const newMeasurements = { widths, textureIndex, textureCoordinates }
@@ -198,6 +201,7 @@ export class WebGL2Renderer {
     }
 
     measureText = (font: Font, str: string) => {
+        const { window } = this
         const dpr = window.devicePixelRatio
         const { widths, textureIndex, textureCoordinates } = this.getTextureMeasurements(font, dpr)
         const indices = mapString(str, c => c.charCodeAt(0))
@@ -209,7 +213,7 @@ export class WebGL2Renderer {
     }
 }
 
-const createVertexShader = (gl: WebGL2RenderingContext, attributes: Attributes): WebGLShader => {
+const createVertexShader = (gl: WebGL2Context, attributes: Attributes): Shader => {
     const { vertices, colors, textureCoordinates, cameraIndex } = attributes
     const vertexShaderSource = `#version 300 es
   uniform mat3 u_projection;
@@ -237,7 +241,7 @@ const createVertexShader = (gl: WebGL2RenderingContext, attributes: Attributes):
     return vertexShader
 }
 
-const createFragmentShader = (gl: WebGL2RenderingContext): WebGLShader => {
+const createFragmentShader = (gl: WebGL2Context): Shader => {
     const fragmentShaderSource = `#version 300 es
   precision highp float;
 
@@ -258,7 +262,7 @@ const createFragmentShader = (gl: WebGL2RenderingContext): WebGLShader => {
     return fragmentShader
 }
 
-const bindVertices = (gl: WebGL2RenderingContext, program: WebGLProgram, { location, buffer }: Attribute) => {
+const bindVertices = (gl: WebGL2Context, program: Program, { location, buffer }: Attribute) => {
     gl.bindAttribLocation(program, location, 'a_vertex')
     gl.enableVertexAttribArray(location)
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
@@ -272,7 +276,7 @@ const bindVertices = (gl: WebGL2RenderingContext, program: WebGLProgram, { locat
     )
 }
 
-const bindColors = (gl: WebGL2RenderingContext, program: WebGLProgram, { location, buffer }: Attribute) => {
+const bindColors = (gl: WebGL2Context, program: Program, { location, buffer }: Attribute) => {
     gl.bindAttribLocation(program, location, 'a_color')
     gl.enableVertexAttribArray(location)
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
@@ -286,7 +290,7 @@ const bindColors = (gl: WebGL2RenderingContext, program: WebGLProgram, { locatio
     )
 }
 
-const bindTextureCoordinates = (gl: WebGL2RenderingContext, program: WebGLProgram, { location, buffer }: Attribute) => {
+const bindTextureCoordinates = (gl: WebGL2Context, program: Program, { location, buffer }: Attribute) => {
     gl.bindAttribLocation(program, location, 'a_textureCoordinates')
     gl.enableVertexAttribArray(location)
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
@@ -300,7 +304,7 @@ const bindTextureCoordinates = (gl: WebGL2RenderingContext, program: WebGLProgra
     )
 }
 
-const bindCameraIndex = (gl: WebGL2RenderingContext, program: WebGLProgram, { location, buffer }: Attribute) => {
+const bindCameraIndex = (gl: WebGL2Context, program: Program, { location, buffer }: Attribute) => {
     gl.bindAttribLocation(program, location, 'a_cameraIndex')
     gl.enableVertexAttribArray(location)
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
@@ -313,7 +317,7 @@ const bindCameraIndex = (gl: WebGL2RenderingContext, program: WebGLProgram, { lo
     )
 }
 
-const createProgram = (gl: WebGL2RenderingContext): Program => {
+const createProgram = (gl: WebGL2Context): ProgramData => {
     const attributes: Attributes = {
         vertices: {
             location: 0,
@@ -364,7 +368,14 @@ const createProgram = (gl: WebGL2RenderingContext): Program => {
     }
 }
 
-export const webGL2Renderer = (size: Size) => {
+interface Parameters {
+    width: number
+    height: number
+    document: Document
+    window: Window
+}
+
+export const webGL2Renderer = ({ width, height, document, window }: Parameters) => {
     const canvas = document.createElement('canvas')
     canvas.style.touchAction = 'none'
     const gl = canvas.getContext('webgl2')!
@@ -388,7 +399,7 @@ export const webGL2Renderer = (size: Size) => {
       /*srcType*/gl.UNSIGNED_BYTE,
       /*data*/new Uint8Array([255, 255, 255, 255])
     )
-    const renderer = new WebGL2Renderer(canvas, gl, program, [texture], new Map(), [])
-    renderer.size = size
+    const renderer = new WebGL2Renderer(window, document, canvas, gl, program, [texture], new Map(), [])
+    renderer.size = { width, height }
     return renderer
 }

@@ -1,16 +1,26 @@
 import { container, containerGeometry, containerLayout } from '../src/ui/container'
 import { center, centerGeometry, centerLayout } from '../src/ui/center'
-import { mockMeasureText } from '../src/renderer/mock'
+import { mockDocument, mockWindow } from '../src/renderer/mock'
 import { stack, stackGeometry, stackLayout } from '../src/ui/stack'
 import { reduce } from '../src/reduce'
 import { Batch, batchGeometry } from '../src/renderer/batch_geometry'
 import { CameraStack } from '../src/camera_stack'
 import { layerGeometry } from '../src/renderer/render'
+import { webGL2Renderer } from '../src/renderer/webgl2'
 
 const red = { red: 255, green: 0, blue: 0, alpha: 255 }
 const green = { red: 0, green: 255, blue: 0, alpha: 255 }
 
+const mockRenderer = () => webGL2Renderer({
+    width: 500,
+    height: 500,
+    document: mockDocument(),
+    window: mockWindow()
+})
+
+
 test("stack layout", () => {
+    const renderer = mockRenderer()
     const ui = stack([
         container({ color: red }),
         center(
@@ -22,7 +32,7 @@ test("stack layout", () => {
         )
     ])
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
-    const layout = ui.layout(constraints, mockMeasureText)
+    const layout = ui.layout(constraints, renderer.measureText)
     const expectedLayout = stackLayout({ width: 100, height: 100 }, [
         containerLayout({ width: 100, height: 100 }),
         centerLayout({ width: 100, height: 100 },
@@ -32,6 +42,7 @@ test("stack layout", () => {
 })
 
 test("stack geometry", () => {
+    const renderer = mockRenderer()
     const ui = stack([
         container({ color: red }),
         center(
@@ -43,7 +54,7 @@ test("stack geometry", () => {
         )
     ])
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
-    const layout = ui.layout(constraints, mockMeasureText)
+    const layout = ui.layout(constraints, renderer.measureText)
     const offsets = { x: 0, y: 0 }
     const geometry = ui.geometry(layout, offsets, new CameraStack())
     const expectedGeometry = stackGeometry({ x0: 0, y0: 0, x1: 100, y1: 100 }, [
@@ -94,6 +105,7 @@ test("stack geometry", () => {
 })
 
 test("stack layers", () => {
+    const renderer = mockRenderer()
     const ui = stack([
         container({ color: red }),
         center(
@@ -105,7 +117,7 @@ test("stack layers", () => {
         )
     ])
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
-    const layout = ui.layout(constraints, mockMeasureText)
+    const layout = ui.layout(constraints, renderer.measureText)
     const offsets = { x: 0, y: 0 }
     const geometry = ui.geometry(layout, offsets, new CameraStack())
     const layers = reduce(ui, layout, geometry, layerGeometry)
@@ -156,6 +168,7 @@ test("stack layers", () => {
 })
 
 test("stack batches", () => {
+    const renderer = mockRenderer()
     const ui = stack([
         container({ color: red }),
         center(
@@ -167,7 +180,7 @@ test("stack batches", () => {
         )
     ])
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
-    const layout = ui.layout(constraints, mockMeasureText)
+    const layout = ui.layout(constraints, renderer.measureText)
     const offsets = { x: 0, y: 0 }
     const geometry = ui.geometry(layout, offsets, new CameraStack())
     const layers = reduce(ui, layout, geometry, layerGeometry)

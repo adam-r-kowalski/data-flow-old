@@ -2,13 +2,22 @@ import { container, containerLayout, containerGeometry } from '../src/ui/contain
 import { reduce } from '../src/reduce'
 import { Batch, batchGeometry } from '../src/renderer/batch_geometry'
 import { center, centerGeometry, centerLayout } from '../src/ui/center'
-import { mockMeasureText } from '../src/renderer/mock'
 import { CameraStack } from '../src/camera_stack'
 import { layerGeometry } from '../src/renderer/render'
+import { webGL2Renderer } from '../src/renderer/webgl2'
+import { mockDocument, mockWindow } from '../src/renderer/mock'
 
 const red = { red: 255, green: 0, blue: 0, alpha: 255 }
 
+const mockRenderer = () => webGL2Renderer({
+    width: 500,
+    height: 500,
+    document: mockDocument(),
+    window: mockWindow()
+})
+
 test("center layout", () => {
+    const renderer = mockRenderer()
     const ui = center(
         container({
             width: 50,
@@ -16,13 +25,14 @@ test("center layout", () => {
             color: red
         }))
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
-    const layout = ui.layout(constraints, mockMeasureText)
+    const layout = ui.layout(constraints, renderer.measureText)
     const expectedLayout = centerLayout({ width: 100, height: 100 },
         containerLayout({ width: 50, height: 50 }))
     expect(layout).toEqual(expectedLayout)
 })
 
 test("center geometry", () => {
+    const renderer = mockRenderer()
     const ui = center(
         container({
             width: 50,
@@ -30,7 +40,7 @@ test("center geometry", () => {
             color: red
         }))
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
-    const layout = ui.layout(constraints, mockMeasureText)
+    const layout = ui.layout(constraints, renderer.measureText)
     const offsets = { x: 0, y: 0 }
     const cameraStack = new CameraStack()
     const geometry = ui.geometry(layout, offsets, cameraStack)
@@ -59,6 +69,7 @@ test("center geometry", () => {
 })
 
 test("center layers", () => {
+    const renderer = mockRenderer()
     const ui = center(
         container({
             width: 50,
@@ -66,7 +77,7 @@ test("center layers", () => {
             color: red
         }))
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
-    const layout = ui.layout(constraints, mockMeasureText)
+    const layout = ui.layout(constraints, renderer.measureText)
     const offsets = { x: 0, y: 0 }
     const cameraStack = new CameraStack()
     const geometry = ui.geometry(layout, offsets, cameraStack)
@@ -98,6 +109,7 @@ test("center layers", () => {
 })
 
 test("center batches", () => {
+    const renderer = mockRenderer()
     const ui = center(
         container({
             width: 50,
@@ -105,7 +117,7 @@ test("center batches", () => {
             color: red
         }))
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
-    const layout = ui.layout(constraints, mockMeasureText)
+    const layout = ui.layout(constraints, renderer.measureText)
     const offsets = { x: 0, y: 0 }
     const cameraStack = new CameraStack()
     const geometry = ui.geometry(layout, offsets, cameraStack)

@@ -12,7 +12,7 @@ const red = { red: 255, green: 0, blue: 0, alpha: 255 }
 const green = { red: 0, green: 255, blue: 0, alpha: 255 }
 
 export const sceneCamera = () => {
-    let renderer = webGL2Renderer({ width: 500, height: 500 })
+    let renderer = webGL2Renderer({ width: 500, height: 500, document, window })
     const ui = scene({
         camera: identity(),
         children: [
@@ -37,7 +37,7 @@ export const sceneCamera = () => {
 }
 
 export const sceneTranslated = () => {
-    let renderer = webGL2Renderer({ width: 500, height: 500 })
+    let renderer = webGL2Renderer({ width: 500, height: 500, document, window })
     const ui = scene({
         camera: translate(100, 0),
         children: [
@@ -62,7 +62,7 @@ export const sceneTranslated = () => {
 }
 
 export const sceneScaled = () => {
-    let renderer = webGL2Renderer({ width: 500, height: 500 })
+    let renderer = webGL2Renderer({ width: 500, height: 500, document, window })
     const ui = scene({
         camera: scale(2, 2),
         children: [
@@ -87,7 +87,7 @@ export const sceneScaled = () => {
 }
 
 export const sceneScaledAndTranslated = () => {
-    let renderer = webGL2Renderer({ width: 500, height: 500 })
+    let renderer = webGL2Renderer({ width: 500, height: 500, document, window })
     const ui = scene({
         camera: multiplyMatrices(translate(-100, -200), scale(2, 2)),
         children: [

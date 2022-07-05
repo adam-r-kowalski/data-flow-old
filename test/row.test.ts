@@ -2,16 +2,26 @@ import { CrossAxisAlignment, MainAxisAlignment } from "../src/alignment"
 import { batchGeometry } from "../src/renderer/batch_geometry"
 import { CameraStack } from "../src/camera_stack"
 import { reduce } from "../src/reduce"
-import { mockMeasureText } from "../src/renderer/mock"
+import { mockDocument, mockWindow } from "../src/renderer/mock"
 import { layerGeometry } from "../src/renderer/render"
 import { container, containerGeometry, containerLayout } from "../src/ui/container"
 import { row, rowGeometry, rowLayout } from "../src/ui/row"
+import { webGL2Renderer } from "../src/renderer/webgl2"
 
 const red = { red: 255, green: 0, blue: 0, alpha: 255 }
 const green = { red: 0, green: 255, blue: 0, alpha: 255 }
 const blue = { red: 0, green: 0, blue: 255, alpha: 255 }
 
+const mockRenderer = () => webGL2Renderer({
+    width: 500,
+    height: 500,
+    document: mockDocument(),
+    window: mockWindow()
+})
+
+
 test("row layout", () => {
+    const renderer = mockRenderer()
     const ui = row([
         container({
             width: 50,
@@ -25,7 +35,7 @@ test("row layout", () => {
         })
     ])
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
-    const layout = ui.layout(constraints, mockMeasureText)
+    const layout = ui.layout(constraints, renderer.measureText)
     const expectedLayout = rowLayout({ width: 100, height: 50 }, 100, [
         containerLayout({ width: 50, height: 50 }),
         containerLayout({ width: 50, height: 50 }),
@@ -34,6 +44,7 @@ test("row layout", () => {
 })
 
 test("row geometry", () => {
+    const renderer = mockRenderer()
     const ui = row([
         container({
             width: 50,
@@ -47,7 +58,7 @@ test("row geometry", () => {
         })
     ])
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
-    const layout = ui.layout(constraints, mockMeasureText)
+    const layout = ui.layout(constraints, renderer.measureText)
     const offsets = { x: 0, y: 0 }
     const geometry = ui.geometry(layout, offsets, new CameraStack())
     const expectedGeometry = rowGeometry({ x0: 0, y0: 0, x1: 100, y1: 50 }, [
@@ -96,6 +107,7 @@ test("row geometry", () => {
 })
 
 test("row layers", () => {
+    const renderer = mockRenderer()
     const ui = row([
         container({
             width: 50,
@@ -109,7 +121,7 @@ test("row layers", () => {
         })
     ])
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
-    const layout = ui.layout(constraints, mockMeasureText)
+    const layout = ui.layout(constraints, renderer.measureText)
     const offsets = { x: 0, y: 0 }
     const geometry = ui.geometry(layout, offsets, new CameraStack())
     const layers = reduce(ui, layout, geometry, layerGeometry)
@@ -161,6 +173,7 @@ test("row layers", () => {
 })
 
 test("row batch", () => {
+    const renderer = mockRenderer()
     const ui = row([
         container({
             width: 50,
@@ -174,7 +187,7 @@ test("row batch", () => {
         })
     ])
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
-    const layout = ui.layout(constraints, mockMeasureText)
+    const layout = ui.layout(constraints, renderer.measureText)
     const offsets = { x: 0, y: 0 }
     const geometry = ui.geometry(layout, offsets, new CameraStack())
     const layers = reduce(ui, layout, geometry, layerGeometry)
@@ -229,6 +242,7 @@ test("row batch", () => {
 })
 
 test("row cross axis alignment start layout", () => {
+    const renderer = mockRenderer()
     const ui = row({ crossAxisAlignment: CrossAxisAlignment.START }, [
         container({
             width: 50,
@@ -247,7 +261,7 @@ test("row cross axis alignment start layout", () => {
         })
     ])
     const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
-    const layout = ui.layout(constraints, mockMeasureText)
+    const layout = ui.layout(constraints, renderer.measureText)
     const expectedLayout = rowLayout({ width: 200, height: 100 }, 200, [
         containerLayout({ width: 50, height: 50 }),
         containerLayout({ width: 100, height: 100 }),
@@ -257,6 +271,7 @@ test("row cross axis alignment start layout", () => {
 })
 
 test("row cross axis alignment start geometry", () => {
+    const renderer = mockRenderer()
     const ui = row({ crossAxisAlignment: CrossAxisAlignment.START }, [
         container({
             width: 50,
@@ -275,7 +290,7 @@ test("row cross axis alignment start geometry", () => {
         })
     ])
     const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
-    const layout = ui.layout(constraints, mockMeasureText)
+    const layout = ui.layout(constraints, renderer.measureText)
     const offsets = { x: 0, y: 0 }
     const geometry = ui.geometry(layout, offsets, new CameraStack())
     const expectedGeometry = rowGeometry({ x0: 0, y0: 0, x1: 200, y1: 100 }, [
@@ -344,6 +359,7 @@ test("row cross axis alignment start geometry", () => {
 })
 
 test("row cross axis alignment center layout", () => {
+    const renderer = mockRenderer()
     const ui = row({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
         container({
             width: 50,
@@ -362,7 +378,7 @@ test("row cross axis alignment center layout", () => {
         })
     ])
     const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
-    const layout = ui.layout(constraints, mockMeasureText)
+    const layout = ui.layout(constraints, renderer.measureText)
     const expectedLayout = rowLayout({ width: 200, height: 100 }, 200, [
         containerLayout({ width: 50, height: 50 }),
         containerLayout({ width: 100, height: 100 }),
@@ -372,6 +388,7 @@ test("row cross axis alignment center layout", () => {
 })
 
 test("row cross axis alignment center geometry", () => {
+    const renderer = mockRenderer()
     const ui = row({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
         container({
             width: 50,
@@ -390,7 +407,7 @@ test("row cross axis alignment center geometry", () => {
         })
     ])
     const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
-    const layout = ui.layout(constraints, mockMeasureText)
+    const layout = ui.layout(constraints, renderer.measureText)
     const offsets = { x: 0, y: 0 }
     const geometry = ui.geometry(layout, offsets, new CameraStack())
     const expectedGeometry = rowGeometry({ x0: 0, y0: 0, x1: 200, y1: 100 }, [
@@ -459,6 +476,7 @@ test("row cross axis alignment center geometry", () => {
 })
 
 test("row cross axis alignment end layout", () => {
+    const renderer = mockRenderer()
     const ui = row({ crossAxisAlignment: CrossAxisAlignment.END }, [
         container({
             width: 50,
@@ -477,7 +495,7 @@ test("row cross axis alignment end layout", () => {
         })
     ])
     const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
-    const layout = ui.layout(constraints, mockMeasureText)
+    const layout = ui.layout(constraints, renderer.measureText)
     const expectedLayout = rowLayout({ width: 200, height: 100 }, 200, [
         containerLayout({ width: 50, height: 50 }),
         containerLayout({ width: 100, height: 100 }),
@@ -487,6 +505,7 @@ test("row cross axis alignment end layout", () => {
 })
 
 test("row cross axis alignment end geometry", () => {
+    const renderer = mockRenderer()
     const ui = row({ crossAxisAlignment: CrossAxisAlignment.END }, [
         container({
             width: 50,
@@ -505,7 +524,7 @@ test("row cross axis alignment end geometry", () => {
         })
     ])
     const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
-    const layout = ui.layout(constraints, mockMeasureText)
+    const layout = ui.layout(constraints, renderer.measureText)
     const offsets = { x: 0, y: 0 }
     const geometry = ui.geometry(layout, offsets, new CameraStack())
     const expectedGeometry = rowGeometry({ x0: 0, y0: 0, x1: 200, y1: 100 }, [
@@ -574,6 +593,7 @@ test("row cross axis alignment end geometry", () => {
 })
 
 test("row main axis alignment start layout", () => {
+    const renderer = mockRenderer()
     const ui = row({ mainAxisAlignment: MainAxisAlignment.START }, [
         container({
             width: 50,
@@ -592,7 +612,7 @@ test("row main axis alignment start layout", () => {
         })
     ])
     const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
-    const layout = ui.layout(constraints, mockMeasureText)
+    const layout = ui.layout(constraints, renderer.measureText)
     const expectedLayout = rowLayout({ width: 200, height: 100 }, 200, [
         containerLayout({ width: 50, height: 50 }),
         containerLayout({ width: 100, height: 100 }),
@@ -602,6 +622,7 @@ test("row main axis alignment start layout", () => {
 })
 
 test("row main axis alignment start geometry", () => {
+    const renderer = mockRenderer()
     const ui = row({ mainAxisAlignment: MainAxisAlignment.START }, [
         container({
             width: 50,
@@ -620,7 +641,7 @@ test("row main axis alignment start geometry", () => {
         })
     ])
     const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
-    const layout = ui.layout(constraints, mockMeasureText)
+    const layout = ui.layout(constraints, renderer.measureText)
     const offsets = { x: 0, y: 0 }
     const geometry = ui.geometry(layout, offsets, new CameraStack())
     const expectedGeometry = rowGeometry({ x0: 0, y0: 0, x1: 200, y1: 100 }, [
@@ -689,6 +710,7 @@ test("row main axis alignment start geometry", () => {
 })
 
 test("row main axis alignment center layout", () => {
+    const renderer = mockRenderer()
     const ui = row({ mainAxisAlignment: MainAxisAlignment.CENTER }, [
         container({
             width: 50,
@@ -707,7 +729,7 @@ test("row main axis alignment center layout", () => {
         })
     ])
     const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
-    const layout = ui.layout(constraints, mockMeasureText)
+    const layout = ui.layout(constraints, renderer.measureText)
     const expectedLayout = rowLayout({ width: 500, height: 100 }, 200, [
         containerLayout({ width: 50, height: 50 }),
         containerLayout({ width: 100, height: 100 }),
@@ -717,6 +739,7 @@ test("row main axis alignment center layout", () => {
 })
 
 test("row main axis alignment center geometry", () => {
+    const renderer = mockRenderer()
     const ui = row({ mainAxisAlignment: MainAxisAlignment.CENTER }, [
         container({
             width: 50,
@@ -735,7 +758,7 @@ test("row main axis alignment center geometry", () => {
         })
     ])
     const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
-    const layout = ui.layout(constraints, mockMeasureText)
+    const layout = ui.layout(constraints, renderer.measureText)
     const offsets = { x: 0, y: 0 }
     const geometry = ui.geometry(layout, offsets, new CameraStack())
     const expectedGeometry = rowGeometry({ x0: 0, y0: 0, x1: 500, y1: 100 }, [
@@ -804,6 +827,7 @@ test("row main axis alignment center geometry", () => {
 })
 
 test("row main axis alignment end layout", () => {
+    const renderer = mockRenderer()
     const ui = row({ mainAxisAlignment: MainAxisAlignment.END }, [
         container({
             width: 50,
@@ -822,7 +846,7 @@ test("row main axis alignment end layout", () => {
         })
     ])
     const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
-    const layout = ui.layout(constraints, mockMeasureText)
+    const layout = ui.layout(constraints, renderer.measureText)
     const expectedLayout = rowLayout({ width: 500, height: 100 }, 200, [
         containerLayout({ width: 50, height: 50 }),
         containerLayout({ width: 100, height: 100 }),
@@ -832,6 +856,7 @@ test("row main axis alignment end layout", () => {
 })
 
 test("row main axis alignment end geometry", () => {
+    const renderer = mockRenderer()
     const ui = row({ mainAxisAlignment: MainAxisAlignment.END }, [
         container({
             width: 50,
@@ -850,7 +875,7 @@ test("row main axis alignment end geometry", () => {
         })
     ])
     const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
-    const layout = ui.layout(constraints, mockMeasureText)
+    const layout = ui.layout(constraints, renderer.measureText)
     const offsets = { x: 0, y: 0 }
     const geometry = ui.geometry(layout, offsets, new CameraStack())
     const expectedGeometry = rowGeometry({ x0: 0, y0: 0, x1: 500, y1: 100 }, [
@@ -919,6 +944,7 @@ test("row main axis alignment end geometry", () => {
 })
 
 test("row main axis alignment space between layout", () => {
+    const renderer = mockRenderer()
     const ui = row({ mainAxisAlignment: MainAxisAlignment.SPACE_BETWEEN }, [
         container({
             width: 50,
@@ -937,7 +963,7 @@ test("row main axis alignment space between layout", () => {
         })
     ])
     const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
-    const layout = ui.layout(constraints, mockMeasureText)
+    const layout = ui.layout(constraints, renderer.measureText)
     const expectedLayout = rowLayout({ width: 500, height: 100 }, 200, [
         containerLayout({ width: 50, height: 50 }),
         containerLayout({ width: 100, height: 100 }),
@@ -947,6 +973,7 @@ test("row main axis alignment space between layout", () => {
 })
 
 test("row main axis alignment space between geometry", () => {
+    const renderer = mockRenderer()
     const ui = row({ mainAxisAlignment: MainAxisAlignment.SPACE_BETWEEN }, [
         container({
             width: 50,
@@ -965,7 +992,7 @@ test("row main axis alignment space between geometry", () => {
         })
     ])
     const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
-    const layout = ui.layout(constraints, mockMeasureText)
+    const layout = ui.layout(constraints, renderer.measureText)
     const offsets = { x: 0, y: 0 }
     const geometry = ui.geometry(layout, offsets, new CameraStack())
     const expectedGeometry = rowGeometry({ x0: 0, y0: 0, x1: 500, y1: 100 }, [
@@ -1034,6 +1061,7 @@ test("row main axis alignment space between geometry", () => {
 })
 
 test("row main axis alignment space evenly layout", () => {
+    const renderer = mockRenderer()
     const ui = row({ mainAxisAlignment: MainAxisAlignment.SPACE_EVENLY }, [
         container({
             width: 50,
@@ -1052,7 +1080,7 @@ test("row main axis alignment space evenly layout", () => {
         })
     ])
     const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
-    const layout = ui.layout(constraints, mockMeasureText)
+    const layout = ui.layout(constraints, renderer.measureText)
     const expectedLayout = rowLayout({ width: 500, height: 100 }, 200, [
         containerLayout({ width: 50, height: 50 }),
         containerLayout({ width: 100, height: 100 }),
@@ -1062,6 +1090,7 @@ test("row main axis alignment space evenly layout", () => {
 })
 
 test("row main axis alignment space evenly geometry", () => {
+    const renderer = mockRenderer()
     const ui = row({ mainAxisAlignment: MainAxisAlignment.SPACE_EVENLY }, [
         container({
             width: 50,
@@ -1080,7 +1109,7 @@ test("row main axis alignment space evenly geometry", () => {
         })
     ])
     const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
-    const layout = ui.layout(constraints, mockMeasureText)
+    const layout = ui.layout(constraints, renderer.measureText)
     const offsets = { x: 0, y: 0 }
     const geometry = ui.geometry(layout, offsets, new CameraStack())
     const expectedGeometry = rowGeometry({ x0: 0, y0: 0, x1: 500, y1: 100 }, [

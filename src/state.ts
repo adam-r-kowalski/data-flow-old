@@ -50,6 +50,11 @@ export interface Theme {
     connection: Color
 }
 
+export interface Finder {
+    search: string
+    show: boolean
+}
+
 export interface State {
     graph: Graph
     dragging: boolean
@@ -60,7 +65,8 @@ export interface State {
     selectedOutput: OutputPath | null
     selectedInput: InputPath | null
     potentialDoubleClick: boolean
-    showFinder: boolean
+    finder: Finder
+    showVirtualKeyboard: boolean
     camera: Matrix3x3
     theme: Theme
 }

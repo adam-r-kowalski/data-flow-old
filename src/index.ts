@@ -1,9 +1,9 @@
-import { CrossAxisAlignment } from "./alignment"
+import { CrossAxisAlignment, MainAxisAlignment } from "./alignment"
 import { Event, EventKind, update } from "./event"
 import { identity } from "./linear_algebra/matrix3x3"
 import { padding } from "./padding"
 import { Dispatch, run, transformPointer } from "./run"
-import { Input, Node, Output, State, Theme } from "./state"
+import { Finder, Input, Node, Output, State, Theme } from "./state"
 import { Connection, UI } from "./ui"
 import { center } from "./ui/center"
 import { column } from "./ui/column"
@@ -94,12 +94,12 @@ const nodeUi = (dispatch: Dispatch<Event>, theme: Theme, { name, x, y, inputs, o
     )
 }
 
-const finder = (theme: Theme) =>
+const finder = ({ search }: Finder, theme: Theme) =>
     center(
         container({ color: theme.node, padding: padding(10) },
             column([
-                container({ color: theme.background, width: 700, padding: padding(10) },
-                    text({ color: theme.input, size: 40 }, "Search Operations...")),
+                container({ color: theme.background, width: 300, padding: padding(10) },
+                    text({ color: theme.input, size: 24 }, search.length ? search : "Search ...")),
                 container({ width: 10, height: 10 }),
                 container({ padding: padding(10) }, text("Add")),
                 container({ padding: padding(10) }, text("Subtract")),
@@ -109,6 +109,43 @@ const finder = (theme: Theme) =>
             ])
         )
     )
+
+const virtualKey = (dispatch: Dispatch<Event>, key: string) =>
+    container({
+        padding: padding(10),
+        onClick: () => dispatch({
+            kind: EventKind.VIRTUAL_KEYDOWN,
+            key
+        })
+    }, text(key))
+
+const virtualKeys = (dispatch: Dispatch<Event>, keys: string[]) =>
+    row(keys.map(c => virtualKey(dispatch, c)))
+
+const virtualKeyboard = (dispatch: Dispatch<Event>, theme: Theme) =>
+    column({ mainAxisAlignment: MainAxisAlignment.END }, [
+        row({ mainAxisAlignment: MainAxisAlignment.SPACE_BETWEEN }, [
+            container({ color: theme.node },
+                column([
+                    virtualKeys(dispatch, ['1', '2', '3', '4', '5']),
+                    virtualKeys(dispatch, ['q', 'w', 'e', 'r', 't']),
+                    virtualKeys(dispatch, ['a', 's', 'd', 'f', 'g']),
+                    virtualKeys(dispatch, ['z', 'x', 'c', 'v']),
+                    virtualKeys(dispatch, ['sft', 'space']),
+                ])
+            ),
+            container({ color: theme.node },
+                column({ crossAxisAlignment: CrossAxisAlignment.END }, [
+                    virtualKeys(dispatch, ['6', '7', '8', '9', '0']),
+                    virtualKeys(dispatch, ['y', 'u', 'i', 'o', 'p']),
+                    virtualKeys(dispatch, ['h', 'j', 'k', 'l']),
+                    virtualKeys(dispatch, ['b', 'n', 'm', 'del']),
+                    virtualKeys(dispatch, ['space', 'ret']),
+                ])
+            ),
+        ])
+    ])
+
 
 const view = (dispatch: Dispatch<Event>, state: State) => {
     const nodes: UI[] = []
@@ -128,7 +165,8 @@ const view = (dispatch: Dispatch<Event>, state: State) => {
         container({ color: state.theme.background }),
         scene({ camera: state.camera, children: nodes, connections }),
     ]
-    if (state.showFinder) stacked.push(finder(state.theme))
+    if (state.finder.show) stacked.push(finder(state.finder, state.theme))
+    if (state.showVirtualKeyboard) stacked.push(virtualKeyboard(dispatch, state.theme))
     return stack(stacked)
 }
 
@@ -187,7 +225,11 @@ const initialState: State = {
         connection: { red: 255, green: 255, blue: 255, alpha: 255 },
     },
     potentialDoubleClick: false,
-    showFinder: false,
+    finder: {
+        search: '',
+        show: false
+    },
+    showVirtualKeyboard: false
 }
 
 const dispatch = run(initialState, view, update)
@@ -240,4 +282,12 @@ document.addEventListener('contextmenu', e => {
 
 document.addEventListener('touchend', () => {
     document.body.requestFullscreen()
+})
+
+document.addEventListener('keydown', e => {
+    e.preventDefault()
+    dispatch({
+        kind: EventKind.KEYDOWN,
+        key: e.key
+    })
 })

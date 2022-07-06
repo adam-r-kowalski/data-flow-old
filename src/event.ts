@@ -13,7 +13,9 @@ export enum EventKind {
     CLICKED_INPUT,
     CLICKED_OUTPUT,
     DOUBLE_CLICK_TIMEOUT,
-    DOUBLE_CLICK
+    DOUBLE_CLICK,
+    KEYDOWN,
+    VIRTUAL_KEYDOWN
 }
 
 export interface PointerMove {
@@ -61,6 +63,17 @@ export interface DoubleClick {
     kind: EventKind.DOUBLE_CLICK
 }
 
+export interface KeyDown {
+    kind: EventKind.KEYDOWN
+    key: string
+}
+
+export interface VirtualKeyDown {
+    kind: EventKind.VIRTUAL_KEYDOWN
+    key: string
+}
+
+
 export type Event =
     | PointerMove
     | PointerDown
@@ -71,6 +84,8 @@ export type Event =
     | ClickedOutput
     | DoubleClickTimeout
     | DoubleClick
+    | KeyDown
+    | VirtualKeyDown
 
 
 const pointerDown = (state: State, event: PointerDown): UpdateResult<State, Event> => {
@@ -231,8 +246,69 @@ const doubleClickTimeout = (state: State, event: DoubleClickTimeout) => {
 
 const doubleClick = (state: State, _: DoubleClick) => {
     state.potentialDoubleClick = false
-    state.showFinder = true
+    state.finder.show = true
+    state.showVirtualKeyboard = true
     return { state, render: true }
+}
+
+const keyDown = (state: State, { key }: KeyDown) => {
+    if (state.finder.show) {
+        switch (key) {
+            case 'Backspace':
+                state.finder.search = state.finder.search.slice(0, -1)
+                break
+            case 'Shift':
+            case 'Alt':
+            case 'Control':
+            case 'Meta':
+            case 'Tab':
+                break
+            case 'Enter':
+            case 'Escape':
+                state.finder.show = false
+                state.finder.search = ''
+                state.showVirtualKeyboard = false
+                break
+            default:
+                state.finder.search += key
+                break
+        }
+        return { state, render: true }
+    }
+    if (key == 'f') {
+        state.finder.show = true
+        return { state, render: true }
+    }
+    return { state }
+}
+
+const virtualKeyDown = (state: State, { key }: VirtualKeyDown) => {
+    if (state.finder.show) {
+        switch (key) {
+            case 'del':
+                state.finder.search = state.finder.search.slice(0, -1)
+                break
+            case 'sft':
+                break
+            case 'space':
+                state.finder.search += ' '
+                break
+            case 'ret':
+                state.finder.show = false
+                state.finder.search = ''
+                state.showVirtualKeyboard = false
+                break
+            default:
+                state.finder.search += key
+                break
+        }
+        return { state, render: true }
+    }
+    if (key == 'f') {
+        state.finder.show = true
+        return { state, render: true }
+    }
+    return { state }
 }
 
 
@@ -247,5 +323,7 @@ export const update = (state: State, event: Event): UpdateResult<State, Event> =
         case EventKind.CLICKED_OUTPUT: return clickedOutput(state, event)
         case EventKind.DOUBLE_CLICK_TIMEOUT: return doubleClickTimeout(state, event)
         case EventKind.DOUBLE_CLICK: return doubleClick(state, event)
+        case EventKind.KEYDOWN: return keyDown(state, event)
+        case EventKind.VIRTUAL_KEYDOWN: return virtualKeyDown(state, event)
     }
 }

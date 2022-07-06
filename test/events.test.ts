@@ -57,7 +57,11 @@ const initialState = (): State => ({
         connection: { red: 255, green: 255, blue: 255, alpha: 255 },
     },
     potentialDoubleClick: false,
-    showFinder: false
+    finder: {
+        search: '',
+        show: false
+    },
+    showVirtualKeyboard: false
 })
 
 test("pointer down", () => {

@@ -66,7 +66,6 @@ export interface State {
     selectedInput: InputPath | null
     potentialDoubleClick: boolean
     finder: Finder
-    showVirtualKeyboard: boolean
     camera: Matrix3x3
     theme: Theme
 }

@@ -61,7 +61,6 @@ const initialState = (): State => ({
         search: '',
         show: false
     },
-    showVirtualKeyboard: false
 })
 
 test("pointer down", () => {

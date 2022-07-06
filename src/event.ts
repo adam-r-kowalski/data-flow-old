@@ -90,8 +90,9 @@ export type Event =
 
 const pointerDown = (state: State, event: PointerDown): UpdateResult<State, Event> => {
     state.pointers.push(event.pointer)
-    if (state.pointers.length === 1) state.dragging = true
-    if (state.potentialDoubleClick) {
+    const onePointer = state.pointers.length === 1
+    if (onePointer) state.dragging = true
+    if (state.potentialDoubleClick && onePointer) {
         return {
             state,
             dispatch: [{ kind: EventKind.DOUBLE_CLICK }]
@@ -247,7 +248,6 @@ const doubleClickTimeout = (state: State, event: DoubleClickTimeout) => {
 const doubleClick = (state: State, _: DoubleClick) => {
     state.potentialDoubleClick = false
     state.finder.show = true
-    state.showVirtualKeyboard = true
     return { state, render: true }
 }
 
@@ -267,7 +267,6 @@ const keyDown = (state: State, { key }: KeyDown) => {
             case 'Escape':
                 state.finder.show = false
                 state.finder.search = ''
-                state.showVirtualKeyboard = false
                 break
             default:
                 state.finder.search += key
@@ -296,7 +295,6 @@ const virtualKeyDown = (state: State, { key }: VirtualKeyDown) => {
             case 'ret':
                 state.finder.show = false
                 state.finder.search = ''
-                state.showVirtualKeyboard = false
                 break
             default:
                 state.finder.search += key

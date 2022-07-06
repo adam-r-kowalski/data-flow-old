@@ -125,7 +125,7 @@ const virtualKeys = (dispatch: Dispatch<Event>, keys: string[]) =>
 const virtualKeyboard = (dispatch: Dispatch<Event>, theme: Theme) =>
     column({ mainAxisAlignment: MainAxisAlignment.END }, [
         row({ mainAxisAlignment: MainAxisAlignment.SPACE_BETWEEN }, [
-            container({ color: theme.node },
+            container({ padding: padding(10), color: theme.node },
                 column([
                     virtualKeys(dispatch, ['1', '2', '3', '4', '5']),
                     virtualKeys(dispatch, ['q', 'w', 'e', 'r', 't']),
@@ -134,7 +134,7 @@ const virtualKeyboard = (dispatch: Dispatch<Event>, theme: Theme) =>
                     virtualKeys(dispatch, ['sft', 'space']),
                 ])
             ),
-            container({ color: theme.node },
+            container({ padding: padding(10), color: theme.node },
                 column({ crossAxisAlignment: CrossAxisAlignment.END }, [
                     virtualKeys(dispatch, ['6', '7', '8', '9', '0']),
                     virtualKeys(dispatch, ['y', 'u', 'i', 'o', 'p']),
@@ -143,31 +143,35 @@ const virtualKeyboard = (dispatch: Dispatch<Event>, theme: Theme) =>
                     virtualKeys(dispatch, ['space', 'ret']),
                 ])
             ),
-        ])
+        ]),
     ])
 
 
 const view = (dispatch: Dispatch<Event>, state: State) => {
-    const nodes: UI[] = []
-    state.graph.nodes.forEach((node, i) => {
-        if (i !== state.draggedNode) nodes.push(nodeUi(dispatch, state.theme, node, i))
-    })
-    if (state.draggedNode !== null) {
-        const i = state.draggedNode
-        nodes.push(nodeUi(dispatch, state.theme, state.graph.nodes[i], i))
+    if (!state.finder.show) {
+        const nodes: UI[] = []
+        state.graph.nodes.forEach((node, i) => {
+            if (i !== state.draggedNode) nodes.push(nodeUi(dispatch, state.theme, node, i))
+        })
+        if (state.draggedNode !== null) {
+            const i = state.draggedNode
+            nodes.push(nodeUi(dispatch, state.theme, state.graph.nodes[i], i))
+        }
+        const connections: Connection[] = state.graph.edges.map(({ input, output }) => ({
+            from: `output ${output.nodeIndex} ${output.outputIndex}`,
+            to: `input ${input.nodeIndex} ${input.inputIndex}`,
+            color: state.theme.connection
+        }))
+        return stack([
+            container({ color: state.theme.background }),
+            scene({ camera: state.camera, children: nodes, connections }),
+        ])
     }
-    const connections: Connection[] = state.graph.edges.map(({ input, output }) => ({
-        from: `output ${output.nodeIndex} ${output.outputIndex}`,
-        to: `input ${input.nodeIndex} ${input.inputIndex}`,
-        color: state.theme.connection
-    }))
-    const stacked: UI[] = [
+    return stack([
         container({ color: state.theme.background }),
-        scene({ camera: state.camera, children: nodes, connections }),
-    ]
-    if (state.finder.show) stacked.push(finder(state.finder, state.theme))
-    if (state.showVirtualKeyboard) stacked.push(virtualKeyboard(dispatch, state.theme))
-    return stack(stacked)
+        finder(state.finder, state.theme),
+        virtualKeyboard(dispatch, state.theme)
+    ])
 }
 
 const initialState: State = {
@@ -229,7 +233,6 @@ const initialState: State = {
         search: '',
         show: false
     },
-    showVirtualKeyboard: false
 }
 
 const dispatch = run(initialState, view, update)

@@ -70,7 +70,7 @@ test("pointer down", () => {
         y: 0,
         id: 0,
     }
-    const { state: state1, render } = update(state, {
+    const { state: state1, schedule } = update(state, {
         kind: EventKind.POINTER_DOWN,
         pointer
     })
@@ -79,8 +79,95 @@ test("pointer down", () => {
     expectedState.pointers = [pointer]
     expectedState.potentialDoubleClick = true
     expect(state1).toEqual(expectedState)
-    expect(render).toBeUndefined()
+    expect(schedule).toEqual([
+        {
+            after: { milliseconds: 300 },
+            event: { kind: EventKind.DOUBLE_CLICK_TIMEOUT }
+        }
+    ])
 })
+
+test("two pointers down", () => {
+    const state = initialState()
+    const pointer0 = {
+        x: 0,
+        y: 0,
+        id: 0,
+    }
+    const pointer1 = {
+        x: 0,
+        y: 0,
+        id: 1,
+    }
+    const { state: state1, schedule } = update(state, {
+        kind: EventKind.POINTER_DOWN,
+        pointer: pointer0
+    })
+    const { state: state2 } = update(state1, {
+        kind: EventKind.POINTER_DOWN,
+        pointer: pointer1
+    })
+    const expectedState = initialState()
+    expectedState.pointers = [pointer0, pointer1]
+    expect(state2).toEqual(expectedState)
+    expect(schedule).toEqual([
+        {
+            after: { milliseconds: 300 },
+            event: { kind: EventKind.DOUBLE_CLICK_TIMEOUT }
+        }
+    ])
+})
+
+
+test("pointer double click", () => {
+    const state = initialState()
+    const pointer = {
+        x: 0,
+        y: 0,
+        id: 0,
+    }
+    const { state: state1 } = update(state, {
+        kind: EventKind.POINTER_DOWN,
+        pointer
+    })
+    const { state: state2 } = update(state1, {
+        kind: EventKind.POINTER_UP,
+        pointer
+    })
+    const { state: state3, dispatch } = update(state2, {
+        kind: EventKind.POINTER_DOWN,
+        pointer
+    })
+    const expectedState = initialState()
+    expectedState.pointers = [pointer]
+    expect(state3).toEqual(expectedState)
+    expect(dispatch).toEqual([{ kind: EventKind.DOUBLE_CLICK }])
+})
+
+
+test("pointer double click timeout", () => {
+    const state = initialState()
+    const pointer = {
+        x: 0,
+        y: 0,
+        id: 0,
+    }
+    const { state: state1 } = update(state, {
+        kind: EventKind.POINTER_DOWN,
+        pointer
+    })
+    const { state: state2 } = update(state1, {
+        kind: EventKind.POINTER_UP,
+        pointer
+    })
+    const { state: state3 } = update(state2, {
+        kind: EventKind.DOUBLE_CLICK_TIMEOUT
+    })
+    const expectedState = initialState()
+    expect(state3).toEqual(expectedState)
+})
+
+
 
 test("pointer down then up", () => {
     const state = initialState()
@@ -183,8 +270,18 @@ test("pointer move after pointer down", () => {
             id: 0,
         }
     })
-    expect(state2.camera).toEqual(translate(-50, -75))
-    expect(state2.graph.nodes).toEqual(initialState().graph.nodes)
+    const expectedState = initialState()
+    expectedState.camera = translate(-50, -75)
+    expectedState.potentialDoubleClick = true
+    expectedState.dragging = true
+    expectedState.pointers = [
+        {
+            id: 0,
+            x: 50,
+            y: 75
+        }
+    ]
+    expect(state2).toEqual(expectedState)
     expect(render).toEqual(true)
 })
 

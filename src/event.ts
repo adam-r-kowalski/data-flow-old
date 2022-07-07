@@ -90,21 +90,25 @@ export type Event =
 
 const pointerDown = (state: State, event: PointerDown): UpdateResult<State, Event> => {
     state.pointers.push(event.pointer)
-    const onePointer = state.pointers.length === 1
-    if (onePointer) state.dragging = true
-    if (state.potentialDoubleClick && onePointer) {
+    if (state.pointers.length > 1) {
+        state.potentialDoubleClick = false
+        state.dragging = false
+        return { state }
+    }
+    if (state.potentialDoubleClick) {
+        state.potentialDoubleClick = false
         return {
             state,
             dispatch: [{ kind: EventKind.DOUBLE_CLICK }]
         }
-    } else {
-        state.potentialDoubleClick = true
-        return {
-            state,
-            schedule: [
-                { after: { milliseconds: 300 }, event: { kind: EventKind.DOUBLE_CLICK_TIMEOUT } }
-            ]
-        }
+    }
+    state.dragging = true
+    state.potentialDoubleClick = true
+    return {
+        state,
+        schedule: [
+            { after: { milliseconds: 300 }, event: { kind: EventKind.DOUBLE_CLICK_TIMEOUT } }
+        ]
     }
 }
 
@@ -238,7 +242,7 @@ const clickedOutput = (state: State, event: ClickedOutput) => {
     return { state, render: true }
 }
 
-const doubleClickTimeout = (state: State, event: DoubleClickTimeout) => {
+const doubleClickTimeout = (state: State, _: DoubleClickTimeout) => {
     if (state.potentialDoubleClick) {
         state.potentialDoubleClick = false
     }

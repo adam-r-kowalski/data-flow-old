@@ -73,7 +73,6 @@ export interface VirtualKeyDown {
     key: string
 }
 
-
 export type Event =
     | PointerMove
     | PointerDown
@@ -93,6 +92,7 @@ const pointerDown = (state: State, event: PointerDown): UpdateResult<State, Even
     if (state.pointers.length > 1) {
         state.potentialDoubleClick = false
         state.dragging = false
+        state.zooming = state.pointers.length === 2
         return { state }
     }
     if (state.potentialDoubleClick) {
@@ -115,7 +115,12 @@ const pointerDown = (state: State, event: PointerDown): UpdateResult<State, Even
 const pointerUp = (state: State, event: PointerUp) => {
     const index = state.pointers.findIndex(p => p.id === event.pointer.id)
     state.pointers.splice(index, 1)
-    if (state.pointers.length === 0) {
+    if (state.pointers.length === 1) {
+        state.zooming = false
+        state.dragging = true
+        state.pointerDistance = 0
+    }
+    else if (state.pointers.length === 0) {
         state.dragging = false
         state.draggedNode = null
         state.pointerDistance = 0
@@ -124,11 +129,11 @@ const pointerUp = (state: State, event: PointerUp) => {
 }
 
 const pointerMove = (state: State, event: PointerMove) => {
-    if (!state.dragging) return { state, rerender: false }
+    if (!state.dragging && !state.zooming) return { state, rerender: false }
     const index = state.pointers.findIndex(p => p.id === event.pointer.id)
     const pointer = state.pointers[index]
     state.pointers[index] = event.pointer
-    if (state.pointers.length === 1) {
+    if (state.dragging) {
         const dx = event.pointer.x - pointer.x
         const dy = event.pointer.y - pointer.y
         if (state.draggedNode !== null) {
@@ -141,7 +146,7 @@ const pointerMove = (state: State, event: PointerMove) => {
         }
         return { state, render: true }
     }
-    if (state.pointers.length === 2) {
+    if (state.zooming) {
         const [p0, p1] = [state.pointers[0], state.pointers[1]]
         const [x1, y1] = [p0.x, p0.y]
         const [x2, y2] = [p1.x, p1.y]
@@ -310,7 +315,6 @@ const virtualKeyDown = (state: State, { key }: VirtualKeyDown) => {
     }
     return { state }
 }
-
 
 export const update = (state: State, event: Event): UpdateResult<State, Event> => {
     switch (event.kind) {

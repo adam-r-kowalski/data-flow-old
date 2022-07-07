@@ -41,6 +41,7 @@ const initialState = (): State => ({
         ],
         edges: []
     },
+    zooming: false,
     dragging: false,
     draggedNode: null,
     pointers: [],
@@ -61,6 +62,7 @@ const initialState = (): State => ({
         search: '',
         show: false
     },
+    operations: {}
 })
 
 test("pointer down", () => {
@@ -109,6 +111,7 @@ test("two pointers down", () => {
     })
     const expectedState = initialState()
     expectedState.pointers = [pointer0, pointer1]
+    expectedState.zooming = true
     expect(state2).toEqual(expectedState)
     expect(schedule).toEqual([
         {
@@ -184,6 +187,37 @@ test("pointer down then up", () => {
     expectedState.potentialDoubleClick = true
     expect(state2).toEqual(expectedState)
 })
+
+test("two pointers down then up", () => {
+    const state = initialState()
+    const pointer0 = {
+        x: 0,
+        y: 0,
+        id: 0,
+    }
+    const pointer1 = {
+        x: 0,
+        y: 0,
+        id: 1,
+    }
+    const { state: state1 } = update(state, {
+        kind: EventKind.POINTER_DOWN,
+        pointer: pointer0
+    })
+    const { state: state2 } = update(state1, {
+        kind: EventKind.POINTER_DOWN,
+        pointer: pointer1
+    })
+    const { state: state3 } = update(state2, {
+        kind: EventKind.POINTER_UP,
+        pointer: pointer0
+    })
+    const expectedState = initialState()
+    expectedState.dragging = true
+    expectedState.pointers = [pointer1]
+    expect(state3).toEqual(expectedState)
+})
+
 
 test("click node", () => {
     const state = initialState()

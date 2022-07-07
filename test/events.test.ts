@@ -497,3 +497,162 @@ test("clicking input after clicking output adds connection", () => {
     expect(state2).toEqual(expectedState)
     expect(render).toEqual(true)
 })
+
+test("key down when finder is not shown does nothing", () => {
+    const state = initialState()
+    const { state: state1 } = update(state, {
+        kind: EventKind.KEYDOWN,
+        key: 'a'
+    })
+    const expectedState = initialState()
+    expect(state1).toEqual(expectedState)
+})
+
+test("f key down when finder is not shown opens finder", () => {
+    const state = initialState()
+    const { state: state1, render } = update(state, {
+        kind: EventKind.KEYDOWN,
+        key: 'f'
+    })
+    const expectedState = initialState()
+    expectedState.finder.show = true
+    expect(state1).toEqual(expectedState)
+    expect(render).toEqual(true)
+})
+
+test("key down when finder is shown appends to search", () => {
+    const state = initialState()
+    state.finder.show = true
+    const { state: state1 } = update(state, {
+        kind: EventKind.KEYDOWN,
+        key: 'a'
+    })
+    const { state: state2 } = update(state1, {
+        kind: EventKind.KEYDOWN,
+        key: 'd'
+    })
+    const { state: state3, render } = update(state2, {
+        kind: EventKind.KEYDOWN,
+        key: 'd'
+    })
+    const expectedState = initialState()
+    expectedState.finder.show = true
+    expectedState.finder.search = 'add'
+    expect(state3).toEqual(expectedState)
+    expect(render).toEqual(true)
+})
+
+test("backspace key down when finder is shown deletes from search", () => {
+    const state = initialState()
+    state.finder.show = true
+    const { state: state1 } = update(state, {
+        kind: EventKind.KEYDOWN,
+        key: 'a'
+    })
+    const { state: state2 } = update(state1, {
+        kind: EventKind.KEYDOWN,
+        key: 'd'
+    })
+    const { state: state3 } = update(state2, {
+        kind: EventKind.KEYDOWN,
+        key: 'd'
+    })
+    const { state: state4, render } = update(state3, {
+        kind: EventKind.KEYDOWN,
+        key: 'Backspace'
+    })
+    const expectedState = initialState()
+    expectedState.finder.show = true
+    expectedState.finder.search = 'ad'
+    expect(state4).toEqual(expectedState)
+    expect(render).toEqual(true)
+})
+
+test("enter key down when finder is shown closes finder", () => {
+    const state = initialState()
+    state.finder.show = true
+    const { state: state1, render } = update(state, {
+        kind: EventKind.KEYDOWN,
+        key: 'Enter'
+    })
+    const expectedState = initialState()
+    expect(state1).toEqual(expectedState)
+    expect(render).toEqual(true)
+})
+
+test("escape key down when finder is shown closes finder", () => {
+    const state = initialState()
+    state.finder.show = true
+    const { state: state1, render } = update(state, {
+        kind: EventKind.KEYDOWN,
+        key: 'Escape'
+    })
+    const expectedState = initialState()
+    expect(state1).toEqual(expectedState)
+    expect(render).toEqual(true)
+})
+
+test("shift key down when finder is shown are ignored", () => {
+    const state = initialState()
+    state.finder.show = true
+    const { state: state1, render } = update(state, {
+        kind: EventKind.KEYDOWN,
+        key: 'Shift'
+    })
+    const expectedState = initialState()
+    expectedState.finder.show = true
+    expect(state1).toEqual(expectedState)
+    expect(render).toEqual(true)
+})
+
+test("alt key down when finder is shown are ignored", () => {
+    const state = initialState()
+    state.finder.show = true
+    const { state: state1, render } = update(state, {
+        kind: EventKind.KEYDOWN,
+        key: 'Alt'
+    })
+    const expectedState = initialState()
+    expectedState.finder.show = true
+    expect(state1).toEqual(expectedState)
+    expect(render).toEqual(true)
+})
+
+test("control key down when finder is shown are ignored", () => {
+    const state = initialState()
+    state.finder.show = true
+    const { state: state1, render } = update(state, {
+        kind: EventKind.KEYDOWN,
+        key: 'Control'
+    })
+    const expectedState = initialState()
+    expectedState.finder.show = true
+    expect(state1).toEqual(expectedState)
+    expect(render).toEqual(true)
+})
+
+test("meta key down when finder is shown are ignored", () => {
+    const state = initialState()
+    state.finder.show = true
+    const { state: state1, render } = update(state, {
+        kind: EventKind.KEYDOWN,
+        key: 'Meta'
+    })
+    const expectedState = initialState()
+    expectedState.finder.show = true
+    expect(state1).toEqual(expectedState)
+    expect(render).toEqual(true)
+})
+
+test("Tab key down when finder is shown are ignored", () => {
+    const state = initialState()
+    state.finder.show = true
+    const { state: state1, render } = update(state, {
+        kind: EventKind.KEYDOWN,
+        key: 'Tab'
+    })
+    const expectedState = initialState()
+    expectedState.finder.show = true
+    expect(state1).toEqual(expectedState)
+    expect(render).toEqual(true)
+})

@@ -443,3 +443,57 @@ test("clicking output after clicking input adds connection", () => {
     expect(state2).toEqual(expectedState)
     expect(render).toEqual(true)
 })
+
+test("clicking output selects it", () => {
+    const state = initialState()
+    const expectedState = initialState()
+    const outputPath = { nodeIndex: 0, outputIndex: 0 }
+    const { state: state1, render } = update(state, {
+        kind: EventKind.CLICKED_OUTPUT,
+        outputPath
+    })
+    expectedState.graph.nodes[0].outputs[0].selected = true
+    expectedState.selectedOutput = outputPath
+    expectedState.draggedNode = outputPath.nodeIndex
+    expect(state1).toEqual(expectedState)
+    expect(render).toEqual(true)
+})
+
+test("clicking new output selects it and deselects old output", () => {
+    const state = initialState()
+    const expectedState = initialState()
+    const { state: state1 } = update(state, {
+        kind: EventKind.CLICKED_OUTPUT,
+        outputPath: { nodeIndex: 0, outputIndex: 0 }
+    })
+    const { state: state2, render } = update(state1, {
+        kind: EventKind.CLICKED_OUTPUT,
+        outputPath: { nodeIndex: 0, outputIndex: 1 }
+    })
+    expectedState.graph.nodes[0].outputs[1].selected = true
+    expectedState.selectedOutput = { nodeIndex: 0, outputIndex: 1 }
+    expectedState.draggedNode = 0
+    expect(state2).toEqual(expectedState)
+    expect(render).toEqual(true)
+})
+
+test("clicking input after clicking output adds connection", () => {
+    const state = initialState()
+    const expectedState = initialState()
+    const { state: state1 } = update(state, {
+        kind: EventKind.CLICKED_OUTPUT,
+        outputPath: { nodeIndex: 0, outputIndex: 0 }
+    })
+    const { state: state2, render } = update(state1, {
+        kind: EventKind.CLICKED_INPUT,
+        inputPath: { nodeIndex: 1, inputIndex: 1 }
+    })
+    expectedState.graph.edges.push({
+        input: { nodeIndex: 1, inputIndex: 1 },
+        output: { nodeIndex: 0, outputIndex: 0 }
+    })
+    expectedState.graph.nodes[1].inputs[1].edgeIndices.push(0)
+    expectedState.graph.nodes[0].outputs[0].edgeIndices.push(0)
+    expect(state2).toEqual(expectedState)
+    expect(render).toEqual(true)
+})

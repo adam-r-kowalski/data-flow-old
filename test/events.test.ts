@@ -656,3 +656,108 @@ test("Tab key down when finder is shown are ignored", () => {
     expect(state1).toEqual(expectedState)
     expect(render).toEqual(true)
 })
+
+test("virtual key down when finder is not shown does nothing", () => {
+    const state = initialState()
+    const { state: state1 } = update(state, {
+        kind: EventKind.VIRTUAL_KEYDOWN,
+        key: 'f'
+    })
+    const expectedState = initialState()
+    expect(state1).toEqual(expectedState)
+})
+
+test("virtual key down when finder is shown appends to search", () => {
+    const state = initialState()
+    state.finder.show = true
+    const { state: state1 } = update(state, {
+        kind: EventKind.VIRTUAL_KEYDOWN,
+        key: 'a'
+    })
+    const { state: state2 } = update(state1, {
+        kind: EventKind.VIRTUAL_KEYDOWN,
+        key: 'd'
+    })
+    const { state: state3, render } = update(state2, {
+        kind: EventKind.KEYDOWN,
+        key: 'd'
+    })
+    const expectedState = initialState()
+    expectedState.finder.show = true
+    expectedState.finder.search = 'add'
+    expect(state3).toEqual(expectedState)
+    expect(render).toEqual(true)
+})
+
+test("del virtual key down when finder is shown deletes from search", () => {
+    const state = initialState()
+    state.finder.show = true
+    const { state: state1 } = update(state, {
+        kind: EventKind.VIRTUAL_KEYDOWN,
+        key: 'a'
+    })
+    const { state: state2 } = update(state1, {
+        kind: EventKind.VIRTUAL_KEYDOWN,
+        key: 'd'
+    })
+    const { state: state3 } = update(state2, {
+        kind: EventKind.VIRTUAL_KEYDOWN,
+        key: 'd'
+    })
+    const { state: state4, render } = update(state3, {
+        kind: EventKind.VIRTUAL_KEYDOWN,
+        key: 'del'
+    })
+    const expectedState = initialState()
+    expectedState.finder.show = true
+    expectedState.finder.search = 'ad'
+    expect(state4).toEqual(expectedState)
+    expect(render).toEqual(true)
+})
+
+test("space virtual key down when finder is shown adds space to search", () => {
+    const state = initialState()
+    state.finder.show = true
+    const { state: state1 } = update(state, {
+        kind: EventKind.VIRTUAL_KEYDOWN,
+        key: 'a'
+    })
+    const { state: state2 } = update(state1, {
+        kind: EventKind.VIRTUAL_KEYDOWN,
+        key: 'space'
+    })
+    const { state: state3, render } = update(state2, {
+        kind: EventKind.VIRTUAL_KEYDOWN,
+        key: 'd'
+    })
+    const expectedState = initialState()
+    expectedState.finder.show = true
+    expectedState.finder.search = 'a d'
+    expect(state3).toEqual(expectedState)
+    expect(render).toEqual(true)
+})
+
+test("ret virtual key down when finder is shown closes finder", () => {
+    const state = initialState()
+    state.finder.show = true
+    const { state: state1, render } = update(state, {
+        kind: EventKind.VIRTUAL_KEYDOWN,
+        key: 'ret'
+    })
+    const expectedState = initialState()
+    expect(state1).toEqual(expectedState)
+    expect(render).toEqual(true)
+})
+
+test("sft virtual key down when finder is shown are ignored", () => {
+    const state = initialState()
+    state.finder.show = true
+    const { state: state1, render } = update(state, {
+        kind: EventKind.VIRTUAL_KEYDOWN,
+        key: 'sft'
+    })
+    const expectedState = initialState()
+    expectedState.finder.show = true
+    expect(state1).toEqual(expectedState)
+    expect(render).toEqual(true)
+})

@@ -308,10 +308,6 @@ const virtualKeyDown = (state: State, { key }: VirtualKeyDown) => {
         }
         return { state, render: true }
     }
-    if (key == 'f') {
-        state.finder.show = true
-        return { state, render: true }
-    }
     return { state }
 }
 

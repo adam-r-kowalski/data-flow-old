@@ -1,5 +1,6 @@
 import { CrossAxisAlignment, MainAxisAlignment } from "./alignment"
 import { Event, EventKind, update } from "./event"
+import { fuzzyFind } from "./fuzzy_find"
 import { identity } from "./linear_algebra/matrix3x3"
 import { padding } from "./padding"
 import { Dispatch, run, transformPointer } from "./run"
@@ -94,18 +95,17 @@ const nodeUi = (dispatch: Dispatch<Event>, theme: Theme, { name, x, y, inputs, o
     )
 }
 
-const finder = ({ search }: Finder, theme: Theme) =>
+const finder = (items: string[], { search }: Finder, theme: Theme) =>
     center(
         container({ color: theme.node, padding: padding(10) },
             column([
                 container({ color: theme.background, width: 300, padding: padding(10) },
                     text({ color: theme.input, size: 24 }, search.length ? search : "Search ...")),
                 container({ width: 10, height: 10 }),
-                container({ padding: padding(10) }, text("Add")),
-                container({ padding: padding(10) }, text("Subtract")),
-                container({ padding: padding(10) }, text("Multiply")),
-                container({ padding: padding(10) }, text("Divide")),
-                container({ padding: padding(10) }, text("Equal")),
+                ...items
+                    .filter(item => fuzzyFind({ haystack: item, needle: search }))
+                    .slice(0, 5)
+                    .map(item => container({ padding: padding(10) }, text(item))),
             ])
         )
     )
@@ -169,7 +169,7 @@ const view = (dispatch: Dispatch<Event>, state: State) => {
     }
     return stack([
         container({ color: state.theme.background }),
-        finder(state.finder, state.theme),
+        finder(Object.keys(state.operations), state.finder, state.theme),
         virtualKeyboard(dispatch, state.theme)
     ])
 }
@@ -252,6 +252,21 @@ const initialState: State = {
         },
         "Divide": {
             name: "Divide",
+            inputs: ["x", "y"],
+            outputs: ["out"]
+        },
+        "Equal": {
+            name: "Equal",
+            inputs: ["x", "y"],
+            outputs: ["out"]
+        },
+        "Less Than": {
+            name: "Less Than",
+            inputs: ["x", "y"],
+            outputs: ["out"]
+        },
+        "Less Than Or Equal": {
+            name: "Less Than Or Equal",
             inputs: ["x", "y"],
             outputs: ["out"]
         }

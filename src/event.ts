@@ -73,7 +73,6 @@ export interface VirtualKeyDown {
     key: string
 }
 
-
 export type Event =
     | PointerMove
     | PointerDown

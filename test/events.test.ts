@@ -118,7 +118,6 @@ test("two pointers down", () => {
     ])
 })
 
-
 test("pointer double click", () => {
     const state = initialState()
     const pointer = {
@@ -144,7 +143,6 @@ test("pointer double click", () => {
     expect(dispatch).toEqual([{ kind: EventKind.DOUBLE_CLICK }])
 })
 
-
 test("pointer double click timeout", () => {
     const state = initialState()
     const pointer = {
@@ -167,8 +165,6 @@ test("pointer double click timeout", () => {
     expect(state3).toEqual(expectedState)
 })
 
-
-
 test("pointer down then up", () => {
     const state = initialState()
     const pointer = {
@@ -180,14 +176,13 @@ test("pointer down then up", () => {
         kind: EventKind.POINTER_DOWN,
         pointer
     })
-    const { state: state2, render } = update(state1, {
+    const { state: state2 } = update(state1, {
         kind: EventKind.POINTER_UP,
         pointer
     })
     const expectedState = initialState()
     expectedState.potentialDoubleClick = true
     expect(state2).toEqual(expectedState)
-    expect(render).toBeUndefined()
 })
 
 test("click node", () => {
@@ -198,41 +193,6 @@ test("click node", () => {
     })
     const expectedState = initialState()
     expectedState.draggedNode = 0
-    expectedState.graph.nodes = [
-        {
-            name: "Source",
-            inputs: [],
-            outputs: [
-                { name: "Out 1", selected: false, edgeIndices: [] },
-                { name: "Out 2", selected: false, edgeIndices: [] }
-            ],
-            x: 100,
-            y: 200
-        },
-        {
-            name: "Transform",
-            inputs: [
-                { name: "In 1", selected: false, edgeIndices: [] },
-                { name: "In 2", selected: false, edgeIndices: [] }
-            ],
-            outputs: [
-                { name: "Out 1", selected: false, edgeIndices: [] },
-                { name: "Out 2", selected: false, edgeIndices: [] }
-            ],
-            x: 400,
-            y: 300
-        },
-        {
-            name: "Sink",
-            inputs: [
-                { name: "In 1", selected: false, edgeIndices: [] },
-                { name: "In 2", selected: false, edgeIndices: [] }
-            ],
-            outputs: [],
-            x: 800,
-            y: 250
-        },
-    ]
     expect(state1).toEqual(expectedState)
     expect(render).toEqual(true)
 })
@@ -244,12 +204,11 @@ test("pointer move before pointer down does nothing", () => {
         y: 0,
         id: 0,
     }
-    const { state: state1, render } = update(state, {
+    const { state: state1 } = update(state, {
         kind: EventKind.POINTER_MOVE,
         pointer
     })
     expect(state1).toEqual(initialState())
-    expect(render).toBeUndefined()
 })
 
 test("pointer move after pointer down", () => {
@@ -368,7 +327,7 @@ test("pointer move after clicking node, pointer down, then pointer up", () => {
             id: 0,
         }
     })
-    const { state: state4, render } = update(state3, {
+    const { state: state4 } = update(state3, {
         kind: EventKind.POINTER_MOVE,
         pointer: {
             x: 50,
@@ -412,5 +371,21 @@ test("pointer move after clicking node, pointer down, then pointer up", () => {
             y: 250
         },
     ])
-    expect(render).toBeUndefined()
+})
+
+test("mouse wheel zooms in camera relative to mouse position", () => {
+    const state = initialState()
+    const { state: state1 } = update(state, {
+        kind: EventKind.WHEEL,
+        x: 50,
+        y: 100,
+        deltaY: 10
+    })
+    const expectedState = initialState()
+    expectedState.camera = [
+        1.0717734625362931, 0, -3.588673126814655,
+        0, 1.0717734625362931, -7.17734625362931,
+        0, 0, 1,
+    ]
+    expect(state1).toEqual(expectedState)
 })

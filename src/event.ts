@@ -90,21 +90,25 @@ export type Event =
 
 const pointerDown = (state: State, event: PointerDown): UpdateResult<State, Event> => {
     state.pointers.push(event.pointer)
-    const onePointer = state.pointers.length === 1
-    if (onePointer) state.dragging = true
-    if (state.potentialDoubleClick && onePointer) {
+    if (state.pointers.length > 1) {
+        state.potentialDoubleClick = false
+        state.dragging = false
+        return { state }
+    }
+    if (state.potentialDoubleClick) {
+        state.potentialDoubleClick = false
         return {
             state,
             dispatch: [{ kind: EventKind.DOUBLE_CLICK }]
         }
-    } else {
-        state.potentialDoubleClick = true
-        return {
-            state,
-            schedule: [
-                { after: { milliseconds: 300 }, event: { kind: EventKind.DOUBLE_CLICK_TIMEOUT } }
-            ]
-        }
+    }
+    state.dragging = true
+    state.potentialDoubleClick = true
+    return {
+        state,
+        schedule: [
+            { after: { milliseconds: 300 }, event: { kind: EventKind.DOUBLE_CLICK_TIMEOUT } }
+        ]
     }
 }
 
@@ -194,6 +198,7 @@ const clickedInput = (state: State, event: ClickedInput) => {
             input.edgeIndices.push(edgeIndex)
         }
         state.selectedOutput = null
+        state.draggedNode = null
         return { state, render: true }
     }
     if (state.selectedInput) {
@@ -226,6 +231,7 @@ const clickedOutput = (state: State, event: ClickedOutput) => {
             output.edgeIndices.push(edgeIndex)
         }
         state.selectedInput = null
+        state.draggedNode = null
         return { state, render: true }
     }
     if (state.selectedOutput) {
@@ -238,7 +244,7 @@ const clickedOutput = (state: State, event: ClickedOutput) => {
     return { state, render: true }
 }
 
-const doubleClickTimeout = (state: State, event: DoubleClickTimeout) => {
+const doubleClickTimeout = (state: State, _: DoubleClickTimeout) => {
     if (state.potentialDoubleClick) {
         state.potentialDoubleClick = false
     }
@@ -300,10 +306,6 @@ const virtualKeyDown = (state: State, { key }: VirtualKeyDown) => {
                 state.finder.search += key
                 break
         }
-        return { state, render: true }
-    }
-    if (key == 'f') {
-        state.finder.show = true
         return { state, render: true }
     }
     return { state }

@@ -389,3 +389,18 @@ test("mouse wheel zooms in camera relative to mouse position", () => {
     ]
     expect(state1).toEqual(expectedState)
 })
+
+test("clicking input selects it", () => {
+    const state = initialState()
+    const expectedState = initialState()
+    const inputPath = { nodeIndex: 1, inputIndex: 0 }
+    const { state: state1, render } = update(state, {
+        kind: EventKind.CLICKED_INPUT,
+        inputPath
+    })
+    expectedState.graph.nodes[1].inputs[0].selected = true
+    expectedState.selectedInput = inputPath
+    expectedState.draggedNode = inputPath.nodeIndex
+    expect(state1).toEqual(expectedState)
+    expect(render).toEqual(true)
+})

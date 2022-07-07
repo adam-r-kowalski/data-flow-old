@@ -213,6 +213,7 @@ const initialState: State = {
         ],
         edges: []
     },
+    zooming: false,
     dragging: false,
     draggedNode: null,
     pointers: [],
@@ -233,6 +234,28 @@ const initialState: State = {
         search: '',
         show: false
     },
+    operations: {
+        "Add": {
+            name: "Add",
+            inputs: ["x", "y"],
+            outputs: ["out"]
+        },
+        "Subtract": {
+            name: "Subtract",
+            inputs: ["x", "y"],
+            outputs: ["out"]
+        },
+        "Multiply": {
+            name: "Multiply",
+            inputs: ["x", "y"],
+            outputs: ["out"]
+        },
+        "Divide": {
+            name: "Divide",
+            inputs: ["x", "y"],
+            outputs: ["out"]
+        }
+    }
 }
 
 const dispatch = run(initialState, view, update)

@@ -55,8 +55,17 @@ export interface Finder {
     show: boolean
 }
 
+export interface Operation {
+    name: string
+    inputs: string[]
+    outputs: string[]
+}
+
+export type Operations = { [name: string]: Operation }
+
 export interface State {
     graph: Graph
+    zooming: boolean
     dragging: boolean
     draggedNode: number | null
     pointers: Pointer[]
@@ -67,5 +76,6 @@ export interface State {
     potentialDoubleClick: boolean
     finder: Finder
     camera: Matrix3x3
+    operations: Operations
     theme: Theme
 }

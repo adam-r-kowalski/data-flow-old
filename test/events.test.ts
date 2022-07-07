@@ -404,3 +404,42 @@ test("clicking input selects it", () => {
     expect(state1).toEqual(expectedState)
     expect(render).toEqual(true)
 })
+
+test("clicking new input selects it and deselects old input", () => {
+    const state = initialState()
+    const expectedState = initialState()
+    const { state: state1 } = update(state, {
+        kind: EventKind.CLICKED_INPUT,
+        inputPath: { nodeIndex: 1, inputIndex: 0 }
+    })
+    const { state: state2, render } = update(state1, {
+        kind: EventKind.CLICKED_INPUT,
+        inputPath: { nodeIndex: 1, inputIndex: 1 }
+    })
+    expectedState.graph.nodes[1].inputs[1].selected = true
+    expectedState.selectedInput = { nodeIndex: 1, inputIndex: 1 }
+    expectedState.draggedNode = 1
+    expect(state2).toEqual(expectedState)
+    expect(render).toEqual(true)
+})
+
+test("clicking output after clicking input adds connection", () => {
+    const state = initialState()
+    const expectedState = initialState()
+    const { state: state1 } = update(state, {
+        kind: EventKind.CLICKED_INPUT,
+        inputPath: { nodeIndex: 1, inputIndex: 1 }
+    })
+    const { state: state2, render } = update(state1, {
+        kind: EventKind.CLICKED_OUTPUT,
+        outputPath: { nodeIndex: 0, outputIndex: 0 }
+    })
+    expectedState.graph.edges.push({
+        input: { nodeIndex: 1, inputIndex: 1 },
+        output: { nodeIndex: 0, outputIndex: 0 }
+    })
+    expectedState.graph.nodes[1].inputs[1].edgeIndices.push(0)
+    expectedState.graph.nodes[0].outputs[0].edgeIndices.push(0)
+    expect(state2).toEqual(expectedState)
+    expect(render).toEqual(true)
+})

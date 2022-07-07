@@ -230,6 +230,7 @@ const clickedOutput = (state: State, event: ClickedOutput) => {
             output.edgeIndices.push(edgeIndex)
         }
         state.selectedInput = null
+        state.draggedNode = null
         return { state, render: true }
     }
     if (state.selectedOutput) {

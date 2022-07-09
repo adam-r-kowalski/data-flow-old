@@ -150,7 +150,7 @@ export const text: Overload = (...args: any[]): Text => {
     )()
     const font = {
         family: properties.font ?? "monospace",
-        size: properties.size ?? 24
+        size: properties.size ?? 14
     }
     return new Text(
         font,

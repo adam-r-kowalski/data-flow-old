@@ -53,6 +53,7 @@ export interface Theme {
 export interface Finder {
     search: string
     show: boolean
+    options: string[]
 }
 
 export interface Operation {

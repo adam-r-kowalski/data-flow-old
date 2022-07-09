@@ -1,6 +1,5 @@
 import { CrossAxisAlignment, MainAxisAlignment } from "./alignment"
 import { Event, EventKind, update } from "./event"
-import { fuzzyFind } from "./fuzzy_find"
 import { identity } from "./linear_algebra/matrix3x3"
 import { padding } from "./padding"
 import { Dispatch, run, transformPointer } from "./run"
@@ -26,61 +25,68 @@ const intersperse = <T>(array: T[], seperator: T): T[] => {
 }
 
 const inputUi = (theme: Theme, { name, selected }: Input, nodeIndex: number, inputIndex: number): UI =>
-    row({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
-        container({
-            id: `input ${nodeIndex} ${inputIndex}`,
-            width: 24,
-            height: 24,
-            color: selected ? theme.selectedInput : theme.input,
-            onClick: () => dispatch({
-                kind: EventKind.CLICKED_INPUT,
-                inputPath: { nodeIndex: nodeIndex, inputIndex: inputIndex }
-            })
-        }),
-        spacer(10),
-        text(name)
-    ])
+    container({
+        onClick: () => dispatch({
+            kind: EventKind.CLICKED_INPUT,
+            inputPath: { nodeIndex: nodeIndex, inputIndex: inputIndex }
+        })
+    },
+        row({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
+            container({
+                id: `input ${nodeIndex} ${inputIndex}`,
+                width: 14,
+                height: 14,
+                color: selected ? theme.selectedInput : theme.input,
+            }),
+            spacer(4),
+            text(name)
+        ])
+    )
 
 const inputsUi = (theme: Theme, inputs: Input[], nodeIndex: number) =>
     column(
         intersperse(
             inputs.map((input, inputIndex) => inputUi(theme, input, nodeIndex, inputIndex)),
-            spacer(10)
+            spacer(4)
         )
     )
 
 const outputUi = (theme: Theme, { name, selected }: Output, nodeIndex: number, outputIndex: number): UI =>
-    row({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
-        text(name),
-        spacer(10),
-        container({
-            id: `output ${nodeIndex} ${outputIndex}`,
-            width: 24,
-            height: 24,
-            color: selected ? theme.selectedInput : theme.input,
-            onClick: () => dispatch({
-                kind: EventKind.CLICKED_OUTPUT,
-                outputPath: { nodeIndex: nodeIndex, outputIndex: outputIndex }
-            })
-        }),
-    ])
+    container({
+        onClick: () => dispatch({
+            kind: EventKind.CLICKED_OUTPUT,
+            outputPath: { nodeIndex: nodeIndex, outputIndex: outputIndex }
+        })
+    },
+        row({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
+            text(name),
+            spacer(4),
+            container({
+                id: `output ${nodeIndex} ${outputIndex}`,
+                width: 14,
+                height: 14,
+                color: selected ? theme.selectedInput : theme.input,
+            }),
+        ])
+    )
+
 
 const outputsUi = (theme: Theme, outputs: Output[], nodeIndex: number) =>
     column(
         intersperse(
             outputs.map((output, outputIndex) => outputUi(theme, output, nodeIndex, outputIndex)),
-            spacer(10)
+            spacer(4)
         )
     )
 
 const nodeUi = (dispatch: Dispatch<Event>, theme: Theme, { name, x, y, inputs, outputs }: Node, index: number) => {
     const rowEntries: UI[] = []
     if (inputs.length) rowEntries.push(inputsUi(theme, inputs, index))
-    if (inputs.length && outputs.length) rowEntries.push(spacer(30))
+    if (inputs.length && outputs.length) rowEntries.push(spacer(15))
     if (outputs.length) rowEntries.push(outputsUi(theme, outputs, index))
     return container({
         color: theme.node,
-        padding: padding(10),
+        padding: padding(4),
         x, y,
         onClick: () => dispatch({
             kind: EventKind.CLICKED_NODE,
@@ -95,24 +101,21 @@ const nodeUi = (dispatch: Dispatch<Event>, theme: Theme, { name, x, y, inputs, o
     )
 }
 
-const finder = (items: string[], { search }: Finder, theme: Theme) =>
+const finder = ({ search, options }: Finder, theme: Theme) =>
     center(
-        container({ color: theme.node, padding: padding(10) },
+        container({ color: theme.node, padding: padding(4) },
             column([
-                container({ color: theme.background, width: 300, padding: padding(10) },
+                container({ color: theme.background, width: 300, padding: padding(4) },
                     text({ color: theme.input, size: 24 }, search.length ? search : "Search ...")),
                 container({ width: 10, height: 10 }),
-                ...items
-                    .filter(item => fuzzyFind({ haystack: item, needle: search }))
-                    .slice(0, 5)
-                    .map(item => container({ padding: padding(10) }, text(item))),
+                ...options.map(option => container({ padding: padding(4) }, text(option)))
             ])
         )
     )
 
 const virtualKey = (dispatch: Dispatch<Event>, key: string) =>
     container({
-        padding: padding(10),
+        padding: padding(4),
         onClick: () => dispatch({
             kind: EventKind.VIRTUAL_KEYDOWN,
             key
@@ -125,7 +128,7 @@ const virtualKeys = (dispatch: Dispatch<Event>, keys: string[]) =>
 const virtualKeyboard = (dispatch: Dispatch<Event>, theme: Theme) =>
     column({ mainAxisAlignment: MainAxisAlignment.END }, [
         row({ mainAxisAlignment: MainAxisAlignment.SPACE_BETWEEN }, [
-            container({ padding: padding(10), color: theme.node },
+            container({ padding: padding(4), color: theme.node },
                 column([
                     virtualKeys(dispatch, ['1', '2', '3', '4', '5']),
                     virtualKeys(dispatch, ['q', 'w', 'e', 'r', 't']),
@@ -134,7 +137,7 @@ const virtualKeyboard = (dispatch: Dispatch<Event>, theme: Theme) =>
                     virtualKeys(dispatch, ['sft', 'space']),
                 ])
             ),
-            container({ padding: padding(10), color: theme.node },
+            container({ padding: padding(4), color: theme.node },
                 column({ crossAxisAlignment: CrossAxisAlignment.END }, [
                     virtualKeys(dispatch, ['6', '7', '8', '9', '0']),
                     virtualKeys(dispatch, ['y', 'u', 'i', 'o', 'p']),
@@ -169,7 +172,7 @@ const view = (dispatch: Dispatch<Event>, state: State) => {
     }
     return stack([
         container({ color: state.theme.background }),
-        finder(Object.keys(state.operations), state.finder, state.theme),
+        finder(state.finder, state.theme),
         virtualKeyboard(dispatch, state.theme)
     ])
 }
@@ -184,8 +187,8 @@ const initialState: State = {
                     { name: "Out 1", selected: false, edgeIndices: [] },
                     { name: "Out 2", selected: false, edgeIndices: [] }
                 ],
-                x: 100,
-                y: 200
+                x: 7,
+                y: 15
             },
             {
                 name: "Transform",
@@ -197,8 +200,8 @@ const initialState: State = {
                     { name: "Out 1", selected: false, edgeIndices: [] },
                     { name: "Out 2", selected: false, edgeIndices: [] }
                 ],
-                x: 400,
-                y: 300
+                x: window.innerWidth / 2 - 70,
+                y: 50
             },
             {
                 name: "Sink",
@@ -207,8 +210,8 @@ const initialState: State = {
                     { name: "In 2", selected: false, edgeIndices: [] }
                 ],
                 outputs: [],
-                x: 800,
-                y: 250
+                x: window.innerWidth - 70,
+                y: 15
             },
         ],
         edges: []
@@ -232,6 +235,7 @@ const initialState: State = {
     potentialDoubleClick: false,
     finder: {
         search: '',
+        options: [],
         show: false
     },
     operations: {

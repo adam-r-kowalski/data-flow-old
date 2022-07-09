@@ -102,25 +102,28 @@ const nodeUi = (dispatch: Dispatch<Event>, theme: Theme, { name, x, y, inputs, o
 }
 
 const finder = ({ search, options }: Finder, theme: Theme) =>
-    center(
+    column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
+        container({ height: 10 }),
         container({ color: theme.node, padding: padding(4) },
             column([
                 container({ color: theme.background, width: 300, padding: padding(4) },
                     text({ color: theme.input, size: 24 }, search.length ? search : "Search ...")),
                 container({ width: 10, height: 10 }),
-                ...options.map(option => container({ padding: padding(4) }, text(option)))
+                ...options.map((option, i) =>
+                    container({ padding: padding(4) },
+                        text({ size: 18, color: i == 0 ? theme.input : { red: 255, green: 255, blue: 255, alpha: 255 } }, option)))
             ])
         )
-    )
+    ])
 
 const virtualKey = (dispatch: Dispatch<Event>, key: string) =>
     container({
-        padding: padding(4),
+        padding: padding(10),
         onClick: () => dispatch({
             kind: EventKind.VIRTUAL_KEYDOWN,
             key
         })
-    }, text(key))
+    }, text({ size: 24 }, key))
 
 const virtualKeys = (dispatch: Dispatch<Event>, keys: string[]) =>
     row(keys.map(c => virtualKey(dispatch, c)))
@@ -233,6 +236,7 @@ const initialState: State = {
         connection: { red: 255, green: 255, blue: 255, alpha: 255 },
     },
     potentialDoubleClick: false,
+    nodePlacementLocation: { x: 0, y: 0 },
     finder: {
         search: '',
         options: [],

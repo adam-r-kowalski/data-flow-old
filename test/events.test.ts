@@ -60,6 +60,7 @@ const initialState = (): State => ({
     potentialDoubleClick: false,
     finder: {
         search: '',
+        options: [],
         show: false
     },
     operations: {}

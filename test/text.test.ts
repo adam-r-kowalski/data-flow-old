@@ -12,7 +12,7 @@ const mockRenderer = () => webGL2Renderer({
 
 test("text layout", () => {
     const renderer = mockRenderer()
-    const ui = text("abc")
+    const ui = text({ size: 24 }, "abc")
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
     const layout = ui.layout(constraints, renderer.measureText)
     const measurements = {
@@ -55,7 +55,7 @@ test("text layout", () => {
 
 test("text geometry", () => {
     const renderer = mockRenderer()
-    const ui = text("abc")
+    const ui = text({ size: 24 }, "abc")
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
     const layout = ui.layout(constraints, renderer.measureText)
     const offset = { x: 0, y: 0 }

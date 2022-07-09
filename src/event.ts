@@ -1,3 +1,4 @@
+import { fuzzyFind } from "./fuzzy_find"
 import { multiplyMatrices, multiplyMatrixVector, scale, translate } from "./linear_algebra/matrix3x3"
 import { length } from "./linear_algebra/vector3"
 import { UpdateResult } from "./run"
@@ -256,10 +257,17 @@ const doubleClickTimeout = (state: State, _: DoubleClickTimeout) => {
     return { state }
 }
 
+const updateFinderOptions = (state: State): State => {
+    state.finder.options = Object.keys(state.operations)
+        .filter(item => fuzzyFind({ haystack: item, needle: state.finder.search }))
+        .slice(0, 5)
+    return state
+}
+
 const doubleClick = (state: State, _: DoubleClick) => {
     state.potentialDoubleClick = false
     state.finder.show = true
-    return { state, render: true }
+    return { state: updateFinderOptions(state), render: true }
 }
 
 const keyDown = (state: State, { key }: KeyDown) => {
@@ -283,7 +291,7 @@ const keyDown = (state: State, { key }: KeyDown) => {
                 state.finder.search += key
                 break
         }
-        return { state, render: true }
+        return { state: updateFinderOptions(state), render: true }
     }
     if (key == 'f') {
         state.finder.show = true
@@ -311,7 +319,7 @@ const virtualKeyDown = (state: State, { key }: VirtualKeyDown) => {
                 state.finder.search += key
                 break
         }
-        return { state, render: true }
+        return { state: updateFinderOptions(state), render: true }
     }
     return { state }
 }

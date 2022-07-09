@@ -1,4 +1,4 @@
-import { UI, Size, Layout, Constraints, MeasureText, UIKind, layout, Color, Offset, WorldSpace, Geometry, geometry } from './'
+import { UI, Size, Layout, Constraints, MeasureText, UIKind, layout, Color, Offset, WorldSpace, Geometry, geometry, Entry, traverse, } from './'
 import { CameraStack, transformWorldSpace, activeCamera } from './camera_stack'
 
 export interface ContainerLayout {
@@ -24,7 +24,7 @@ export interface Padding {
     readonly left: number
 }
 
-export interface Container<Event> {
+export interface Container<UIEvent> {
     readonly kind: UIKind.CONTAINER,
     readonly padding: Padding
     readonly width?: number
@@ -32,19 +32,19 @@ export interface Container<Event> {
     readonly x?: number
     readonly y?: number
     readonly color?: Color
-    readonly onClick?: Event
+    readonly onClick?: UIEvent
     readonly id?: string
-    readonly child?: UI<Event>
+    readonly child?: UI<UIEvent>
 }
 
-interface Properties<Event> {
+interface Properties<UIEvent> {
     readonly padding?: number
     readonly width?: number
     readonly height?: number
     readonly x?: number
     readonly y?: number
     readonly color?: Color
-    readonly onClick?: Event
+    readonly onClick?: UIEvent
     readonly id?: string
 }
 
@@ -53,7 +53,7 @@ const transformPadding = (padding?: number): Padding => {
     return { top: 0, right: 0, bottom: 0, left: 0 }
 }
 
-export const container = <Event>({ padding, width, height, color, x, y, onClick, id }: Properties<Event>, child?: UI<Event>): Container<Event> => {
+export const container = <UIEvent>({ padding, width, height, color, x, y, onClick, id }: Properties<UIEvent>, child?: UI<UIEvent>): Container<UIEvent> => {
     return {
         kind: UIKind.CONTAINER,
         padding: transformPadding(padding),
@@ -68,7 +68,7 @@ export const container = <Event>({ padding, width, height, color, x, y, onClick,
     }
 }
 
-export const containerLayout = <Event>(ui: Container<Event>, constraints: Constraints, measureText: MeasureText): ContainerLayout => {
+export const containerLayout = <UIEvent>(ui: Container<UIEvent>, constraints: Constraints, measureText: MeasureText): ContainerLayout => {
     const { top, right, bottom, left } = ui.padding
     if (ui.child) {
         const childLayout = layout(ui.child, constraints, measureText)
@@ -90,7 +90,7 @@ export const containerLayout = <Event>(ui: Container<Event>, constraints: Constr
     return { size: { width, height } }
 }
 
-export const containerGeometry = <Event>(ui: Container<Event>, layout: ContainerLayout, offset: Offset, cameraStack: CameraStack): ContainerGeometry => {
+export const containerGeometry = <UIEvent>(ui: Container<UIEvent>, layout: ContainerLayout, offset: Offset, cameraStack: CameraStack): ContainerGeometry => {
     const x0 = offset.x + (ui.x ?? 0)
     const x1 = x0 + layout.size.width
     const y0 = offset.y + (ui.y ?? 0)
@@ -142,5 +142,14 @@ export const containerGeometry = <Event>(ui: Container<Event>, layout: Container
         textureIndex: 0,
         textureCoordinates: [],
         child: childGeometry
+    }
+}
+
+export function* containerTraverse<UIEvent>(ui: Container<UIEvent>, layout: ContainerLayout, geometry: ContainerGeometry, z: number): Generator<Entry<UIEvent>> {
+    yield { ui, layout, geometry, z }
+    if (ui.child) {
+        const childLayout = layout.child!
+        const childGeometry = geometry.child!
+        yield* traverse(ui.child, childLayout, childGeometry, z + 1)
     }
 }

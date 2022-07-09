@@ -1,4 +1,4 @@
-import { Container, ContainerLayout, containerLayout, ContainerGeometry, containerGeometry } from './container'
+import { Container, ContainerLayout, containerLayout, ContainerGeometry, containerGeometry, containerTraverse } from './container'
 import { CameraStack } from './camera_stack'
 
 export { container } from './container'
@@ -7,8 +7,8 @@ export enum UIKind {
     CONTAINER
 }
 
-export type UI<Event> =
-    | Container<Event>
+export type UI<UIEvent> =
+    | Container<UIEvent>
 
 export interface Color {
     red: number
@@ -45,7 +45,7 @@ export interface TextMeasurements {
 
 export type MeasureText = (font: Font, str: string) => TextMeasurements
 
-export const layout = <Event>(ui: UI<Event>, constraints: Constraints, measureText: MeasureText): Layout => {
+export const layout = <UIEvent>(ui: UI<UIEvent>, constraints: Constraints, measureText: MeasureText): Layout => {
     switch (ui.kind) {
         case UIKind.CONTAINER:
             return containerLayout(ui, constraints, measureText)
@@ -67,9 +67,24 @@ export interface WorldSpace {
 export type Geometry =
     | ContainerGeometry
 
-export const geometry = <Event>(ui: UI<Event>, layout: Layout, offset: Offset, cameraStack: CameraStack): Geometry => {
+export const geometry = <UIEvent>(ui: UI<UIEvent>, layout: Layout, offset: Offset, cameraStack: CameraStack): Geometry => {
     switch (ui.kind) {
         case UIKind.CONTAINER:
             return containerGeometry(ui, layout, offset, cameraStack)
+    }
+}
+
+export interface Entry<UIEvent> {
+    readonly ui: UI<UIEvent>
+    readonly layout: Layout
+    readonly geometry: Geometry
+    readonly z: number
+}
+
+
+export function* traverse<UIEvent>(ui: UI<UIEvent>, layout: Layout, geometry: Geometry, z: number): Generator<Entry<UIEvent>> {
+    switch (ui.kind) {
+        case UIKind.CONTAINER:
+            yield* containerTraverse(ui, layout, geometry, z)
     }
 }

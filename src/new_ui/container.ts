@@ -1,9 +1,20 @@
-import { Color } from "../color"
-import { UI, Size, Layout, Constraints, MeasureText, UIKind, layout } from './'
+import { UI, Size, Layout, Constraints, MeasureText, UIKind, layout, Color, Offset, WorldSpace, Geometry, geometry } from './'
+import { CameraStack, transformWorldSpace, activeCamera } from './camera_stack'
 
 export interface ContainerLayout {
     readonly size: Size
     readonly child?: Layout
+}
+
+export interface ContainerGeometry {
+    readonly worldSpace: WorldSpace
+    readonly vertices: number[]
+    readonly colors: number[]
+    readonly vertexIndices: number[]
+    readonly cameraIndex: number[]
+    readonly textureIndex: number
+    readonly textureCoordinates: number[]
+    readonly child?: Geometry
 }
 
 export interface Padding {
@@ -77,4 +88,59 @@ export const containerLayout = <Event>(ui: Container<Event>, constraints: Constr
         return constraints.maxHeight
     })()
     return { size: { width, height } }
+}
+
+export const containerGeometry = <Event>(ui: Container<Event>, layout: ContainerLayout, offset: Offset, cameraStack: CameraStack): ContainerGeometry => {
+    const x0 = offset.x + (ui.x ?? 0)
+    const x1 = x0 + layout.size.width
+    const y0 = offset.y + (ui.y ?? 0)
+    const y1 = y0 + layout.size.height
+    const worldSpace = transformWorldSpace(cameraStack, { x0, x1, y0, y1 })
+    const childGeometry = (() => {
+        if (ui.child) {
+            const childLayout = layout.child!
+            const childOffset = {
+                x: x0 + ui.padding.left,
+                y: y0 + ui.padding.top
+            }
+            return geometry(ui.child, childLayout, childOffset, cameraStack)
+        }
+        return undefined
+    })()
+    if (ui.color) {
+        const { red, green, blue, alpha } = ui.color
+        return {
+            worldSpace,
+            vertices: [
+                x0, y0,
+                x0, y1,
+                x1, y0,
+                x1, y1,
+            ],
+            colors: [
+                red, green, blue, alpha,
+                red, green, blue, alpha,
+                red, green, blue, alpha,
+                red, green, blue, alpha,
+            ],
+            vertexIndices: [
+                0, 1, 2,
+                1, 2, 3
+            ],
+            cameraIndex: Array(4).fill(activeCamera(cameraStack)),
+            textureIndex: 0,
+            textureCoordinates: [],
+            child: childGeometry
+        }
+    }
+    return {
+        worldSpace,
+        vertices: [],
+        colors: [],
+        vertexIndices: [],
+        cameraIndex: [],
+        textureIndex: 0,
+        textureCoordinates: [],
+        child: childGeometry
+    }
 }

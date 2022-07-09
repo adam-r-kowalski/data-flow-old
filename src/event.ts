@@ -16,7 +16,8 @@ export enum EventKind {
     DOUBLE_CLICK_TIMEOUT,
     DOUBLE_CLICK,
     KEYDOWN,
-    VIRTUAL_KEYDOWN
+    VIRTUAL_KEYDOWN,
+    CLICKED_FINDER_OPTION
 }
 
 export interface PointerMove {
@@ -75,6 +76,11 @@ export interface VirtualKeyDown {
     key: string
 }
 
+export interface ClickedFinderOption {
+    kind: EventKind.CLICKED_FINDER_OPTION,
+    option: string
+}
+
 export type Event =
     | PointerMove
     | PointerDown
@@ -87,9 +93,11 @@ export type Event =
     | DoubleClick
     | KeyDown
     | VirtualKeyDown
+    | ClickedFinderOption
 
 
 const pointerDown = (state: State, event: PointerDown): UpdateResult<State, Event> => {
+    if (state.finder.show) return { state }
     state.pointers.push(event.pointer)
     if (state.pointers.length > 1) {
         state.potentialDoubleClick = false
@@ -132,7 +140,9 @@ const pointerUp = (state: State, event: PointerUp) => {
 
 const pointerMove = (state: State, event: PointerMove) => {
     if (!state.dragging && !state.zooming) {
-        state.nodePlacementLocation = { x: event.pointer.x, y: event.pointer.y }
+        if (!state.finder.show) {
+            state.nodePlacementLocation = { x: event.pointer.x, y: event.pointer.y }
+        }
         return { state, rerender: false }
     }
     const index = state.pointers.findIndex(p => p.id === event.pointer.id)
@@ -274,9 +284,14 @@ const doubleClick = (state: State, { pointer }: DoubleClick) => {
     return { state: updateFinderOptions(state), render: true }
 }
 
-const insertOperationFromFinder = (state: State, name: string): State => {
+const closeFinder = (state: State) => {
     state.finder.show = false
     state.finder.search = ''
+    return state
+}
+
+const insertOperationFromFinder = (state: State, name: string): State => {
+    state = closeFinder(state)
     const operation = state.operations[name]
     const [x, y, _] = multiplyMatrixVector(state.camera, [state.nodePlacementLocation.x, state.nodePlacementLocation.y, 1])
     state.graph.nodes.push({
@@ -314,13 +329,11 @@ const keyDown = (state: State, { key }: KeyDown) => {
                     const name = state.finder.options[0]
                     state = insertOperationFromFinder(state, name)
                 } else {
-                    state.finder.show = false
-                    state.finder.search = ''
+                    state = closeFinder(state)
                 }
                 break
             case 'Escape':
-                state.finder.show = false
-                state.finder.search = ''
+                state = closeFinder(state)
                 break
             default:
                 state.finder.search += key
@@ -351,8 +364,7 @@ const virtualKeyDown = (state: State, { key }: VirtualKeyDown) => {
                     const name = state.finder.options[0]
                     state = insertOperationFromFinder(state, name)
                 } else {
-                    state.finder.show = false
-                    state.finder.search = ''
+                    state = closeFinder(state)
                 }
                 break
             default:
@@ -363,6 +375,11 @@ const virtualKeyDown = (state: State, { key }: VirtualKeyDown) => {
     }
     return { state }
 }
+
+const clickedFinderOption = (state: State, { option }: ClickedFinderOption) => ({
+    state: insertOperationFromFinder(state, option),
+    render: true
+})
 
 export const update = (state: State, event: Event): UpdateResult<State, Event> => {
     switch (event.kind) {
@@ -377,5 +394,6 @@ export const update = (state: State, event: Event): UpdateResult<State, Event> =
         case EventKind.DOUBLE_CLICK: return doubleClick(state, event)
         case EventKind.KEYDOWN: return keyDown(state, event)
         case EventKind.VIRTUAL_KEYDOWN: return virtualKeyDown(state, event)
+        case EventKind.CLICKED_FINDER_OPTION: return clickedFinderOption(state, event)
     }
 }

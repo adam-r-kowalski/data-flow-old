@@ -5,7 +5,6 @@ import { padding } from "./padding"
 import { Dispatch, run, transformPointer } from "./run"
 import { Finder, Input, Node, Output, State, Theme } from "./state"
 import { Connection, UI } from "./ui"
-import { center } from "./ui/center"
 import { column } from "./ui/column"
 import { container } from "./ui/container"
 import { row } from "./ui/row"
@@ -101,7 +100,7 @@ const nodeUi = (dispatch: Dispatch<Event>, theme: Theme, { name, x, y, inputs, o
     )
 }
 
-const finder = ({ search, options }: Finder, theme: Theme) =>
+const finder = ({ search, options }: Finder, theme: Theme): UI =>
     column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
         container({ height: 10 }),
         container({ color: theme.node, padding: padding(4) },
@@ -110,8 +109,17 @@ const finder = ({ search, options }: Finder, theme: Theme) =>
                     text({ color: theme.input, size: 24 }, search.length ? search : "Search ...")),
                 container({ width: 10, height: 10 }),
                 ...options.map((option, i) =>
-                    container({ padding: padding(4) },
-                        text({ size: 18, color: i == 0 ? theme.input : { red: 255, green: 255, blue: 255, alpha: 255 } }, option)))
+                    container({
+                        padding: padding(4),
+                        onClick: () => dispatch({
+                            kind: EventKind.CLICKED_FINDER_OPTION,
+                            option
+                        })
+                    },
+                        text({
+                            size: 18,
+                            color: i == 0 ? theme.input : { red: 255, green: 255, blue: 255, alpha: 255 }
+                        }, option)))
             ])
         )
     ])

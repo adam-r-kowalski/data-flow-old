@@ -58,6 +58,7 @@ const initialState = (): State => ({
         connection: { red: 255, green: 255, blue: 255, alpha: 255 },
     },
     potentialDoubleClick: false,
+    nodePlacementLocation: { x: 0, y: 0 },
     finder: {
         search: '',
         options: [],
@@ -144,7 +145,7 @@ test("pointer double click", () => {
     const expectedState = initialState()
     expectedState.pointers = [pointer]
     expect(state3).toEqual(expectedState)
-    expect(dispatch).toEqual([{ kind: EventKind.DOUBLE_CLICK }])
+    expect(dispatch).toEqual([{ kind: EventKind.DOUBLE_CLICK, pointer }])
 })
 
 test("pointer double click timeout", () => {

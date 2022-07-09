@@ -62,6 +62,7 @@ export interface DoubleClickTimeout {
 
 export interface DoubleClick {
     kind: EventKind.DOUBLE_CLICK
+    pointer: Pointer
 }
 
 export interface KeyDown {
@@ -100,7 +101,7 @@ const pointerDown = (state: State, event: PointerDown): UpdateResult<State, Even
         state.potentialDoubleClick = false
         return {
             state,
-            dispatch: [{ kind: EventKind.DOUBLE_CLICK }]
+            dispatch: [{ kind: EventKind.DOUBLE_CLICK, pointer: event.pointer }]
         }
     }
     state.dragging = true
@@ -130,7 +131,10 @@ const pointerUp = (state: State, event: PointerUp) => {
 }
 
 const pointerMove = (state: State, event: PointerMove) => {
-    if (!state.dragging && !state.zooming) return { state, rerender: false }
+    if (!state.dragging && !state.zooming) {
+        state.nodePlacementLocation = { x: event.pointer.x, y: event.pointer.y }
+        return { state, rerender: false }
+    }
     const index = state.pointers.findIndex(p => p.id === event.pointer.id)
     const pointer = state.pointers[index]
     state.pointers[index] = event.pointer
@@ -260,14 +264,37 @@ const doubleClickTimeout = (state: State, _: DoubleClickTimeout) => {
 const updateFinderOptions = (state: State): State => {
     state.finder.options = Object.keys(state.operations)
         .filter(item => fuzzyFind({ haystack: item, needle: state.finder.search }))
-        .slice(0, 5)
     return state
 }
 
-const doubleClick = (state: State, _: DoubleClick) => {
+const doubleClick = (state: State, { pointer }: DoubleClick) => {
     state.potentialDoubleClick = false
     state.finder.show = true
+    state.nodePlacementLocation = { x: pointer.x, y: pointer.y }
     return { state: updateFinderOptions(state), render: true }
+}
+
+const insertOperationFromFinder = (state: State, name: string): State => {
+    state.finder.show = false
+    state.finder.search = ''
+    const operation = state.operations[name]
+    const [x, y, _] = multiplyMatrixVector(state.camera, [state.nodePlacementLocation.x, state.nodePlacementLocation.y, 1])
+    state.graph.nodes.push({
+        name,
+        inputs: operation.inputs.map(input => ({
+            name: input,
+            selected: false,
+            edgeIndices: []
+        })),
+        outputs: operation.outputs.map(output => ({
+            name: output,
+            selected: false,
+            edgeIndices: []
+        })),
+        x,
+        y
+    })
+    return state
 }
 
 const keyDown = (state: State, { key }: KeyDown) => {
@@ -283,6 +310,14 @@ const keyDown = (state: State, { key }: KeyDown) => {
             case 'Tab':
                 break
             case 'Enter':
+                if (state.finder.options.length > 0) {
+                    const name = state.finder.options[0]
+                    state = insertOperationFromFinder(state, name)
+                } else {
+                    state.finder.show = false
+                    state.finder.search = ''
+                }
+                break
             case 'Escape':
                 state.finder.show = false
                 state.finder.search = ''
@@ -295,7 +330,7 @@ const keyDown = (state: State, { key }: KeyDown) => {
     }
     if (key == 'f') {
         state.finder.show = true
-        return { state, render: true }
+        return { state: updateFinderOptions(state), render: true }
     }
     return { state }
 }
@@ -312,8 +347,13 @@ const virtualKeyDown = (state: State, { key }: VirtualKeyDown) => {
                 state.finder.search += ' '
                 break
             case 'ret':
-                state.finder.show = false
-                state.finder.search = ''
+                if (state.finder.options.length > 0) {
+                    const name = state.finder.options[0]
+                    state = insertOperationFromFinder(state, name)
+                } else {
+                    state.finder.show = false
+                    state.finder.search = ''
+                }
                 break
             default:
                 state.finder.search += key

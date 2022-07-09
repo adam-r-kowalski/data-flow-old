@@ -64,6 +64,11 @@ export interface Operation {
 
 export type Operations = { [name: string]: Operation }
 
+export interface ScreenCoordinates {
+    x: number
+    y: number
+}
+
 export interface State {
     graph: Graph
     zooming: boolean
@@ -75,6 +80,7 @@ export interface State {
     selectedOutput: OutputPath | null
     selectedInput: InputPath | null
     potentialDoubleClick: boolean
+    nodePlacementLocation: ScreenCoordinates
     finder: Finder
     camera: Matrix3x3
     operations: Operations

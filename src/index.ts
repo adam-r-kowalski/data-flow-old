@@ -95,7 +95,7 @@ const nodeUi = (dispatch: Dispatch<Event>, theme: Theme, { name, x, y, inputs, o
     },
         column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             text(name),
-            spacer(10),
+            spacer(4),
             row(rowEntries)
         ])
     )

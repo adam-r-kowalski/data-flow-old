@@ -129,7 +129,7 @@ export const containerGeometry = <UIEvent>(ui: Container<UIEvent>, layout: Conta
             ],
             cameraIndex: Array(4).fill(activeCamera(cameraStack)),
             textureIndex: 0,
-            textureCoordinates: [],
+            textureCoordinates: Array(8).fill(0),
             child: childGeometry
         }
     }

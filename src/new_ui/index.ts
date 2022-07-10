@@ -1,13 +1,17 @@
 import { Container, ContainerLayout, containerLayout, ContainerGeometry, containerGeometry, containerTraverse } from './container'
+import { Center, CenterLayout, centerLayout, CenterGeometry, centerGeometry, centerTraverse } from './center'
 import { CameraStack } from './camera_stack'
 
 export { container } from './container'
+export { center } from './center'
 
 export enum UIKind {
-    CONTAINER
+    CENTER,
+    CONTAINER,
 }
 
 export type UI<UIEvent> =
+    | Center<UIEvent>
     | Container<UIEvent>
 
 export interface Color {
@@ -30,6 +34,7 @@ export interface Constraints {
 }
 
 export type Layout =
+    | CenterLayout
     | ContainerLayout
 
 export interface Font {
@@ -47,6 +52,8 @@ export type MeasureText = (font: Font, str: string) => TextMeasurements
 
 export const layout = <UIEvent>(ui: UI<UIEvent>, constraints: Constraints, measureText: MeasureText): Layout => {
     switch (ui.kind) {
+        case UIKind.CENTER:
+            return centerLayout(ui, constraints, measureText)
         case UIKind.CONTAINER:
             return containerLayout(ui, constraints, measureText)
     }
@@ -65,10 +72,13 @@ export interface WorldSpace {
 }
 
 export type Geometry =
+    | CenterGeometry
     | ContainerGeometry
 
 export const geometry = <UIEvent>(ui: UI<UIEvent>, layout: Layout, offset: Offset, cameraStack: CameraStack): Geometry => {
     switch (ui.kind) {
+        case UIKind.CENTER:
+            return centerGeometry(ui, layout as CenterLayout, offset, cameraStack)
         case UIKind.CONTAINER:
             return containerGeometry(ui, layout, offset, cameraStack)
     }
@@ -81,10 +91,13 @@ export interface Entry<UIEvent> {
     readonly z: number
 }
 
-
 export function* traverse<UIEvent>(ui: UI<UIEvent>, layout: Layout, geometry: Geometry, z: number): Generator<Entry<UIEvent>> {
     switch (ui.kind) {
+        case UIKind.CENTER:
+            yield* centerTraverse(ui, layout as CenterLayout, geometry as CenterGeometry, z)
+            break
         case UIKind.CONTAINER:
             yield* containerTraverse(ui, layout, geometry, z)
+            break
     }
 }

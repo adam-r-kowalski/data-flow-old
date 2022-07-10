@@ -164,6 +164,28 @@ test("container batches", () => {
     expect(batches).toEqual(expectedBatches)
 })
 
+test("container within container ui", () => {
+    const ui = container({ padding: 5 },
+        container({
+            width: 50,
+            height: 50,
+            color: red
+        }))
+    const expectedUi = {
+        kind: UIKind.CONTAINER,
+        padding: { top: 5, right: 5, bottom: 5, left: 5 },
+        child: {
+            kind: UIKind.CONTAINER,
+            padding: { top: 0, right: 0, bottom: 0, left: 0 },
+            width: 50,
+            height: 50,
+            color: red
+        }
+    }
+    expect(ui).toEqual(expectedUi)
+})
+
+
 test("container within container layout", () => {
     const renderer = mockRenderer()
     const ui = container({ padding: 5 },
@@ -228,4 +250,94 @@ test("container within container geometry", () => {
         }
     }
     expect(uiGeometry).toEqual(expectedGeometry)
+})
+
+test("container within container layers", () => {
+    const renderer = mockRenderer()
+    const ui = container({ padding: 5 },
+        container({
+            width: 50,
+            height: 50,
+            color: red
+        }))
+    const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
+    const uiLayout = layout(ui, constraints, renderer.measureText)
+    const offsets = { x: 0, y: 0 }
+    const uiGeometry = geometry(ui, uiLayout, offsets, initCameraStack())
+    const layers = reduce(ui, uiLayout, uiGeometry, layerGeometry)
+    const expectedLayers = [
+        {},
+        {
+            0: [
+                {
+                    worldSpace: { x0: 5, y0: 5, x1: 55, y1: 55 },
+                    vertices: [
+                        5, 5,
+                        5, 55,
+                        55, 5,
+                        55, 55,
+                    ],
+                    colors: [
+                        255, 0, 0, 255,
+                        255, 0, 0, 255,
+                        255, 0, 0, 255,
+                        255, 0, 0, 255,
+                    ],
+                    vertexIndices: [
+                        0, 1, 2,
+                        1, 2, 3
+                    ],
+                    cameraIndex: Array(4).fill(0),
+                    textureIndex: 0,
+                    textureCoordinates: Array(8).fill(0),
+                }
+            ]
+        }
+    ]
+    expect(layers).toEqual(expectedLayers)
+})
+
+test("container within container batches", () => {
+    const renderer = mockRenderer()
+    const ui = container({ padding: 5 },
+        container({
+            width: 50,
+            height: 50,
+            color: red
+        }))
+    const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
+    const uiLayout = layout(ui, constraints, renderer.measureText)
+    const offsets = { x: 0, y: 0 }
+    const uiGeometry = geometry(ui, uiLayout, offsets, initCameraStack())
+    const layers = reduce(ui, uiLayout, uiGeometry, layerGeometry)
+    const batches = batchGeometry(layers)
+    const expectedBatches = [
+        {
+            vertices: [
+                5, 5,
+                5, 55,
+                55, 5,
+                55, 55,
+            ],
+            colors: [
+                255, 0, 0, 255,
+                255, 0, 0, 255,
+                255, 0, 0, 255,
+                255, 0, 0, 255,
+            ],
+            vertexIndices: [
+                0, 1, 2,
+                1, 2, 3
+            ],
+            textureIndex: 0,
+            textureCoordinates: [
+                0, 0,
+                0, 0,
+                0, 0,
+                0, 0,
+            ],
+            cameraIndex: Array(4).fill(0)
+        }
+    ]
+    expect(batches).toEqual(expectedBatches)
 })

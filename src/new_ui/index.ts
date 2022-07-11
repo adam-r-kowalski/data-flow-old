@@ -1,18 +1,22 @@
 import { Container, ContainerLayout, containerLayout, ContainerGeometry, containerGeometry, containerTraverse } from './container'
 import { Center, CenterLayout, centerLayout, CenterGeometry, centerGeometry, centerTraverse } from './center'
+import { Text, TextLayout, textLayout, TextGeometry, textGeometry, textTraverse } from './text'
 import { CameraStack } from './camera_stack'
 
 export { container } from './container'
 export { center } from './center'
+export { text } from './text'
 
 export enum UIKind {
     CENTER,
     CONTAINER,
+    TEXT,
 }
 
 export type UI<UIEvent> =
     | Center<UIEvent>
     | Container<UIEvent>
+    | Text
 
 export interface Color {
     red: number
@@ -36,6 +40,7 @@ export interface Constraints {
 export type Layout =
     | CenterLayout
     | ContainerLayout
+    | TextLayout
 
 export interface Font {
     readonly family: string
@@ -56,6 +61,8 @@ export const layout = <UIEvent>(ui: UI<UIEvent>, constraints: Constraints, measu
             return centerLayout(ui, constraints, measureText)
         case UIKind.CONTAINER:
             return containerLayout(ui, constraints, measureText)
+        case UIKind.TEXT:
+            return textLayout(ui, constraints, measureText)
     }
 }
 
@@ -74,6 +81,7 @@ export interface WorldSpace {
 export type Geometry =
     | CenterGeometry
     | ContainerGeometry
+    | TextGeometry
 
 export const geometry = <UIEvent>(ui: UI<UIEvent>, layout: Layout, offset: Offset, cameraStack: CameraStack): Geometry => {
     switch (ui.kind) {
@@ -81,6 +89,8 @@ export const geometry = <UIEvent>(ui: UI<UIEvent>, layout: Layout, offset: Offse
             return centerGeometry(ui, layout as CenterLayout, offset, cameraStack)
         case UIKind.CONTAINER:
             return containerGeometry(ui, layout, offset, cameraStack)
+        case UIKind.TEXT:
+            return textGeometry(ui, layout as TextLayout, offset, cameraStack)
     }
 }
 
@@ -98,6 +108,9 @@ export function* traverse<UIEvent>(ui: UI<UIEvent>, layout: Layout, geometry: Ge
             break
         case UIKind.CONTAINER:
             yield* containerTraverse(ui, layout, geometry, z)
+            break
+        case UIKind.TEXT:
+            yield* textTraverse(ui, layout as TextLayout, geometry, z)
             break
     }
 }

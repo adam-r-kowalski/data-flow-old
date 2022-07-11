@@ -1,6 +1,6 @@
 import { Container, ContainerLayout, containerLayout, ContainerGeometry, containerGeometry, containerTraverse } from './container'
 import { Center, CenterLayout, centerLayout, CenterGeometry, centerGeometry, centerTraverse } from './center'
-import { Stack, StackLayout, stackLayout } from './stack'
+import { Stack, StackLayout, stackLayout, StackGeometry, stackGeometry, stackTraverse } from './stack'
 import { Text, TextLayout, textLayout, TextGeometry, textGeometry, textTraverse } from './text'
 import { CameraStack } from './camera_stack'
 
@@ -88,6 +88,7 @@ export interface WorldSpace {
 export type Geometry =
     | CenterGeometry
     | ContainerGeometry
+    | StackGeometry
     | TextGeometry
 
 export const geometry = <UIEvent>(ui: UI<UIEvent>, layout: Layout, offset: Offset, cameraStack: CameraStack): Geometry => {
@@ -95,11 +96,11 @@ export const geometry = <UIEvent>(ui: UI<UIEvent>, layout: Layout, offset: Offse
         case UIKind.CENTER:
             return centerGeometry(ui, layout as CenterLayout, offset, cameraStack)
         case UIKind.CONTAINER:
-            return containerGeometry(ui, layout, offset, cameraStack)
+            return containerGeometry(ui, layout as ContainerLayout, offset, cameraStack)
         case UIKind.TEXT:
             return textGeometry(ui, layout as TextLayout, offset, cameraStack)
         case UIKind.STACK:
-            throw ''
+            return stackGeometry(ui, layout as StackLayout, offset, cameraStack)
     }
 }
 
@@ -116,10 +117,13 @@ export function* traverse<UIEvent>(ui: UI<UIEvent>, layout: Layout, geometry: Ge
             yield* centerTraverse(ui, layout as CenterLayout, geometry as CenterGeometry, z)
             break
         case UIKind.CONTAINER:
-            yield* containerTraverse(ui, layout, geometry, z)
+            yield* containerTraverse(ui, layout as ContainerLayout, geometry as ContainerGeometry, z)
+            break
+        case UIKind.STACK:
+            yield* stackTraverse(ui, layout as StackLayout, geometry as StackGeometry, z)
             break
         case UIKind.TEXT:
-            yield* textTraverse(ui, layout as TextLayout, geometry, z)
+            yield* textTraverse(ui, layout as TextLayout, geometry as TextGeometry, z)
             break
     }
 }

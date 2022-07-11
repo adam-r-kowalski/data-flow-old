@@ -68,12 +68,6 @@ test("center geometry", () => {
     const uiGeometry = geometry(ui, uiLayout, offsets, cameraStack)
     const expectedGeometry = {
         worldSpace: { x0: 0, y0: 0, x1: 100, y1: 100 },
-        vertices: [],
-        colors: [],
-        vertexIndices: [],
-        cameraIndex: [],
-        textureIndex: 0,
-        textureCoordinates: [],
         child: {
             worldSpace: { x0: 25, y0: 25, x1: 75, y1: 75 },
             vertices: [

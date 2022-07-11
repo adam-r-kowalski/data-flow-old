@@ -8,12 +8,6 @@ export interface CenterLayout {
 
 export interface CenterGeometry {
     readonly worldSpace: WorldSpace
-    readonly vertices: number[]
-    readonly colors: number[]
-    readonly vertexIndices: number[]
-    readonly cameraIndex: number[]
-    readonly textureIndex: number
-    readonly textureCoordinates: number[]
     readonly child: Geometry
 }
 
@@ -51,12 +45,6 @@ export const centerGeometry = <UIEvent>(ui: Center<UIEvent>, layout: CenterLayou
     const childGeometry = geometry(ui.child, childLayout, childOffset, cameraStack)
     return {
         worldSpace,
-        vertices: [],
-        colors: [],
-        vertexIndices: [],
-        cameraIndex: [],
-        textureIndex: 0,
-        textureCoordinates: [],
         child: childGeometry
     }
 }

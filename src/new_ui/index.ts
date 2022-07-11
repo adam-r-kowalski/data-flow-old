@@ -1,16 +1,19 @@
-import { Container, ContainerLayout, containerLayout, ContainerGeometry, containerGeometry, containerTraverse } from './container'
 import { Center, CenterLayout, centerLayout, CenterGeometry, centerGeometry, centerTraverse } from './center'
+import { Column, ColumnLayout, columnLayout } from './column'
+import { Container, ContainerLayout, containerLayout, ContainerGeometry, containerGeometry, containerTraverse } from './container'
 import { Stack, StackLayout, stackLayout, StackGeometry, stackGeometry, stackTraverse } from './stack'
 import { Text, TextLayout, textLayout, TextGeometry, textGeometry, textTraverse } from './text'
 import { CameraStack } from './camera_stack'
 
-export { container } from './container'
 export { center } from './center'
+export { column } from './column'
+export { container } from './container'
 export { stack } from './stack'
 export { text } from './text'
 
 export enum UIKind {
     CENTER,
+    COLUMN,
     CONTAINER,
     STACK,
     TEXT,
@@ -18,6 +21,7 @@ export enum UIKind {
 
 export type UI<UIEvent> =
     | Center<UIEvent>
+    | Column<UIEvent>
     | Container<UIEvent>
     | Stack<UIEvent>
     | Text
@@ -43,6 +47,7 @@ export interface Constraints {
 
 export type Layout =
     | CenterLayout
+    | ColumnLayout
     | ContainerLayout
     | StackLayout
     | TextLayout
@@ -64,6 +69,8 @@ export const layout = <UIEvent>(ui: UI<UIEvent>, constraints: Constraints, measu
     switch (ui.kind) {
         case UIKind.CENTER:
             return centerLayout(ui, constraints, measureText)
+        case UIKind.COLUMN:
+            return columnLayout(ui, constraints, measureText)
         case UIKind.CONTAINER:
             return containerLayout(ui, constraints, measureText)
         case UIKind.STACK:
@@ -95,6 +102,8 @@ export const geometry = <UIEvent>(ui: UI<UIEvent>, layout: Layout, offset: Offse
     switch (ui.kind) {
         case UIKind.CENTER:
             return centerGeometry(ui, layout as CenterLayout, offset, cameraStack)
+        case UIKind.COLUMN:
+            throw ''
         case UIKind.CONTAINER:
             return containerGeometry(ui, layout as ContainerLayout, offset, cameraStack)
         case UIKind.TEXT:

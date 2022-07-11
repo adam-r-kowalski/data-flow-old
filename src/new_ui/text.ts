@@ -30,12 +30,12 @@ interface Properties {
 }
 
 type Overload = {
-    (str: String): Text
-    (properties: Properties, str: String): Text
+    (str: string): Text
+    (properties: Properties, str: string): Text
 }
 
 export const text: Overload = (...args: any[]): Text => {
-    const [properties, str] = (() =>
+    const [properties, str]: [Properties, string] = (() =>
         typeof args[0] == 'string' ? [{}, args[0]] : [args[0], args[1]]
     )()
     return {

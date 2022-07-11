@@ -1,7 +1,7 @@
 import { Center, CenterLayout, centerLayout, CenterGeometry, centerGeometry, centerTraverse } from './center'
 import { Column, ColumnLayout, columnLayout, ColumnGeometry, columnGeometry, columnTraverse } from './column'
 import { Container, ContainerLayout, containerLayout, ContainerGeometry, containerGeometry, containerTraverse } from './container'
-import { Row, RowLayout, rowLayout } from './row'
+import { Row, RowLayout, rowLayout, RowGeometry, rowGeometry, rowTraverse } from './row'
 import { Stack, StackLayout, stackLayout, StackGeometry, stackGeometry, stackTraverse } from './stack'
 import { Text, TextLayout, textLayout, TextGeometry, textGeometry, textTraverse } from './text'
 import { CameraStack } from './camera_stack'
@@ -103,6 +103,7 @@ export type Geometry =
     | CenterGeometry
     | ColumnGeometry
     | ContainerGeometry
+    | RowGeometry
     | StackGeometry
     | TextGeometry
 
@@ -115,7 +116,7 @@ export const geometry = <UIEvent>(ui: UI<UIEvent>, layout: Layout, offset: Offse
         case UIKind.CONTAINER:
             return containerGeometry(ui, layout as ContainerLayout, offset, cameraStack)
         case UIKind.ROW:
-            throw ''
+            return rowGeometry(ui, layout as RowLayout, offset, cameraStack)
         case UIKind.TEXT:
             return textGeometry(ui, layout as TextLayout, offset, cameraStack)
         case UIKind.STACK:
@@ -140,6 +141,9 @@ export function* traverse<UIEvent>(ui: UI<UIEvent>, layout: Layout, geometry: Ge
             break
         case UIKind.CONTAINER:
             yield* containerTraverse(ui, layout as ContainerLayout, geometry as ContainerGeometry, z)
+            break
+        case UIKind.ROW:
+            yield* rowTraverse(ui, layout as RowLayout, geometry as RowGeometry, z)
             break
         case UIKind.STACK:
             yield* stackTraverse(ui, layout as StackLayout, geometry as StackGeometry, z)

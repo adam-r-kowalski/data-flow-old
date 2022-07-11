@@ -1,5 +1,5 @@
 import { Center, CenterLayout, centerLayout, CenterGeometry, centerGeometry, centerTraverse } from './center'
-import { Column, ColumnLayout, columnLayout } from './column'
+import { Column, ColumnLayout, columnLayout, ColumnGeometry, columnGeometry } from './column'
 import { Container, ContainerLayout, containerLayout, ContainerGeometry, containerGeometry, containerTraverse } from './container'
 import { Stack, StackLayout, stackLayout, StackGeometry, stackGeometry, stackTraverse } from './stack'
 import { Text, TextLayout, textLayout, TextGeometry, textGeometry, textTraverse } from './text'
@@ -94,6 +94,7 @@ export interface WorldSpace {
 
 export type Geometry =
     | CenterGeometry
+    | ColumnGeometry
     | ContainerGeometry
     | StackGeometry
     | TextGeometry
@@ -103,7 +104,7 @@ export const geometry = <UIEvent>(ui: UI<UIEvent>, layout: Layout, offset: Offse
         case UIKind.CENTER:
             return centerGeometry(ui, layout as CenterLayout, offset, cameraStack)
         case UIKind.COLUMN:
-            throw ''
+            return columnGeometry(ui, layout as ColumnLayout, offset, cameraStack)
         case UIKind.CONTAINER:
             return containerGeometry(ui, layout as ContainerLayout, offset, cameraStack)
         case UIKind.TEXT:

@@ -1,5 +1,5 @@
 import { Center, CenterLayout, centerLayout, CenterGeometry, centerGeometry, centerTraverse } from './center'
-import { Column, ColumnLayout, columnLayout, ColumnGeometry, columnGeometry } from './column'
+import { Column, ColumnLayout, columnLayout, ColumnGeometry, columnGeometry, columnTraverse } from './column'
 import { Container, ContainerLayout, containerLayout, ContainerGeometry, containerGeometry, containerTraverse } from './container'
 import { Stack, StackLayout, stackLayout, StackGeometry, stackGeometry, stackTraverse } from './stack'
 import { Text, TextLayout, textLayout, TextGeometry, textGeometry, textTraverse } from './text'
@@ -125,6 +125,9 @@ export function* traverse<UIEvent>(ui: UI<UIEvent>, layout: Layout, geometry: Ge
     switch (ui.kind) {
         case UIKind.CENTER:
             yield* centerTraverse(ui, layout as CenterLayout, geometry as CenterGeometry, z)
+            break
+        case UIKind.COLUMN:
+            yield* columnTraverse(ui, layout as ColumnLayout, geometry as ColumnGeometry, z)
             break
         case UIKind.CONTAINER:
             yield* containerTraverse(ui, layout as ContainerLayout, geometry as ContainerGeometry, z)

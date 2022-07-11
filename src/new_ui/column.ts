@@ -1,4 +1,4 @@
-import { Constraints, geometry, Geometry, Layout, layout, MeasureText, Offset, Size, UI, UIKind, WorldSpace } from "."
+import { Constraints, Entry, geometry, Geometry, Layout, layout, MeasureText, Offset, Size, traverse, UI, UIKind, WorldSpace } from "."
 import { MainAxisAlignment, CrossAxisAlignment } from "./alignment"
 import { CameraStack, transformWorldSpace } from "./camera_stack"
 
@@ -119,4 +119,14 @@ export const columnGeometry = <UIEvent>(ui: Column<UIEvent>, layout: ColumnLayou
         y1: offset.y + layout.size.height
     })
     return { worldSpace, children: result.children }
+}
+
+export function* columnTraverse<UIEvent>(ui: Column<UIEvent>, layout: ColumnLayout, geometry: ColumnGeometry, z: number): Generator<Entry<UIEvent>> {
+    yield { ui, layout, geometry, z }
+    const nextZ = z + 1
+    let i = 0
+    for (const child of ui.children) {
+        yield* traverse(child, layout.children[i], geometry.children[i], nextZ)
+        i += 1
+    }
 }

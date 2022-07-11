@@ -1,21 +1,25 @@
 import { Container, ContainerLayout, containerLayout, ContainerGeometry, containerGeometry, containerTraverse } from './container'
 import { Center, CenterLayout, centerLayout, CenterGeometry, centerGeometry, centerTraverse } from './center'
+import { Stack, StackLayout, stackLayout } from './stack'
 import { Text, TextLayout, textLayout, TextGeometry, textGeometry, textTraverse } from './text'
 import { CameraStack } from './camera_stack'
 
 export { container } from './container'
 export { center } from './center'
+export { stack } from './stack'
 export { text } from './text'
 
 export enum UIKind {
     CENTER,
     CONTAINER,
+    STACK,
     TEXT,
 }
 
 export type UI<UIEvent> =
     | Center<UIEvent>
     | Container<UIEvent>
+    | Stack<UIEvent>
     | Text
 
 export interface Color {
@@ -40,6 +44,7 @@ export interface Constraints {
 export type Layout =
     | CenterLayout
     | ContainerLayout
+    | StackLayout
     | TextLayout
 
 export interface Font {
@@ -61,6 +66,8 @@ export const layout = <UIEvent>(ui: UI<UIEvent>, constraints: Constraints, measu
             return centerLayout(ui, constraints, measureText)
         case UIKind.CONTAINER:
             return containerLayout(ui, constraints, measureText)
+        case UIKind.STACK:
+            return stackLayout(ui, constraints, measureText)
         case UIKind.TEXT:
             return textLayout(ui, constraints, measureText)
     }
@@ -91,6 +98,8 @@ export const geometry = <UIEvent>(ui: UI<UIEvent>, layout: Layout, offset: Offse
             return containerGeometry(ui, layout, offset, cameraStack)
         case UIKind.TEXT:
             return textGeometry(ui, layout as TextLayout, offset, cameraStack)
+        case UIKind.STACK:
+            throw ''
     }
 }
 

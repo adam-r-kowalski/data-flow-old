@@ -1,163 +1,62 @@
-import { CameraStack } from "../camera_stack"
-import { Color } from "../color"
-import { Geometry, Offset, WorldSpace } from "../geometry"
-import { Constraints, Layout, Size } from "../layout"
-import { Padding, padding as paddingAll } from "../padding"
-import { Entry, Id, MeasureText, OnClick, UI } from "../ui"
+import { UI, Size, Layout, Constraints, MeasureText, UIKind, layout, Color, Offset, WorldSpace, Geometry, geometry, Entry, traverse, } from '.'
+import { CameraStack, transformWorldSpace, activeCamera } from './camera_stack'
 
-export class ContainerLayout {
-    constructor(
-        readonly size: Size,
-        readonly child?: Layout
-    ) { }
+export interface ContainerLayout {
+    readonly size: Size
+    readonly child?: Layout
 }
 
-export const containerLayout = (size: Size, child?: Layout) =>
-    new ContainerLayout(size, child)
-
-export class ContainerGeometry {
-    constructor(
-        readonly worldSpace: WorldSpace,
-        readonly textureIndex: number,
-        readonly textureCoordinates: number[],
-        readonly colors: number[],
-        readonly vertices: number[],
-        readonly vertexIndices: number[],
-        readonly cameraIndex: number[],
-        readonly child?: Geometry
-    ) { }
-}
-
-interface GeometryData {
+export interface ContainerGeometry {
     readonly worldSpace: WorldSpace
-    readonly textureIndex?: number
-    readonly textureCoordinates?: number[]
-    readonly colors?: number[]
-    readonly vertices?: number[]
-    readonly vertexIndices?: number[]
-    readonly cameraIndex?: number[]
+    readonly vertices: number[]
+    readonly colors: number[]
+    readonly vertexIndices: number[]
+    readonly cameraIndex: number[]
+    readonly textureIndex: number
+    readonly textureCoordinates: number[]
+    readonly child?: Geometry
 }
 
-export const containerGeometry = (data: GeometryData, child?: Geometry) => {
-    const vertices = data.vertices ?? []
-    return new ContainerGeometry(
-        data.worldSpace,
-        data.textureIndex ?? 0,
-        data.textureCoordinates ?? Array.from<number>({ length: vertices.length }).fill(0),
-        data.colors ?? [],
-        vertices,
-        data.vertexIndices ?? [],
-        data.cameraIndex ?? [],
-        child
-    )
+export interface Padding {
+    readonly top: number
+    readonly right: number
+    readonly bottom: number
+    readonly left: number
 }
 
-export class Container {
-    constructor(
-        readonly padding: Padding,
-        readonly width?: number,
-        readonly height?: number,
-        readonly x?: number,
-        readonly y?: number,
-        readonly color?: Color,
-        readonly onClick?: OnClick,
-        readonly id?: Id,
-        readonly child?: UI
-    ) { }
-
-    layout(constraints: Constraints, measureText: MeasureText) {
-        const { left, top, right, bottom } = this.padding
-        if (this.child) {
-            const layout = this.child.layout(constraints, measureText)
-            const width = this.width ?? layout.size.width + left + right
-            const height = this.height ?? layout.size.height + top + bottom
-            return containerLayout({ width, height }, layout)
-        }
-        const width = (() => {
-            if (this.width) return this.width + left + right
-            return constraints.maxWidth
-        })()
-        const height = (() => {
-            if (this.height) return this.height + top + bottom
-            return constraints.maxHeight
-        })()
-        return containerLayout({ width, height })
-    }
-
-    geometry(layout: Layout, offset: Offset, cameraStack: CameraStack) {
-        const x0 = offset.x + (this.x ?? 0)
-        const x1 = x0 + layout.size.width
-        const y0 = offset.y + (this.y ?? 0)
-        const y1 = y0 + layout.size.height
-        const worldSpace = cameraStack.transformWorldSpace({ x0, x1, y0, y1 })
-        const data = (() => {
-            if (this.color) {
-                const { red, green, blue, alpha } = this.color
-                return {
-                    worldSpace,
-                    vertices: [
-                        x0, y0,
-                        x0, y1,
-                        x1, y0,
-                        x1, y1,
-                    ],
-                    colors: [
-                        red, green, blue, alpha,
-                        red, green, blue, alpha,
-                        red, green, blue, alpha,
-                        red, green, blue, alpha,
-                    ],
-                    vertexIndices: [
-                        0, 1, 2,
-                        1, 2, 3
-                    ],
-                    cameraIndex: Array(4).fill(cameraStack.activeCamera())
-                }
-            }
-            return {
-                worldSpace,
-                vertices: [],
-                colors: [],
-                vertexIndices: [],
-                cameraIndex: [],
-            }
-        })()
-        if (this.child) {
-            const childLayout = (layout as ContainerLayout).child!
-            const childOffset = {
-                x: x0 + this.padding.left,
-                y: y0 + this.padding.top
-            }
-            const childGeometry = this.child.geometry(childLayout, childOffset, cameraStack)
-            return containerGeometry(data, childGeometry)
-        }
-        return containerGeometry(data)
-    }
-
-    * traverse(layout: Layout, geometry: Geometry, z: number): Generator<Entry> {
-        yield { ui: this, layout, geometry, z }
-        if (this.child) {
-            const childLayout = (layout as ContainerLayout).child!
-            const childGeometry = (geometry as ContainerGeometry).child!
-            yield* this.child.traverse(childLayout, childGeometry, z + 1)
-        }
-    }
-}
-
-interface Properties {
-    readonly padding?: Padding
+export interface Container<AppEvent> {
+    readonly id?: string
+    readonly onClick?: AppEvent
+    readonly kind: UIKind.CONTAINER,
+    readonly padding: Padding
     readonly width?: number
     readonly height?: number
     readonly x?: number
     readonly y?: number
     readonly color?: Color
-    readonly onClick?: OnClick
-    readonly id?: Id
+    readonly child?: UI<AppEvent>
 }
 
-export const container = ({ padding, width, height, color, x, y, onClick, id }: Properties, child?: UI): Container =>
-    new Container(
-        padding ?? paddingAll(0),
+interface Properties<AppEvent> {
+    readonly padding?: number
+    readonly width?: number
+    readonly height?: number
+    readonly x?: number
+    readonly y?: number
+    readonly color?: Color
+    readonly onClick?: AppEvent
+    readonly id?: string
+}
+
+const transformPadding = (padding?: number): Padding => {
+    if (padding) return { top: padding, right: padding, bottom: padding, left: padding }
+    return { top: 0, right: 0, bottom: 0, left: 0 }
+}
+
+export const container = <AppEvent>({ padding, width, height, color, x, y, onClick, id }: Properties<AppEvent>, child?: UI<AppEvent>): Container<AppEvent> => {
+    return {
+        kind: UIKind.CONTAINER,
+        padding: transformPadding(padding),
         width,
         height,
         x,
@@ -166,4 +65,91 @@ export const container = ({ padding, width, height, color, x, y, onClick, id }: 
         onClick,
         id,
         child
-    )
+    }
+}
+
+export const containerLayout = <AppEvent>(ui: Container<AppEvent>, constraints: Constraints, measureText: MeasureText): ContainerLayout => {
+    const { top, right, bottom, left } = ui.padding
+    if (ui.child) {
+        const childLayout = layout(ui.child, constraints, measureText)
+        const width = ui.width ?? childLayout.size.width + left + right
+        const height = ui.height ?? childLayout.size.height + top + bottom
+        return {
+            size: { width, height },
+            child: childLayout
+        }
+    }
+    const width = (() => {
+        if (ui.width) return ui.width + left + right
+        return constraints.maxWidth
+    })()
+    const height = (() => {
+        if (ui.height) return ui.height + top + bottom
+        return constraints.maxHeight
+    })()
+    return { size: { width, height } }
+}
+
+export const containerGeometry = <AppEvent>(ui: Container<AppEvent>, layout: ContainerLayout, offset: Offset, cameraStack: CameraStack): ContainerGeometry => {
+    const x0 = offset.x + (ui.x ?? 0)
+    const x1 = x0 + layout.size.width
+    const y0 = offset.y + (ui.y ?? 0)
+    const y1 = y0 + layout.size.height
+    const worldSpace = transformWorldSpace(cameraStack, { x0, x1, y0, y1 })
+    const childGeometry = (() => {
+        if (ui.child) {
+            const childLayout = layout.child!
+            const childOffset = {
+                x: x0 + ui.padding.left,
+                y: y0 + ui.padding.top
+            }
+            return geometry(ui.child, childLayout, childOffset, cameraStack)
+        }
+        return undefined
+    })()
+    if (ui.color) {
+        const { red, green, blue, alpha } = ui.color
+        return {
+            worldSpace,
+            vertices: [
+                x0, y0,
+                x0, y1,
+                x1, y0,
+                x1, y1,
+            ],
+            colors: [
+                red, green, blue, alpha,
+                red, green, blue, alpha,
+                red, green, blue, alpha,
+                red, green, blue, alpha,
+            ],
+            vertexIndices: [
+                0, 1, 2,
+                1, 2, 3
+            ],
+            cameraIndex: Array(4).fill(activeCamera(cameraStack)),
+            textureIndex: 0,
+            textureCoordinates: Array(8).fill(0),
+            child: childGeometry
+        }
+    }
+    return {
+        worldSpace,
+        vertices: [],
+        colors: [],
+        vertexIndices: [],
+        cameraIndex: [],
+        textureIndex: 0,
+        textureCoordinates: [],
+        child: childGeometry
+    }
+}
+
+export function* containerTraverse<AppEvent>(ui: Container<AppEvent>, layout: ContainerLayout, geometry: ContainerGeometry, z: number): Generator<Entry<AppEvent>> {
+    yield { ui, layout, geometry, z }
+    if (ui.child) {
+        const childLayout = layout.child!
+        const childGeometry = geometry.child!
+        yield* traverse(ui.child, childLayout, childGeometry, z + 1)
+    }
+}

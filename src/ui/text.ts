@@ -1,33 +1,12 @@
-import { Entry, Font, MeasureText, TextMeasurements } from "."
-import { CameraStack } from "../camera_stack"
-import { Color } from "../color"
-import { Geometry, Offset, WorldSpace } from "../geometry"
-import { Constraints, Layout, Size } from "../layout"
+import { Color, Constraints, Entry, Font, MeasureText, Offset, Size, TextMeasurements, UIKind, WorldSpace } from ".";
+import { activeCamera, CameraStack, transformWorldSpace } from "./camera_stack";
 
-export class TextLayout {
-    constructor(
-        readonly measurements: TextMeasurements,
-        readonly size: Size
-    ) { }
+export interface TextLayout {
+    readonly measurements: TextMeasurements
+    readonly size: Size
 }
 
-export const textLayout = (measurements: TextMeasurements, size: Size) =>
-    new TextLayout(measurements, size)
-
-
-export class TextGeometry {
-    constructor(
-        readonly worldSpace: WorldSpace,
-        readonly textureIndex: number,
-        readonly textureCoordinates: number[],
-        readonly colors: number[],
-        readonly vertices: number[],
-        readonly vertexIndices: number[],
-        readonly cameraIndex: number[],
-    ) { }
-}
-
-interface GeometryData {
+export interface TextGeometry {
     readonly worldSpace: WorldSpace
     readonly textureIndex: number
     readonly textureCoordinates: number[]
@@ -35,6 +14,45 @@ interface GeometryData {
     readonly vertices: number[]
     readonly vertexIndices: number[]
     readonly cameraIndex: number[]
+}
+
+export interface Text<AppEvent> {
+    readonly id?: string
+    readonly onClick?: AppEvent
+    readonly kind: UIKind.TEXT
+    readonly font: Font
+    readonly color: Color
+    readonly str: string
+}
+
+interface Properties {
+    readonly font?: string
+    readonly size?: number
+    readonly color?: Color
+}
+
+export function text<AppEvent>(str: string): Text<AppEvent>
+export function text<AppEvent>(properties: Properties, str: string): Text<AppEvent>
+export function text<AppEvent>(...args: any[]): Text<AppEvent> {
+    const [properties, str]: [Properties, string] = (() =>
+        typeof args[0] == 'string' ? [{}, args[0]] : [args[0], args[1]]
+    )()
+    return {
+        kind: UIKind.TEXT,
+        font: {
+            family: properties.font ?? "monospace",
+            size: properties.size ?? 14
+        },
+        color: properties.color ?? { red: 255, green: 255, blue: 255, alpha: 255 },
+        str
+    }
+}
+
+export const textLayout = <AppEvent>({ font, str }: Text<AppEvent>, _: Constraints, measureText: MeasureText): TextLayout => {
+    const measurements = measureText(font, str)
+    const width = measurements.widths.reduce((acc, width) => acc + width)
+    const size = { width, height: font.size }
+    return { measurements, size }
 }
 
 const vertices = (widths: number[], height: number, offset: Offset) => {
@@ -82,79 +100,26 @@ const vertexIndices = (n: number) => {
     return result
 }
 
-export const textGeometry = (data: GeometryData) =>
-    new TextGeometry(
-        data.worldSpace,
-        data.textureIndex,
-        data.textureCoordinates,
-        data.colors,
-        data.vertices,
-        data.vertexIndices,
-        data.cameraIndex,
-    )
-
-export class Text {
-    constructor(
-        readonly font: Font,
-        readonly color: Color,
-        readonly str: string
-    ) { }
-
-    layout(_: Constraints, measureText: MeasureText) {
-        const { font, str } = this
-        const measurements = measureText(font, str)
-        const width = measurements.widths.reduce((acc, width) => acc + width)
-        const size = { width, height: font.size }
-        return textLayout(measurements, size)
-    }
-
-    geometry(layout: Layout, offset: Offset, cameraStack: CameraStack) {
-        const textLayout = layout as TextLayout
-        const { measurements } = textLayout
-        const { textureIndex, textureCoordinates, widths } = measurements
-        return textGeometry({
-            worldSpace: cameraStack.transformWorldSpace({
-                x0: offset.x,
-                y0: offset.y,
-                x1: offset.x + layout.size.width,
-                y1: offset.y + layout.size.height
-            }),
-            textureIndex,
-            textureCoordinates: textureCoordinates.flat(),
-            colors: colors(widths.length, this.color),
-            vertices: vertices(widths, this.font.size, offset),
-            vertexIndices: vertexIndices(widths.length),
-            cameraIndex: Array(widths.length * 4).fill(cameraStack.activeCamera())
-        })
-    }
-
-    *traverse(layout: Layout, geometry: Geometry, z: number): Generator<Entry> {
-        yield { ui: this, layout, geometry, z }
+export const textGeometry = <AppEvent>(ui: Text<AppEvent>, layout: TextLayout, offset: Offset, cameraStack: CameraStack): TextGeometry => {
+    const textLayout = layout as TextLayout
+    const { measurements } = textLayout
+    const { textureIndex, textureCoordinates, widths } = measurements
+    return {
+        worldSpace: transformWorldSpace(cameraStack, {
+            x0: offset.x,
+            y0: offset.y,
+            x1: offset.x + layout.size.width,
+            y1: offset.y + layout.size.height
+        }),
+        textureIndex,
+        textureCoordinates: textureCoordinates.flat(),
+        colors: colors(widths.length, ui.color),
+        vertices: vertices(widths, ui.font.size, offset),
+        vertexIndices: vertexIndices(widths.length),
+        cameraIndex: Array(widths.length * 4).fill(activeCamera(cameraStack))
     }
 }
 
-interface Properties {
-    readonly font?: string
-    readonly size?: number
-    readonly color?: Color
-}
-
-type Overload = {
-    (str: String): Text
-    (properties: Properties, str: String): Text
-}
-
-export const text: Overload = (...args: any[]): Text => {
-    const [properties, str] = (() =>
-        typeof args[0] == 'string' ? [{}, args[0]] : [args[0], args[1]]
-    )()
-    const font = {
-        family: properties.font ?? "monospace",
-        size: properties.size ?? 14
-    }
-    return new Text(
-        font,
-        properties.color ?? { red: 255, green: 255, blue: 255, alpha: 255 },
-        str
-    )
+export function* textTraverse<AppEvent>(ui: Text<AppEvent>, layout: TextLayout, geometry: TextGeometry, z: number): Generator<Entry<AppEvent>> {
+    yield { ui, layout, geometry, z }
 }

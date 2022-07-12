@@ -1,4 +1,4 @@
-import { Layers } from "./render"
+import { Layers } from "./layer_geometry"
 
 export interface Batch {
     vertices: number[]
@@ -21,11 +21,13 @@ const newBatch = (textureIndex: number): Batch => ({
 export const batchGeometry = (layers: Layers): Batch[] => {
     const batches: Batch[] = []
     let batch = newBatch(0)
+    let batchTextureIndex = batch.textureIndex.toString()
     for (const layer of layers) {
-        for (const [textureIndex, geometries] of layer) {
-            if (batch.textureIndex !== textureIndex) {
+        for (const [textureIndex, geometries] of Object.entries(layer)) {
+            if (batchTextureIndex !== textureIndex) {
                 if (batch.vertices.length !== 0) batches.push(batch)
-                batch = newBatch(textureIndex)
+                batch = newBatch(parseInt(textureIndex))
+                batchTextureIndex = textureIndex
             }
             for (const geometry of geometries) {
                 const offset = batch.vertices.length / 2

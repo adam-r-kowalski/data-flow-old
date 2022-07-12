@@ -1,11 +1,10 @@
-import { CameraStack } from "../src/camera_stack"
-import { identity } from "../src/linear_algebra/matrix3x3"
-import { reduce } from "../src/reduce"
-import { mockDocument, mockWindow } from "../src/renderer/mock"
-import { reducer } from "../src/renderer/render"
-import { webGL2Renderer } from "../src/renderer/webgl2"
-import { container } from "../src/ui/container"
-import { scene } from "../src/ui/scene"
+import { container, scene, geometry, layout } from '../../src/ui'
+import { initCameraStack } from '../../src/ui/camera_stack'
+import { identity } from "../../src/linear_algebra/matrix3x3"
+import { mockDocument, mockWindow } from "../../src/ui/mock"
+import { webGL2Renderer } from "../../src/ui/webgl2"
+import { reduce } from '../../src/ui/reduce'
+import * as reducer from '../../src/ui/reducer'
 
 const red = { red: 255, green: 0, blue: 0, alpha: 255 }
 const green = { red: 0, green: 255, blue: 0, alpha: 255 }
@@ -46,10 +45,10 @@ test("connection in scene", () => {
         ]
     })
     const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
-    const layout = ui.layout(constraints, renderer.measureText)
+    const uiLayout = layout(ui, constraints, renderer.measureText)
     const offsets = { x: 0, y: 0 }
-    const geometry = ui.geometry(layout, offsets, new CameraStack())
-    const { idToWorldSpace, connections } = reduce(ui, layout, geometry, reducer)
+    const uiGeometry = geometry(ui, uiLayout, offsets, initCameraStack())
+    const { idToWorldSpace, connections } = reduce(ui, uiLayout, uiGeometry, reducer)
     expect(idToWorldSpace).toEqual({
         'a': { x0: 100, y0: 100, x1: 150, y1: 150 },
         'b': { x0: 300, y0: 300, x1: 350, y1: 350 },

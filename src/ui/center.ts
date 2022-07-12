@@ -1,67 +1,56 @@
-import { CameraStack } from "../camera_stack"
-import { Geometry, Offset, WorldSpace } from "../geometry"
-import { Constraints, Layout, Size } from "../layout"
-import { Entry, MeasureText, UI } from "../ui"
+import { Constraints, Entry, Geometry, geometry, layout, Layout, MeasureText, Offset, Size, UI, UIKind, WorldSpace, traverse } from "."
+import { CameraStack, transformWorldSpace } from "./camera_stack"
 
-export class CenterLayout {
-    constructor(
-        readonly size: Size,
-        readonly child: Layout
-    ) { }
+export interface CenterLayout {
+    readonly size: Size
+    readonly child: Layout
 }
 
-export const centerLayout = (size: Size, child: Layout) =>
-    new CenterLayout(size, child)
-
-export class CenterGeometry {
-    constructor(
-        readonly worldSpace: WorldSpace,
-        readonly textureIndex: number,
-        readonly textureCoordinates: number[],
-        readonly colors: number[],
-        readonly vertices: number[],
-        readonly vertexIndices: number[],
-        readonly cameraIndex: number[],
-        readonly child: Geometry
-    ) { }
+export interface CenterGeometry {
+    readonly worldSpace: WorldSpace
+    readonly child: Geometry
 }
 
-export const centerGeometry = (worldSpace: WorldSpace, child: Geometry) =>
-    new CenterGeometry(worldSpace, 0, [], [], [], [], [], child)
+export interface Center<AppEvent> {
+    readonly id?: string
+    readonly onClick?: AppEvent
+    readonly kind: UIKind.CENTER
+    readonly child: UI<AppEvent>
+}
 
-export class Center {
-    constructor(readonly child: UI) { }
-
-    layout(constraints: Constraints, measureText: MeasureText) {
-        const layout = this.child.layout(constraints, measureText)
-        const width = constraints.maxWidth
-        const height = constraints.maxHeight
-        return centerLayout({ width, height }, layout)
-    }
-
-    geometry(layout: Layout, offset: Offset, cameraStack: CameraStack) {
-        const worldSpace = cameraStack.transformWorldSpace({
-            x0: offset.x,
-            y0: offset.y,
-            x1: offset.x + layout.size.width,
-            y1: offset.y + layout.size.height,
-        })
-        const childLayout = (layout as CenterLayout).child
-        const childOffset = {
-            x: offset.x + layout.size.width / 2 - childLayout.size.width / 2,
-            y: offset.y + layout.size.height / 2 - childLayout.size.height / 2
-        }
-        const childGeometry = this.child.geometry(childLayout, childOffset, cameraStack)
-        return centerGeometry(worldSpace, childGeometry)
-    }
-
-    *traverse(layout: Layout, geometry: Geometry, z: number): Generator<Entry> {
-        const childLayout = (layout as CenterLayout).child
-        const childGeometry = (geometry as CenterGeometry).child
-        yield { ui: this, layout, geometry, z }
-        yield* this.child.traverse(childLayout, childGeometry, z + 1)
+export const center = <AppEvent>(child: UI<AppEvent>): Center<AppEvent> => {
+    return {
+        kind: UIKind.CENTER,
+        child
     }
 }
 
-export const center = (child: UI): Center =>
-    new Center(child)
+export const centerLayout = <AppEvent>(ui: Center<AppEvent>, constraints: Constraints, measureText: MeasureText): CenterLayout => {
+    const childLayout = layout(ui.child, constraints, measureText)
+    const width = constraints.maxWidth
+    const height = constraints.maxHeight
+    return { size: { width, height }, child: childLayout }
+}
+
+export const centerGeometry = <AppEvent>(ui: Center<AppEvent>, layout: CenterLayout, offset: Offset, cameraStack: CameraStack): CenterGeometry => {
+    const worldSpace = transformWorldSpace(cameraStack, {
+        x0: offset.x,
+        y0: offset.y,
+        x1: offset.x + layout.size.width,
+        y1: offset.y + layout.size.height,
+    })
+    const childLayout = layout.child
+    const childOffset = {
+        x: offset.x + layout.size.width / 2 - childLayout.size.width / 2,
+        y: offset.y + layout.size.height / 2 - childLayout.size.height / 2
+    }
+    const childGeometry = geometry(ui.child, childLayout, childOffset, cameraStack)
+    return {
+        worldSpace,
+        child: childGeometry
+    }
+}
+
+export function* centerTraverse<AppEvent>(ui: Center<AppEvent>, layout: CenterLayout, geometry: CenterGeometry, z: number): Generator<Entry<AppEvent>> {
+    yield* traverse(ui.child, layout.child, geometry.child, z + 1)
+}

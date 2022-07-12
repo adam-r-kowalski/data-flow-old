@@ -1,5 +1,4 @@
-import { WorldSpace } from "../geometry"
-import { Connection } from "../ui"
+import { Connection, WorldSpace } from "."
 import { IdToWorldSpace } from "./id_to_world_space"
 
 export interface Lines {

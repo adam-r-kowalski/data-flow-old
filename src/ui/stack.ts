@@ -1,71 +1,55 @@
-import { Entry, MeasureText, UI } from "."
-import { CameraStack } from "../camera_stack"
-import { Geometry, Offset, WorldSpace } from "../geometry"
-import { Constraints, Layout, Size } from "../layout"
+import { Constraints, Geometry, layout, Layout, MeasureText, Offset, Size, UI, UIKind, WorldSpace, geometry, Entry, traverse } from ".";
+import { CameraStack, transformWorldSpace } from "./camera_stack";
 
-export class StackLayout {
-    constructor(
-        readonly size: Size,
-        readonly children: Layout[]
-    ) { }
+export interface StackLayout {
+    readonly size: Size
+    readonly children: Layout[]
 }
 
-export const stackLayout = (size: Size, children: Layout[]) =>
-    new StackLayout(size, children)
-
-export class StackGeometry {
-    constructor(
-        readonly worldSpace: WorldSpace,
-        readonly textureIndex: number,
-        readonly textureCoordinates: number[],
-        readonly colors: number[],
-        readonly vertices: number[],
-        readonly vertexIndices: number[],
-        readonly cameraIndex: number[],
-        readonly children: Geometry[]
-    ) { }
+export interface StackGeometry {
+    readonly worldSpace: WorldSpace
+    readonly children: Geometry[]
 }
 
-export const stackGeometry = (worldSpace: WorldSpace, children: Geometry[]) =>
-    new StackGeometry(worldSpace, 0, [], [], [], [], [], children)
+export interface Stack<AppEvent> {
+    readonly id?: string
+    readonly onClick?: AppEvent
+    kind: UIKind.STACK
+    children: UI<AppEvent>[]
+}
 
-export class Stack {
-    constructor(readonly children: UI[]) { }
+export const stack = <AppEvent>(children: UI<AppEvent>[]): Stack<AppEvent> => ({
+    kind: UIKind.STACK,
+    children
+})
 
-    layout(constraints: Constraints, measureText: MeasureText) {
-        const children = this.children.map(c => c.layout(constraints, measureText))
-        const width = constraints.maxWidth
-        const height = constraints.maxHeight
-        return stackLayout({ width, height }, children)
-    }
+export const stackLayout = <AppEvent>(ui: Stack<AppEvent>, constraints: Constraints, measureText: MeasureText): StackLayout => {
+    const children = ui.children.map(c => layout(c, constraints, measureText))
+    const width = constraints.maxWidth
+    const height = constraints.maxHeight
+    return { size: { width, height }, children }
+}
 
-    geometry(layout: Layout, offset: Offset, cameraStack: CameraStack) {
-        const stackLayout = (layout as StackLayout)
-        const children = this.children.map((c, i) => c.geometry(stackLayout.children[i], offset, cameraStack))
-        const worldSpace = cameraStack.transformWorldSpace({
-            x0: offset.x,
-            y0: offset.y,
-            x1: offset.x + layout.size.width,
-            y1: offset.y + layout.size.height,
-        })
-        return stackGeometry(worldSpace, children)
-    }
+export const stackGeometry = <AppEvent>(ui: Stack<AppEvent>, layout: StackLayout, offset: Offset, cameraStack: CameraStack): StackGeometry => {
+    const children = ui.children.map((c, i) => geometry(c, layout.children[i], offset, cameraStack))
+    const worldSpace = transformWorldSpace(cameraStack, {
+        x0: offset.x,
+        y0: offset.y,
+        x1: offset.x + layout.size.width,
+        y1: offset.y + layout.size.height,
+    })
+    return { worldSpace, children }
+}
 
-    *traverse(layout: Layout, geometry: Geometry, z: number): Generator<Entry> {
-        const childrenLayout = (layout as StackLayout).children
-        const childrenGeometry = (geometry as StackGeometry).children
-        yield { ui: this, layout, geometry, z }
-        let i = 0
-        for (const child of this.children) {
-            for (const entry of child.traverse(childrenLayout[i], childrenGeometry[i], z)) {
-                yield entry
-                z = Math.max(z, entry.z)
-            }
-            i += 1
-            z += 1
+export function* stackTraverse<AppEvent>(ui: Stack<AppEvent>, layout: StackLayout, geometry: StackGeometry, z: number): Generator<Entry<AppEvent>> {
+    yield { ui, layout, geometry, z }
+    let i = 0
+    for (const child of ui.children) {
+        for (const entry of traverse(child, layout.children[i], geometry.children[i], z)) {
+            yield entry
+            z = Math.max(z, entry.z)
         }
+        i += 1
+        z += 1
     }
 }
-
-export const stack = (children: UI[]): Stack =>
-    new Stack(children)

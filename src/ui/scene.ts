@@ -1,84 +1,67 @@
-import { CameraStack } from "../camera_stack"
-import { Geometry, Offset, WorldSpace } from "../geometry"
-import { Constraints, Layout, Size } from "../layout"
+import { Connection, Constraints, Entry, geometry, Geometry, layout, Layout, MeasureText, Offset, Size, traverse, UI, UIKind, WorldSpace } from "."
 import { Matrix3x3 } from "../linear_algebra/matrix3x3"
-import { Connection, Entry, MeasureText, UI } from "../ui"
+import { CameraStack, popCamera, pushCamera, transformWorldSpace } from "./camera_stack"
 
-export class SceneLayout {
-    constructor(
-        readonly size: Size,
-        readonly children: Layout[]
-    ) { }
+export interface SceneLayout {
+    readonly size: Size
+    readonly children: Layout[]
 }
 
-export const sceneLayout = (size: Size, children: Layout[]) =>
-    new SceneLayout(size, children)
-
-export class SceneGeometry {
-    constructor(
-        readonly worldSpace: WorldSpace,
-        readonly textureIndex: number,
-        readonly textureCoordinates: number[],
-        readonly colors: number[],
-        readonly vertices: number[],
-        readonly vertexIndices: number[],
-        readonly cameraIndex: number[],
-        readonly children: Geometry[]
-    ) { }
+export interface SceneGeometry {
+    readonly worldSpace: WorldSpace
+    readonly children: Geometry[]
 }
 
-export const sceneGeometry = (worldSpace: WorldSpace, children: Geometry[]) =>
-    new SceneGeometry(worldSpace, 0, [], [], [], [], [], children)
+export interface Scene<AppEvent> {
+    readonly id?: string
+    readonly onClick?: AppEvent
+    readonly kind: UIKind.SCENE
+    readonly camera: Matrix3x3
+    readonly children: UI<AppEvent>[]
+    readonly connections: Connection[]
+}
 
-export class Scene {
-    constructor(
-        readonly camera: Matrix3x3,
-        readonly children: UI[],
-        readonly connections: Connection[]
-    ) { }
+export interface Properties<AppEvent> {
+    readonly id?: string
+    readonly onClick?: AppEvent
+    readonly camera: Matrix3x3
+    readonly children: UI<AppEvent>[]
+    readonly connections?: Connection[]
+}
 
-    layout(constraints: Constraints, measureText: MeasureText) {
-        const children = this.children.map(c => c.layout(constraints, measureText))
-        const width = constraints.maxWidth
-        const height = constraints.maxHeight
-        return sceneLayout({ width, height }, children)
-    }
+export const scene = <AppEvent>({ id, onClick, camera, children, connections }: Properties<AppEvent>): Scene<AppEvent> => ({
+    id, onClick, kind: UIKind.SCENE, camera, children, connections: connections ?? []
+})
 
-    geometry(layout: Layout, offset: Offset, cameraStack: CameraStack) {
-        const worldSpace = cameraStack.transformWorldSpace({
-            x0: offset.x,
-            y0: offset.y,
-            x1: offset.x + layout.size.width,
-            y1: offset.y + layout.size.height
-        })
-        const childrenLayout = (layout as SceneLayout).children
-        cameraStack.pushCamera(this.camera)
-        const children = this.children.map((c, i) => c.geometry(childrenLayout[i], offset, cameraStack))
-        cameraStack.popCamera()
-        return sceneGeometry(worldSpace, children)
-    }
+export const sceneLayout = <AppEvent>(ui: Scene<AppEvent>, constraints: Constraints, measureText: MeasureText): SceneLayout => {
+    const children = ui.children.map(c => layout(c, constraints, measureText))
+    const width = constraints.maxWidth
+    const height = constraints.maxHeight
+    return { size: { width, height }, children }
+}
 
-    *traverse(layout: Layout, geometry: Geometry, z: number): Generator<Entry> {
-        const childrenLayout = (layout as SceneLayout).children
-        const childrenGeometry = (geometry as SceneGeometry).children
-        yield { ui: this, layout, geometry, z }
-        let i = 0
-        for (const child of this.children) {
-            for (const entry of child.traverse(childrenLayout[i], childrenGeometry[i], z)) {
-                yield entry
-                z = Math.max(z, entry.z)
-            }
-            i++
-            z++
+export const sceneGeometry = <AppEvent>(ui: Scene<AppEvent>, layout: SceneLayout, offset: Offset, cameraStack: CameraStack): SceneGeometry => {
+    const worldSpace = transformWorldSpace(cameraStack, {
+        x0: offset.x,
+        y0: offset.y,
+        x1: offset.x + layout.size.width,
+        y1: offset.y + layout.size.height
+    })
+    pushCamera(cameraStack, ui.camera)
+    const children = ui.children.map((c, i) => geometry(c, layout.children[i], offset, cameraStack))
+    popCamera(cameraStack)
+    return { worldSpace, children }
+}
+
+export function* sceneTraverse<AppEvent>(ui: Scene<AppEvent>, layout: SceneLayout, geometry: SceneGeometry, z: number): Generator<Entry<AppEvent>> {
+    yield { ui, layout, geometry, z }
+    let i = 0
+    for (const child of ui.children) {
+        for (const entry of traverse(child, layout.children[i], geometry.children[i], z)) {
+            yield entry
+            z = Math.max(z, entry.z)
         }
+        i++
+        z++
     }
 }
-
-interface Properties {
-    camera: Matrix3x3
-    children: UI[]
-    connections?: Connection[]
-}
-
-export const scene = (properties: Properties): Scene =>
-    new Scene(properties.camera, properties.children, properties.connections ?? [])

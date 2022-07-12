@@ -1,10 +1,9 @@
-import { ClickHandlers } from ".";
 import { Batch } from "./batch_geometry";
-import { Size } from "../layout";
-import { Font, TextMeasurements } from "../ui";
+import { Font, TextMeasurements, Size } from ".";
 import { Lines } from "./connection_geometry";
 import { Matrix3x3, projection } from "../linear_algebra/matrix3x3";
 import { Document, WebGL2Context, Buffer, UniformLocation, Shader, Program, Canvas, Texture, Window } from "./dom";
+import { ClickHandlers } from "./gather_on_click_handlers";
 
 interface Attribute {
     location: number
@@ -106,7 +105,7 @@ const mapString = <T>(str: string, f: (c: string, i: number) => T): Array<T> => 
     return result
 }
 
-export class WebGL2Renderer {
+export class WebGL2Renderer<AppEvent> {
     _size: Size
     _cameras: Matrix3x3[]
 
@@ -118,7 +117,8 @@ export class WebGL2Renderer {
         public program: ProgramData,
         public textures: Texture[],
         public textMeasurementsCache: Map<string, TextMeasurements>,
-        public clickHandlers: ClickHandlers,
+        public clickHandlers: ClickHandlers<AppEvent>,
+        public dispatch: (event: AppEvent) => void
     ) { }
 
     clear = () => {
@@ -368,14 +368,15 @@ const createProgram = (gl: WebGL2Context): ProgramData => {
     }
 }
 
-interface Parameters {
+interface Parameters<AppEvent> {
     width: number
     height: number
     document: Document
     window: Window
+    dispatch?: (event: AppEvent) => void
 }
 
-export const webGL2Renderer = ({ width, height, document, window }: Parameters) => {
+export const webGL2Renderer = <AppEvent>({ width, height, document, window, dispatch }: Parameters<AppEvent>): WebGL2Renderer<AppEvent> => {
     const canvas = document.createElement('canvas')
     canvas.style.touchAction = 'none'
     const gl = canvas.getContext('webgl2')!
@@ -399,7 +400,17 @@ export const webGL2Renderer = ({ width, height, document, window }: Parameters) 
       /*srcType*/gl.UNSIGNED_BYTE,
       /*data*/new Uint8Array([255, 255, 255, 255])
     )
-    const renderer = new WebGL2Renderer(window, document, canvas, gl, program, [texture], new Map(), [])
+    const renderer = new WebGL2Renderer<AppEvent>(
+        window,
+        document,
+        canvas,
+        gl,
+        program,
+        [texture],
+        new Map(),
+        [],
+        dispatch ?? (() => { })
+    )
     renderer.size = { width, height }
     return renderer
 }

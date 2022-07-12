@@ -1,9 +1,9 @@
 import { fuzzyFind } from "./fuzzy_find"
 import { multiplyMatrices, multiplyMatrixVector, scale, translate } from "./linear_algebra/matrix3x3"
 import { length } from "./linear_algebra/vector3"
-import { UpdateResult } from "./new_ui/run"
+import { UpdateResult } from "./ui/run"
 import { InputPath, OutputPath, State } from "./state"
-import { Pointer } from "./new_ui"
+import { Pointer } from "./ui"
 
 export enum EventKind {
     POINTER_MOVE,

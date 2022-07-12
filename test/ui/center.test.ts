@@ -1,9 +1,9 @@
-import { container, center, layout, geometry, UIKind } from '../../src/new_ui'
-import { webGL2Renderer } from '../../src/new_ui/webgl2'
-import { mockDocument, mockWindow } from '../../src/new_ui/mock'
-import { initCameraStack } from '../../src/new_ui/camera_stack'
-import * as layerGeometry from '../../src/new_ui/layer_geometry'
-import { reduce } from '../../src/new_ui/reduce'
+import { container, center, layout, geometry, UIKind } from '../../src/ui'
+import { webGL2Renderer } from '../../src/ui/webgl2'
+import { mockDocument, mockWindow } from '../../src/ui/mock'
+import { initCameraStack } from '../../src/ui/camera_stack'
+import * as layerGeometry from '../../src/ui/layer_geometry'
+import { reduce } from '../../src/ui/reduce'
 
 const red = { red: 255, green: 0, blue: 0, alpha: 255 }
 

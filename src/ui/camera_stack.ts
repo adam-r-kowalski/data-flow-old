@@ -1,4 +1,4 @@
-import { WorldSpace } from "./"
+import { WorldSpace } from "."
 import { identity, inverse, Matrix3x3, multiplyMatrixVector } from "../linear_algebra/matrix3x3"
 
 export interface CameraStack {

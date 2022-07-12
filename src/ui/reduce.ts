@@ -1,4 +1,4 @@
-import { UI, Geometry, Layout, Entry, traverse } from "./";
+import { UI, Geometry, Layout, Entry, traverse } from ".";
 
 export interface Reducer<AppEvent, T> {
     initial: () => T

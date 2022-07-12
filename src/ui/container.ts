@@ -1,4 +1,4 @@
-import { UI, Size, Layout, Constraints, MeasureText, UIKind, layout, Color, Offset, WorldSpace, Geometry, geometry, Entry, traverse, } from './'
+import { UI, Size, Layout, Constraints, MeasureText, UIKind, layout, Color, Offset, WorldSpace, Geometry, geometry, Entry, traverse, } from '.'
 import { CameraStack, transformWorldSpace, activeCamera } from './camera_stack'
 
 export interface ContainerLayout {

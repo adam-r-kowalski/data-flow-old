@@ -1,10 +1,10 @@
-import { container, center, stack, layout, geometry } from '../../src/new_ui'
-import { Batch, batchGeometry } from '../../src/new_ui/batch_geometry'
-import { initCameraStack } from '../../src/new_ui/camera_stack'
-import * as layerGeometry from '../../src/new_ui/layer_geometry'
-import { reduce } from '../../src/new_ui/reduce'
-import { mockDocument, mockWindow } from '../../src/new_ui/mock'
-import { webGL2Renderer } from '../../src/new_ui/webgl2'
+import { container, center, stack, layout, geometry } from '../../src/ui'
+import { Batch, batchGeometry } from '../../src/ui/batch_geometry'
+import { initCameraStack } from '../../src/ui/camera_stack'
+import * as layerGeometry from '../../src/ui/layer_geometry'
+import { reduce } from '../../src/ui/reduce'
+import { mockDocument, mockWindow } from '../../src/ui/mock'
+import { webGL2Renderer } from '../../src/ui/webgl2'
 
 const red = { red: 255, green: 0, blue: 0, alpha: 255 }
 const green = { red: 0, green: 255, blue: 0, alpha: 255 }

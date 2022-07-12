@@ -1,5 +1,5 @@
 import { Matrix3x3 } from "./linear_algebra/matrix3x3"
-import { Pointer, Color } from "./new_ui"
+import { Pointer, Color } from "./ui"
 
 export interface InputPath {
     nodeIndex: number

@@ -1,9 +1,9 @@
-import { CrossAxisAlignment, MainAxisAlignment } from "./new_ui/alignment"
+import { CrossAxisAlignment, MainAxisAlignment } from "./ui/alignment"
 import { AppEvent, EventKind, update } from "./event"
 import { identity } from "./linear_algebra/matrix3x3"
-import { run, transformPointer } from "./new_ui/run"
+import { run, transformPointer } from "./ui/run"
 import { Finder, Input, Node, Output, State, Theme } from "./state"
-import { text, stack, scene, row, container, column, Connection, UI } from './new_ui'
+import { text, stack, scene, row, container, column, Connection, UI } from './ui'
 
 const spacer = (size: number): UI<AppEvent> =>
     container({ width: size, height: size })

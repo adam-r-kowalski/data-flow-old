@@ -1,9 +1,9 @@
-import { text, layout, geometry } from '../../src/new_ui'
-import { initCameraStack } from '../../src/new_ui/camera_stack'
-import * as layerGeometry from '../../src/new_ui/layer_geometry'
-import { reduce } from '../../src/new_ui/reduce'
-import { mockDocument, mockWindow } from '../../src/new_ui/mock'
-import { webGL2Renderer } from '../../src/new_ui/webgl2'
+import { text, layout, geometry } from '../../src/ui'
+import { initCameraStack } from '../../src/ui/camera_stack'
+import * as layerGeometry from '../../src/ui/layer_geometry'
+import { reduce } from '../../src/ui/reduce'
+import { mockDocument, mockWindow } from '../../src/ui/mock'
+import { webGL2Renderer } from '../../src/ui/webgl2'
 
 const mockRenderer = () => webGL2Renderer({
     width: 500,

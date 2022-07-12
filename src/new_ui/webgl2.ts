@@ -1,6 +1,5 @@
 import { Batch } from "./batch_geometry";
-import { Size } from "../layout";
-import { Font, TextMeasurements } from "../ui";
+import { Font, TextMeasurements, Size } from ".";
 import { Lines } from "./connection_geometry";
 import { Matrix3x3, projection } from "../linear_algebra/matrix3x3";
 import { Document, WebGL2Context, Buffer, UniformLocation, Shader, Program, Canvas, Texture, Window } from "./dom";

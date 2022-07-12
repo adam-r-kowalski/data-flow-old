@@ -1,7 +1,7 @@
-import { pointerDown } from "./new_ui/pointer_down"
-import { render } from "./new_ui/render"
-import { WebGL2Renderer, webGL2Renderer } from "./new_ui/webgl2"
-import { Pointer, UI } from "./new_ui"
+import { pointerDown } from "./pointer_down"
+import { render } from "./render"
+import { WebGL2Renderer, webGL2Renderer } from "./webgl2"
+import { Pointer, UI } from "."
 
 export const transformPointer = (p: PointerEvent): Pointer => ({
     x: p.clientX,

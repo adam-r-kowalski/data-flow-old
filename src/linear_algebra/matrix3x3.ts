@@ -1,4 +1,4 @@
-import { Size } from "../layout"
+import { Size } from "../new_ui"
 import { Vector3 } from "./vector3"
 
 export type Matrix3x3 = number[]

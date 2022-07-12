@@ -1,7 +1,7 @@
 import { CrossAxisAlignment, MainAxisAlignment } from "./new_ui/alignment"
 import { AppEvent, EventKind, update } from "./event"
 import { identity } from "./linear_algebra/matrix3x3"
-import { run, transformPointer } from "./run"
+import { run, transformPointer } from "./new_ui/run"
 import { Finder, Input, Node, Output, State, Theme } from "./state"
 import { text, stack, scene, row, container, column, Connection, UI } from './new_ui'
 

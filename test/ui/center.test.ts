@@ -1,6 +1,6 @@
 import { container, center, layout, geometry, UIKind } from '../../src/new_ui'
-import { webGL2Renderer } from '../../src/renderer/webgl2'
-import { mockDocument, mockWindow } from '../../src/renderer/mock'
+import { webGL2Renderer } from '../../src/new_ui/webgl2'
+import { mockDocument, mockWindow } from '../../src/new_ui/mock'
 import { initCameraStack } from '../../src/new_ui/camera_stack'
 import * as layerGeometry from '../../src/new_ui/layer_geometry'
 import { reduce } from '../../src/new_ui/reduce'

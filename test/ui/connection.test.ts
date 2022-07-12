@@ -1,8 +1,8 @@
 import { container, scene, geometry, layout } from '../../src/new_ui'
 import { initCameraStack } from '../../src/new_ui/camera_stack'
 import { identity } from "../../src/linear_algebra/matrix3x3"
-import { mockDocument, mockWindow } from "../../src/renderer/mock"
-import { webGL2Renderer } from "../../src/renderer/webgl2"
+import { mockDocument, mockWindow } from "../../src/new_ui/mock"
+import { webGL2Renderer } from "../../src/new_ui/webgl2"
 import { reduce } from '../../src/new_ui/reduce'
 import * as reducer from '../../src/new_ui/reducer'
 

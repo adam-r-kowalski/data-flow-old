@@ -25,6 +25,8 @@ export interface Padding {
 }
 
 export interface Container<UIEvent> {
+    readonly id?: string
+    readonly onClick?: UIEvent
     readonly kind: UIKind.CONTAINER,
     readonly padding: Padding
     readonly width?: number
@@ -32,8 +34,6 @@ export interface Container<UIEvent> {
     readonly x?: number
     readonly y?: number
     readonly color?: Color
-    readonly onClick?: UIEvent
-    readonly id?: string
     readonly child?: UI<UIEvent>
 }
 

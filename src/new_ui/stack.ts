@@ -12,6 +12,8 @@ export interface StackGeometry {
 }
 
 export interface Stack<UIEvent> {
+    readonly id?: string
+    readonly onClick?: UIEvent
     kind: UIKind.STACK
     children: UI<UIEvent>[]
 }

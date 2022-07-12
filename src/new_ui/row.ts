@@ -14,6 +14,8 @@ export interface RowGeometry {
 }
 
 export interface Row<UIEvent> {
+    readonly id?: string
+    readonly onClick?: UIEvent
     readonly kind: UIKind.ROW,
     readonly mainAxisAlignment: MainAxisAlignment
     readonly crossAxisAlignment: CrossAxisAlignment

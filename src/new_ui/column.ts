@@ -14,6 +14,8 @@ export interface ColumnGeometry {
 }
 
 export interface Column<UIEvent> {
+    readonly id?: string
+    readonly onClick?: UIEvent
     readonly kind: UIKind.COLUMN,
     readonly mainAxisAlignment: MainAxisAlignment
     readonly crossAxisAlignment: CrossAxisAlignment

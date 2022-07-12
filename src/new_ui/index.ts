@@ -2,14 +2,20 @@ import { Center, CenterLayout, centerLayout, CenterGeometry, centerGeometry, cen
 import { Column, ColumnLayout, columnLayout, ColumnGeometry, columnGeometry, columnTraverse } from './column'
 import { Container, ContainerLayout, containerLayout, ContainerGeometry, containerGeometry, containerTraverse } from './container'
 import { Row, RowLayout, rowLayout, RowGeometry, rowGeometry, rowTraverse } from './row'
+import { Scene, SceneLayout, sceneLayout, SceneGeometry, sceneGeometry, sceneTraverse } from './scene'
 import { Stack, StackLayout, stackLayout, StackGeometry, stackGeometry, stackTraverse } from './stack'
 import { Text, TextLayout, textLayout, TextGeometry, textGeometry, textTraverse } from './text'
 import { CameraStack } from './camera_stack'
+import { Matrix3x3 } from '../linear_algebra/matrix3x3'
+import { Batch } from './batch_geometry'
+import { ClickHandlers } from './gather_on_click_handlers'
+import { Lines } from './connection_geometry'
 
 export { center } from './center'
 export { column } from './column'
 export { container } from './container'
 export { row } from './row'
+export { scene } from './scene'
 export { stack } from './stack'
 export { text } from './text'
 
@@ -18,6 +24,7 @@ export enum UIKind {
     COLUMN,
     CONTAINER,
     ROW,
+    SCENE,
     STACK,
     TEXT,
 }
@@ -27,8 +34,9 @@ export type UI<UIEvent> =
     | Column<UIEvent>
     | Container<UIEvent>
     | Row<UIEvent>
+    | Scene<UIEvent>
     | Stack<UIEvent>
-    | Text
+    | Text<UIEvent>
 
 export interface Color {
     red: number
@@ -54,6 +62,7 @@ export type Layout =
     | ColumnLayout
     | ContainerLayout
     | RowLayout
+    | SceneLayout
     | StackLayout
     | TextLayout
 
@@ -80,6 +89,8 @@ export const layout = <UIEvent>(ui: UI<UIEvent>, constraints: Constraints, measu
             return containerLayout(ui, constraints, measureText)
         case UIKind.ROW:
             return rowLayout(ui, constraints, measureText)
+        case UIKind.SCENE:
+            return sceneLayout(ui, constraints, measureText)
         case UIKind.STACK:
             return stackLayout(ui, constraints, measureText)
         case UIKind.TEXT:
@@ -104,6 +115,7 @@ export type Geometry =
     | ColumnGeometry
     | ContainerGeometry
     | RowGeometry
+    | SceneGeometry
     | StackGeometry
     | TextGeometry
 
@@ -117,10 +129,12 @@ export const geometry = <UIEvent>(ui: UI<UIEvent>, layout: Layout, offset: Offse
             return containerGeometry(ui, layout as ContainerLayout, offset, cameraStack)
         case UIKind.ROW:
             return rowGeometry(ui, layout as RowLayout, offset, cameraStack)
-        case UIKind.TEXT:
-            return textGeometry(ui, layout as TextLayout, offset, cameraStack)
+        case UIKind.SCENE:
+            return sceneGeometry(ui, layout as SceneLayout, offset, cameraStack)
         case UIKind.STACK:
             return stackGeometry(ui, layout as StackLayout, offset, cameraStack)
+        case UIKind.TEXT:
+            return textGeometry(ui, layout as TextLayout, offset, cameraStack)
     }
 }
 
@@ -145,6 +159,9 @@ export function* traverse<UIEvent>(ui: UI<UIEvent>, layout: Layout, geometry: Ge
         case UIKind.ROW:
             yield* rowTraverse(ui, layout as RowLayout, geometry as RowGeometry, z)
             break
+        case UIKind.SCENE:
+            yield* sceneTraverse(ui, layout as SceneLayout, geometry as SceneGeometry, z)
+            break
         case UIKind.STACK:
             yield* stackTraverse(ui, layout as StackLayout, geometry as StackGeometry, z)
             break
@@ -152,4 +169,20 @@ export function* traverse<UIEvent>(ui: UI<UIEvent>, layout: Layout, geometry: Ge
             yield* textTraverse(ui, layout as TextLayout, geometry as TextGeometry, z)
             break
     }
+}
+
+export interface Connection {
+    from: string
+    to: string
+    color: Color
+}
+
+export interface Renderer<UIEvent> {
+    size: Size
+    cameras: Matrix3x3[]
+    clickHandlers: ClickHandlers<UIEvent>
+    clear: () => void
+    draw: (batch: Batch) => void
+    drawLines: (lines: Lines) => void
+    measureText: MeasureText
 }

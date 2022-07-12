@@ -12,6 +12,8 @@ export interface CenterGeometry {
 }
 
 export interface Center<UIEvent> {
+    readonly id?: string
+    readonly onClick?: UIEvent
     readonly kind: UIKind.CENTER
     readonly child: UI<UIEvent>
 }

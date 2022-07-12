@@ -76,15 +76,16 @@ const nodeUi = (theme: Theme, { name, x, y, inputs, outputs }: Node, index: numb
     if (inputs.length) rowEntries.push(inputsUi(theme, inputs, index))
     if (inputs.length && outputs.length) rowEntries.push(spacer(15))
     if (outputs.length) rowEntries.push(outputsUi(theme, outputs, index))
-    return container({
-        color: theme.node,
-        padding: 4,
-        x, y,
-        onClick: {
-            kind: EventKind.CLICKED_NODE,
-            index: index
-        }
-    },
+    return container(
+        {
+            color: theme.node,
+            padding: 4,
+            x, y,
+            onClick: {
+                kind: EventKind.CLICKED_NODE,
+                index: index
+            }
+        },
         column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             text(name),
             spacer(4),

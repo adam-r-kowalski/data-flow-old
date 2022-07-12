@@ -37,7 +37,6 @@ export const run = <State, AppEvent>(state: State, view: View<State, AppEvent>, 
         height: window.innerHeight,
         window,
         document,
-        dispatch: (_) => { }
     })
     let renderQueued = false
     const scheduleRender = () => {

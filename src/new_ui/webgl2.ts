@@ -374,7 +374,7 @@ interface Parameters<AppEvent> {
     height: number
     document: Document
     window: Window
-    dispatch: (event: AppEvent) => void
+    dispatch?: (event: AppEvent) => void
 }
 
 export const webGL2Renderer = <AppEvent>({ width, height, document, window, dispatch }: Parameters<AppEvent>): WebGL2Renderer<AppEvent> => {
@@ -401,7 +401,17 @@ export const webGL2Renderer = <AppEvent>({ width, height, document, window, disp
       /*srcType*/gl.UNSIGNED_BYTE,
       /*data*/new Uint8Array([255, 255, 255, 255])
     )
-    const renderer = new WebGL2Renderer<AppEvent>(window, document, canvas, gl, program, [texture], new Map(), [], dispatch)
+    const renderer = new WebGL2Renderer<AppEvent>(
+        window,
+        document,
+        canvas,
+        gl,
+        program,
+        [texture],
+        new Map(),
+        [],
+        dispatch ?? (() => { })
+    )
     renderer.size = { width, height }
     return renderer
 }

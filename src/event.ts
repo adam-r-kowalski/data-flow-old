@@ -81,7 +81,7 @@ export interface ClickedFinderOption {
     option: string
 }
 
-export type Event =
+export type AppEvent =
     | PointerMove
     | PointerDown
     | PointerUp
@@ -96,7 +96,7 @@ export type Event =
     | ClickedFinderOption
 
 
-const pointerDown = (state: State, event: PointerDown): UpdateResult<State, Event> => {
+const pointerDown = (state: State, event: PointerDown): UpdateResult<State, AppEvent> => {
     if (state.finder.show) return { state }
     state.pointers.push(event.pointer)
     if (state.pointers.length > 1) {
@@ -381,7 +381,7 @@ const clickedFinderOption = (state: State, { option }: ClickedFinderOption) => (
     render: true
 })
 
-export const update = (state: State, event: Event): UpdateResult<State, Event> => {
+export const update = (state: State, event: AppEvent): UpdateResult<State, AppEvent> => {
     switch (event.kind) {
         case EventKind.POINTER_DOWN: return pointerDown(state, event)
         case EventKind.POINTER_UP: return pointerUp(state, event)

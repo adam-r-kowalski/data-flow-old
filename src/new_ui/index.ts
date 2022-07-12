@@ -185,4 +185,11 @@ export interface Renderer<AppEvent> {
     draw: (batch: Batch) => void
     drawLines: (lines: Lines) => void
     measureText: MeasureText
+    dispatch: (event: AppEvent) => void
+}
+
+export interface Pointer {
+    x: number
+    y: number
+    id: number
 }

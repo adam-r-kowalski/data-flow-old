@@ -26,11 +26,11 @@ export interface Properties<AppEvent> {
     readonly onClick?: AppEvent
     readonly camera: Matrix3x3
     readonly children: UI<AppEvent>[]
-    readonly connections: Connection[]
+    readonly connections?: Connection[]
 }
 
 export const scene = <AppEvent>({ id, onClick, camera, children, connections }: Properties<AppEvent>): Scene<AppEvent> => ({
-    id, onClick, kind: UIKind.SCENE, camera, children, connections
+    id, onClick, kind: UIKind.SCENE, camera, children, connections: connections ?? []
 })
 
 export const sceneLayout = <AppEvent>(ui: Scene<AppEvent>, constraints: Constraints, measureText: MeasureText): SceneLayout => {

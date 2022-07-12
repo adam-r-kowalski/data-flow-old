@@ -6,7 +6,7 @@ import * as reducer from './reducer'
 import { Accumulator } from './reducer'
 import { connectionGeometry } from "./connection_geometry"
 
-export const render = <UIEvent, R extends Renderer<UIEvent>>(renderer: R, ui: UI<UIEvent>): R => {
+export const render = <AppEvent, R extends Renderer<AppEvent>>(renderer: R, ui: UI<AppEvent>): R => {
     const { width, height } = renderer.size
     renderer.clear()
     const constraints = {
@@ -19,7 +19,7 @@ export const render = <UIEvent, R extends Renderer<UIEvent>>(renderer: R, ui: UI
     const offsets = { x: 0, y: 0 }
     const cameraStack = initCameraStack()
     const uiGeometry = geometry(ui, uiLayout, offsets, cameraStack)
-    const { layers, clickHandlers, connections, idToWorldSpace } = reduce<UIEvent, Accumulator<UIEvent>>(ui, uiLayout, uiGeometry, reducer)
+    const { layers, clickHandlers, connections, idToWorldSpace } = reduce<AppEvent, Accumulator<AppEvent>>(ui, uiLayout, uiGeometry, reducer)
     const batches = batchGeometry(layers)
     const lines = connectionGeometry(connections, idToWorldSpace)
     renderer.cameras = cameraStack.cameras

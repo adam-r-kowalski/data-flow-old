@@ -12,35 +12,35 @@ export interface SceneGeometry {
     readonly children: Geometry[]
 }
 
-export interface Scene<UIEvent> {
+export interface Scene<AppEvent> {
     readonly id?: string
-    readonly onClick?: UIEvent
+    readonly onClick?: AppEvent
     readonly kind: UIKind.SCENE
     readonly camera: Matrix3x3
-    readonly children: UI<UIEvent>[]
+    readonly children: UI<AppEvent>[]
     readonly connections: Connection[]
 }
 
-export interface Properties<UIEvent> {
+export interface Properties<AppEvent> {
     readonly id?: string
-    readonly onClick?: UIEvent
+    readonly onClick?: AppEvent
     readonly camera: Matrix3x3
-    readonly children: UI<UIEvent>[]
+    readonly children: UI<AppEvent>[]
     readonly connections: Connection[]
 }
 
-export const scene = <UIEvent>({ id, onClick, camera, children, connections }: Properties<UIEvent>): Scene<UIEvent> => ({
+export const scene = <AppEvent>({ id, onClick, camera, children, connections }: Properties<AppEvent>): Scene<AppEvent> => ({
     id, onClick, kind: UIKind.SCENE, camera, children, connections
 })
 
-export const sceneLayout = <UIEvent>(ui: Scene<UIEvent>, constraints: Constraints, measureText: MeasureText): SceneLayout => {
+export const sceneLayout = <AppEvent>(ui: Scene<AppEvent>, constraints: Constraints, measureText: MeasureText): SceneLayout => {
     const children = ui.children.map(c => layout(c, constraints, measureText))
     const width = constraints.maxWidth
     const height = constraints.maxHeight
     return { size: { width, height }, children }
 }
 
-export const sceneGeometry = <UIEvent>(ui: Scene<UIEvent>, layout: SceneLayout, offset: Offset, cameraStack: CameraStack): SceneGeometry => {
+export const sceneGeometry = <AppEvent>(ui: Scene<AppEvent>, layout: SceneLayout, offset: Offset, cameraStack: CameraStack): SceneGeometry => {
     const worldSpace = transformWorldSpace(cameraStack, {
         x0: offset.x,
         y0: offset.y,
@@ -53,7 +53,7 @@ export const sceneGeometry = <UIEvent>(ui: Scene<UIEvent>, layout: SceneLayout, 
     return { worldSpace, children }
 }
 
-export function* sceneTraverse<UIEvent>(ui: Scene<UIEvent>, layout: SceneLayout, geometry: SceneGeometry, z: number): Generator<Entry<UIEvent>> {
+export function* sceneTraverse<AppEvent>(ui: Scene<AppEvent>, layout: SceneLayout, geometry: SceneGeometry, z: number): Generator<Entry<AppEvent>> {
     yield { ui, layout, geometry, z }
     let i = 0
     for (const child of ui.children) {

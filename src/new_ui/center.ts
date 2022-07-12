@@ -11,28 +11,28 @@ export interface CenterGeometry {
     readonly child: Geometry
 }
 
-export interface Center<UIEvent> {
+export interface Center<AppEvent> {
     readonly id?: string
-    readonly onClick?: UIEvent
+    readonly onClick?: AppEvent
     readonly kind: UIKind.CENTER
-    readonly child: UI<UIEvent>
+    readonly child: UI<AppEvent>
 }
 
-export const center = <UIEvent>(child: UI<UIEvent>): Center<UIEvent> => {
+export const center = <AppEvent>(child: UI<AppEvent>): Center<AppEvent> => {
     return {
         kind: UIKind.CENTER,
         child
     }
 }
 
-export const centerLayout = <UIEvent>(ui: Center<UIEvent>, constraints: Constraints, measureText: MeasureText): CenterLayout => {
+export const centerLayout = <AppEvent>(ui: Center<AppEvent>, constraints: Constraints, measureText: MeasureText): CenterLayout => {
     const childLayout = layout(ui.child, constraints, measureText)
     const width = constraints.maxWidth
     const height = constraints.maxHeight
     return { size: { width, height }, child: childLayout }
 }
 
-export const centerGeometry = <UIEvent>(ui: Center<UIEvent>, layout: CenterLayout, offset: Offset, cameraStack: CameraStack): CenterGeometry => {
+export const centerGeometry = <AppEvent>(ui: Center<AppEvent>, layout: CenterLayout, offset: Offset, cameraStack: CameraStack): CenterGeometry => {
     const worldSpace = transformWorldSpace(cameraStack, {
         x0: offset.x,
         y0: offset.y,
@@ -51,6 +51,6 @@ export const centerGeometry = <UIEvent>(ui: Center<UIEvent>, layout: CenterLayou
     }
 }
 
-export function* centerTraverse<UIEvent>(ui: Center<UIEvent>, layout: CenterLayout, geometry: CenterGeometry, z: number): Generator<Entry<UIEvent>> {
+export function* centerTraverse<AppEvent>(ui: Center<AppEvent>, layout: CenterLayout, geometry: CenterGeometry, z: number): Generator<Entry<AppEvent>> {
     yield* traverse(ui.child, layout.child, geometry.child, z + 1)
 }

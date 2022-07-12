@@ -13,13 +13,13 @@ export interface RowGeometry {
     readonly children: Geometry[]
 }
 
-export interface Row<UIEvent> {
+export interface Row<AppEvent> {
     readonly id?: string
-    readonly onClick?: UIEvent
+    readonly onClick?: AppEvent
     readonly kind: UIKind.ROW,
     readonly mainAxisAlignment: MainAxisAlignment
     readonly crossAxisAlignment: CrossAxisAlignment
-    readonly children: UI<UIEvent>[]
+    readonly children: UI<AppEvent>[]
 }
 
 
@@ -28,13 +28,10 @@ interface Properties {
     readonly crossAxisAlignment?: CrossAxisAlignment
 }
 
-type Overload<UIEvent> = {
-    (children: UI<UIEvent>[]): Row<UIEvent>
-    (properties: Properties, children: UI<UIEvent>[]): Row<UIEvent>
-}
-
-export const row: Overload<UIEvent> = <UIEvent>(...args: any[]): Row<UIEvent> => {
-    const [properties, children]: [Properties, UI<UIEvent>[]] = (() =>
+export function row<AppEvent>(children: UI<AppEvent>[]): Row<AppEvent>
+export function row<AppEvent>(properties: Properties, children: UI<AppEvent>[]): Row<AppEvent>
+export function row<AppEvent>(...args: any[]): Row<AppEvent> {
+    const [properties, children]: [Properties, UI<AppEvent>[]] = (() =>
         args[0] instanceof Array ? [{}, args[0]] : [args[0], args[1]]
     )()
     return {
@@ -45,7 +42,7 @@ export const row: Overload<UIEvent> = <UIEvent>(...args: any[]): Row<UIEvent> =>
     }
 }
 
-export const rowLayout = <UIEvent>(ui: Row<UIEvent>, constraints: Constraints, measureText: MeasureText): RowLayout => {
+export const rowLayout = <AppEvent>(ui: Row<AppEvent>, constraints: Constraints, measureText: MeasureText): RowLayout => {
     const initialChildren: Layout[] = []
     const initial = {
         children: initialChildren,
@@ -64,7 +61,7 @@ export const rowLayout = <UIEvent>(ui: Row<UIEvent>, constraints: Constraints, m
     return { size: { width, height }, totalChildWidth, children }
 }
 
-export const rowGeometry = <UIEvent>(ui: Row<UIEvent>, layout: RowLayout, offset: Offset, cameraStack: CameraStack): RowGeometry => {
+export const rowGeometry = <AppEvent>(ui: Row<AppEvent>, layout: RowLayout, offset: Offset, cameraStack: CameraStack): RowGeometry => {
     const initialChildren: Geometry[] = []
     const freeSpaceX = layout.size.width - layout.totalChildWidth
     const initial = {
@@ -120,7 +117,7 @@ export const rowGeometry = <UIEvent>(ui: Row<UIEvent>, layout: RowLayout, offset
     return { worldSpace, children: result.children }
 }
 
-export function* rowTraverse<UIEvent>(ui: Row<UIEvent>, layout: RowLayout, geometry: RowGeometry, z: number): Generator<Entry<UIEvent>> {
+export function* rowTraverse<AppEvent>(ui: Row<AppEvent>, layout: RowLayout, geometry: RowGeometry, z: number): Generator<Entry<AppEvent>> {
     yield { ui, layout, geometry, z }
     const nextZ = z + 1
     let i = 0

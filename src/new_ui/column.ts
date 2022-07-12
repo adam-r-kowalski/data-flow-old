@@ -13,13 +13,13 @@ export interface ColumnGeometry {
     readonly children: Geometry[]
 }
 
-export interface Column<UIEvent> {
+export interface Column<AppEvent> {
     readonly id?: string
-    readonly onClick?: UIEvent
+    readonly onClick?: AppEvent
     readonly kind: UIKind.COLUMN,
     readonly mainAxisAlignment: MainAxisAlignment
     readonly crossAxisAlignment: CrossAxisAlignment
-    readonly children: UI<UIEvent>[]
+    readonly children: UI<AppEvent>[]
 }
 
 interface Properties {
@@ -27,13 +27,10 @@ interface Properties {
     readonly crossAxisAlignment?: CrossAxisAlignment
 }
 
-type Overload<UIEvent> = {
-    (children: UI<UIEvent>[]): Column<UIEvent>
-    (properties: Properties, children: UI<UIEvent>[]): Column<UIEvent>
-}
-
-export const column: Overload<UIEvent> = <UIEvent>(...args: any[]): Column<UIEvent> => {
-    const [properties, children]: [Properties, UI<UIEvent>[]] = (() =>
+export function column<AppEvent>(children: UI<AppEvent>[]): Column<AppEvent>
+export function column<AppEvent>(properties: Properties, children: UI<AppEvent>[]): Column<AppEvent>
+export function column<AppEvent>(...args: any[]): Column<AppEvent> {
+    const [properties, children]: [Properties, UI<AppEvent>[]] = (() =>
         args[0] instanceof Array ? [{}, args[0]] : [args[0], args[1]]
     )()
     return {
@@ -44,7 +41,7 @@ export const column: Overload<UIEvent> = <UIEvent>(...args: any[]): Column<UIEve
     }
 }
 
-export const columnLayout = <UIEvent>(ui: Column<UIEvent>, constraints: Constraints, measureText: MeasureText): ColumnLayout => {
+export const columnLayout = <AppEvent>(ui: Column<AppEvent>, constraints: Constraints, measureText: MeasureText): ColumnLayout => {
     const initialChildren: Layout[] = []
     const initial = {
         children: initialChildren,
@@ -67,7 +64,7 @@ export const columnLayout = <UIEvent>(ui: Column<UIEvent>, constraints: Constrai
     }
 }
 
-export const columnGeometry = <UIEvent>(ui: Column<UIEvent>, layout: ColumnLayout, offset: Offset, cameraStack: CameraStack): ColumnGeometry => {
+export const columnGeometry = <AppEvent>(ui: Column<AppEvent>, layout: ColumnLayout, offset: Offset, cameraStack: CameraStack): ColumnGeometry => {
     const initialChildren: Geometry[] = []
     const freeSpaceY = layout.size.height - layout.totalChildHeight
     const initial = {
@@ -123,7 +120,7 @@ export const columnGeometry = <UIEvent>(ui: Column<UIEvent>, layout: ColumnLayou
     return { worldSpace, children: result.children }
 }
 
-export function* columnTraverse<UIEvent>(ui: Column<UIEvent>, layout: ColumnLayout, geometry: ColumnGeometry, z: number): Generator<Entry<UIEvent>> {
+export function* columnTraverse<AppEvent>(ui: Column<AppEvent>, layout: ColumnLayout, geometry: ColumnGeometry, z: number): Generator<Entry<AppEvent>> {
     yield { ui, layout, geometry, z }
     const nextZ = z + 1
     let i = 0

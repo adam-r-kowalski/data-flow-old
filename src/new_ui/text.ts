@@ -16,9 +16,9 @@ export interface TextGeometry {
     readonly cameraIndex: number[]
 }
 
-export interface Text<UIEvent> {
+export interface Text<AppEvent> {
     readonly id?: string
-    readonly onClick?: UIEvent
+    readonly onClick?: AppEvent
     readonly kind: UIKind.TEXT
     readonly font: Font
     readonly color: Color
@@ -31,12 +31,9 @@ interface Properties {
     readonly color?: Color
 }
 
-type Overload = {
-    (str: string): Text<UIEvent>
-    (properties: Properties, str: string): Text<UIEvent>
-}
-
-export const text: Overload = (...args: any[]): Text<UIEvent> => {
+export function text<AppEvent>(str: string): Text<AppEvent>
+export function text<AppEvent>(properties: Properties, str: string): Text<AppEvent>
+export function text<AppEvent>(...args: any[]): Text<AppEvent> {
     const [properties, str]: [Properties, string] = (() =>
         typeof args[0] == 'string' ? [{}, args[0]] : [args[0], args[1]]
     )()
@@ -51,7 +48,7 @@ export const text: Overload = (...args: any[]): Text<UIEvent> => {
     }
 }
 
-export const textLayout = <UIEvent>({ font, str }: Text<UIEvent>, _: Constraints, measureText: MeasureText): TextLayout => {
+export const textLayout = <AppEvent>({ font, str }: Text<AppEvent>, _: Constraints, measureText: MeasureText): TextLayout => {
     const measurements = measureText(font, str)
     const width = measurements.widths.reduce((acc, width) => acc + width)
     const size = { width, height: font.size }
@@ -103,7 +100,7 @@ const vertexIndices = (n: number) => {
     return result
 }
 
-export const textGeometry = <UIEvent>(ui: Text<UIEvent>, layout: TextLayout, offset: Offset, cameraStack: CameraStack): TextGeometry => {
+export const textGeometry = <AppEvent>(ui: Text<AppEvent>, layout: TextLayout, offset: Offset, cameraStack: CameraStack): TextGeometry => {
     const textLayout = layout as TextLayout
     const { measurements } = textLayout
     const { textureIndex, textureCoordinates, widths } = measurements
@@ -123,6 +120,6 @@ export const textGeometry = <UIEvent>(ui: Text<UIEvent>, layout: TextLayout, off
     }
 }
 
-export function* textTraverse<UIEvent>(ui: Text<UIEvent>, layout: TextLayout, geometry: TextGeometry, z: number): Generator<Entry<UIEvent>> {
+export function* textTraverse<AppEvent>(ui: Text<AppEvent>, layout: TextLayout, geometry: TextGeometry, z: number): Generator<Entry<AppEvent>> {
     yield { ui, layout, geometry, z }
 }

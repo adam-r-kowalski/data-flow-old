@@ -29,14 +29,14 @@ export enum UIKind {
     TEXT,
 }
 
-export type UI<UIEvent> =
-    | Center<UIEvent>
-    | Column<UIEvent>
-    | Container<UIEvent>
-    | Row<UIEvent>
-    | Scene<UIEvent>
-    | Stack<UIEvent>
-    | Text<UIEvent>
+export type UI<AppEvent> =
+    | Center<AppEvent>
+    | Column<AppEvent>
+    | Container<AppEvent>
+    | Row<AppEvent>
+    | Scene<AppEvent>
+    | Stack<AppEvent>
+    | Text<AppEvent>
 
 export interface Color {
     red: number
@@ -79,7 +79,7 @@ export interface TextMeasurements {
 
 export type MeasureText = (font: Font, str: string) => TextMeasurements
 
-export const layout = <UIEvent>(ui: UI<UIEvent>, constraints: Constraints, measureText: MeasureText): Layout => {
+export const layout = <AppEvent>(ui: UI<AppEvent>, constraints: Constraints, measureText: MeasureText): Layout => {
     switch (ui.kind) {
         case UIKind.CENTER:
             return centerLayout(ui, constraints, measureText)
@@ -119,7 +119,7 @@ export type Geometry =
     | StackGeometry
     | TextGeometry
 
-export const geometry = <UIEvent>(ui: UI<UIEvent>, layout: Layout, offset: Offset, cameraStack: CameraStack): Geometry => {
+export const geometry = <AppEvent>(ui: UI<AppEvent>, layout: Layout, offset: Offset, cameraStack: CameraStack): Geometry => {
     switch (ui.kind) {
         case UIKind.CENTER:
             return centerGeometry(ui, layout as CenterLayout, offset, cameraStack)
@@ -138,14 +138,14 @@ export const geometry = <UIEvent>(ui: UI<UIEvent>, layout: Layout, offset: Offse
     }
 }
 
-export interface Entry<UIEvent> {
-    readonly ui: UI<UIEvent>
+export interface Entry<AppEvent> {
+    readonly ui: UI<AppEvent>
     readonly layout: Layout
     readonly geometry: Geometry
     readonly z: number
 }
 
-export function* traverse<UIEvent>(ui: UI<UIEvent>, layout: Layout, geometry: Geometry, z: number): Generator<Entry<UIEvent>> {
+export function* traverse<AppEvent>(ui: UI<AppEvent>, layout: Layout, geometry: Geometry, z: number): Generator<Entry<AppEvent>> {
     switch (ui.kind) {
         case UIKind.CENTER:
             yield* centerTraverse(ui, layout as CenterLayout, geometry as CenterGeometry, z)
@@ -177,10 +177,10 @@ export interface Connection {
     color: Color
 }
 
-export interface Renderer<UIEvent> {
+export interface Renderer<AppEvent> {
     size: Size
     cameras: Matrix3x3[]
-    clickHandlers: ClickHandlers<UIEvent>
+    clickHandlers: ClickHandlers<AppEvent>
     clear: () => void
     draw: (batch: Batch) => void
     drawLines: (lines: Lines) => void

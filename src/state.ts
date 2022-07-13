@@ -26,6 +26,7 @@ export interface Output {
 export interface Node {
     name: string
     inputs: Input[]
+    body?: number
     outputs: Output[]
     x: number
     y: number
@@ -58,6 +59,7 @@ export interface Finder {
 export interface Operation {
     name: string
     inputs: string[]
+    body?: number
     outputs: string[]
 }
 

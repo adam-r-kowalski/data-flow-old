@@ -71,10 +71,15 @@ const outputsUi = (theme: Theme, outputs: Output[], nodeIndex: number) =>
         )
     )
 
-const nodeUi = (theme: Theme, { name, x, y, inputs, outputs }: Node, index: number): UI<AppEvent> => {
+const numberUi = (theme: Theme, body: number) =>
+    container({ color: theme.background, padding: 5 },
+        text(body.toString()))
+
+const nodeUi = (theme: Theme, { name, x, y, inputs, body, outputs }: Node, index: number): UI<AppEvent> => {
     const rowEntries: UI<AppEvent>[] = []
     if (inputs.length) rowEntries.push(inputsUi(theme, inputs, index))
     if (inputs.length && outputs.length) rowEntries.push(spacer(15))
+    if (body) rowEntries.push(numberUi(theme, body), spacer(15))
     if (outputs.length) rowEntries.push(outputsUi(theme, outputs, index))
     return container(
         {
@@ -188,40 +193,91 @@ const initialState: State = {
     graph: {
         nodes: [
             {
-                name: "Source",
+                name: "Number",
                 inputs: [],
+                body: 5,
                 outputs: [
-                    { name: "Out 1", selected: false, edgeIndices: [] },
-                    { name: "Out 2", selected: false, edgeIndices: [] }
+                    { name: "out", selected: false, edgeIndices: [0] },
                 ],
-                x: 7,
-                y: 15
+                x: 25,
+                y: 25
             },
             {
-                name: "Transform",
+                name: "Number",
+                inputs: [],
+                body: 10,
+                outputs: [
+                    { name: "out", selected: false, edgeIndices: [1] },
+                ],
+                x: 25,
+                y: 100
+            },
+            {
+                name: "Add",
                 inputs: [
-                    { name: "In 1", selected: false, edgeIndices: [] },
-                    { name: "In 2", selected: false, edgeIndices: [] }
+                    { name: "x", selected: false, edgeIndices: [0] },
+                    { name: "y", selected: false, edgeIndices: [1] }
                 ],
                 outputs: [
-                    { name: "Out 1", selected: false, edgeIndices: [] },
-                    { name: "Out 2", selected: false, edgeIndices: [] }
+                    { name: "out", selected: false, edgeIndices: [2] },
                 ],
-                x: window.innerWidth / 2 - 70,
+                x: 150,
                 y: 50
             },
             {
-                name: "Sink",
+                name: "Number",
+                inputs: [],
+                body: 15,
+                outputs: [
+                    { name: "out", selected: false, edgeIndices: [3] },
+                ],
+                x: 175,
+                y: 150
+            },
+            {
+                name: "Divide",
                 inputs: [
-                    { name: "In 1", selected: false, edgeIndices: [] },
-                    { name: "In 2", selected: false, edgeIndices: [] }
+                    { name: "x", selected: false, edgeIndices: [2] },
+                    { name: "y", selected: false, edgeIndices: [3] }
+                ],
+                outputs: [
+                    { name: "out", selected: false, edgeIndices: [4] },
+                ],
+                x: 350,
+                y: 50
+            },
+            {
+                name: "Return",
+                inputs: [
+                    { name: "value", selected: false, edgeIndices: [4] },
                 ],
                 outputs: [],
-                x: window.innerWidth - 70,
-                y: 15
+                x: 550,
+                y: 50
             },
         ],
-        edges: []
+        edges: [
+            {
+                output: { nodeIndex: 0, outputIndex: 0 },
+                input: { nodeIndex: 2, inputIndex: 0 },
+            },
+            {
+                output: { nodeIndex: 1, outputIndex: 0 },
+                input: { nodeIndex: 2, inputIndex: 1 },
+            },
+            {
+                output: { nodeIndex: 2, outputIndex: 0 },
+                input: { nodeIndex: 4, inputIndex: 0 },
+            },
+            {
+                output: { nodeIndex: 3, outputIndex: 0 },
+                input: { nodeIndex: 4, inputIndex: 1 },
+            },
+            {
+                output: { nodeIndex: 4, outputIndex: 0 },
+                input: { nodeIndex: 5, inputIndex: 0 },
+            }
+        ]
     },
     zooming: false,
     dragging: false,
@@ -247,6 +303,12 @@ const initialState: State = {
         show: false
     },
     operations: {
+        "Number": {
+            name: "Number",
+            inputs: [],
+            body: 0,
+            outputs: ["out"]
+        },
         "Add": {
             name: "Add",
             inputs: ["x", "y"],

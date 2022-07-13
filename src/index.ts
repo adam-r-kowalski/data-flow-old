@@ -2,7 +2,7 @@ import { CrossAxisAlignment, MainAxisAlignment } from "./ui/alignment"
 import { AppEvent, EventKind, update } from "./event"
 import { identity } from "./linear_algebra/matrix3x3"
 import { run, transformPointer } from "./ui/run"
-import { Finder, Input, Node, Output, State, Theme } from "./state"
+import { Body, Finder, Input, InputTargetKind, Node, Output, State, Theme, VirtualKeyboardKind } from "./state"
 import { text, stack, scene, row, container, column, Connection, UI } from './ui'
 
 const spacer = (size: number): UI<AppEvent> =>
@@ -71,10 +71,22 @@ const outputsUi = (theme: Theme, outputs: Output[], nodeIndex: number) =>
         )
     )
 
-const nodeUi = (theme: Theme, { name, x, y, inputs, outputs }: Node, index: number): UI<AppEvent> => {
+const numberUi = (theme: Theme, body: Body, nodeIndex: number): UI<AppEvent> =>
+    container({
+        color: body.editing ? theme.selectedInput : theme.background,
+        padding: 5,
+        onClick: {
+            kind: EventKind.CLICKED_NUMBER,
+            nodeIndex
+        }
+    },
+        text(body.value.toString()))
+
+const nodeUi = (theme: Theme, { name, x, y, inputs, body, outputs }: Node, index: number): UI<AppEvent> => {
     const rowEntries: UI<AppEvent>[] = []
     if (inputs.length) rowEntries.push(inputsUi(theme, inputs, index))
     if (inputs.length && outputs.length) rowEntries.push(spacer(15))
+    if (body !== undefined) rowEntries.push(numberUi(theme, body, index), spacer(15))
     if (outputs.length) rowEntries.push(outputsUi(theme, outputs, index))
     return container(
         {
@@ -132,7 +144,7 @@ const virtualKey = (key: string): UI<AppEvent> =>
 const virtualKeys = (keys: string[]) =>
     row(keys.map(c => virtualKey(c)))
 
-const virtualKeyboard = (theme: Theme) =>
+const alphabeticVirtualKeyboard = (theme: Theme) =>
     column({ mainAxisAlignment: MainAxisAlignment.END }, [
         row({ mainAxisAlignment: MainAxisAlignment.SPACE_BETWEEN }, [
             container({ padding: 4, color: theme.node },
@@ -156,72 +168,140 @@ const virtualKeyboard = (theme: Theme) =>
         ]),
     ])
 
+const numericVirtualKeyboard = (theme: Theme) =>
+    column({ mainAxisAlignment: MainAxisAlignment.END }, [
+        row({ mainAxisAlignment: MainAxisAlignment.END }, [
+            container({ padding: 4, color: theme.node },
+                column({ crossAxisAlignment: CrossAxisAlignment.END }, [
+                    virtualKeys(['1', '2', '3', '4']),
+                    virtualKeys(['5', '6', '7', '8']),
+                    virtualKeys(['9', '0', 'del']),
+                    virtualKeys(['.', 'ret']),
+                ])
+            ),
+        ]),
+    ])
+
+const virtualKeyboard = (theme: Theme, kind: VirtualKeyboardKind) => {
+    switch (kind) {
+        case VirtualKeyboardKind.ALPHABETIC: return alphabeticVirtualKeyboard(theme)
+        case VirtualKeyboardKind.NUMERIC: return numericVirtualKeyboard(theme)
+    }
+}
+
 
 const view = (state: State): UI<AppEvent> => {
-    if (!state.finder.show) {
-        const nodes: UI<AppEvent>[] = []
-        state.graph.nodes.forEach((node, i) => {
-            if (i !== state.draggedNode) nodes.push(nodeUi(state.theme, node, i))
-        })
-        if (state.draggedNode !== null) {
-            const i = state.draggedNode
-            nodes.push(nodeUi(state.theme, state.graph.nodes[i], i))
-        }
-        const connections: Connection[] = state.graph.edges.map(({ input, output }) => ({
-            from: `output ${output.nodeIndex} ${output.outputIndex}`,
-            to: `input ${input.nodeIndex} ${input.inputIndex}`,
-            color: state.theme.connection
-        }))
-        return stack([
-            container({ color: state.theme.background }),
-            scene({ camera: state.camera, children: nodes, connections }),
-        ])
+    const nodes: UI<AppEvent>[] = []
+    state.graph.nodes.forEach((node, i) => {
+        if (i !== state.draggedNode) nodes.push(nodeUi(state.theme, node, i))
+    })
+    if (state.draggedNode !== null) {
+        const i = state.draggedNode
+        nodes.push(nodeUi(state.theme, state.graph.nodes[i], i))
     }
-    return stack([
-        container({ color: state.theme.background }),
-        finder(state.finder, state.theme),
-        virtualKeyboard(state.theme)
-    ])
+    const connections: Connection[] = state.graph.edges.map(({ input, output }) => ({
+        from: `output ${output.nodeIndex} ${output.outputIndex}`,
+        to: `input ${input.nodeIndex} ${input.inputIndex}`,
+        color: state.theme.connection
+    }))
+    const stacked: UI<AppEvent>[] = [
+        container({ color: state.theme.background, onClick: { kind: EventKind.CLICKED_BACKGROUND } }),
+        scene({ camera: state.camera, children: nodes, connections }),
+    ]
+    if (state.finder.show) stacked.push(finder(state.finder, state.theme))
+    if (state.virtualKeyboard.show) stacked.push(virtualKeyboard(state.theme, state.virtualKeyboard.kind))
+    return stack(stacked)
 }
 
 const initialState: State = {
     graph: {
         nodes: [
             {
-                name: "Source",
+                name: "Number",
                 inputs: [],
+                body: { value: 5, editing: false },
                 outputs: [
-                    { name: "Out 1", selected: false, edgeIndices: [] },
-                    { name: "Out 2", selected: false, edgeIndices: [] }
+                    { name: "out", selected: false, edgeIndices: [0] },
                 ],
-                x: 7,
-                y: 15
+                x: 25,
+                y: 25
             },
             {
-                name: "Transform",
+                name: "Number",
+                inputs: [],
+                body: { value: 10, editing: false },
+                outputs: [
+                    { name: "out", selected: false, edgeIndices: [1] },
+                ],
+                x: 25,
+                y: 100
+            },
+            {
+                name: "Add",
                 inputs: [
-                    { name: "In 1", selected: false, edgeIndices: [] },
-                    { name: "In 2", selected: false, edgeIndices: [] }
+                    { name: "x", selected: false, edgeIndices: [0] },
+                    { name: "y", selected: false, edgeIndices: [1] }
                 ],
                 outputs: [
-                    { name: "Out 1", selected: false, edgeIndices: [] },
-                    { name: "Out 2", selected: false, edgeIndices: [] }
+                    { name: "out", selected: false, edgeIndices: [2] },
                 ],
-                x: window.innerWidth / 2 - 70,
+                x: 150,
                 y: 50
             },
             {
-                name: "Sink",
+                name: "Number",
+                inputs: [],
+                body: { value: 15, editing: false },
+                outputs: [
+                    { name: "out", selected: false, edgeIndices: [3] },
+                ],
+                x: 175,
+                y: 150
+            },
+            {
+                name: "Divide",
                 inputs: [
-                    { name: "In 1", selected: false, edgeIndices: [] },
-                    { name: "In 2", selected: false, edgeIndices: [] }
+                    { name: "x", selected: false, edgeIndices: [2] },
+                    { name: "y", selected: false, edgeIndices: [3] }
+                ],
+                outputs: [
+                    { name: "out", selected: false, edgeIndices: [4] },
+                ],
+                x: 350,
+                y: 50
+            },
+            {
+                name: "Return",
+                inputs: [
+                    { name: "value", selected: false, edgeIndices: [4] },
                 ],
                 outputs: [],
-                x: window.innerWidth - 70,
-                y: 15
+                x: 550,
+                y: 50
             },
         ],
-        edges: []
+        edges: [
+            {
+                output: { nodeIndex: 0, outputIndex: 0 },
+                input: { nodeIndex: 2, inputIndex: 0 },
+            },
+            {
+                output: { nodeIndex: 1, outputIndex: 0 },
+                input: { nodeIndex: 2, inputIndex: 1 },
+            },
+            {
+                output: { nodeIndex: 2, outputIndex: 0 },
+                input: { nodeIndex: 4, inputIndex: 0 },
+            },
+            {
+                output: { nodeIndex: 3, outputIndex: 0 },
+                input: { nodeIndex: 4, inputIndex: 1 },
+            },
+            {
+                output: { nodeIndex: 4, outputIndex: 0 },
+                input: { nodeIndex: 5, inputIndex: 0 },
+            }
+        ]
     },
     zooming: false,
     dragging: false,
@@ -246,7 +326,18 @@ const initialState: State = {
         options: [],
         show: false
     },
+    virtualKeyboard: {
+        show: false,
+        kind: VirtualKeyboardKind.ALPHABETIC
+    },
+    inputTarget: { kind: InputTargetKind.NONE },
     operations: {
+        "Number": {
+            name: "Number",
+            inputs: [],
+            body: 0,
+            outputs: ["out"]
+        },
         "Add": {
             name: "Add",
             inputs: ["x", "y"],

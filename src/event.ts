@@ -2,7 +2,7 @@ import { fuzzyFind } from "./fuzzy_find"
 import { multiplyMatrices, multiplyMatrixVector, scale, translate } from "./linear_algebra/matrix3x3"
 import { length } from "./linear_algebra/vector3"
 import { UpdateResult } from "./ui/run"
-import { InputPath, OutputPath, State, VirtualKeyboardKind } from "./state"
+import { InputPath, InputTargetKind, OutputPath, State, VirtualKeyboardKind } from "./state"
 import { Pointer } from "./ui"
 
 export enum EventKind {
@@ -110,7 +110,7 @@ export type AppEvent =
 
 
 const pointerDown = (state: State, event: PointerDown): UpdateResult<State, AppEvent> => {
-    if (state.finder.show) return { state }
+    if (state.inputTarget.kind !== InputTargetKind.NONE) return { state }
     state.pointers.push(event.pointer)
     if (state.pointers.length > 1) {
         state.potentialDoubleClick = false
@@ -290,21 +290,32 @@ const updateFinderOptions = (state: State): State => {
     return state
 }
 
-const doubleClick = (state: State, { pointer }: DoubleClick) => {
-    state.potentialDoubleClick = false
+export const openFinder = (state: State) => {
     state.finder.show = true
+    state.finder.search = ''
     state.virtualKeyboard = {
         show: true,
         kind: VirtualKeyboardKind.ALPHABETIC
     }
-    state.nodePlacementLocation = { x: pointer.x, y: pointer.y }
-    return { state: updateFinderOptions(state), render: true }
+    state.inputTarget = { kind: InputTargetKind.FINDER }
+    state.potentialDoubleClick = false
+    state = updateFinderOptions(state)
+    return state
 }
+
+
+const doubleClick = (state: State, { pointer }: DoubleClick) => {
+    state = openFinder(state)
+    state.nodePlacementLocation = { x: pointer.x, y: pointer.y }
+    return { state: state, render: true }
+}
+
 
 const closeFinder = (state: State) => {
     state.finder.show = false
     state.finder.search = ''
     state.virtualKeyboard.show = false
+    state.inputTarget = { kind: InputTargetKind.NONE }
     return state
 }
 
@@ -326,74 +337,152 @@ const insertOperationFromFinder = (state: State, name: string): State => {
         })),
         x,
         y,
-        body: operation.body
+        body: operation.body !== undefined ? {
+            value: operation.body,
+            editing: false
+        } : undefined
     })
+    console.log(state)
     return state
 }
 
 const keyDown = (state: State, { key }: KeyDown) => {
-    if (state.finder.show) {
-        switch (key) {
-            case 'Backspace':
-                state.finder.search = state.finder.search.slice(0, -1)
-                break
-            case 'Shift':
-            case 'Alt':
-            case 'Control':
-            case 'Meta':
-            case 'Tab':
-                break
-            case 'Enter':
-                if (state.finder.options.length > 0) {
-                    const name = state.finder.options[0]
-                    state = insertOperationFromFinder(state, name)
-                } else {
+    switch (state.inputTarget.kind) {
+        case InputTargetKind.FINDER:
+            switch (key) {
+                case 'Backspace':
+                    state.finder.search = state.finder.search.slice(0, -1)
+                    break
+                case 'Shift':
+                case 'Alt':
+                case 'Control':
+                case 'Meta':
+                case 'Tab':
+                    break
+                case 'Enter':
+                    if (state.finder.options.length > 0) {
+                        const name = state.finder.options[0]
+                        state = insertOperationFromFinder(state, name)
+                    } else {
+                        state = closeFinder(state)
+                    }
+                    break
+                case 'Escape':
                     state = closeFinder(state)
-                }
-                break
-            case 'Escape':
-                state = closeFinder(state)
-                break
-            default:
-                state.finder.search += key
-                break
-        }
-        return { state: updateFinderOptions(state), render: true }
+                    break
+                default:
+                    state.finder.search += key
+                    break
+            }
+            return { state: updateFinderOptions(state), render: true }
+        case InputTargetKind.NUMBER:
+            const node = state.graph.nodes[state.inputTarget.nodeIndex]
+            let value = node.body!.value.toString()
+            switch (key) {
+                case 'Backspace':
+                    let newValue = value.slice(0, -1)
+                    if (newValue === '') newValue = '0'
+                    node.body!.value = parseFloat(newValue)
+                    return { state, render: true }
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                case '7':
+                case '8':
+                case '9':
+                case '0':
+                case '.':
+                    value += key
+                    node.body!.value = parseFloat(value)
+                    return { state, render: true }
+                case 'Enter':
+                    node.body!.editing = false
+                    state.virtualKeyboard = {
+                        show: false,
+                        kind: VirtualKeyboardKind.ALPHABETIC
+                    }
+                    state.inputTarget = {
+                        kind: InputTargetKind.NONE
+                    }
+                    return { state, render: true }
+                default:
+                    return { state }
+            }
+        case InputTargetKind.NONE:
+            if (key == 'f') {
+                return { state: openFinder(state), render: true }
+            }
+            return { state }
     }
-    if (key == 'f') {
-        state.finder.show = true
-        state.virtualKeyboard = {
-            show: true,
-            kind: VirtualKeyboardKind.ALPHABETIC
-        }
-        return { state: updateFinderOptions(state), render: true }
-    }
-    return { state }
 }
 
 const virtualKeyDown = (state: State, { key }: VirtualKeyDown) => {
-    switch (key) {
-        case 'del':
-            state.finder.search = state.finder.search.slice(0, -1)
-            break
-        case 'sft':
-            break
-        case 'space':
-            state.finder.search += ' '
-            break
-        case 'ret':
-            if (state.finder.options.length > 0) {
-                const name = state.finder.options[0]
-                state = insertOperationFromFinder(state, name)
-            } else {
-                state = closeFinder(state)
+    switch (state.inputTarget.kind) {
+        case InputTargetKind.FINDER:
+            switch (key) {
+                case 'del':
+                    state.finder.search = state.finder.search.slice(0, -1)
+                    break
+                case 'sft':
+                    break
+                case 'space':
+                    state.finder.search += ' '
+                    break
+                case 'ret':
+                    if (state.finder.options.length > 0) {
+                        const name = state.finder.options[0]
+                        state = insertOperationFromFinder(state, name)
+                    } else {
+                        state = closeFinder(state)
+                    }
+                    break
+                default:
+                    state.finder.search += key
+                    break
             }
-            break
-        default:
-            state.finder.search += key
-            break
+            return { state: updateFinderOptions(state), render: true }
+        case InputTargetKind.NUMBER:
+            const node = state.graph.nodes[state.inputTarget.nodeIndex]
+            let value = node.body!.value.toString()
+            switch (key) {
+                case 'del':
+                    let newValue = value.slice(0, -1)
+                    if (newValue === '') newValue = '0'
+                    node.body!.value = parseFloat(newValue)
+                    return { state, render: true }
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                case '7':
+                case '8':
+                case '9':
+                case '0':
+                case '.':
+                    value += key
+                    node.body!.value = parseFloat(value)
+                    return { state, render: true }
+                case 'ret':
+                    node.body!.editing = false
+                    state.virtualKeyboard = {
+                        show: false,
+                        kind: VirtualKeyboardKind.ALPHABETIC
+                    }
+                    state.inputTarget = {
+                        kind: InputTargetKind.NONE
+                    }
+                    return { state, render: true }
+                default:
+                    return { state }
+            }
+        case InputTargetKind.NONE:
+            return { state }
     }
-    return { state: updateFinderOptions(state), render: true }
 }
 
 const clickedFinderOption = (state: State, { option }: ClickedFinderOption) => ({
@@ -402,10 +491,19 @@ const clickedFinderOption = (state: State, { option }: ClickedFinderOption) => (
 })
 
 const clickedNumber = (state: State, { nodeIndex }: ClickedNumber) => {
+    if (state.inputTarget.kind === InputTargetKind.NUMBER) {
+        state.graph.nodes[state.inputTarget.nodeIndex].body!.editing = false
+    }
+    state = closeFinder(state)
     state.virtualKeyboard = {
         show: true,
         kind: VirtualKeyboardKind.NUMERIC
     }
+    state.inputTarget = {
+        kind: InputTargetKind.NUMBER,
+        nodeIndex
+    }
+    state.graph.nodes[nodeIndex].body!.editing = true
     return {
         state,
         render: true
@@ -413,6 +511,9 @@ const clickedNumber = (state: State, { nodeIndex }: ClickedNumber) => {
 }
 
 const clickedBackground = (state: State) => {
+    if (state.inputTarget.kind === InputTargetKind.NUMBER) {
+        state.graph.nodes[state.inputTarget.nodeIndex].body!.editing = false
+    }
     return {
         state: closeFinder(state),
         render: true

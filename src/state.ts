@@ -23,10 +23,15 @@ export interface Output {
     edgeIndices: number[]
 }
 
+export interface Body {
+    value: number
+    editing: boolean
+}
+
 export interface Node {
     name: string
     inputs: Input[]
-    body?: number
+    body?: Body
     outputs: Output[]
     x: number
     y: number
@@ -80,6 +85,28 @@ export interface VirtualKeyboard {
     kind: VirtualKeyboardKind
 }
 
+export enum InputTargetKind {
+    FINDER,
+    NUMBER,
+    NONE
+}
+
+export interface FinderInputTarget { kind: InputTargetKind.FINDER }
+
+export interface NumberInputTarget {
+    kind: InputTargetKind.NUMBER,
+    nodeIndex: number
+}
+
+export interface NoInputTarget {
+    kind: InputTargetKind.NONE,
+}
+
+export type InputTarget =
+    | FinderInputTarget
+    | NumberInputTarget
+    | NoInputTarget
+
 export interface State {
     graph: Graph
     zooming: boolean
@@ -94,6 +121,7 @@ export interface State {
     nodePlacementLocation: ScreenCoordinates
     finder: Finder
     virtualKeyboard: VirtualKeyboard
+    inputTarget: InputTarget
     camera: Matrix3x3
     operations: Operations
     theme: Theme

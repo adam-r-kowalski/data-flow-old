@@ -1,6 +1,6 @@
-import { EventKind, update } from "../src/event"
+import { EventKind, openFinder, update } from "../src/event"
 import { identity, translate } from "../src/linear_algebra/matrix3x3"
-import { State, VirtualKeyboardKind } from "../src/state"
+import { InputTargetKind, State, VirtualKeyboardKind } from "../src/state"
 
 const initialState = (): State => ({
     graph: {
@@ -67,6 +67,9 @@ const initialState = (): State => ({
     virtualKeyboard: {
         show: false,
         kind: VirtualKeyboardKind.ALPHABETIC
+    },
+    inputTarget: {
+        kind: InputTargetKind.NONE
     },
     operations: {}
 })
@@ -557,13 +560,13 @@ test("f key down when finder is not shown opens finder", () => {
     const expectedState = initialState()
     expectedState.finder.show = true
     expectedState.virtualKeyboard.show = true
+    expectedState.inputTarget = { kind: InputTargetKind.FINDER }
     expect(state1).toEqual(expectedState)
     expect(render).toEqual(true)
 })
 
 test("key down when finder is shown appends to search", () => {
-    const state = initialState()
-    state.finder.show = true
+    const state = openFinder(initialState())
     const { state: state1 } = update(state, {
         kind: EventKind.KEYDOWN,
         key: 'a'
@@ -579,13 +582,17 @@ test("key down when finder is shown appends to search", () => {
     const expectedState = initialState()
     expectedState.finder.show = true
     expectedState.finder.search = 'add'
+    expectedState.virtualKeyboard = {
+        show: true,
+        kind: VirtualKeyboardKind.ALPHABETIC
+    }
+    expectedState.inputTarget.kind = InputTargetKind.FINDER
     expect(state3).toEqual(expectedState)
     expect(render).toEqual(true)
 })
 
 test("backspace key down when finder is shown deletes from search", () => {
-    const state = initialState()
-    state.finder.show = true
+    const state = openFinder(initialState())
     const { state: state1 } = update(state, {
         kind: EventKind.KEYDOWN,
         key: 'a'
@@ -605,13 +612,17 @@ test("backspace key down when finder is shown deletes from search", () => {
     const expectedState = initialState()
     expectedState.finder.show = true
     expectedState.finder.search = 'ad'
+    expectedState.virtualKeyboard = {
+        show: true,
+        kind: VirtualKeyboardKind.ALPHABETIC
+    }
+    expectedState.inputTarget.kind = InputTargetKind.FINDER
     expect(state4).toEqual(expectedState)
     expect(render).toEqual(true)
 })
 
 test("enter key down when finder is shown closes finder", () => {
-    const state = initialState()
-    state.finder.show = true
+    const state = openFinder(initialState())
     const { state: state1, render } = update(state, {
         kind: EventKind.KEYDOWN,
         key: 'Enter'
@@ -622,8 +633,7 @@ test("enter key down when finder is shown closes finder", () => {
 })
 
 test("escape key down when finder is shown closes finder", () => {
-    const state = initialState()
-    state.finder.show = true
+    const state = openFinder(initialState())
     const { state: state1, render } = update(state, {
         kind: EventKind.KEYDOWN,
         key: 'Escape'
@@ -634,59 +644,75 @@ test("escape key down when finder is shown closes finder", () => {
 })
 
 test("shift key down when finder is shown are ignored", () => {
-    const state = initialState()
-    state.finder.show = true
+    const state = openFinder(initialState())
     const { state: state1, render } = update(state, {
         kind: EventKind.KEYDOWN,
         key: 'Shift'
     })
     const expectedState = initialState()
     expectedState.finder.show = true
+    expectedState.virtualKeyboard = {
+        show: true,
+        kind: VirtualKeyboardKind.ALPHABETIC
+    }
+    expectedState.inputTarget.kind = InputTargetKind.FINDER
     expect(state1).toEqual(expectedState)
     expect(render).toEqual(true)
 })
 
 test("alt key down when finder is shown are ignored", () => {
-    const state = initialState()
-    state.finder.show = true
+    const state = openFinder(initialState())
     const { state: state1, render } = update(state, {
         kind: EventKind.KEYDOWN,
         key: 'Alt'
     })
     const expectedState = initialState()
     expectedState.finder.show = true
+    expectedState.virtualKeyboard = {
+        show: true,
+        kind: VirtualKeyboardKind.ALPHABETIC
+    }
+    expectedState.inputTarget.kind = InputTargetKind.FINDER
     expect(state1).toEqual(expectedState)
     expect(render).toEqual(true)
 })
 
 test("control key down when finder is shown are ignored", () => {
-    const state = initialState()
-    state.finder.show = true
+    const state = openFinder(initialState())
     const { state: state1, render } = update(state, {
         kind: EventKind.KEYDOWN,
         key: 'Control'
     })
     const expectedState = initialState()
     expectedState.finder.show = true
+    expectedState.virtualKeyboard = {
+        show: true,
+        kind: VirtualKeyboardKind.ALPHABETIC
+    }
+    expectedState.inputTarget.kind = InputTargetKind.FINDER
     expect(state1).toEqual(expectedState)
     expect(render).toEqual(true)
 })
 
 test("meta key down when finder is shown are ignored", () => {
-    const state = initialState()
-    state.finder.show = true
+    const state = openFinder(initialState())
     const { state: state1, render } = update(state, {
         kind: EventKind.KEYDOWN,
         key: 'Meta'
     })
     const expectedState = initialState()
     expectedState.finder.show = true
+    expectedState.virtualKeyboard = {
+        show: true,
+        kind: VirtualKeyboardKind.ALPHABETIC
+    }
+    expectedState.inputTarget.kind = InputTargetKind.FINDER
     expect(state1).toEqual(expectedState)
     expect(render).toEqual(true)
 })
 
 test("Tab key down when finder is shown are ignored", () => {
-    const state = initialState()
+    const state = openFinder(initialState())
     state.finder.show = true
     const { state: state1, render } = update(state, {
         kind: EventKind.KEYDOWN,
@@ -694,13 +720,17 @@ test("Tab key down when finder is shown are ignored", () => {
     })
     const expectedState = initialState()
     expectedState.finder.show = true
+    expectedState.virtualKeyboard = {
+        show: true,
+        kind: VirtualKeyboardKind.ALPHABETIC
+    }
+    expectedState.inputTarget.kind = InputTargetKind.FINDER
     expect(state1).toEqual(expectedState)
     expect(render).toEqual(true)
 })
 
 test("virtual key down when finder is shown appends to search", () => {
-    const state = initialState()
-    state.finder.show = true
+    const state = openFinder(initialState())
     const { state: state1 } = update(state, {
         kind: EventKind.VIRTUAL_KEYDOWN,
         key: 'a'
@@ -716,13 +746,17 @@ test("virtual key down when finder is shown appends to search", () => {
     const expectedState = initialState()
     expectedState.finder.show = true
     expectedState.finder.search = 'add'
+    expectedState.virtualKeyboard = {
+        show: true,
+        kind: VirtualKeyboardKind.ALPHABETIC
+    }
+    expectedState.inputTarget.kind = InputTargetKind.FINDER
     expect(state3).toEqual(expectedState)
     expect(render).toEqual(true)
 })
 
 test("del virtual key down when finder is shown deletes from search", () => {
-    const state = initialState()
-    state.finder.show = true
+    const state = openFinder(initialState())
     const { state: state1 } = update(state, {
         kind: EventKind.VIRTUAL_KEYDOWN,
         key: 'a'
@@ -742,13 +776,17 @@ test("del virtual key down when finder is shown deletes from search", () => {
     const expectedState = initialState()
     expectedState.finder.show = true
     expectedState.finder.search = 'ad'
+    expectedState.virtualKeyboard = {
+        show: true,
+        kind: VirtualKeyboardKind.ALPHABETIC
+    }
+    expectedState.inputTarget.kind = InputTargetKind.FINDER
     expect(state4).toEqual(expectedState)
     expect(render).toEqual(true)
 })
 
 test("space virtual key down when finder is shown adds space to search", () => {
-    const state = initialState()
-    state.finder.show = true
+    const state = openFinder(initialState())
     const { state: state1 } = update(state, {
         kind: EventKind.VIRTUAL_KEYDOWN,
         key: 'a'
@@ -764,13 +802,17 @@ test("space virtual key down when finder is shown adds space to search", () => {
     const expectedState = initialState()
     expectedState.finder.show = true
     expectedState.finder.search = 'a d'
+    expectedState.virtualKeyboard = {
+        show: true,
+        kind: VirtualKeyboardKind.ALPHABETIC
+    }
+    expectedState.inputTarget.kind = InputTargetKind.FINDER
     expect(state3).toEqual(expectedState)
     expect(render).toEqual(true)
 })
 
 test("ret virtual key down when finder is shown closes finder", () => {
-    const state = initialState()
-    state.finder.show = true
+    const state = openFinder(initialState())
     const { state: state1, render } = update(state, {
         kind: EventKind.VIRTUAL_KEYDOWN,
         key: 'ret'
@@ -781,14 +823,18 @@ test("ret virtual key down when finder is shown closes finder", () => {
 })
 
 test("sft virtual key down when finder is shown are ignored", () => {
-    const state = initialState()
-    state.finder.show = true
+    const state = openFinder(initialState())
     const { state: state1, render } = update(state, {
         kind: EventKind.VIRTUAL_KEYDOWN,
         key: 'sft'
     })
     const expectedState = initialState()
     expectedState.finder.show = true
+    expectedState.virtualKeyboard = {
+        show: true,
+        kind: VirtualKeyboardKind.ALPHABETIC
+    }
+    expectedState.inputTarget.kind = InputTargetKind.FINDER
     expect(state1).toEqual(expectedState)
     expect(render).toEqual(true)
 })

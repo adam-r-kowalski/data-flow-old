@@ -2,7 +2,7 @@ import { CrossAxisAlignment, MainAxisAlignment } from "./ui/alignment"
 import { AppEvent, EventKind, update } from "./event"
 import { identity } from "./linear_algebra/matrix3x3"
 import { run, transformPointer } from "./ui/run"
-import { Finder, Input, Node, Output, State, Theme, VirtualKeyboardKind } from "./state"
+import { Body, Finder, Input, InputTargetKind, Node, Output, State, Theme, VirtualKeyboardKind } from "./state"
 import { text, stack, scene, row, container, column, Connection, UI } from './ui'
 
 const spacer = (size: number): UI<AppEvent> =>
@@ -71,16 +71,16 @@ const outputsUi = (theme: Theme, outputs: Output[], nodeIndex: number) =>
         )
     )
 
-const numberUi = (theme: Theme, body: number, nodeIndex: number): UI<AppEvent> =>
+const numberUi = (theme: Theme, body: Body, nodeIndex: number): UI<AppEvent> =>
     container({
-        color: theme.background,
+        color: body.editing ? theme.selectedInput : theme.background,
         padding: 5,
         onClick: {
             kind: EventKind.CLICKED_NUMBER,
             nodeIndex
         }
     },
-        text(body.toString()))
+        text(body.value.toString()))
 
 const nodeUi = (theme: Theme, { name, x, y, inputs, body, outputs }: Node, index: number): UI<AppEvent> => {
     const rowEntries: UI<AppEvent>[] = []
@@ -219,7 +219,7 @@ const initialState: State = {
             {
                 name: "Number",
                 inputs: [],
-                body: 5,
+                body: { value: 5, editing: false },
                 outputs: [
                     { name: "out", selected: false, edgeIndices: [0] },
                 ],
@@ -229,7 +229,7 @@ const initialState: State = {
             {
                 name: "Number",
                 inputs: [],
-                body: 10,
+                body: { value: 10, editing: false },
                 outputs: [
                     { name: "out", selected: false, edgeIndices: [1] },
                 ],
@@ -251,7 +251,7 @@ const initialState: State = {
             {
                 name: "Number",
                 inputs: [],
-                body: 15,
+                body: { value: 15, editing: false },
                 outputs: [
                     { name: "out", selected: false, edgeIndices: [3] },
                 ],
@@ -330,6 +330,7 @@ const initialState: State = {
         show: false,
         kind: VirtualKeyboardKind.ALPHABETIC
     },
+    inputTarget: { kind: InputTargetKind.NONE },
     operations: {
         "Number": {
             name: "Number",

@@ -1,6 +1,6 @@
 import { EventKind, update } from "../src/event"
 import { identity, translate } from "../src/linear_algebra/matrix3x3"
-import { State } from "../src/state"
+import { State, VirtualKeyboardKind } from "../src/state"
 
 const initialState = (): State => ({
     graph: {
@@ -63,6 +63,10 @@ const initialState = (): State => ({
         search: '',
         options: [],
         show: false
+    },
+    virtualKeyboard: {
+        show: false,
+        kind: VirtualKeyboardKind.ALPHABETIC
     },
     operations: {}
 })
@@ -552,6 +556,7 @@ test("f key down when finder is not shown opens finder", () => {
     })
     const expectedState = initialState()
     expectedState.finder.show = true
+    expectedState.virtualKeyboard.show = true
     expect(state1).toEqual(expectedState)
     expect(render).toEqual(true)
 })
@@ -691,16 +696,6 @@ test("Tab key down when finder is shown are ignored", () => {
     expectedState.finder.show = true
     expect(state1).toEqual(expectedState)
     expect(render).toEqual(true)
-})
-
-test("virtual key down when finder is not shown does nothing", () => {
-    const state = initialState()
-    const { state: state1 } = update(state, {
-        kind: EventKind.VIRTUAL_KEYDOWN,
-        key: 'f'
-    })
-    const expectedState = initialState()
-    expect(state1).toEqual(expectedState)
 })
 
 test("virtual key down when finder is shown appends to search", () => {

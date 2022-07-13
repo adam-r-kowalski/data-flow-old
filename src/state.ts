@@ -70,6 +70,16 @@ export interface ScreenCoordinates {
     y: number
 }
 
+export enum VirtualKeyboardKind {
+    ALPHABETIC,
+    NUMERIC
+}
+
+export interface VirtualKeyboard {
+    show: boolean
+    kind: VirtualKeyboardKind
+}
+
 export interface State {
     graph: Graph
     zooming: boolean
@@ -83,6 +93,7 @@ export interface State {
     potentialDoubleClick: boolean
     nodePlacementLocation: ScreenCoordinates
     finder: Finder
+    virtualKeyboard: VirtualKeyboard
     camera: Matrix3x3
     operations: Operations
     theme: Theme

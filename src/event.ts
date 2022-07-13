@@ -2,7 +2,7 @@ import { fuzzyFind } from "./fuzzy_find"
 import { multiplyMatrices, multiplyMatrixVector, scale, translate } from "./linear_algebra/matrix3x3"
 import { length } from "./linear_algebra/vector3"
 import { UpdateResult } from "./ui/run"
-import { InputPath, OutputPath, State } from "./state"
+import { InputPath, OutputPath, State, VirtualKeyboardKind } from "./state"
 import { Pointer } from "./ui"
 
 export enum EventKind {
@@ -17,7 +17,9 @@ export enum EventKind {
     DOUBLE_CLICK,
     KEYDOWN,
     VIRTUAL_KEYDOWN,
-    CLICKED_FINDER_OPTION
+    CLICKED_FINDER_OPTION,
+    CLICKED_NUMBER,
+    CLICKED_BACKGROUND
 }
 
 export interface PointerMove {
@@ -77,8 +79,17 @@ export interface VirtualKeyDown {
 }
 
 export interface ClickedFinderOption {
-    kind: EventKind.CLICKED_FINDER_OPTION,
+    kind: EventKind.CLICKED_FINDER_OPTION
     option: string
+}
+
+export interface ClickedNumber {
+    kind: EventKind.CLICKED_NUMBER,
+    nodeIndex: number
+}
+
+export interface ClickedBackground {
+    kind: EventKind.CLICKED_BACKGROUND,
 }
 
 export type AppEvent =
@@ -94,6 +105,8 @@ export type AppEvent =
     | KeyDown
     | VirtualKeyDown
     | ClickedFinderOption
+    | ClickedNumber
+    | ClickedBackground
 
 
 const pointerDown = (state: State, event: PointerDown): UpdateResult<State, AppEvent> => {
@@ -280,6 +293,10 @@ const updateFinderOptions = (state: State): State => {
 const doubleClick = (state: State, { pointer }: DoubleClick) => {
     state.potentialDoubleClick = false
     state.finder.show = true
+    state.virtualKeyboard = {
+        show: true,
+        kind: VirtualKeyboardKind.ALPHABETIC
+    }
     state.nodePlacementLocation = { x: pointer.x, y: pointer.y }
     return { state: updateFinderOptions(state), render: true }
 }
@@ -287,6 +304,7 @@ const doubleClick = (state: State, { pointer }: DoubleClick) => {
 const closeFinder = (state: State) => {
     state.finder.show = false
     state.finder.search = ''
+    state.virtualKeyboard.show = false
     return state
 }
 
@@ -307,7 +325,8 @@ const insertOperationFromFinder = (state: State, name: string): State => {
             edgeIndices: []
         })),
         x,
-        y
+        y,
+        body: operation.body
     })
     return state
 }
@@ -343,43 +362,62 @@ const keyDown = (state: State, { key }: KeyDown) => {
     }
     if (key == 'f') {
         state.finder.show = true
-        return { state: updateFinderOptions(state), render: true }
-    }
-    return { state }
-}
-
-const virtualKeyDown = (state: State, { key }: VirtualKeyDown) => {
-    if (state.finder.show) {
-        switch (key) {
-            case 'del':
-                state.finder.search = state.finder.search.slice(0, -1)
-                break
-            case 'sft':
-                break
-            case 'space':
-                state.finder.search += ' '
-                break
-            case 'ret':
-                if (state.finder.options.length > 0) {
-                    const name = state.finder.options[0]
-                    state = insertOperationFromFinder(state, name)
-                } else {
-                    state = closeFinder(state)
-                }
-                break
-            default:
-                state.finder.search += key
-                break
+        state.virtualKeyboard = {
+            show: true,
+            kind: VirtualKeyboardKind.ALPHABETIC
         }
         return { state: updateFinderOptions(state), render: true }
     }
     return { state }
 }
 
+const virtualKeyDown = (state: State, { key }: VirtualKeyDown) => {
+    switch (key) {
+        case 'del':
+            state.finder.search = state.finder.search.slice(0, -1)
+            break
+        case 'sft':
+            break
+        case 'space':
+            state.finder.search += ' '
+            break
+        case 'ret':
+            if (state.finder.options.length > 0) {
+                const name = state.finder.options[0]
+                state = insertOperationFromFinder(state, name)
+            } else {
+                state = closeFinder(state)
+            }
+            break
+        default:
+            state.finder.search += key
+            break
+    }
+    return { state: updateFinderOptions(state), render: true }
+}
+
 const clickedFinderOption = (state: State, { option }: ClickedFinderOption) => ({
     state: insertOperationFromFinder(state, option),
     render: true
 })
+
+const clickedNumber = (state: State, { nodeIndex }: ClickedNumber) => {
+    state.virtualKeyboard = {
+        show: true,
+        kind: VirtualKeyboardKind.NUMERIC
+    }
+    return {
+        state,
+        render: true
+    }
+}
+
+const clickedBackground = (state: State) => {
+    return {
+        state: closeFinder(state),
+        render: true
+    }
+}
 
 export const update = (state: State, event: AppEvent): UpdateResult<State, AppEvent> => {
     switch (event.kind) {
@@ -395,5 +433,7 @@ export const update = (state: State, event: AppEvent): UpdateResult<State, AppEv
         case EventKind.KEYDOWN: return keyDown(state, event)
         case EventKind.VIRTUAL_KEYDOWN: return virtualKeyDown(state, event)
         case EventKind.CLICKED_FINDER_OPTION: return clickedFinderOption(state, event)
+        case EventKind.CLICKED_NUMBER: return clickedNumber(state, event)
+        case EventKind.CLICKED_BACKGROUND: return clickedBackground(state)
     }
 }

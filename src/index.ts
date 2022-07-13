@@ -2,7 +2,7 @@ import { CrossAxisAlignment, MainAxisAlignment } from "./ui/alignment"
 import { AppEvent, EventKind, update } from "./event"
 import { identity } from "./linear_algebra/matrix3x3"
 import { run, transformPointer } from "./ui/run"
-import { Finder, Input, Node, Output, State, Theme } from "./state"
+import { Finder, Input, Node, Output, State, Theme, VirtualKeyboardKind } from "./state"
 import { text, stack, scene, row, container, column, Connection, UI } from './ui'
 
 const spacer = (size: number): UI<AppEvent> =>
@@ -71,15 +71,22 @@ const outputsUi = (theme: Theme, outputs: Output[], nodeIndex: number) =>
         )
     )
 
-const numberUi = (theme: Theme, body: number) =>
-    container({ color: theme.background, padding: 5 },
+const numberUi = (theme: Theme, body: number, nodeIndex: number): UI<AppEvent> =>
+    container({
+        color: theme.background,
+        padding: 5,
+        onClick: {
+            kind: EventKind.CLICKED_NUMBER,
+            nodeIndex
+        }
+    },
         text(body.toString()))
 
 const nodeUi = (theme: Theme, { name, x, y, inputs, body, outputs }: Node, index: number): UI<AppEvent> => {
     const rowEntries: UI<AppEvent>[] = []
     if (inputs.length) rowEntries.push(inputsUi(theme, inputs, index))
     if (inputs.length && outputs.length) rowEntries.push(spacer(15))
-    if (body) rowEntries.push(numberUi(theme, body), spacer(15))
+    if (body !== undefined) rowEntries.push(numberUi(theme, body, index), spacer(15))
     if (outputs.length) rowEntries.push(outputsUi(theme, outputs, index))
     return container(
         {
@@ -137,7 +144,7 @@ const virtualKey = (key: string): UI<AppEvent> =>
 const virtualKeys = (keys: string[]) =>
     row(keys.map(c => virtualKey(c)))
 
-const virtualKeyboard = (theme: Theme) =>
+const alphabeticVirtualKeyboard = (theme: Theme) =>
     column({ mainAxisAlignment: MainAxisAlignment.END }, [
         row({ mainAxisAlignment: MainAxisAlignment.SPACE_BETWEEN }, [
             container({ padding: 4, color: theme.node },
@@ -161,32 +168,49 @@ const virtualKeyboard = (theme: Theme) =>
         ]),
     ])
 
+const numericVirtualKeyboard = (theme: Theme) =>
+    column({ mainAxisAlignment: MainAxisAlignment.END }, [
+        row({ mainAxisAlignment: MainAxisAlignment.END }, [
+            container({ padding: 4, color: theme.node },
+                column({ crossAxisAlignment: CrossAxisAlignment.END }, [
+                    virtualKeys(['1', '2', '3', '4']),
+                    virtualKeys(['5', '6', '7', '8']),
+                    virtualKeys(['9', '0', 'del']),
+                    virtualKeys(['.', 'ret']),
+                ])
+            ),
+        ]),
+    ])
+
+const virtualKeyboard = (theme: Theme, kind: VirtualKeyboardKind) => {
+    switch (kind) {
+        case VirtualKeyboardKind.ALPHABETIC: return alphabeticVirtualKeyboard(theme)
+        case VirtualKeyboardKind.NUMERIC: return numericVirtualKeyboard(theme)
+    }
+}
+
 
 const view = (state: State): UI<AppEvent> => {
-    if (!state.finder.show) {
-        const nodes: UI<AppEvent>[] = []
-        state.graph.nodes.forEach((node, i) => {
-            if (i !== state.draggedNode) nodes.push(nodeUi(state.theme, node, i))
-        })
-        if (state.draggedNode !== null) {
-            const i = state.draggedNode
-            nodes.push(nodeUi(state.theme, state.graph.nodes[i], i))
-        }
-        const connections: Connection[] = state.graph.edges.map(({ input, output }) => ({
-            from: `output ${output.nodeIndex} ${output.outputIndex}`,
-            to: `input ${input.nodeIndex} ${input.inputIndex}`,
-            color: state.theme.connection
-        }))
-        return stack([
-            container({ color: state.theme.background }),
-            scene({ camera: state.camera, children: nodes, connections }),
-        ])
+    const nodes: UI<AppEvent>[] = []
+    state.graph.nodes.forEach((node, i) => {
+        if (i !== state.draggedNode) nodes.push(nodeUi(state.theme, node, i))
+    })
+    if (state.draggedNode !== null) {
+        const i = state.draggedNode
+        nodes.push(nodeUi(state.theme, state.graph.nodes[i], i))
     }
-    return stack([
-        container({ color: state.theme.background }),
-        finder(state.finder, state.theme),
-        virtualKeyboard(state.theme)
-    ])
+    const connections: Connection[] = state.graph.edges.map(({ input, output }) => ({
+        from: `output ${output.nodeIndex} ${output.outputIndex}`,
+        to: `input ${input.nodeIndex} ${input.inputIndex}`,
+        color: state.theme.connection
+    }))
+    const stacked: UI<AppEvent>[] = [
+        container({ color: state.theme.background, onClick: { kind: EventKind.CLICKED_BACKGROUND } }),
+        scene({ camera: state.camera, children: nodes, connections }),
+    ]
+    if (state.finder.show) stacked.push(finder(state.finder, state.theme))
+    if (state.virtualKeyboard.show) stacked.push(virtualKeyboard(state.theme, state.virtualKeyboard.kind))
+    return stack(stacked)
 }
 
 const initialState: State = {
@@ -301,6 +325,10 @@ const initialState: State = {
         search: '',
         options: [],
         show: false
+    },
+    virtualKeyboard: {
+        show: false,
+        kind: VirtualKeyboardKind.ALPHABETIC
     },
     operations: {
         "Number": {

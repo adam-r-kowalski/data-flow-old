@@ -271,7 +271,7 @@ const initialState: State = {
                 y: 50
             },
             {
-                name: "Return",
+                name: "Log",
                 inputs: [
                     { name: "value", selected: false, edgeIndices: [4] },
                 ],
@@ -368,10 +368,10 @@ const initialState: State = {
             inputs: ["x", "y"],
             outputs: ["out"]
         },
-        "Less Than Or Equal": {
-            name: "Less Than Or Equal",
-            inputs: ["x", "y"],
-            outputs: ["out"]
+        "Log": {
+            name: "Log",
+            inputs: ["value"],
+            outputs: []
         }
     }
 }

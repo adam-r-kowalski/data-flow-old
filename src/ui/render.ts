@@ -4,7 +4,6 @@ import { reduce } from "./reduce"
 import { UI, layout, geometry, Renderer } from "."
 import * as reducer from './reducer'
 import { Accumulator } from './reducer'
-import { connectionGeometry } from "./connection_geometry"
 
 export const render = <AppEvent, R extends Renderer<AppEvent>>(renderer: R, ui: UI<AppEvent>): R => {
     const { width, height } = renderer.size
@@ -20,11 +19,9 @@ export const render = <AppEvent, R extends Renderer<AppEvent>>(renderer: R, ui: 
     const cameraStack = initCameraStack()
     const uiGeometry = geometry(ui, uiLayout, offsets, cameraStack)
     const { layers, clickHandlers, connections, idToWorldSpace } = reduce<AppEvent, Accumulator<AppEvent>>(ui, uiLayout, uiGeometry, reducer)
-    const batches = batchGeometry(layers)
-    const lines = connectionGeometry(connections, idToWorldSpace)
+    const batches = batchGeometry(layers, connections, idToWorldSpace)
     renderer.cameras = cameraStack.cameras
     renderer.clickHandlers = clickHandlers
     for (const batch of batches) renderer.draw(batch)
-    if (lines.vertices.length) renderer.drawLines(lines)
     return renderer
 }

@@ -1,6 +1,5 @@
 import { Batch } from "./batch_geometry";
 import { Font, TextMeasurements, Size } from ".";
-import { Lines } from "./connection_geometry";
 import { Matrix3x3, projection } from "../linear_algebra/matrix3x3";
 import { Document, WebGL2Context, Buffer, UniformLocation, Shader, Program, Canvas, Texture, Window } from "./dom";
 import { ClickHandlers } from "./gather_on_click_handlers";
@@ -152,39 +151,44 @@ export class WebGL2Renderer<AppEvent> {
 
     get cameras() { return this._cameras }
 
-    draw = ({ vertices, colors, vertexIndices, textureCoordinates, textureIndex, cameraIndex }: Batch) => {
+    draw = ({ triangles, lines }: Batch) => {
         const { gl, program, textures } = this
         const { attributes } = program
-        const texture = textures[textureIndex]
-        gl.bindTexture(gl.TEXTURE_2D, texture)
-        gl.bindBuffer(gl.ARRAY_BUFFER, attributes.vertices.buffer)
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW)
-        gl.bindBuffer(gl.ARRAY_BUFFER, attributes.colors.buffer)
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW)
-        gl.bindBuffer(gl.ARRAY_BUFFER, attributes.textureCoordinates.buffer)
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoordinates), gl.STATIC_DRAW)
-        gl.bindBuffer(gl.ARRAY_BUFFER, attributes.cameraIndex.buffer)
-        gl.bufferData(gl.ARRAY_BUFFER, new Uint8Array(cameraIndex), gl.STATIC_DRAW)
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, attributes.vertexIndices)
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(vertexIndices), gl.STATIC_DRAW)
-        gl.drawElements(gl.TRIANGLES, /*count*/vertexIndices.length, /*type*/gl.UNSIGNED_SHORT, /*offset*/0)
-    }
-
-    drawLines = ({ vertices, colors }: Lines) => {
-        const { gl, program, textures } = this
-        const { attributes } = program
-        const texture = textures[0]
-        const count = vertices.length / 2
-        gl.bindTexture(gl.TEXTURE_2D, texture)
-        gl.bindBuffer(gl.ARRAY_BUFFER, attributes.vertices.buffer)
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW)
-        gl.bindBuffer(gl.ARRAY_BUFFER, attributes.colors.buffer)
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW)
-        gl.bindBuffer(gl.ARRAY_BUFFER, attributes.textureCoordinates.buffer)
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(Array(count * 2).fill(0)), gl.STATIC_DRAW)
-        gl.bindBuffer(gl.ARRAY_BUFFER, attributes.cameraIndex.buffer)
-        gl.bufferData(gl.ARRAY_BUFFER, new Uint8Array(Array(count).fill(0)), gl.STATIC_DRAW)
-        gl.drawArrays(gl.LINES, /*first*/0, count)
+        {
+            const { vertices, colors, vertexIndices, textureCoordinates, textureIndex, cameraIndex } = triangles
+            if (vertices.length !== 0) {
+                const texture = textures[textureIndex]
+                gl.bindTexture(gl.TEXTURE_2D, texture)
+                gl.bindBuffer(gl.ARRAY_BUFFER, attributes.vertices.buffer)
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW)
+                gl.bindBuffer(gl.ARRAY_BUFFER, attributes.colors.buffer)
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW)
+                gl.bindBuffer(gl.ARRAY_BUFFER, attributes.textureCoordinates.buffer)
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoordinates), gl.STATIC_DRAW)
+                gl.bindBuffer(gl.ARRAY_BUFFER, attributes.cameraIndex.buffer)
+                gl.bufferData(gl.ARRAY_BUFFER, new Uint8Array(cameraIndex), gl.STATIC_DRAW)
+                gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, attributes.vertexIndices)
+                gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(vertexIndices), gl.STATIC_DRAW)
+                gl.drawElements(gl.TRIANGLES, /*count*/vertexIndices.length, /*type*/gl.UNSIGNED_SHORT, /*offset*/0)
+            }
+        }
+        {
+            const { vertices, colors } = lines
+            if (vertices.length !== 0) {
+                const texture = textures[0]
+                const count = vertices.length / 2
+                gl.bindTexture(gl.TEXTURE_2D, texture)
+                gl.bindBuffer(gl.ARRAY_BUFFER, attributes.vertices.buffer)
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW)
+                gl.bindBuffer(gl.ARRAY_BUFFER, attributes.colors.buffer)
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW)
+                gl.bindBuffer(gl.ARRAY_BUFFER, attributes.textureCoordinates.buffer)
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(Array(count * 2).fill(0)), gl.STATIC_DRAW)
+                gl.bindBuffer(gl.ARRAY_BUFFER, attributes.cameraIndex.buffer)
+                gl.bufferData(gl.ARRAY_BUFFER, new Uint8Array(Array(count).fill(0)), gl.STATIC_DRAW)
+                gl.drawArrays(gl.LINES, /*first*/0, count)
+            }
+        }
     }
 
     getTextureMeasurements = (font: Font, dpr: DevicePixelRatio) => {

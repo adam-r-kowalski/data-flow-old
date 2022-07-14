@@ -342,7 +342,6 @@ const insertOperationFromFinder = (state: State, name: string): State => {
             editing: false
         } : undefined
     })
-    console.log(state)
     return state
 }
 

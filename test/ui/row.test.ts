@@ -2,6 +2,7 @@ import { container, row, layout, geometry } from '../../src/ui'
 import { batchGeometry } from '../../src/ui/batch_geometry'
 import { initCameraStack } from '../../src/ui/camera_stack'
 import * as layerGeometry from '../../src/ui/layer_geometry'
+import * as reducer from '../../src/ui/reducer'
 import { reduce } from '../../src/ui/reduce'
 import { mockDocument, mockWindow } from "../../src/ui/mock"
 import { webGL2Renderer } from "../../src/ui/webgl2"
@@ -207,53 +208,60 @@ test("row batch", () => {
     const uiLayout = layout(ui, constraints, renderer.measureText)
     const offsets = { x: 0, y: 0 }
     const uiGeometry = geometry(ui, uiLayout, offsets, initCameraStack())
-    const layers = reduce(ui, uiLayout, uiGeometry, layerGeometry)
-    const batches = batchGeometry(layers)
+    const { layers, connections, idToWorldSpace } = reduce(ui, uiLayout, uiGeometry, reducer)
+    const batches = batchGeometry(layers, connections, idToWorldSpace)
     const expectedBatches = [
         {
-            vertices: [
-                0, 0,
-                0, 50,
-                50, 0,
-                50, 50,
+            triangles: {
+                vertices: [
+                    0, 0,
+                    0, 50,
+                    50, 0,
+                    50, 50,
 
-                50, 0,
-                50, 50,
-                100, 0,
-                100, 50,
-            ],
-            colors: [
-                255, 0, 0, 255,
-                255, 0, 0, 255,
-                255, 0, 0, 255,
-                255, 0, 0, 255,
+                    50, 0,
+                    50, 50,
+                    100, 0,
+                    100, 50,
+                ],
+                colors: [
+                    255, 0, 0, 255,
+                    255, 0, 0, 255,
+                    255, 0, 0, 255,
+                    255, 0, 0, 255,
 
-                0, 255, 0, 255,
-                0, 255, 0, 255,
-                0, 255, 0, 255,
-                0, 255, 0, 255,
-            ],
-            vertexIndices: [
-                0, 1, 2,
-                1, 2, 3,
+                    0, 255, 0, 255,
+                    0, 255, 0, 255,
+                    0, 255, 0, 255,
+                    0, 255, 0, 255,
+                ],
+                vertexIndices: [
+                    0, 1, 2,
+                    1, 2, 3,
 
-                4, 5, 6,
-                5, 6, 7
-            ],
-            textureIndex: 0,
-            textureCoordinates: [
-                0, 0,
-                0, 0,
-                0, 0,
-                0, 0,
+                    4, 5, 6,
+                    5, 6, 7
+                ],
+                textureIndex: 0,
+                textureCoordinates: [
+                    0, 0,
+                    0, 0,
+                    0, 0,
+                    0, 0,
 
-                0, 0,
-                0, 0,
-                0, 0,
-                0, 0,
-            ],
-            cameraIndex: Array(8).fill(0)
+                    0, 0,
+                    0, 0,
+                    0, 0,
+                    0, 0,
+                ],
+                cameraIndex: Array(8).fill(0)
+            },
+            lines: {
+                vertices: [],
+                colors: []
+            }
         }
+
     ]
     expect(batches).toEqual(expectedBatches)
 })

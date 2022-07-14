@@ -53,5 +53,5 @@ test("connection in scene", () => {
         'a': { x0: 100, y0: 100, x1: 150, y1: 150 },
         'b': { x0: 300, y0: 300, x1: 350, y1: 350 },
     })
-    expect(connections).toEqual([{ from: 'a', to: 'b', color: white }])
+    expect(connections).toEqual([[{ from: 'a', to: 'b', color: white }]])
 })

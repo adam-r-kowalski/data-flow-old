@@ -1,10 +1,17 @@
 import { Entry, Connection, UIKind } from "."
 
-export const initial = (): Connection[] => []
+export type Connections = Connection[][]
 
-export const combine = <AppEvent>(connections: Connection[], entry: Entry<AppEvent>): Connection[] => {
+export const initial = (): Connections => []
+
+export const combine = <AppEvent>(connections: Connections, entry: Entry<AppEvent>): Connections => {
     if (entry.ui.kind == UIKind.SCENE) {
-        connections.push(...entry.ui.connections)
+        if (entry.ui.connections.length === 0) return connections
+        const needed = entry.z - connections.length + 1
+        for (let i = 0; i < needed; ++i) connections.push([])
+        const layer = connections[entry.z]
+        layer.push(...entry.ui.connections)
+        return connections
     }
     return connections
 }

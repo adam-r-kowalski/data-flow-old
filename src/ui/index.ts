@@ -9,7 +9,6 @@ import { CameraStack } from './camera_stack'
 import { Matrix3x3 } from '../linear_algebra/matrix3x3'
 import { Batch } from './batch_geometry'
 import { ClickHandlers } from './gather_on_click_handlers'
-import { Lines } from './connection_geometry'
 
 export { center } from './center'
 export { column } from './column'
@@ -183,7 +182,6 @@ export interface Renderer<AppEvent> {
     clickHandlers: ClickHandlers<AppEvent>
     clear: () => void
     draw: (batch: Batch) => void
-    drawLines: (lines: Lines) => void
     measureText: MeasureText
     dispatch: (event: AppEvent) => void
 }

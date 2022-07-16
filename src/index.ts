@@ -4,6 +4,7 @@ import { identity } from "./linear_algebra/matrix3x3"
 import { run, transformPointer } from "./ui/run"
 import { Body, Finder, Input, InputTargetKind, Node, Output, State, Theme, VirtualKeyboardKind } from "./state"
 import { text, stack, scene, row, container, column, Connection, UI } from './ui'
+import { Document } from './ui/dom'
 
 const spacer = (size: number): UI<AppEvent> =>
     container({ width: size, height: size })
@@ -376,7 +377,15 @@ const initialState: State = {
     }
 }
 
-const dispatch = run(initialState, view, update)
+const dispatch = run({
+    state: initialState,
+    view,
+    update,
+    window,
+    document: document as Document,
+    requestAnimationFrame,
+    setTimeout
+})
 
 if (typeof PointerEvent.prototype.getCoalescedEvents === 'function') {
     document.addEventListener('pointermove', (e) => {

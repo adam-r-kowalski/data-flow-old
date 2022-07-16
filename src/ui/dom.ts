@@ -156,10 +156,25 @@ export interface Canvas {
     height: number
 }
 
+export interface Body {
+    appendChild: (canvas: Canvas) => void
+}
+
+export interface PointerEvent {
+    clientX: number
+    clientY: number
+    pointerId: number
+}
+
 export interface Document {
     createElement: (tagName: 'canvas') => Canvas
+    addEventListener: (event: "pointerdown", callback: (p: PointerEvent) => void) => void
+    body: Body
 }
 
 export interface Window {
     devicePixelRatio: number
+    innerWidth: number
+    innerHeight: number
+    addEventListener: (event: "resize", callback: () => void) => void
 }

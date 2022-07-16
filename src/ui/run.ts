@@ -2,6 +2,7 @@ import { pointerDown } from "./pointer_down"
 import { render } from "./render"
 import { WebGL2Renderer, webGL2Renderer } from "./webgl2"
 import { Pointer, UI } from "."
+import { Document, Window, PointerEvent } from "./dom"
 
 export const transformPointer = (p: PointerEvent): Pointer => ({
     x: p.clientX,
@@ -31,7 +32,18 @@ export interface UpdateResult<State, AppEvent> {
 
 type Update<State, AppEvent> = (state: State, event: AppEvent) => UpdateResult<State, AppEvent>
 
-export const run = <State, AppEvent>(state: State, view: View<State, AppEvent>, update: Update<State, AppEvent>): Dispatch<AppEvent> => {
+interface Properties<State, AppEvent> {
+    state: State
+    view: View<State, AppEvent>
+    update: Update<State, AppEvent>
+    window: Window
+    document: Document
+    requestAnimationFrame: (callback: () => void) => void
+    setTimeout: (callback: () => void, milliseconds: number) => void
+}
+
+export const run = <State, AppEvent>(properties: Properties<State, AppEvent>): Dispatch<AppEvent> => {
+    let { state, view, update, window, document, requestAnimationFrame, setTimeout } = properties
     let renderer = webGL2Renderer<AppEvent>({
         width: window.innerWidth,
         height: window.innerHeight,
@@ -59,7 +71,7 @@ export const run = <State, AppEvent>(state: State, view: View<State, AppEvent>, 
         for (const event of dispatchEvents ?? []) dispatch(event)
     }
     renderer.dispatch = dispatch
-    document.body.appendChild(renderer.canvas as HTMLCanvasElement)
+    document.body.appendChild(renderer.canvas)
     document.addEventListener("pointerdown", p => {
         renderer = pointerDown<AppEvent, WebGL2Renderer<AppEvent>>(renderer, transformPointer(p))
     })

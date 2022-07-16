@@ -1,4 +1,4 @@
-import { Style, TexImage2D } from "./dom"
+import { Canvas, Document, PointerEvent, Style, TexImage2D } from "./dom"
 
 export class MockBuffer {
 
@@ -142,14 +142,32 @@ export class MockCanvas {
     }
 }
 
-export class MockDocument {
-    createElement = (tagName: 'canvas') => new MockCanvas()
+export const mockDocument = (): Document => {
+    const callbacks: ((p: PointerEvent) => void)[] = []
+    return {
+        createElement: (tagName: 'canvas') => new MockCanvas(),
+        addEventListener: (event: "pointerdown", callback: (p: PointerEvent) => void) => {
+            callbacks.push(callback)
+        },
+        body: {
+            appendChild: (canvas: Canvas) => { }
+        }
+    }
 }
 
-export const mockDocument = () => {
-    return new MockDocument()
+export const mockWindow = () => {
+    const callbacks: (() => void)[] = []
+    return {
+        devicePixelRatio: 1,
+        innerWidth: 500,
+        innerHeight: 500,
+        addEventListener: (event: "resize", callback: () => void) => {
+            callbacks.push(callback)
+        },
+        fireEvent: (_: "resize") => {
+            for (const callback of callbacks) {
+                callback()
+            }
+        }
+    }
 }
-
-export const mockWindow = () => ({
-    devicePixelRatio: 1
-})

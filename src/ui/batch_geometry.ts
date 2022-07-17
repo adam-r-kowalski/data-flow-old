@@ -43,7 +43,7 @@ const linspace = (start: number, stop: number, num: number): number[] => {
     return Array.from({ length: num }, (_, i) => start + step * i)
 }
 
-function* cubicBezier(ts: number[], from: WorldSpace, to: WorldSpace, offset: number): Generator<number> {
+export function* cubicBezier(ts: number[], from: WorldSpace, to: WorldSpace, offset: number): Generator<number> {
     const p0x = (from.x0 + from.x1) / 2
     const p0y = (from.y0 + from.y1) / 2
     const p1x = p0x + offset

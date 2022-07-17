@@ -43,14 +43,14 @@ const linspace = (start: number, stop: number, num: number): number[] => {
     return Array.from({ length: num }, (_, i) => start + step * i)
 }
 
-function* cubicBezier(ts: number[], from: WorldSpace, to: WorldSpace): Generator<number> {
+export function* cubicBezier(ts: number[], from: WorldSpace, to: WorldSpace, offset: number): Generator<number> {
     const p0x = (from.x0 + from.x1) / 2
     const p0y = (from.y0 + from.y1) / 2
-    const p1x = p0x + 50
+    const p1x = p0x + offset
     const p1y = p0y
     const p3x = (to.x0 + to.x1) / 2
     const p3y = (to.y0 + to.y1) / 2
-    const p2x = p3x - 50
+    const p2x = p3x - offset
     const p2y = p3y
     let lastX = 0
     let lastY = 0
@@ -108,12 +108,15 @@ export const batchGeometry = (layers: Layers, connections: Connections, idToWorl
             }
         }
         if (connections.length > z) {
-            for (const { from, to, color } of connections[z]) {
-                for (const p of cubicBezier(ts, idToWorldSpace[from], idToWorldSpace[to])) {
-                    batch.lines.vertices.push(p)
+            for (const { connections: cs, scale } of connections[z]) {
+                const offset = 50 * scale
+                for (const { from, to, color } of cs) {
+                    for (const p of cubicBezier(ts, idToWorldSpace[from], idToWorldSpace[to], offset)) {
+                        batch.lines.vertices.push(p)
+                    }
+                    const { red, green, blue, alpha } = color
+                    for (let i = 0; i < samples * 2; ++i) batch.lines.colors.push(red, green, blue, alpha)
                 }
-                const { red, green, blue, alpha } = color
-                for (let i = 0; i < samples * 2; ++i) batch.lines.colors.push(red, green, blue, alpha)
             }
             if (batch.lines.vertices.length !== 0) {
                 batches.push(batch)

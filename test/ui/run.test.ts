@@ -1,4 +1,4 @@
-import { container, row, text } from "../../src/ui"
+import { container, row, text, UI } from "../../src/ui"
 import { mockDocument, mockWindow } from "../../src/ui/mock"
 import { run } from "../../src/ui/run"
 
@@ -121,6 +121,37 @@ test("if update returns scheduled events they get dispatched after some millisec
     expect(timeouts).toEqual([100, 200])
 })
 
+test("if update returns dispatch events they get dispatched immediately", () => {
+    type State = number
+    type AppEvent = boolean
+    const state = 0
+    const view = (state: State) => text<AppEvent>(state.toString())
+    const events: AppEvent[] = []
+    const update = (state: State, event: AppEvent) => {
+        events.push(event)
+        return event ? {
+            state,
+            dispatch: [false, false]
+        } : { state }
+    }
+    const timeouts: number[] = []
+    const dispatch = run({
+        state,
+        view,
+        update,
+        window: mockWindow(),
+        document: mockDocument(),
+        requestAnimationFrame: mockRequestAnimationFrame,
+        setTimeout: (callback: () => void, milliseconds: number) => {
+            timeouts.push(milliseconds)
+            callback()
+        }
+    })
+    dispatch(true)
+    expect(events).toEqual([true, false, false])
+    expect(timeouts).toEqual([])
+})
+
 test("pointer down events can lead to on click handlers firing", () => {
     type State = number
     enum AppEvent { A, B }
@@ -160,4 +191,29 @@ test("pointer down events can lead to on click handlers firing", () => {
         pointerId: 0
     })
     expect(events).toEqual([AppEvent.A, AppEvent.B])
+})
+
+test("resize events trigger a rerender", () => {
+    type State = number
+    type AppEvent = boolean
+    const state: State = 0
+    let viewCallCount = 0
+    const view = (state: State): UI<AppEvent> => {
+        ++viewCallCount
+        return text(state.toString())
+    }
+    const update = (state: State, event: AppEvent) => ({ state })
+    const window = mockWindow()
+    run({
+        state,
+        view,
+        update,
+        window,
+        document: mockDocument(),
+        requestAnimationFrame: mockRequestAnimationFrame,
+        setTimeout: mockSetTimeout
+    })
+    expect(viewCallCount).toEqual(1)
+    window.fireEvent('resize')
+    expect(viewCallCount).toEqual(2)
 })

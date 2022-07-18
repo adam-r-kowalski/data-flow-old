@@ -1,8 +1,8 @@
 import { AppEvent, EventKind } from "../../../src/event"
-import { Input, Output, Theme } from "../../../src/state"
+import { Input, Output, Theme, Body, Node } from "../../../src/state"
 import { column, container, row, text } from "../../../src/ui"
 import { CrossAxisAlignment } from "../../../src/ui/alignment"
-import { inputsUi, inputUi, intersperse, outputsUi, outputUi, spacer } from "../../../src/ui/view"
+import { inputsUi, inputUi, intersperse, nodeUi, numberUi, outputsUi, outputUi, spacer } from "../../../src/ui/view"
 
 test("spacer", () => {
     expect(spacer(10)).toEqual(container({ width: 10, height: 10 }))
@@ -201,5 +201,366 @@ test("outputsUi", () => {
         spacer(4),
         outputUi(theme, outputs[2], nodeIndex, 2),
     ])
+    expect(actual).toEqual(expected)
+})
+
+test("numberUi not editing", () => {
+    const body: Body = {
+        value: 0,
+        editing: false
+    }
+    const nodeIndex = 0
+    const actual = numberUi(theme, body, nodeIndex)
+    const expected = container({
+        color: theme.background,
+        padding: 5,
+        onClick: {
+            kind: EventKind.CLICKED_NUMBER,
+            nodeIndex
+        }
+    },
+        text(body.value.toString()))
+    expect(actual).toEqual(expected)
+})
+
+test("numberUi editing", () => {
+    const body: Body = {
+        value: 0,
+        editing: true
+    }
+    const nodeIndex = 0
+    const actual = numberUi(theme, body, nodeIndex)
+    const expected = container({
+        color: theme.selectedInput,
+        padding: 5,
+        onClick: {
+            kind: EventKind.CLICKED_NUMBER,
+            nodeIndex
+        }
+    },
+        text(body.value.toString()))
+    expect(actual).toEqual(expected)
+})
+
+test("nodeUi no inputs body or outputs", () => {
+    const node: Node = {
+        name: "node",
+        x: 0,
+        y: 0,
+        inputs: [],
+        outputs: [],
+    }
+    const index = 0
+    const actual = nodeUi(theme, node, index)
+    const expected = container<AppEvent>(
+        {
+            color: theme.node,
+            padding: 4,
+            x: 0,
+            y: 0,
+            onClick: {
+                kind: EventKind.CLICKED_NODE,
+                index: index
+            }
+        },
+        column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
+            text("node"),
+            spacer(4),
+            row([])
+        ])
+    )
+    expect(actual).toEqual(expected)
+})
+
+test("nodeUi 1 input, no body and no outputs", () => {
+    const node: Node = {
+        name: "node",
+        x: 0,
+        y: 0,
+        inputs: [
+            {
+                name: "first",
+                selected: false,
+                edgeIndices: []
+            },
+        ],
+        outputs: [],
+    }
+    const index = 0
+    const actual = nodeUi(theme, node, index)
+    const expected = container<AppEvent>(
+        {
+            color: theme.node,
+            padding: 4,
+            x: 0,
+            y: 0,
+            onClick: {
+                kind: EventKind.CLICKED_NODE,
+                index: index
+            }
+        },
+        column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
+            text("node"),
+            spacer(4),
+            row([inputsUi(theme, node.inputs, index)])
+        ])
+    )
+    expect(actual).toEqual(expected)
+})
+
+test("nodeUi 1 output, no body and no inputs", () => {
+    const node: Node = {
+        name: "node",
+        x: 0,
+        y: 0,
+        inputs: [],
+        outputs: [
+            {
+                name: "first",
+                selected: false,
+                edgeIndices: []
+            },
+        ],
+    }
+    const index = 0
+    const actual = nodeUi(theme, node, index)
+    const expected = container<AppEvent>(
+        {
+            color: theme.node,
+            padding: 4,
+            x: 0,
+            y: 0,
+            onClick: {
+                kind: EventKind.CLICKED_NODE,
+                index: index
+            }
+        },
+        column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
+            text("node"),
+            spacer(4),
+            row([outputsUi(theme, node.outputs, index)])
+        ])
+    )
+    expect(actual).toEqual(expected)
+})
+
+test("nodeUi no inputs or outputs but body defined", () => {
+    const node: Node = {
+        name: "node",
+        x: 0,
+        y: 0,
+        inputs: [],
+        body: {
+            value: 0,
+            editing: false
+        },
+        outputs: [],
+    }
+    const index = 0
+    const actual = nodeUi(theme, node, index)
+    const expected = container<AppEvent>(
+        {
+            color: theme.node,
+            padding: 4,
+            x: 0,
+            y: 0,
+            onClick: {
+                kind: EventKind.CLICKED_NODE,
+                index: index
+            }
+        },
+        column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
+            text("node"),
+            spacer(4),
+            row([numberUi(theme, node.body!, index), spacer(15)])
+        ])
+    )
+    expect(actual).toEqual(expected)
+})
+
+test("nodeUi 1 input and 1 output but no body", () => {
+    const node: Node = {
+        name: "node",
+        x: 0,
+        y: 0,
+        inputs: [
+            {
+                name: "first",
+                selected: false,
+                edgeIndices: []
+            },
+        ],
+        outputs: [
+            {
+                name: "first",
+                selected: false,
+                edgeIndices: []
+            },
+        ],
+    }
+    const index = 0
+    const actual = nodeUi(theme, node, index)
+    const expected = container<AppEvent>(
+        {
+            color: theme.node,
+            padding: 4,
+            x: 0,
+            y: 0,
+            onClick: {
+                kind: EventKind.CLICKED_NODE,
+                index: index
+            }
+        },
+        column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
+            text("node"),
+            spacer(4),
+            row([
+                inputsUi(theme, node.inputs, index),
+                spacer(15),
+                outputsUi(theme, node.outputs, index)
+            ])
+        ])
+    )
+    expect(actual).toEqual(expected)
+})
+
+test("nodeUi 1 input body but no outputs", () => {
+    const node: Node = {
+        name: "node",
+        x: 0,
+        y: 0,
+        inputs: [
+            {
+                name: "first",
+                selected: false,
+                edgeIndices: []
+            },
+        ],
+        body: {
+            value: 0,
+            editing: false
+        },
+        outputs: [],
+    }
+    const index = 0
+    const actual = nodeUi(theme, node, index)
+    const expected = container<AppEvent>(
+        {
+            color: theme.node,
+            padding: 4,
+            x: 0,
+            y: 0,
+            onClick: {
+                kind: EventKind.CLICKED_NODE,
+                index: index
+            }
+        },
+        column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
+            text("node"),
+            spacer(4),
+            row([
+                inputsUi(theme, node.inputs, index),
+                numberUi(theme, node.body!, index),
+                spacer(15),
+            ])
+        ])
+    )
+    expect(actual).toEqual(expected)
+})
+
+test("nodeUi 1 output body but no inputs", () => {
+    const node: Node = {
+        name: "node",
+        x: 0,
+        y: 0,
+        inputs: [],
+        body: {
+            value: 0,
+            editing: false
+        },
+        outputs: [
+            {
+                name: "first",
+                selected: false,
+                edgeIndices: []
+            },
+        ],
+    }
+    const index = 0
+    const actual = nodeUi(theme, node, index)
+    const expected = container<AppEvent>(
+        {
+            color: theme.node,
+            padding: 4,
+            x: 0,
+            y: 0,
+            onClick: {
+                kind: EventKind.CLICKED_NODE,
+                index: index
+            }
+        },
+        column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
+            text("node"),
+            spacer(4),
+            row([
+                numberUi(theme, node.body!, index),
+                spacer(15),
+                outputsUi(theme, node.outputs, index),
+            ])
+        ])
+    )
+    expect(actual).toEqual(expected)
+})
+
+
+test("nodeUi 1 input body and 1 output", () => {
+    const node: Node = {
+        name: "node",
+        x: 0,
+        y: 0,
+        inputs: [
+            {
+                name: "first",
+                selected: false,
+                edgeIndices: []
+            },
+        ],
+        body: {
+            value: 0,
+            editing: false
+        },
+        outputs: [
+            {
+                name: "first",
+                selected: false,
+                edgeIndices: []
+            },
+        ],
+    }
+    const index = 0
+    const actual = nodeUi(theme, node, index)
+    const expected = container<AppEvent>(
+        {
+            color: theme.node,
+            padding: 4,
+            x: 0,
+            y: 0,
+            onClick: {
+                kind: EventKind.CLICKED_NODE,
+                index: index
+            }
+        },
+        column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
+            text("node"),
+            spacer(4),
+            row([
+                inputsUi(theme, node.outputs, index),
+                spacer(15),
+                numberUi(theme, node.body!, index),
+                spacer(15),
+                outputsUi(theme, node.outputs, index),
+            ])
+        ])
+    )
     expect(actual).toEqual(expected)
 })

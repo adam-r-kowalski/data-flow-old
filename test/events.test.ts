@@ -838,3 +838,77 @@ test("sft virtual key down when finder is shown are ignored", () => {
     expect(state1).toEqual(expectedState)
     expect(render).toEqual(true)
 })
+
+test("zooming", () => {
+    const state = initialState()
+    const pointer0 = {
+        x: 0,
+        y: 0,
+        id: 0,
+    }
+    const pointer1 = {
+        x: 10,
+        y: 10,
+        id: 1,
+    }
+    const pointer2 = {
+        x: 20,
+        y: 20,
+        id: 1,
+    }
+    const pointer3 = {
+        x: 30,
+        y: 30,
+        id: 1,
+    }
+    const { state: state1 } = update(state, {
+        kind: EventKind.POINTER_DOWN,
+        pointer: pointer0
+    })
+    {
+        const expectedState = initialState()
+        expectedState.dragging = true
+        expectedState.potentialDoubleClick = true
+        expectedState.pointers = [pointer0]
+        expect(state1).toEqual(expectedState)
+    }
+    const { state: state2 } = update(state1, {
+        kind: EventKind.POINTER_DOWN,
+        pointer: pointer1
+    })
+    {
+        const expectedState = initialState()
+        expectedState.zooming = true
+        expectedState.pointers = [pointer0, pointer1]
+        expect(state2).toEqual(expectedState)
+    }
+    const { state: state3 } = update(state2, {
+        kind: EventKind.POINTER_MOVE,
+        pointer: pointer2
+    })
+    {
+        const expectedState = initialState()
+        expectedState.zooming = true
+        expectedState.pointerDistance = Math.sqrt(Math.pow(20, 2) + Math.pow(20, 2))
+        expectedState.pointerCenter = [10, 10]
+        expectedState.pointers = [pointer0, pointer2]
+        expect(state3).toEqual(expectedState)
+    }
+    const { state: state4 } = update(state3, {
+        kind: EventKind.POINTER_MOVE,
+        pointer: pointer3
+    })
+    {
+        const expectedState = initialState()
+        expectedState.zooming = true
+        expectedState.pointerDistance = Math.sqrt(Math.pow(30, 2) + Math.pow(30, 2))
+        expectedState.pointerCenter = [15, 15]
+        expectedState.pointers = [pointer0, pointer3]
+        expectedState.camera = [
+            0.906625499506728, 0, -3.13250999013456,
+            0, 0.906625499506728, -3.13250999013456,
+            0, 0, 1,
+        ]
+        expect(state4).toEqual(expectedState)
+    }
+})

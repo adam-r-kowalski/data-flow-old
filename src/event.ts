@@ -174,28 +174,26 @@ const pointerMove = (state: State, event: PointerMove) => {
         }
         return { state, render: true }
     }
-    if (state.zooming) {
-        const [p0, p1] = [state.pointers[0], state.pointers[1]]
-        const [x1, y1] = [p0.x, p0.y]
-        const [x2, y2] = [p1.x, p1.y]
-        const distance = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2))
-        const previousDistance = state.pointerDistance
-        const previousCenter = state.pointerCenter
-        state.pointerDistance = distance
-        const x = (p0.x + p1.x) / 2
-        const y = (p0.y + p1.y) / 2
-        state.pointerCenter = [x, y]
-        if (previousDistance > 0) {
-            const move = translate(x, y)
-            const zoom = Math.pow(2, (previousDistance - distance) * 0.01)
-            const moveBack = translate(-x, -y)
-            const dx = x - previousCenter[0]
-            const dy = y - previousCenter[1]
-            state.camera = multiplyMatrices(state.camera, move, scale(zoom, zoom), moveBack, translate(-dx, -dy))
-            return { state, render: true }
-        } else return { state }
-    }
-    return { state }
+    // must be zooming
+    const [p0, p1] = [state.pointers[0], state.pointers[1]]
+    const [x1, y1] = [p0.x, p0.y]
+    const [x2, y2] = [p1.x, p1.y]
+    const distance = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2))
+    const previousDistance = state.pointerDistance
+    const previousCenter = state.pointerCenter
+    state.pointerDistance = distance
+    const x = (p0.x + p1.x) / 2
+    const y = (p0.y + p1.y) / 2
+    state.pointerCenter = [x, y]
+    if (previousDistance > 0) {
+        const move = translate(x, y)
+        const zoom = Math.pow(2, (previousDistance - distance) * 0.01)
+        const moveBack = translate(-x, -y)
+        const dx = x - previousCenter[0]
+        const dy = y - previousCenter[1]
+        state.camera = multiplyMatrices(state.camera, move, scale(zoom, zoom), moveBack, translate(-dx, -dy))
+        return { state, render: true }
+    } else return { state }
 }
 
 const clickedNode = (state: State, event: ClickedNode) => {

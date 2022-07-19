@@ -1,8 +1,9 @@
 import { AppEvent, EventKind } from "../../../src/event"
-import { Input, Output, Theme, Body, Node } from "../../../src/state"
-import { column, container, row, text } from "../../../src/ui"
-import { CrossAxisAlignment } from "../../../src/ui/alignment"
-import { inputsUi, inputUi, intersperse, nodeUi, numberUi, outputsUi, outputUi, spacer } from "../../../src/ui/view"
+import { identity } from "../../../src/linear_algebra/matrix3x3"
+import { Input, Output, Theme, Body, Node, VirtualKeyboardKind, InputTargetKind, State } from "../../../src/state"
+import { column, container, row, scene, stack, text } from "../../../src/ui"
+import { CrossAxisAlignment, MainAxisAlignment } from "../../../src/ui/alignment"
+import { alphabeticVirtualKeyboard, finder, inputsUi, inputUi, intersperse, nodeUi, numberUi, numericVirtualKeyboard, outputsUi, outputUi, spacer, view, virtualKey, virtualKeyboard, virtualKeys } from "../../../src/ui/view"
 
 test("spacer", () => {
     expect(spacer(10)).toEqual(container({ width: 10, height: 10 }))
@@ -562,5 +563,568 @@ test("nodeUi 1 input body and 1 output", () => {
             ])
         ])
     )
+    expect(actual).toEqual(expected)
+})
+
+test("finder", () => {
+    const actual = finder({ search: "text", options: ["foo", "bar"], show: true }, theme)
+    const expected = column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
+        container({ height: 10 }),
+        container({ color: theme.node, padding: 4 },
+            column([
+                container({ color: theme.background, width: 300, padding: 4 },
+                    text({ color: theme.input, size: 24 }, "text")),
+                container({ width: 10, height: 10 }),
+                container({
+                    padding: 4,
+                    onClick: {
+                        kind: EventKind.CLICKED_FINDER_OPTION,
+                        option: "foo"
+                    }
+                },
+                    text({
+                        size: 18,
+                        color: theme.input
+                    }, "foo")
+                ),
+                container({
+                    padding: 4,
+                    onClick: {
+                        kind: EventKind.CLICKED_FINDER_OPTION,
+                        option: "bar"
+                    }
+                },
+                    text({
+                        size: 18,
+                        color: { red: 255, green: 255, blue: 255, alpha: 255 },
+                    }, "bar")
+                )
+            ])
+        )
+    ])
+    expect(actual).toEqual(expected)
+})
+
+
+test("virtual key", () => {
+    const actual = virtualKey("key")
+    const expected = container({
+        padding: 10,
+        onClick: {
+            kind: EventKind.VIRTUAL_KEYDOWN,
+            key: "key"
+        }
+    }, text({ size: 24 }, "key"))
+    expect(actual).toEqual(expected)
+})
+
+test("virtual keys", () => {
+    const actual = virtualKeys(["a", "b", "c"])
+    const expected = row([
+        container({
+            padding: 10,
+            onClick: {
+                kind: EventKind.VIRTUAL_KEYDOWN,
+                key: "a"
+            }
+        }, text({ size: 24 }, "a")),
+        container({
+            padding: 10,
+            onClick: {
+                kind: EventKind.VIRTUAL_KEYDOWN,
+                key: "b"
+            }
+        }, text({ size: 24 }, "b")),
+        container({
+            padding: 10,
+            onClick: {
+                kind: EventKind.VIRTUAL_KEYDOWN,
+                key: "c"
+            }
+        }, text({ size: 24 }, "c")),
+    ])
+    expect(actual).toEqual(expected)
+})
+
+test("alphabetic virtual keyboard", () => {
+    const actual = alphabeticVirtualKeyboard(theme)
+    const expected = column({ mainAxisAlignment: MainAxisAlignment.END }, [
+        row({ mainAxisAlignment: MainAxisAlignment.SPACE_BETWEEN }, [
+            container({ padding: 4, color: theme.node },
+                column([
+                    virtualKeys(['1', '2', '3', '4', '5']),
+                    virtualKeys(['q', 'w', 'e', 'r', 't']),
+                    virtualKeys(['a', 's', 'd', 'f', 'g']),
+                    virtualKeys(['z', 'x', 'c', 'v']),
+                    virtualKeys(['sft', 'space']),
+                ])
+            ),
+            container({ padding: 4, color: theme.node },
+                column({ crossAxisAlignment: CrossAxisAlignment.END }, [
+                    virtualKeys(['6', '7', '8', '9', '0']),
+                    virtualKeys(['y', 'u', 'i', 'o', 'p']),
+                    virtualKeys(['h', 'j', 'k', 'l']),
+                    virtualKeys(['b', 'n', 'm', 'del']),
+                    virtualKeys(['space', 'ret']),
+                ])
+            ),
+        ]),
+    ])
+    expect(actual).toEqual(expected)
+})
+
+test("numeric virtual keyboard", () => {
+    const actual = numericVirtualKeyboard(theme)
+    const expected = column({ mainAxisAlignment: MainAxisAlignment.END }, [
+        row({ mainAxisAlignment: MainAxisAlignment.END }, [
+            container({ padding: 4, color: theme.node },
+                column({ crossAxisAlignment: CrossAxisAlignment.END }, [
+                    virtualKeys(['1', '2', '3', '4']),
+                    virtualKeys(['5', '6', '7', '8']),
+                    virtualKeys(['9', '0', 'del']),
+                    virtualKeys(['.', 'ret']),
+                ])
+            ),
+        ]),
+    ])
+    expect(actual).toEqual(expected)
+})
+
+test("virtual keyboard numeric", () => {
+    const actual = virtualKeyboard(theme, VirtualKeyboardKind.NUMERIC)
+    const expected = numericVirtualKeyboard(theme)
+    expect(actual).toEqual(expected)
+})
+
+
+test("virtual keyboard alphabetic", () => {
+    const actual = virtualKeyboard(theme, VirtualKeyboardKind.ALPHABETIC)
+    const expected = alphabeticVirtualKeyboard(theme)
+    expect(actual).toEqual(expected)
+})
+
+test("view with no nodes or edges", () => {
+    const state: State = {
+        graph: {
+            nodes: [],
+            edges: []
+        },
+        zooming: false,
+        dragging: false,
+        draggedNode: null,
+        pointers: [],
+        pointerDistance: 0,
+        pointerCenter: [0, 0],
+        selectedOutput: null,
+        selectedInput: null,
+        potentialDoubleClick: false,
+        nodePlacementLocation: {
+            x: 0,
+            y: 0,
+        },
+        finder: {
+            search: "",
+            options: [],
+            show: false,
+        },
+        virtualKeyboard: {
+            show: false,
+            kind: VirtualKeyboardKind.ALPHABETIC
+        },
+        inputTarget: {
+            kind: InputTargetKind.NONE,
+        },
+        camera: identity(),
+        operations: {},
+        theme
+    }
+    const actual = view(state)
+    const expected = stack([
+        container({ color: state.theme.background, onClick: { kind: EventKind.CLICKED_BACKGROUND } }),
+        scene({ camera: state.camera, children: [], connections: [] }),
+    ])
+    expect(actual).toEqual(expected)
+})
+
+test("view with no nodes or edges but finder shown", () => {
+    const state: State = {
+        graph: {
+            nodes: [],
+            edges: []
+        },
+        zooming: false,
+        dragging: false,
+        draggedNode: null,
+        pointers: [],
+        pointerDistance: 0,
+        pointerCenter: [0, 0],
+        selectedOutput: null,
+        selectedInput: null,
+        potentialDoubleClick: false,
+        nodePlacementLocation: {
+            x: 0,
+            y: 0,
+        },
+        finder: {
+            search: "",
+            options: [],
+            show: true,
+        },
+        virtualKeyboard: {
+            show: false,
+            kind: VirtualKeyboardKind.ALPHABETIC
+        },
+        inputTarget: {
+            kind: InputTargetKind.NONE,
+        },
+        camera: identity(),
+        operations: {},
+        theme
+    }
+    const actual = view(state)
+    const expected = stack([
+        container({ color: state.theme.background, onClick: { kind: EventKind.CLICKED_BACKGROUND } }),
+        scene({ camera: state.camera, children: [], connections: [] }),
+        finder(state.finder, state.theme)
+    ])
+    expect(actual).toEqual(expected)
+})
+
+test("view with no nodes or edges but virtual keyboard shown", () => {
+    const state: State = {
+        graph: {
+            nodes: [],
+            edges: []
+        },
+        zooming: false,
+        dragging: false,
+        draggedNode: null,
+        pointers: [],
+        pointerDistance: 0,
+        pointerCenter: [0, 0],
+        selectedOutput: null,
+        selectedInput: null,
+        potentialDoubleClick: false,
+        nodePlacementLocation: {
+            x: 0,
+            y: 0,
+        },
+        finder: {
+            search: "",
+            options: [],
+            show: false,
+        },
+        virtualKeyboard: {
+            show: true,
+            kind: VirtualKeyboardKind.ALPHABETIC
+        },
+        inputTarget: {
+            kind: InputTargetKind.NONE,
+        },
+        camera: identity(),
+        operations: {},
+        theme
+    }
+    const actual = view(state)
+    const expected = stack([
+        container({ color: state.theme.background, onClick: { kind: EventKind.CLICKED_BACKGROUND } }),
+        scene({ camera: state.camera, children: [], connections: [] }),
+        virtualKeyboard(state.theme, state.virtualKeyboard.kind)
+    ])
+    expect(actual).toEqual(expected)
+})
+
+
+test("view with no nodes or edges but finder and virtual keyboard shown", () => {
+    const state: State = {
+        graph: {
+            nodes: [],
+            edges: []
+        },
+        zooming: false,
+        dragging: false,
+        draggedNode: null,
+        pointers: [],
+        pointerDistance: 0,
+        pointerCenter: [0, 0],
+        selectedOutput: null,
+        selectedInput: null,
+        potentialDoubleClick: false,
+        nodePlacementLocation: {
+            x: 0,
+            y: 0,
+        },
+        finder: {
+            search: "",
+            options: [],
+            show: true,
+        },
+        virtualKeyboard: {
+            show: true,
+            kind: VirtualKeyboardKind.ALPHABETIC
+        },
+        inputTarget: {
+            kind: InputTargetKind.NONE,
+        },
+        camera: identity(),
+        operations: {},
+        theme
+    }
+    const actual = view(state)
+    const expected = stack([
+        container({ color: state.theme.background, onClick: { kind: EventKind.CLICKED_BACKGROUND } }),
+        scene({ camera: state.camera, children: [], connections: [] }),
+        finder(state.finder, state.theme),
+        virtualKeyboard(state.theme, state.virtualKeyboard.kind)
+    ])
+    expect(actual).toEqual(expected)
+})
+
+test("view with three nodes and no edges", () => {
+    const state: State = {
+        graph: {
+            nodes: [
+                {
+                    name: "first",
+                    inputs: [],
+                    outputs: [],
+                    x: 0,
+                    y: 0,
+                },
+                {
+                    name: "second",
+                    inputs: [],
+                    outputs: [],
+                    x: 0,
+                    y: 0,
+                },
+                {
+                    name: "thrid",
+                    inputs: [],
+                    outputs: [],
+                    x: 0,
+                    y: 0,
+                }
+            ],
+            edges: []
+        },
+        zooming: false,
+        dragging: false,
+        draggedNode: null,
+        pointers: [],
+        pointerDistance: 0,
+        pointerCenter: [0, 0],
+        selectedOutput: null,
+        selectedInput: null,
+        potentialDoubleClick: false,
+        nodePlacementLocation: {
+            x: 0,
+            y: 0,
+        },
+        finder: {
+            search: "",
+            options: [],
+            show: false,
+        },
+        virtualKeyboard: {
+            show: false,
+            kind: VirtualKeyboardKind.ALPHABETIC
+        },
+        inputTarget: {
+            kind: InputTargetKind.NONE,
+        },
+        camera: identity(),
+        operations: {},
+        theme
+    }
+    const actual = view(state)
+    const expected = stack([
+        container({ color: state.theme.background, onClick: { kind: EventKind.CLICKED_BACKGROUND } }),
+        scene({
+            camera: state.camera,
+            children: [
+                nodeUi(state.theme, state.graph.nodes[0], 0),
+                nodeUi(state.theme, state.graph.nodes[1], 1),
+                nodeUi(state.theme, state.graph.nodes[2], 2),
+            ],
+            connections: []
+        }),
+    ])
+    expect(actual).toEqual(expected)
+})
+
+test("view with three nodes and no edges", () => {
+    const state: State = {
+        graph: {
+            nodes: [
+                {
+                    name: "first",
+                    inputs: [],
+                    outputs: [],
+                    x: 0,
+                    y: 0,
+                },
+                {
+                    name: "second",
+                    inputs: [],
+                    outputs: [],
+                    x: 0,
+                    y: 0,
+                },
+                {
+                    name: "thrid",
+                    inputs: [],
+                    outputs: [],
+                    x: 0,
+                    y: 0,
+                }
+            ],
+            edges: []
+        },
+        zooming: false,
+        dragging: false,
+        draggedNode: 0,
+        pointers: [],
+        pointerDistance: 0,
+        pointerCenter: [0, 0],
+        selectedOutput: null,
+        selectedInput: null,
+        potentialDoubleClick: false,
+        nodePlacementLocation: {
+            x: 0,
+            y: 0,
+        },
+        finder: {
+            search: "",
+            options: [],
+            show: false,
+        },
+        virtualKeyboard: {
+            show: false,
+            kind: VirtualKeyboardKind.ALPHABETIC
+        },
+        inputTarget: {
+            kind: InputTargetKind.NONE,
+        },
+        camera: identity(),
+        operations: {},
+        theme
+    }
+    const actual = view(state)
+    const expected = stack([
+        container({ color: state.theme.background, onClick: { kind: EventKind.CLICKED_BACKGROUND } }),
+        scene({
+            camera: state.camera,
+            children: [
+                nodeUi(state.theme, state.graph.nodes[1], 1),
+                nodeUi(state.theme, state.graph.nodes[2], 2),
+                nodeUi(state.theme, state.graph.nodes[0], 0),
+            ],
+            connections: []
+        }),
+    ])
+    expect(actual).toEqual(expected)
+})
+
+
+test("view with three nodes and one edges", () => {
+    const state: State = {
+        graph: {
+            nodes: [
+                {
+                    name: "first",
+                    inputs: [],
+                    outputs: [
+                        {
+                            name: "out",
+                            selected: false,
+                            edgeIndices: [0]
+                        }
+                    ],
+                    x: 0,
+                    y: 0,
+                },
+                {
+                    name: "second",
+                    inputs: [
+                        {
+                            name: "in",
+                            selected: false,
+                            edgeIndices: [0]
+                        }
+                    ],
+                    outputs: [],
+                    x: 0,
+                    y: 0,
+                },
+                {
+                    name: "thrid",
+                    inputs: [],
+                    outputs: [],
+                    x: 0,
+                    y: 0,
+                }
+            ],
+            edges: [
+                {
+                    input: {
+                        nodeIndex: 1,
+                        inputIndex: 0,
+                    },
+                    output: {
+                        nodeIndex: 0,
+                        outputIndex: 0,
+                    }
+                }
+            ]
+        },
+        zooming: false,
+        dragging: false,
+        draggedNode: null,
+        pointers: [],
+        pointerDistance: 0,
+        pointerCenter: [0, 0],
+        selectedOutput: null,
+        selectedInput: null,
+        potentialDoubleClick: false,
+        nodePlacementLocation: {
+            x: 0,
+            y: 0,
+        },
+        finder: {
+            search: "",
+            options: [],
+            show: false,
+        },
+        virtualKeyboard: {
+            show: false,
+            kind: VirtualKeyboardKind.ALPHABETIC
+        },
+        inputTarget: {
+            kind: InputTargetKind.NONE,
+        },
+        camera: identity(),
+        operations: {},
+        theme
+    }
+    const actual = view(state)
+    const expected = stack([
+        container({ color: state.theme.background, onClick: { kind: EventKind.CLICKED_BACKGROUND } }),
+        scene({
+            camera: state.camera,
+            children: [
+                nodeUi(state.theme, state.graph.nodes[0], 0),
+                nodeUi(state.theme, state.graph.nodes[1], 1),
+                nodeUi(state.theme, state.graph.nodes[2], 2),
+            ],
+            connections: [
+                {
+                    from: "output 0 0",
+                    to: "input 1 0",
+                    color: theme.connection
+                }
+            ]
+        }),
+    ])
     expect(actual).toEqual(expected)
 })

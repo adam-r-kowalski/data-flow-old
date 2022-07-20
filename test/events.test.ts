@@ -357,6 +357,19 @@ test("pointer move after clicking node pointer down", () => {
             x: 800,
             y: 250
         },
+        {
+            name: "Number",
+            inputs: [],
+            body: {
+                value: 0,
+                editing: false,
+            },
+            outputs: [
+                { name: "out", selected: false, edgeIndices: [] }
+            ],
+            x: 800,
+            y: 250
+        },
     ])
     expect(render).toEqual(true)
 })
@@ -423,6 +436,19 @@ test("pointer move after clicking node, pointer down, then pointer up", () => {
                 { name: "In 2", selected: false, edgeIndices: [] }
             ],
             outputs: [],
+            x: 800,
+            y: 250
+        },
+        {
+            name: "Number",
+            inputs: [],
+            body: {
+                value: 0,
+                editing: false,
+            },
+            outputs: [
+                { name: "out", selected: false, edgeIndices: [] }
+            ],
             x: 800,
             y: 250
         },

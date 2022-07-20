@@ -1,6 +1,7 @@
 import { container, row, text, UI } from "../../src/ui"
 import { mockDocument, mockWindow } from "../../src/ui/mock"
-import { run } from "../../src/ui/run"
+import { Dispatch, run } from "../../src/ui/run"
+import { ProgramError, ProgramKind } from "../../src/ui/webgl2"
 
 const mockRequestAnimationFrame = (callback: () => void) => callback()
 
@@ -32,7 +33,7 @@ test("run returns a dispatch function which can run your events", () => {
         document: mockDocument(),
         requestAnimationFrame: mockRequestAnimationFrame,
         setTimeout: mockSetTimeout
-    })
+    }) as Dispatch<AppEvent>
     dispatch(AppEvent.INCREMENT)
     expect(state).toEqual({ value: 1 })
 })
@@ -57,7 +58,7 @@ test("if update does not return render true then view gets called once", () => {
         document: mockDocument(),
         requestAnimationFrame: mockRequestAnimationFrame,
         setTimeout: mockSetTimeout
-    })
+    }) as Dispatch<AppEvent>
     dispatch(true)
     expect(viewCallCount).toEqual(1)
 })
@@ -82,7 +83,7 @@ test("if update returns render true then view gets called again", () => {
         document: mockDocument(),
         requestAnimationFrame: mockRequestAnimationFrame,
         setTimeout: mockSetTimeout
-    })
+    }) as Dispatch<AppEvent>
     dispatch(true)
     expect(viewCallCount).toEqual(2)
 })
@@ -115,7 +116,7 @@ test("if update returns scheduled events they get dispatched after some millisec
             timeouts.push(milliseconds)
             callback()
         }
-    })
+    }) as Dispatch<AppEvent>
     dispatch(true)
     expect(events).toEqual([true, false, false])
     expect(timeouts).toEqual([100, 200])
@@ -146,7 +147,7 @@ test("if update returns dispatch events they get dispatched immediately", () => 
             timeouts.push(milliseconds)
             callback()
         }
-    })
+    }) as Dispatch<AppEvent>
     dispatch(true)
     expect(events).toEqual([true, false, false])
     expect(timeouts).toEqual([])
@@ -216,4 +217,27 @@ test("resize events trigger a rerender", () => {
     expect(viewCallCount).toEqual(1)
     window.fireEvent('resize')
     expect(viewCallCount).toEqual(2)
+})
+
+test("simulate failure", () => {
+    type State = number
+    type AppEvent = boolean
+    const state: State = 0
+    const view = (state: State): UI<AppEvent> => text(state.toString())
+    const update = (state: State, event: AppEvent) => ({ state })
+    const window = mockWindow()
+    const error = run({
+        state,
+        view,
+        update,
+        window,
+        document: mockDocument(true),
+        requestAnimationFrame: mockRequestAnimationFrame,
+        setTimeout: mockSetTimeout
+    }) as ProgramError
+    expect(error).toEqual({
+        kind: ProgramKind.ERROR,
+        vertexInfoLog: null,
+        fragmentInfoLog: null,
+    })
 })

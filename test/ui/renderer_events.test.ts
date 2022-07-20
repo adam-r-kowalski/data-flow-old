@@ -37,7 +37,7 @@ const mockRenderer = <AppEvent>(dispatch: (event: AppEvent) => void) => webGL2Re
     document: mockDocument(),
     window: mockWindow(),
     dispatch
-})
+}) as WebGL2Renderer<AppEvent>
 
 test("click first container", () => {
     let state = initialState()
@@ -127,4 +127,13 @@ test("click translated container", () => {
     renderer = render(renderer, ui)
     renderer = pointerDown<AppEvent, WebGL2Renderer<AppEvent>>(renderer, { x: 25, y: 225, id: 0 })
     expect(state).toEqual({ a: 1, b: 0 })
+})
+
+test("renderer starts with identity camera", () => {
+    let state = 0
+    const dispatch = (_: boolean) => { return { state } }
+    const renderer = mockRenderer(dispatch)
+    const view = container<boolean>({ width: 50, height: 50, color: red })
+    render(renderer, view)
+    expect(renderer.cameras).toEqual([identity()])
 })

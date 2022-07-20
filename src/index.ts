@@ -1,6 +1,6 @@
-import { EventKind, update } from "./event"
+import { AppEvent, EventKind, update } from "./event"
 import { identity } from "./linear_algebra/matrix3x3"
-import { run, transformPointer } from "./ui/run"
+import { Dispatch, run, transformPointer } from "./ui/run"
 import { view } from './ui/view'
 import { InputTargetKind, State, VirtualKeyboardKind } from "./state"
 import { Document } from './ui/dom'
@@ -177,7 +177,7 @@ const dispatch = run({
     document: document as Document,
     requestAnimationFrame,
     setTimeout
-})
+}) as Dispatch<AppEvent>
 
 if (typeof PointerEvent.prototype.getCoalescedEvents === 'function') {
     document.addEventListener('pointermove', (e) => {

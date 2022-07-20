@@ -117,19 +117,20 @@ const mapString = <T>(str: string, f: (c: string, i: number) => T): Array<T> => 
 export class WebGL2Renderer<AppEvent> {
     _size: Size
     _cameras: Matrix3x3[]
+    kind: ProgramKind.DATA = ProgramKind.DATA
 
     constructor(
         public window: Window,
         public document: Document,
         public canvas: Canvas,
         public gl: WebGL2Context,
-        public kind: ProgramKind,
         public program: ProgramData,
         public textures: Texture[],
         public textMeasurementsCache: Map<string, TextMeasurements>,
         public clickHandlers: ClickHandlers<AppEvent>,
         public dispatch: (event: AppEvent) => void
-    ) { }
+    ) {
+    }
 
     clear = () => {
         const { gl } = this
@@ -425,7 +426,6 @@ export const webGL2Renderer = <AppEvent>({ width, height, document, window, disp
         document,
         canvas,
         gl,
-        program.kind,
         program,
         [texture],
         new Map(),

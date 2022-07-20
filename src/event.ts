@@ -311,7 +311,10 @@ const doubleClick = (state: State, { pointer }: DoubleClick) => {
 const closeFinder = (state: State) => {
     state.finder.show = false
     state.finder.search = ''
-    state.virtualKeyboard.show = false
+    state.virtualKeyboard = {
+        show: false,
+        kind: VirtualKeyboardKind.ALPHABETIC
+    }
     state.inputTarget = { kind: InputTargetKind.NONE }
     return state
 }

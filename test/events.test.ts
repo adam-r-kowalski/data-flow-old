@@ -702,7 +702,7 @@ test("backspace key down when finder is shown deletes from search", () => {
     expect(render).toEqual(true)
 })
 
-test("enter key down when finder is shown closes finder", () => {
+test("enter key down when finder is shown closes finder and adds node", () => {
     const state = openFinder(initialState())
     const { state: state1, render } = update(state, {
         kind: EventKind.KEYDOWN,
@@ -726,6 +726,69 @@ test("enter key down when finder is shown closes finder", () => {
     expect(state1).toEqual(expectedState)
     expect(render).toEqual(true)
 })
+
+test("enter key down when finder is shown and finder has search closes finder and adds node", () => {
+    let state = openFinder(initialState())
+    for (const key of 'add') {
+        const { state: nextState } = update(state, {
+            kind: EventKind.KEYDOWN,
+            key
+        })
+        state = nextState
+    }
+    const { state: nextState } = update(state, {
+        kind: EventKind.KEYDOWN,
+        key: 'Enter'
+    })
+    state = nextState
+    const expectedState = initialState()
+    expectedState.finder.options = ["Number", "Add", "Subtract"]
+    expectedState.graph.nodes[4] = {
+        name: "Add",
+        inputs: [
+            { name: "x", selected: false, edgeIndices: [] },
+            { name: "y", selected: false, edgeIndices: [] }
+        ],
+        outputs: [
+            { name: "out", selected: false, edgeIndices: [] }
+        ],
+        x: 0,
+        y: 0
+    }
+    expect(state).toEqual(expectedState)
+})
+
+test("enter key down when finder is shown and finder has search eliminates all options closes finder", () => {
+    let state = openFinder(initialState())
+    const { state: state1 } = update(state, {
+        kind: EventKind.KEYDOWN,
+        key: 'x'
+    })
+    const { state: state2 } = update(state1, {
+        kind: EventKind.KEYDOWN,
+        key: 'Enter'
+    })
+    const expectedState = initialState()
+    expectedState.finder.options = ['Number', 'Add', 'Subtract']
+    expect(state2).toEqual(expectedState)
+})
+
+
+test("ret virtual key down when finder is shown and finder has search eliminates all options closes finder", () => {
+    let state = openFinder(initialState())
+    const { state: state1 } = update(state, {
+        kind: EventKind.VIRTUAL_KEYDOWN,
+        key: 'x'
+    })
+    const { state: state2 } = update(state1, {
+        kind: EventKind.VIRTUAL_KEYDOWN,
+        key: 'ret'
+    })
+    const expectedState = initialState()
+    expectedState.finder.options = ['Number', 'Add', 'Subtract']
+    expect(state2).toEqual(expectedState)
+})
+
 
 test("escape key down when finder is shown closes finder", () => {
     const state = openFinder(initialState())

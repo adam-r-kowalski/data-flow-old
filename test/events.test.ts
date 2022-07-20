@@ -51,6 +51,19 @@ const initialState = (): State => ({
                 x: 800,
                 y: 250
             },
+            {
+                name: "Number",
+                inputs: [],
+                body: {
+                    value: 0,
+                    editing: false,
+                },
+                outputs: [
+                    { name: "out", selected: false, edgeIndices: [] }
+                ],
+                x: 800,
+                y: 250
+            },
         ],
         edges: []
     },
@@ -387,6 +400,19 @@ test("pointer move after clicking node pointer down", () => {
             x: 800,
             y: 250
         },
+        {
+            name: "Number",
+            inputs: [],
+            body: {
+                value: 0,
+                editing: false,
+            },
+            outputs: [
+                { name: "out", selected: false, edgeIndices: [] }
+            ],
+            x: 800,
+            y: 250
+        },
     ])
     expect(render).toEqual(true)
 })
@@ -453,6 +479,19 @@ test("pointer move after clicking node, pointer down, then pointer up", () => {
                 { name: "In 2", selected: false, edgeIndices: [] }
             ],
             outputs: [],
+            x: 800,
+            y: 250
+        },
+        {
+            name: "Number",
+            inputs: [],
+            body: {
+                value: 0,
+                editing: false,
+            },
+            outputs: [
+                { name: "out", selected: false, edgeIndices: [] }
+            ],
             x: 800,
             y: 250
         },
@@ -710,7 +749,7 @@ test("enter key down when finder is shown closes finder and adds node", () => {
     })
     const expectedState = initialState()
     expectedState.finder.options = ["Number", "Add", "Subtract"]
-    expectedState.graph.nodes[4] = {
+    expectedState.graph.nodes[5] = {
         name: "Number",
         inputs: [],
         body: {
@@ -743,7 +782,7 @@ test("enter key down when finder is shown and finder has search closes finder an
     state = nextState
     const expectedState = initialState()
     expectedState.finder.options = ["Number", "Add", "Subtract"]
-    expectedState.graph.nodes[4] = {
+    expectedState.graph.nodes[5] = {
         name: "Add",
         inputs: [
             { name: "x", selected: false, edgeIndices: [] },
@@ -985,7 +1024,7 @@ test("ret virtual key down when finder is shown closes finder", () => {
     })
     const expectedState = initialState()
     expectedState.finder.options = ['Number', 'Add', 'Subtract']
-    expectedState.graph.nodes[4] = {
+    expectedState.graph.nodes[5] = {
         name: "Number",
         inputs: [],
         body: {
@@ -1073,6 +1112,60 @@ test("pressing backspace on keyboard deletes from number node", () => {
     expect(state).toEqual(expectedState)
 })
 
+test("pressing number on virtual keyboard appends to number node", () => {
+    const nodeIndex = 3
+    let state = openNumericKeyboard(initialState(), nodeIndex)
+    for (const key of '1234567890') {
+        const { state: nextState } = update(state, {
+            kind: EventKind.VIRTUAL_KEYDOWN,
+            key
+        })
+        state = nextState
+    }
+    const expectedState = initialState()
+    expectedState.virtualKeyboard = {
+        show: true,
+        kind: VirtualKeyboardKind.NUMERIC
+    }
+    expectedState.inputTarget = {
+        kind: InputTargetKind.NUMBER,
+        nodeIndex
+    }
+    expectedState.graph.nodes[nodeIndex].body!.editing = true
+    expectedState.graph.nodes[nodeIndex].body!.value = 1234567890
+    expect(state).toEqual(expectedState)
+})
+
+test("pressing del on virtual keyboard deletes from number node", () => {
+    const nodeIndex = 3
+    let state = openNumericKeyboard(initialState(), nodeIndex)
+    for (const key of '1234567890') {
+        const { state: nextState } = update(state, {
+            kind: EventKind.VIRTUAL_KEYDOWN,
+            key
+        })
+        state = nextState
+    }
+    const { state: nextState } = update(state, {
+        kind: EventKind.VIRTUAL_KEYDOWN,
+        key: 'del'
+    })
+    state = nextState
+    const expectedState = initialState()
+    expectedState.virtualKeyboard = {
+        show: true,
+        kind: VirtualKeyboardKind.NUMERIC
+    }
+    expectedState.inputTarget = {
+        kind: InputTargetKind.NUMBER,
+        nodeIndex
+    }
+    expectedState.graph.nodes[nodeIndex].body!.editing = true
+    expectedState.graph.nodes[nodeIndex].body!.value = 123456789
+    expect(state).toEqual(expectedState)
+})
+
+
 test("pressing enter on keyboard while editing number node exits virtual keyboard", () => {
     const nodeIndex = 3
     let state = openNumericKeyboard(initialState(), nodeIndex)
@@ -1086,6 +1179,26 @@ test("pressing enter on keyboard while editing number node exits virtual keyboar
     const { state: nextState } = update(state, {
         kind: EventKind.KEYDOWN,
         key: 'Enter'
+    })
+    state = nextState
+    const expectedState = initialState()
+    expectedState.graph.nodes[nodeIndex].body!.value = 1234567890
+    expect(state).toEqual(expectedState)
+})
+
+test("pressing ret on virtual keyboard while editing number node exits virtual keyboard", () => {
+    const nodeIndex = 3
+    let state = openNumericKeyboard(initialState(), nodeIndex)
+    for (const key of '1234567890') {
+        const { state: nextState } = update(state, {
+            kind: EventKind.VIRTUAL_KEYDOWN,
+            key
+        })
+        state = nextState
+    }
+    const { state: nextState } = update(state, {
+        kind: EventKind.VIRTUAL_KEYDOWN,
+        key: 'ret'
     })
     state = nextState
     const expectedState = initialState()
@@ -1115,6 +1228,93 @@ test("pressing non number on keyboard while editing number node is ignored", () 
     }
     expectedState.graph.nodes[nodeIndex].body!.editing = true
     expect(state).toEqual(expectedState)
+})
+
+
+test("pressing non number on virtual keyboard while editing number node is ignored", () => {
+    const nodeIndex = 3
+    let state = openNumericKeyboard(initialState(), nodeIndex)
+    for (const key of 'qwertyuiopasdfghjklzxcvbnm') {
+        const { state: nextState } = update(state, {
+            kind: EventKind.VIRTUAL_KEYDOWN,
+            key
+        })
+        state = nextState
+    }
+    const expectedState = initialState()
+    expectedState.virtualKeyboard = {
+        show: true,
+        kind: VirtualKeyboardKind.NUMERIC
+    }
+    expectedState.inputTarget = {
+        kind: InputTargetKind.NUMBER,
+        nodeIndex
+    }
+    expectedState.graph.nodes[nodeIndex].body!.editing = true
+    expect(state).toEqual(expectedState)
+})
+
+test("pressing a key on virtual keyboard while no input target selected doesn't change the state", () => {
+    let state = initialState()
+    state.virtualKeyboard = {
+        show: true,
+        kind: VirtualKeyboardKind.NUMERIC
+    }
+    const { state: state1 } = update(state, {
+        kind: EventKind.VIRTUAL_KEYDOWN,
+        key: '1'
+    })
+    const expectedState = initialState()
+    expectedState.virtualKeyboard = {
+        show: true,
+        kind: VirtualKeyboardKind.NUMERIC
+    }
+    expect(state1).toEqual(expectedState)
+})
+
+test("clicking a number node opens the numeric keyboard", () => {
+    const nodeIndex = 3
+    const state = initialState()
+    const { state: state1 } = update(state, {
+        kind: EventKind.CLICKED_NUMBER,
+        nodeIndex
+    })
+    const expectedState = initialState()
+    expectedState.virtualKeyboard = {
+        show: true,
+        kind: VirtualKeyboardKind.NUMERIC
+    }
+    expectedState.inputTarget = {
+        kind: InputTargetKind.NUMBER,
+        nodeIndex
+    }
+    expectedState.graph.nodes[nodeIndex].body!.editing = true
+    expectedState.graph.nodes[nodeIndex].body!.value = 0
+    expect(state1).toEqual(expectedState)
+})
+
+test("clicking a number node when another number node is selected switches selections", () => {
+    const state = initialState()
+    const { state: state1 } = update(state, {
+        kind: EventKind.CLICKED_NUMBER,
+        nodeIndex: 3
+    })
+    const { state: state2 } = update(state1, {
+        kind: EventKind.CLICKED_NUMBER,
+        nodeIndex: 4
+    })
+    const expectedState = initialState()
+    expectedState.virtualKeyboard = {
+        show: true,
+        kind: VirtualKeyboardKind.NUMERIC
+    }
+    expectedState.inputTarget = {
+        kind: InputTargetKind.NUMBER,
+        nodeIndex: 4
+    }
+    expectedState.graph.nodes[4].body!.editing = true
+    expectedState.graph.nodes[4].body!.value = 0
+    expect(state2).toEqual(expectedState)
 })
 
 

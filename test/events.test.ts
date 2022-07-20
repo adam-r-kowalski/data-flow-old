@@ -597,6 +597,27 @@ test("clicking input after clicking output adds connection", () => {
     expect(render).toEqual(true)
 })
 
+test("double click opens finder", () => {
+    const state = initialState()
+    const { state: state1, render } = update(state, {
+        kind: EventKind.DOUBLE_CLICK,
+        pointer: {
+            x: 50,
+            y: 50,
+            id: 0
+        }
+    })
+    const expectedState = initialState()
+    expectedState.finder.show = true
+    expectedState.virtualKeyboard.show = true
+    expectedState.inputTarget = { kind: InputTargetKind.FINDER }
+    expectedState.finder.options = ["Number", "Add", "Subtract"]
+    expectedState.nodePlacementLocation = { x: 50, y: 50 }
+    expect(state1).toEqual(expectedState)
+    expect(render).toEqual(true)
+})
+
+
 test("key down when finder is not shown does nothing", () => {
     const state = initialState()
     const { state: state1 } = update(state, {
@@ -606,6 +627,7 @@ test("key down when finder is not shown does nothing", () => {
     const expectedState = initialState()
     expect(state1).toEqual(expectedState)
 })
+
 
 test("f key down when finder is not shown opens finder", () => {
     const state = initialState()

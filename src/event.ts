@@ -308,7 +308,6 @@ const doubleClick = (state: State, { pointer }: DoubleClick) => {
     return { state: state, render: true }
 }
 
-
 const closeFinder = (state: State) => {
     state.finder.show = false
     state.finder.search = ''

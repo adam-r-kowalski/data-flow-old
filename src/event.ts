@@ -391,7 +391,6 @@ const keyDown = (state: State, { key }: KeyDown) => {
                 case '8':
                 case '9':
                 case '0':
-                case '.':
                     value += key
                     node.body!.value = parseFloat(value)
                     return { state, render: true }
@@ -487,11 +486,7 @@ const clickedFinderOption = (state: State, { option }: ClickedFinderOption) => (
     render: true
 })
 
-const clickedNumber = (state: State, { nodeIndex }: ClickedNumber) => {
-    if (state.inputTarget.kind === InputTargetKind.NUMBER) {
-        state.graph.nodes[state.inputTarget.nodeIndex].body!.editing = false
-    }
-    state = closeFinder(state)
+export const openNumericKeyboard = (state: State, nodeIndex: number): State => {
     state.virtualKeyboard = {
         show: true,
         kind: VirtualKeyboardKind.NUMERIC
@@ -501,6 +496,15 @@ const clickedNumber = (state: State, { nodeIndex }: ClickedNumber) => {
         nodeIndex
     }
     state.graph.nodes[nodeIndex].body!.editing = true
+    return state
+}
+
+const clickedNumber = (state: State, { nodeIndex }: ClickedNumber) => {
+    if (state.inputTarget.kind === InputTargetKind.NUMBER) {
+        state.graph.nodes[state.inputTarget.nodeIndex].body!.editing = false
+    }
+    state = closeFinder(state)
+    state = openNumericKeyboard(state, nodeIndex)
     return {
         state,
         render: true

@@ -1,4 +1,4 @@
-import { EventKind, openFinder, update } from "../src/event"
+import { EventKind, openFinder, openNumericKeyboard, update } from "../src/event"
 import { identity, translate } from "../src/linear_algebra/matrix3x3"
 import { InputTargetKind, State, VirtualKeyboardKind } from "../src/state"
 
@@ -35,6 +35,19 @@ const initialState = (): State => ({
                     { name: "In 2", selected: false, edgeIndices: [] }
                 ],
                 outputs: [],
+                x: 800,
+                y: 250
+            },
+            {
+                name: "Number",
+                inputs: [],
+                body: {
+                    value: 0,
+                    editing: false,
+                },
+                outputs: [
+                    { name: "out", selected: false, edgeIndices: [] }
+                ],
                 x: 800,
                 y: 250
             },
@@ -838,6 +851,104 @@ test("sft virtual key down when finder is shown are ignored", () => {
     expect(state1).toEqual(expectedState)
     expect(render).toEqual(true)
 })
+
+test("pressing number on keyboard appends to number node", () => {
+    const nodeIndex = 3
+    let state = openNumericKeyboard(initialState(), nodeIndex)
+    for (const key of '1234567890') {
+        const { state: nextState } = update(state, {
+            kind: EventKind.KEYDOWN,
+            key
+        })
+        state = nextState
+    }
+    const expectedState = initialState()
+    expectedState.virtualKeyboard = {
+        show: true,
+        kind: VirtualKeyboardKind.NUMERIC
+    }
+    expectedState.inputTarget = {
+        kind: InputTargetKind.NUMBER,
+        nodeIndex
+    }
+    expectedState.graph.nodes[nodeIndex].body!.editing = true
+    expectedState.graph.nodes[nodeIndex].body!.value = 1234567890
+    expect(state).toEqual(expectedState)
+})
+
+test("pressing backspace on keyboard deletes from number node", () => {
+    const nodeIndex = 3
+    let state = openNumericKeyboard(initialState(), nodeIndex)
+    for (const key of '1234567890') {
+        const { state: nextState } = update(state, {
+            kind: EventKind.KEYDOWN,
+            key
+        })
+        state = nextState
+    }
+    const { state: nextState } = update(state, {
+        kind: EventKind.KEYDOWN,
+        key: 'Backspace'
+    })
+    state = nextState
+    const expectedState = initialState()
+    expectedState.virtualKeyboard = {
+        show: true,
+        kind: VirtualKeyboardKind.NUMERIC
+    }
+    expectedState.inputTarget = {
+        kind: InputTargetKind.NUMBER,
+        nodeIndex
+    }
+    expectedState.graph.nodes[nodeIndex].body!.editing = true
+    expectedState.graph.nodes[nodeIndex].body!.value = 123456789
+    expect(state).toEqual(expectedState)
+})
+
+test("pressing enter on keyboard while editing number node exits virtual keyboard", () => {
+    const nodeIndex = 3
+    let state = openNumericKeyboard(initialState(), nodeIndex)
+    for (const key of '1234567890') {
+        const { state: nextState } = update(state, {
+            kind: EventKind.KEYDOWN,
+            key
+        })
+        state = nextState
+    }
+    const { state: nextState } = update(state, {
+        kind: EventKind.KEYDOWN,
+        key: 'Enter'
+    })
+    state = nextState
+    const expectedState = initialState()
+    expectedState.graph.nodes[nodeIndex].body!.value = 1234567890
+    expect(state).toEqual(expectedState)
+})
+
+
+test("pressing non number on keyboard while editing number node is ignored", () => {
+    const nodeIndex = 3
+    let state = openNumericKeyboard(initialState(), nodeIndex)
+    for (const key of 'qwertyuiopasdfghjklzxcvbnm') {
+        const { state: nextState } = update(state, {
+            kind: EventKind.KEYDOWN,
+            key
+        })
+        state = nextState
+    }
+    const expectedState = initialState()
+    expectedState.virtualKeyboard = {
+        show: true,
+        kind: VirtualKeyboardKind.NUMERIC
+    }
+    expectedState.inputTarget = {
+        kind: InputTargetKind.NUMBER,
+        nodeIndex
+    }
+    expectedState.graph.nodes[nodeIndex].body!.editing = true
+    expect(state).toEqual(expectedState)
+})
+
 
 test("zooming", () => {
     const state = initialState()

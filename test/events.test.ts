@@ -84,7 +84,24 @@ const initialState = (): State => ({
     inputTarget: {
         kind: InputTargetKind.NONE
     },
-    operations: {}
+    operations: {
+        "Number": {
+            name: "Number",
+            inputs: [],
+            body: 0,
+            outputs: ["out"]
+        },
+        "Add": {
+            name: "Add",
+            inputs: ["x", "y"],
+            outputs: ["out"]
+        },
+        "Subtract": {
+            name: "Subtract",
+            inputs: ["x", "y"],
+            outputs: ["out"]
+        },
+    }
 })
 
 test("pointer down", () => {
@@ -600,6 +617,7 @@ test("f key down when finder is not shown opens finder", () => {
     expectedState.finder.show = true
     expectedState.virtualKeyboard.show = true
     expectedState.inputTarget = { kind: InputTargetKind.FINDER }
+    expectedState.finder.options = ["Number", "Add", "Subtract"]
     expect(state1).toEqual(expectedState)
     expect(render).toEqual(true)
 })
@@ -626,6 +644,7 @@ test("key down when finder is shown appends to search", () => {
         kind: VirtualKeyboardKind.ALPHABETIC
     }
     expectedState.inputTarget.kind = InputTargetKind.FINDER
+    expectedState.finder.options = ["Add"]
     expect(state3).toEqual(expectedState)
     expect(render).toEqual(true)
 })
@@ -656,6 +675,7 @@ test("backspace key down when finder is shown deletes from search", () => {
         kind: VirtualKeyboardKind.ALPHABETIC
     }
     expectedState.inputTarget.kind = InputTargetKind.FINDER
+    expectedState.finder.options = ["Add"]
     expect(state4).toEqual(expectedState)
     expect(render).toEqual(true)
 })
@@ -667,6 +687,20 @@ test("enter key down when finder is shown closes finder", () => {
         key: 'Enter'
     })
     const expectedState = initialState()
+    expectedState.finder.options = ["Number", "Add", "Subtract"]
+    expectedState.graph.nodes[4] = {
+        name: "Number",
+        inputs: [],
+        body: {
+            value: 0,
+            editing: false,
+        },
+        outputs: [
+            { name: "out", selected: false, edgeIndices: [] }
+        ],
+        x: 0,
+        y: 0
+    }
     expect(state1).toEqual(expectedState)
     expect(render).toEqual(true)
 })
@@ -678,6 +712,7 @@ test("escape key down when finder is shown closes finder", () => {
         key: 'Escape'
     })
     const expectedState = initialState()
+    expectedState.finder.options = ["Number", "Add", "Subtract"]
     expect(state1).toEqual(expectedState)
     expect(render).toEqual(true)
 })
@@ -695,6 +730,7 @@ test("shift key down when finder is shown are ignored", () => {
         kind: VirtualKeyboardKind.ALPHABETIC
     }
     expectedState.inputTarget.kind = InputTargetKind.FINDER
+    expectedState.finder.options = ["Number", "Add", "Subtract"]
     expect(state1).toEqual(expectedState)
     expect(render).toEqual(true)
 })
@@ -712,6 +748,7 @@ test("alt key down when finder is shown are ignored", () => {
         kind: VirtualKeyboardKind.ALPHABETIC
     }
     expectedState.inputTarget.kind = InputTargetKind.FINDER
+    expectedState.finder.options = ["Number", "Add", "Subtract"]
     expect(state1).toEqual(expectedState)
     expect(render).toEqual(true)
 })
@@ -729,6 +766,7 @@ test("control key down when finder is shown are ignored", () => {
         kind: VirtualKeyboardKind.ALPHABETIC
     }
     expectedState.inputTarget.kind = InputTargetKind.FINDER
+    expectedState.finder.options = ["Number", "Add", "Subtract"]
     expect(state1).toEqual(expectedState)
     expect(render).toEqual(true)
 })
@@ -746,6 +784,7 @@ test("meta key down when finder is shown are ignored", () => {
         kind: VirtualKeyboardKind.ALPHABETIC
     }
     expectedState.inputTarget.kind = InputTargetKind.FINDER
+    expectedState.finder.options = ["Number", "Add", "Subtract"]
     expect(state1).toEqual(expectedState)
     expect(render).toEqual(true)
 })
@@ -764,6 +803,7 @@ test("Tab key down when finder is shown are ignored", () => {
         kind: VirtualKeyboardKind.ALPHABETIC
     }
     expectedState.inputTarget.kind = InputTargetKind.FINDER
+    expectedState.finder.options = ["Number", "Add", "Subtract"]
     expect(state1).toEqual(expectedState)
     expect(render).toEqual(true)
 })
@@ -785,6 +825,7 @@ test("virtual key down when finder is shown appends to search", () => {
     const expectedState = initialState()
     expectedState.finder.show = true
     expectedState.finder.search = 'add'
+    expectedState.finder.options = ['Add']
     expectedState.virtualKeyboard = {
         show: true,
         kind: VirtualKeyboardKind.ALPHABETIC
@@ -820,6 +861,7 @@ test("del virtual key down when finder is shown deletes from search", () => {
         kind: VirtualKeyboardKind.ALPHABETIC
     }
     expectedState.inputTarget.kind = InputTargetKind.FINDER
+    expectedState.finder.options = ['Add']
     expect(state4).toEqual(expectedState)
     expect(render).toEqual(true)
 })
@@ -857,6 +899,20 @@ test("ret virtual key down when finder is shown closes finder", () => {
         key: 'ret'
     })
     const expectedState = initialState()
+    expectedState.finder.options = ['Number', 'Add', 'Subtract']
+    expectedState.graph.nodes[4] = {
+        name: "Number",
+        inputs: [],
+        body: {
+            value: 0,
+            editing: false,
+        },
+        outputs: [
+            { name: "out", selected: false, edgeIndices: [] }
+        ],
+        x: 0,
+        y: 0
+    }
     expect(state1).toEqual(expectedState)
     expect(render).toEqual(true)
 })
@@ -874,6 +930,7 @@ test("sft virtual key down when finder is shown are ignored", () => {
         kind: VirtualKeyboardKind.ALPHABETIC
     }
     expectedState.inputTarget.kind = InputTargetKind.FINDER
+    expectedState.finder.options = ['Number', 'Add', 'Subtract']
     expect(state1).toEqual(expectedState)
     expect(render).toEqual(true)
 })

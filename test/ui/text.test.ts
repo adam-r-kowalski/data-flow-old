@@ -4,15 +4,16 @@ import * as layerGeometry from '../../src/ui/layer_geometry'
 import * as reducer from '../../src/ui/reducer'
 import { reduce } from '../../src/ui/reduce'
 import { mockDocument, mockWindow } from '../../src/ui/mock'
-import { webGL2Renderer } from '../../src/ui/webgl2'
+import { WebGL2Renderer, webGL2Renderer } from '../../src/ui/webgl2'
 import { batchGeometry } from '../../src/ui/batch_geometry'
 
-const mockRenderer = () => webGL2Renderer({
+
+const mockRenderer = <T>() => webGL2Renderer<T>({
     width: 500,
     height: 500,
     document: mockDocument(),
     window: mockWindow()
-})
+}) as WebGL2Renderer<T>
 
 test("text layout", () => {
     const renderer = mockRenderer()

@@ -1,6 +1,6 @@
 import { pointerDown } from "./pointer_down"
 import { render } from "./render"
-import { WebGL2Renderer, webGL2Renderer } from "./webgl2"
+import { ProgramError, ProgramKind, WebGL2Renderer, webGL2Renderer } from "./webgl2"
 import { Pointer, UI } from "."
 import { Document, Window, PointerEvent } from "./dom"
 
@@ -42,43 +42,49 @@ interface Properties<State, AppEvent> {
     setTimeout: (callback: () => void, milliseconds: number) => void
 }
 
-export const run = <State, AppEvent>(properties: Properties<State, AppEvent>): Dispatch<AppEvent> => {
+export const run = <State, AppEvent>(properties: Properties<State, AppEvent>): Dispatch<AppEvent> | ProgramError => {
     let { state, view, update, window, document, requestAnimationFrame, setTimeout } = properties
-    let renderer = webGL2Renderer<AppEvent>({
+    const renderer_or_error = webGL2Renderer<AppEvent>({
         width: window.innerWidth,
         height: window.innerHeight,
         window,
         document,
     })
-    let renderQueued = false
-    const scheduleRender = () => {
-        if (!renderQueued) {
-            renderQueued = true
-            requestAnimationFrame(() => {
-                renderer = render(renderer, view(state))
-                renderQueued = false
+    switch (renderer_or_error.kind) {
+        case ProgramKind.ERROR:
+            return renderer_or_error as ProgramError
+        case ProgramKind.DATA:
+            let renderer = renderer_or_error as WebGL2Renderer<AppEvent>
+            let renderQueued = false
+            const scheduleRender = () => {
+                if (!renderQueued) {
+                    renderQueued = true
+                    requestAnimationFrame(() => {
+                        renderer = render(renderer, view(state))
+                        renderQueued = false
+                    })
+                }
+            }
+            const dispatch = (event: AppEvent) => {
+                const { state: newState, render, schedule, dispatch: dispatchEvents } = update(state, event)
+                state = newState
+                if (render) scheduleRender()
+                for (const { after, event } of schedule ?? []) {
+                    const { milliseconds } = after
+                    setTimeout(() => dispatch(event), milliseconds)
+                }
+                for (const event of dispatchEvents ?? []) dispatch(event)
+            }
+            renderer.dispatch = dispatch
+            document.body.appendChild(renderer.canvas)
+            document.addEventListener("pointerdown", p => {
+                renderer = pointerDown<AppEvent, WebGL2Renderer<AppEvent>>(renderer, transformPointer(p))
             })
-        }
+            window.addEventListener("resize", () => {
+                renderer.size = { width: window.innerWidth, height: window.innerHeight }
+                scheduleRender()
+            })
+            scheduleRender()
+            return dispatch
     }
-    const dispatch = (event: AppEvent) => {
-        const { state: newState, render, schedule, dispatch: dispatchEvents } = update(state, event)
-        state = newState
-        if (render) scheduleRender()
-        for (const { after, event } of schedule ?? []) {
-            const { milliseconds } = after
-            setTimeout(() => dispatch(event), milliseconds)
-        }
-        for (const event of dispatchEvents ?? []) dispatch(event)
-    }
-    renderer.dispatch = dispatch
-    document.body.appendChild(renderer.canvas)
-    document.addEventListener("pointerdown", p => {
-        renderer = pointerDown<AppEvent, WebGL2Renderer<AppEvent>>(renderer, transformPointer(p))
-    })
-    window.addEventListener("resize", () => {
-        renderer.size = { width: window.innerWidth, height: window.innerHeight }
-        scheduleRender()
-    })
-    scheduleRender()
-    return dispatch
 }

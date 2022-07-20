@@ -48,7 +48,7 @@ export class MockWebGL2Context {
     LINES = 0
     STATIC_DRAW = 0
 
-    constructor(public canvas: MockCanvas) { }
+    constructor(public canvas: MockCanvas, public simulate_failure: boolean) { }
 
     enable = (cap: number): void => { }
     blendFunc = (sfactor: number, dfactor: number): void => { }
@@ -67,7 +67,7 @@ export class MockWebGL2Context {
     bufferData = (target: number, srcData: BufferSource | null, usage: number): void => { }
     attachShader = (program: MockProgram, shader: MockShader): void => { }
     linkProgram = (program: MockProgram): void => { }
-    getProgramParameter = (program: MockProgram, pname: number): any => true
+    getProgramParameter = (program: MockProgram, pname: number): any => !this.simulate_failure
     getShaderInfoLog = (shader: MockShader): string | null => null
     useProgram = (program: MockProgram): void => { }
     createVertexArray = (): MockVertexArrayObject | null => new MockVertexArrayObject()
@@ -127,7 +127,7 @@ export class MockCanvas {
     width: number = 0
     height: number = 0
 
-    constructor() {
+    constructor(public simulate_failure: boolean) {
         this.getContext = this.getContext.bind(this)
     }
 
@@ -135,17 +135,16 @@ export class MockCanvas {
     getContext(contextId: '2d'): MockCanvasContext
     getContext(contextId: 'webgl2' | '2d') {
         switch (contextId) {
-            case 'webgl2': return new MockWebGL2Context(this)
+            case 'webgl2': return new MockWebGL2Context(this, this.simulate_failure)
             case '2d': return new MockCanvasContext(this)
-            default: return null
         }
     }
 }
 
-export const mockDocument = () => {
+export const mockDocument = (simulate_failure: boolean = false) => {
     const callbacks: ((p: PointerEvent) => void)[] = []
     return {
-        createElement: (tagName: 'canvas') => new MockCanvas(),
+        createElement: (tagName: 'canvas') => new MockCanvas(simulate_failure),
         addEventListener: (event: "pointerdown", callback: (p: PointerEvent) => void) => {
             callbacks.push(callback)
         },

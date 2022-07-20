@@ -23,13 +23,23 @@ interface Uniforms {
     cameras: UniformLocation
 }
 
+export enum ProgramKind { DATA, ERROR }
+
 interface ProgramData {
+    kind: ProgramKind.DATA
     vertexShader: Shader
     fragmentShader: Shader
     program: Program
     attributes: Attributes
     uniforms: Uniforms
 }
+
+export interface ProgramError {
+    kind: ProgramKind.ERROR
+    vertexInfoLog: string | null
+    fragmentInfoLog: string | null
+}
+
 
 type DevicePixelRatio = number
 
@@ -113,6 +123,7 @@ export class WebGL2Renderer<AppEvent> {
         public document: Document,
         public canvas: Canvas,
         public gl: WebGL2Context,
+        public kind: ProgramKind,
         public program: ProgramData,
         public textures: Texture[],
         public textMeasurementsCache: Map<string, TextMeasurements>,
@@ -321,7 +332,7 @@ const bindCameraIndex = (gl: WebGL2Context, program: Program, { location, buffer
     )
 }
 
-const createProgram = (gl: WebGL2Context): ProgramData => {
+const createProgram = (gl: WebGL2Context): ProgramData | ProgramError => {
     const attributes: Attributes = {
         vertices: {
             location: 0,
@@ -348,8 +359,11 @@ const createProgram = (gl: WebGL2Context): ProgramData => {
     gl.attachShader(program, fragmentShader)
     gl.linkProgram(program)
     if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-        console.log(gl.getShaderInfoLog(vertexShader))
-        console.log(gl.getShaderInfoLog(fragmentShader))
+        return {
+            kind: ProgramKind.ERROR,
+            vertexInfoLog: gl.getShaderInfoLog(vertexShader),
+            fragmentInfoLog: gl.getShaderInfoLog(fragmentShader),
+        }
     }
     gl.useProgram(program)
     const vertexArrayObject = gl.createVertexArray()!
@@ -364,6 +378,7 @@ const createProgram = (gl: WebGL2Context): ProgramData => {
         cameras: gl.getUniformLocation(program, 'u_cameras')!
     }
     return {
+        kind: ProgramKind.DATA,
         vertexShader,
         fragmentShader,
         program,
@@ -380,7 +395,7 @@ interface Parameters<AppEvent> {
     dispatch?: (event: AppEvent) => void
 }
 
-export const webGL2Renderer = <AppEvent>({ width, height, document, window, dispatch }: Parameters<AppEvent>): WebGL2Renderer<AppEvent> => {
+export const webGL2Renderer = <AppEvent>({ width, height, document, window, dispatch }: Parameters<AppEvent>): WebGL2Renderer<AppEvent> | ProgramError => {
     const canvas = document.createElement('canvas')
     canvas.style.touchAction = 'none'
     const gl = canvas.getContext('webgl2')!
@@ -391,6 +406,7 @@ export const webGL2Renderer = <AppEvent>({ width, height, document, window, disp
     gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true)
     gl.clearColor(0, 0, 0, 1)
     const program = createProgram(gl)
+    if (program.kind == ProgramKind.ERROR) return program
     const texture = gl.createTexture()!
     gl.bindTexture(gl.TEXTURE_2D, texture)
     gl.texImage2D(
@@ -409,6 +425,7 @@ export const webGL2Renderer = <AppEvent>({ width, height, document, window, disp
         document,
         canvas,
         gl,
+        program.kind,
         program,
         [texture],
         new Map(),

@@ -1,5 +1,5 @@
 import { container, center, layout, geometry, UIKind } from '../../src/ui'
-import { webGL2Renderer } from '../../src/ui/webgl2'
+import { WebGL2Renderer, webGL2Renderer } from '../../src/ui/webgl2'
 import { mockDocument, mockWindow } from '../../src/ui/mock'
 import { initCameraStack } from '../../src/ui/camera_stack'
 import * as layerGeometry from '../../src/ui/layer_geometry'
@@ -7,12 +7,12 @@ import { reduce } from '../../src/ui/reduce'
 
 const red = { red: 255, green: 0, blue: 0, alpha: 255 }
 
-const mockRenderer = () => webGL2Renderer({
+const mockRenderer = <T>() => webGL2Renderer<T>({
     width: 500,
     height: 500,
     document: mockDocument(),
     window: mockWindow()
-})
+}) as WebGL2Renderer<T>
 
 test("center ui", () => {
     const ui = center(

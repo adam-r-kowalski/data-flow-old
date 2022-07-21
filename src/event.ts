@@ -198,6 +198,9 @@ const pointerMove = (state: State, event: PointerMove) => {
 
 const clickedNode = (state: State, event: ClickedNode) => {
     state.draggedNode = event.nodeUUID
+    const nodeOrder = state.graph.nodeOrder.filter(uuid => uuid !== event.nodeUUID)
+    nodeOrder.push(event.nodeUUID)
+    state.graph.nodeOrder = nodeOrder
     return { state, render: true }
 }
 
@@ -211,6 +214,9 @@ const wheel = (state: State, event: Wheel) => {
 
 const clickedInput = (state: State, event: ClickedInput) => {
     state.draggedNode = event.inputPath.nodeUUID
+    const nodeOrder = state.graph.nodeOrder.filter(uuid => uuid !== event.inputPath.nodeUUID)
+    nodeOrder.push(event.inputPath.nodeUUID)
+    state.graph.nodeOrder = nodeOrder
     if (state.selectedOutput) {
         const edgeIndex = state.graph.edges.length
         state.graph.edges.push({
@@ -244,6 +250,9 @@ const clickedInput = (state: State, event: ClickedInput) => {
 
 const clickedOutput = (state: State, event: ClickedOutput) => {
     state.draggedNode = event.outputPath.nodeUUID
+    const nodeOrder = state.graph.nodeOrder.filter(uuid => uuid !== event.outputPath.nodeUUID)
+    nodeOrder.push(event.outputPath.nodeUUID)
+    state.graph.nodeOrder = nodeOrder
     if (state.selectedInput) {
         const edgeIndex = state.graph.edges.length
         state.graph.edges.push({

@@ -1,11 +1,20 @@
 import { container, row, text, UI } from "../../src/ui"
 import { mockDocument, mockWindow } from "../../src/ui/mock"
-import { Dispatch, run } from "../../src/ui/run"
+import { Dispatch, run, Success } from "../../src/ui/run"
 import { ProgramError, ProgramKind } from "../../src/ui/webgl2"
 
 const mockRequestAnimationFrame = (callback: () => void) => callback()
 
 const mockSetTimeout = (callback: () => void, milliseconds: number) => callback()
+
+const extractDispatch = <AppEvent>(successOrError: Success<AppEvent> | ProgramError): Dispatch<AppEvent> => {
+    switch (successOrError.kind) {
+        case ProgramKind.DATA:
+            return successOrError.dispatch
+        case ProgramKind.ERROR:
+            throw successOrError
+    }
+}
 
 test("run returns a dispatch function which can run your events", () => {
     enum AppEvent { INCREMENT, DECREMENT }
@@ -25,7 +34,7 @@ test("run returns a dispatch function which can run your events", () => {
         }
         return { state }
     }
-    const dispatch = run({
+    const dispatch = extractDispatch(run({
         state,
         view,
         update,
@@ -33,7 +42,7 @@ test("run returns a dispatch function which can run your events", () => {
         document: mockDocument(),
         requestAnimationFrame: mockRequestAnimationFrame,
         setTimeout: mockSetTimeout
-    }) as Dispatch<AppEvent>
+    }))
     dispatch(AppEvent.INCREMENT)
     expect(state).toEqual({ value: 1 })
 })
@@ -50,7 +59,7 @@ test("if update does not return render true then view gets called once", () => {
     const update = (state: State, event: AppEvent) => {
         return { state }
     }
-    const dispatch = run({
+    const dispatch = extractDispatch(run({
         state,
         view,
         update,
@@ -58,7 +67,7 @@ test("if update does not return render true then view gets called once", () => {
         document: mockDocument(),
         requestAnimationFrame: mockRequestAnimationFrame,
         setTimeout: mockSetTimeout
-    }) as Dispatch<AppEvent>
+    }))
     dispatch(true)
     expect(viewCallCount).toEqual(1)
 })
@@ -75,7 +84,7 @@ test("if update returns render true then view gets called again", () => {
     const update = (state: State, event: AppEvent) => {
         return { state, render: true }
     }
-    const dispatch = run({
+    const dispatch = extractDispatch(run({
         state,
         view,
         update,
@@ -83,7 +92,7 @@ test("if update returns render true then view gets called again", () => {
         document: mockDocument(),
         requestAnimationFrame: mockRequestAnimationFrame,
         setTimeout: mockSetTimeout
-    }) as Dispatch<AppEvent>
+    }))
     dispatch(true)
     expect(viewCallCount).toEqual(2)
 })
@@ -105,7 +114,7 @@ test("if update returns scheduled events they get dispatched after some millisec
         } : { state }
     }
     const timeouts: number[] = []
-    const dispatch = run({
+    const dispatch = extractDispatch(run({
         state,
         view,
         update,
@@ -116,7 +125,7 @@ test("if update returns scheduled events they get dispatched after some millisec
             timeouts.push(milliseconds)
             callback()
         }
-    }) as Dispatch<AppEvent>
+    }))
     dispatch(true)
     expect(events).toEqual([true, false, false])
     expect(timeouts).toEqual([100, 200])
@@ -136,7 +145,7 @@ test("if update returns dispatch events they get dispatched immediately", () => 
         } : { state }
     }
     const timeouts: number[] = []
-    const dispatch = run({
+    const dispatch = extractDispatch(run({
         state,
         view,
         update,
@@ -147,7 +156,7 @@ test("if update returns dispatch events they get dispatched immediately", () => 
             timeouts.push(milliseconds)
             callback()
         }
-    }) as Dispatch<AppEvent>
+    }))
     dispatch(true)
     expect(events).toEqual([true, false, false])
     expect(timeouts).toEqual([])

@@ -42,7 +42,12 @@ interface Properties<State, AppEvent> {
     setTimeout: (callback: () => void, milliseconds: number) => void
 }
 
-export const run = <State, AppEvent>(properties: Properties<State, AppEvent>): Dispatch<AppEvent> | ProgramError => {
+export interface Success<AppEvent> {
+    kind: ProgramKind.DATA
+    dispatch: Dispatch<AppEvent>
+}
+
+export const run = <State, AppEvent>(properties: Properties<State, AppEvent>): Success<AppEvent> | ProgramError => {
     let { state, view, update, window, document, requestAnimationFrame, setTimeout } = properties
     const renderer_or_error = webGL2Renderer<AppEvent>({
         width: window.innerWidth,
@@ -52,9 +57,9 @@ export const run = <State, AppEvent>(properties: Properties<State, AppEvent>): D
     })
     switch (renderer_or_error.kind) {
         case ProgramKind.ERROR:
-            return renderer_or_error as ProgramError
+            return renderer_or_error
         case ProgramKind.DATA:
-            let renderer = renderer_or_error as WebGL2Renderer<AppEvent>
+            let renderer = renderer_or_error
             let renderQueued = false
             const scheduleRender = () => {
                 if (!renderQueued) {
@@ -85,6 +90,6 @@ export const run = <State, AppEvent>(properties: Properties<State, AppEvent>): D
                 scheduleRender()
             })
             scheduleRender()
-            return dispatch
+            return { kind: ProgramKind.DATA, dispatch }
     }
 }

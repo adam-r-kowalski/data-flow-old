@@ -4,6 +4,7 @@ import { Dispatch, run, transformPointer } from "./ui/run"
 import { view } from './ui/view'
 import { InputTargetKind, State, VirtualKeyboardKind } from "./state"
 import { Document } from './ui/dom'
+import { ProgramKind } from "./ui/webgl2"
 
 
 const initialState: State = {
@@ -169,7 +170,7 @@ const initialState: State = {
     }
 }
 
-const dispatch = run({
+const success_or_error = run({
     state: initialState,
     view,
     update,
@@ -177,7 +178,13 @@ const dispatch = run({
     document: document as Document,
     requestAnimationFrame,
     setTimeout
-}) as Dispatch<AppEvent>
+})
+
+if (success_or_error.kind == ProgramKind.ERROR) {
+    throw success_or_error
+}
+
+const dispatch = success_or_error.dispatch
 
 if (typeof PointerEvent.prototype.getCoalescedEvents === 'function') {
     document.addEventListener('pointermove', (e) => {

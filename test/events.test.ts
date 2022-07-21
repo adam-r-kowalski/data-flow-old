@@ -1,121 +1,6 @@
 import { EventKind, openFinder, openNumericKeyboard, update } from "../src/event"
-import { identity, translate } from "../src/linear_algebra/matrix3x3"
-import { InputTargetKind, State, VirtualKeyboardKind } from "../src/state"
-
-const initialState = (): State => ({
-    graph: {
-        nodes: [
-            {
-                name: "Source",
-                inputs: [],
-                outputs: [
-                    { name: "Out 1", selected: false, edgeIndices: [] },
-                    { name: "Out 2", selected: false, edgeIndices: [] },
-                ],
-                x: 100,
-                y: 200
-            },
-            {
-                name: "Transform",
-                inputs: [
-                    { name: "In 1", selected: false, edgeIndices: [] },
-                    { name: "In 2", selected: false, edgeIndices: [] }
-                ],
-                outputs: [
-                    { name: "Out 1", selected: false, edgeIndices: [] },
-                    { name: "Out 2", selected: false, edgeIndices: [] }
-                ],
-                x: 400,
-                y: 300
-            },
-            {
-                name: "Sink",
-                inputs: [
-                    { name: "In 1", selected: false, edgeIndices: [] },
-                    { name: "In 2", selected: false, edgeIndices: [] }
-                ],
-                outputs: [],
-                x: 800,
-                y: 250
-            },
-            {
-                name: "Number",
-                inputs: [],
-                body: {
-                    value: 0,
-                    editing: false,
-                },
-                outputs: [
-                    { name: "out", selected: false, edgeIndices: [] }
-                ],
-                x: 800,
-                y: 250
-            },
-            {
-                name: "Number",
-                inputs: [],
-                body: {
-                    value: 0,
-                    editing: false,
-                },
-                outputs: [
-                    { name: "out", selected: false, edgeIndices: [] }
-                ],
-                x: 800,
-                y: 250
-            },
-        ],
-        edges: []
-    },
-    zooming: false,
-    dragging: false,
-    draggedNode: null,
-    pointers: [],
-    pointerDistance: 0,
-    pointerCenter: [0, 0],
-    camera: identity(),
-    selectedInput: null,
-    selectedOutput: null,
-    theme: {
-        background: { red: 2, green: 22, blue: 39, alpha: 255 },
-        node: { red: 41, green: 95, blue: 120, alpha: 255 },
-        input: { red: 188, green: 240, blue: 192, alpha: 255 },
-        selectedInput: { red: 175, green: 122, blue: 208, alpha: 255 },
-        connection: { red: 255, green: 255, blue: 255, alpha: 255 },
-    },
-    potentialDoubleClick: false,
-    nodePlacementLocation: { x: 0, y: 0 },
-    finder: {
-        search: '',
-        options: [],
-        show: false
-    },
-    virtualKeyboard: {
-        show: false,
-        kind: VirtualKeyboardKind.ALPHABETIC
-    },
-    inputTarget: {
-        kind: InputTargetKind.NONE
-    },
-    operations: {
-        "Number": {
-            name: "Number",
-            inputs: [],
-            body: 0,
-            outputs: ["out"]
-        },
-        "Add": {
-            name: "Add",
-            inputs: ["x", "y"],
-            outputs: ["out"]
-        },
-        "Subtract": {
-            name: "Subtract",
-            inputs: ["x", "y"],
-            outputs: ["out"]
-        },
-    }
-})
+import { translate } from "../src/linear_algebra/matrix3x3"
+import { initialState, InputTargetKind, VirtualKeyboardKind } from "../src/state"
 
 test("pointer down", () => {
     const state = initialState()
@@ -368,67 +253,6 @@ test("pointer move after clicking node pointer down", () => {
         }
     })
     expect(state3.camera).toEqual(initialState().camera)
-    expect(state3.graph.nodes).toEqual([
-        {
-            name: "Source",
-            inputs: [],
-            outputs: [
-                { name: "Out 1", selected: false, edgeIndices: [] },
-                { name: "Out 2", selected: false, edgeIndices: [] }
-            ],
-            x: 150,
-            y: 275
-        },
-        {
-            name: "Transform",
-            inputs: [
-                { name: "In 1", selected: false, edgeIndices: [] },
-                { name: "In 2", selected: false, edgeIndices: [] }
-            ],
-            outputs: [
-                { name: "Out 1", selected: false, edgeIndices: [] },
-                { name: "Out 2", selected: false, edgeIndices: [] }
-            ],
-            x: 400,
-            y: 300
-        },
-        {
-            name: "Sink",
-            inputs: [
-                { name: "In 1", selected: false, edgeIndices: [] },
-                { name: "In 2", selected: false, edgeIndices: [] }
-            ],
-            outputs: [],
-            x: 800,
-            y: 250
-        },
-        {
-            name: "Number",
-            inputs: [],
-            body: {
-                value: 0,
-                editing: false,
-            },
-            outputs: [
-                { name: "out", selected: false, edgeIndices: [] }
-            ],
-            x: 800,
-            y: 250
-        },
-        {
-            name: "Number",
-            inputs: [],
-            body: {
-                value: 0,
-                editing: false,
-            },
-            outputs: [
-                { name: "out", selected: false, edgeIndices: [] }
-            ],
-            x: 800,
-            y: 250
-        },
-    ])
     expect(render).toEqual(true)
 })
 
@@ -463,67 +287,6 @@ test("pointer move after clicking node, pointer down, then pointer up", () => {
         }
     })
     expect(state4.camera).toEqual(initialState().camera)
-    expect(state4.graph.nodes).toEqual([
-        {
-            name: "Source",
-            inputs: [],
-            outputs: [
-                { name: "Out 1", selected: false, edgeIndices: [] },
-                { name: "Out 2", selected: false, edgeIndices: [] }
-            ],
-            x: 100,
-            y: 200
-        },
-        {
-            name: "Transform",
-            inputs: [
-                { name: "In 1", selected: false, edgeIndices: [] },
-                { name: "In 2", selected: false, edgeIndices: [] }
-            ],
-            outputs: [
-                { name: "Out 1", selected: false, edgeIndices: [] },
-                { name: "Out 2", selected: false, edgeIndices: [] }
-            ],
-            x: 400,
-            y: 300
-        },
-        {
-            name: "Sink",
-            inputs: [
-                { name: "In 1", selected: false, edgeIndices: [] },
-                { name: "In 2", selected: false, edgeIndices: [] }
-            ],
-            outputs: [],
-            x: 800,
-            y: 250
-        },
-        {
-            name: "Number",
-            inputs: [],
-            body: {
-                value: 0,
-                editing: false,
-            },
-            outputs: [
-                { name: "out", selected: false, edgeIndices: [] }
-            ],
-            x: 800,
-            y: 250
-        },
-        {
-            name: "Number",
-            inputs: [],
-            body: {
-                value: 0,
-                editing: false,
-            },
-            outputs: [
-                { name: "out", selected: false, edgeIndices: [] }
-            ],
-            x: 800,
-            y: 250
-        },
-    ])
 })
 
 test("mouse wheel zooms in camera relative to mouse position", () => {
@@ -545,13 +308,13 @@ test("mouse wheel zooms in camera relative to mouse position", () => {
 
 test("clicking input selects it", () => {
     const state = initialState()
-    const expectedState = initialState()
-    const inputPath = { nodeIndex: 1, inputIndex: 0 }
+    const inputPath = { nodeIndex: 2, inputIndex: 0 }
     const { state: state1, render } = update(state, {
         kind: EventKind.CLICKED_INPUT,
         inputPath
     })
-    expectedState.graph.nodes[1].inputs[0].selected = true
+    const expectedState = initialState()
+    expectedState.graph.nodes[2].inputs[0].selected = true
     expectedState.selectedInput = inputPath
     expectedState.draggedNode = inputPath.nodeIndex
     expect(state1).toEqual(expectedState)
@@ -560,39 +323,39 @@ test("clicking input selects it", () => {
 
 test("clicking new input selects it and deselects old input", () => {
     const state = initialState()
-    const expectedState = initialState()
     const { state: state1 } = update(state, {
         kind: EventKind.CLICKED_INPUT,
-        inputPath: { nodeIndex: 1, inputIndex: 0 }
+        inputPath: { nodeIndex: 2, inputIndex: 0 }
     })
     const { state: state2, render } = update(state1, {
         kind: EventKind.CLICKED_INPUT,
-        inputPath: { nodeIndex: 1, inputIndex: 1 }
+        inputPath: { nodeIndex: 2, inputIndex: 1 }
     })
-    expectedState.graph.nodes[1].inputs[1].selected = true
-    expectedState.selectedInput = { nodeIndex: 1, inputIndex: 1 }
-    expectedState.draggedNode = 1
+    const expectedState = initialState()
+    expectedState.graph.nodes[2].inputs[1].selected = true
+    expectedState.selectedInput = { nodeIndex: 2, inputIndex: 1 }
+    expectedState.draggedNode = 2
     expect(state2).toEqual(expectedState)
     expect(render).toEqual(true)
 })
 
 test("clicking output after clicking input adds connection", () => {
     const state = initialState()
-    const expectedState = initialState()
     const { state: state1 } = update(state, {
         kind: EventKind.CLICKED_INPUT,
-        inputPath: { nodeIndex: 1, inputIndex: 1 }
+        inputPath: { nodeIndex: 2, inputIndex: 1 }
     })
     const { state: state2, render } = update(state1, {
         kind: EventKind.CLICKED_OUTPUT,
-        outputPath: { nodeIndex: 0, outputIndex: 0 }
+        outputPath: { nodeIndex: 1, outputIndex: 0 }
     })
+    const expectedState = initialState()
     expectedState.graph.edges.push({
-        input: { nodeIndex: 1, inputIndex: 1 },
-        output: { nodeIndex: 0, outputIndex: 0 }
+        input: { nodeIndex: 2, inputIndex: 1 },
+        output: { nodeIndex: 1, outputIndex: 0 }
     })
-    expectedState.graph.nodes[1].inputs[1].edgeIndices.push(0)
-    expectedState.graph.nodes[0].outputs[0].edgeIndices.push(0)
+    expectedState.graph.nodes[2].inputs[1].edgeIndices.push(5)
+    expectedState.graph.nodes[1].outputs[0].edgeIndices.push(5)
     expect(state2).toEqual(expectedState)
     expect(render).toEqual(true)
 })
@@ -621,11 +384,11 @@ test("clicking new output selects it and deselects old output", () => {
     })
     const { state: state2, render } = update(state1, {
         kind: EventKind.CLICKED_OUTPUT,
-        outputPath: { nodeIndex: 0, outputIndex: 1 }
+        outputPath: { nodeIndex: 1, outputIndex: 0 }
     })
-    expectedState.graph.nodes[0].outputs[1].selected = true
-    expectedState.selectedOutput = { nodeIndex: 0, outputIndex: 1 }
-    expectedState.draggedNode = 0
+    expectedState.graph.nodes[1].outputs[0].selected = true
+    expectedState.selectedOutput = { nodeIndex: 1, outputIndex: 0 }
+    expectedState.draggedNode = 1
     expect(state2).toEqual(expectedState)
     expect(render).toEqual(true)
 })
@@ -639,14 +402,14 @@ test("clicking input after clicking output adds connection", () => {
     })
     const { state: state2, render } = update(state1, {
         kind: EventKind.CLICKED_INPUT,
-        inputPath: { nodeIndex: 1, inputIndex: 1 }
+        inputPath: { nodeIndex: 2, inputIndex: 1 }
     })
     expectedState.graph.edges.push({
-        input: { nodeIndex: 1, inputIndex: 1 },
+        input: { nodeIndex: 2, inputIndex: 1 },
         output: { nodeIndex: 0, outputIndex: 0 }
     })
-    expectedState.graph.nodes[1].inputs[1].edgeIndices.push(0)
-    expectedState.graph.nodes[0].outputs[0].edgeIndices.push(0)
+    expectedState.graph.nodes[2].inputs[1].edgeIndices.push(5)
+    expectedState.graph.nodes[0].outputs[0].edgeIndices.push(5)
     expect(state2).toEqual(expectedState)
     expect(render).toEqual(true)
 })
@@ -665,7 +428,9 @@ test("double click opens finder", () => {
     expectedState.finder.show = true
     expectedState.virtualKeyboard.show = true
     expectedState.inputTarget = { kind: InputTargetKind.FINDER }
-    expectedState.finder.options = ["Number", "Add", "Subtract"]
+    expectedState.finder.options = [
+        "Number", "Add", "Subtract", "Multiply", "Divide", "Equal", "Less Than", "Log"
+    ]
     expectedState.nodePlacementLocation = { x: 50, y: 50 }
     expect(state1).toEqual(expectedState)
     expect(render).toEqual(true)
@@ -693,7 +458,9 @@ test("f key down when finder is not shown opens finder", () => {
     expectedState.finder.show = true
     expectedState.virtualKeyboard.show = true
     expectedState.inputTarget = { kind: InputTargetKind.FINDER }
-    expectedState.finder.options = ["Number", "Add", "Subtract"]
+    expectedState.finder.options = [
+        "Number", "Add", "Subtract", "Multiply", "Divide", "Equal", "Less Than", "Log"
+    ]
     expect(state1).toEqual(expectedState)
     expect(render).toEqual(true)
 })
@@ -705,8 +472,10 @@ test("clicking a finder option adds node to graph", () => {
         option: 'Number'
     })
     const expectedState = initialState()
-    expectedState.finder.options = ["Number", "Add", "Subtract"]
-    expectedState.graph.nodes[5] = {
+    expectedState.finder.options = [
+        "Number", "Add", "Subtract", "Multiply", "Divide", "Equal", "Less Than", "Log"
+    ]
+    expectedState.graph.nodes[6] = {
         name: "Number",
         inputs: [],
         body: {
@@ -789,8 +558,10 @@ test("enter key down when finder is shown closes finder and adds node", () => {
         key: 'Enter'
     })
     const expectedState = initialState()
-    expectedState.finder.options = ["Number", "Add", "Subtract"]
-    expectedState.graph.nodes[5] = {
+    expectedState.finder.options = [
+        "Number", "Add", "Subtract", "Multiply", "Divide", "Equal", "Less Than", "Log"
+    ]
+    expectedState.graph.nodes[6] = {
         name: "Number",
         inputs: [],
         body: {
@@ -822,8 +593,10 @@ test("enter key down when finder is shown and finder has search closes finder an
     })
     state = nextState
     const expectedState = initialState()
-    expectedState.finder.options = ["Number", "Add", "Subtract"]
-    expectedState.graph.nodes[5] = {
+    expectedState.finder.options = [
+        "Number", "Add", "Subtract", "Multiply", "Divide", "Equal", "Less Than", "Log"
+    ]
+    expectedState.graph.nodes[6] = {
         name: "Add",
         inputs: [
             { name: "x", selected: false, edgeIndices: [] },
@@ -849,7 +622,9 @@ test("enter key down when finder is shown and finder has search eliminates all o
         key: 'Enter'
     })
     const expectedState = initialState()
-    expectedState.finder.options = ['Number', 'Add', 'Subtract']
+    expectedState.finder.options = [
+        "Number", "Add", "Subtract", "Multiply", "Divide", "Equal", "Less Than", "Log"
+    ]
     expect(state2).toEqual(expectedState)
 })
 
@@ -865,7 +640,9 @@ test("ret virtual key down when finder is shown and finder has search eliminates
         key: 'ret'
     })
     const expectedState = initialState()
-    expectedState.finder.options = ['Number', 'Add', 'Subtract']
+    expectedState.finder.options = [
+        "Number", "Add", "Subtract", "Multiply", "Divide", "Equal", "Less Than", "Log"
+    ]
     expect(state2).toEqual(expectedState)
 })
 
@@ -877,7 +654,9 @@ test("escape key down when finder is shown closes finder", () => {
         key: 'Escape'
     })
     const expectedState = initialState()
-    expectedState.finder.options = ["Number", "Add", "Subtract"]
+    expectedState.finder.options = [
+        "Number", "Add", "Subtract", "Multiply", "Divide", "Equal", "Less Than", "Log"
+    ]
     expect(state1).toEqual(expectedState)
     expect(render).toEqual(true)
 })
@@ -895,7 +674,9 @@ test("shift key down when finder is shown are ignored", () => {
         kind: VirtualKeyboardKind.ALPHABETIC
     }
     expectedState.inputTarget.kind = InputTargetKind.FINDER
-    expectedState.finder.options = ["Number", "Add", "Subtract"]
+    expectedState.finder.options = [
+        "Number", "Add", "Subtract", "Multiply", "Divide", "Equal", "Less Than", "Log"
+    ]
     expect(state1).toEqual(expectedState)
     expect(render).toEqual(true)
 })
@@ -913,7 +694,9 @@ test("alt key down when finder is shown are ignored", () => {
         kind: VirtualKeyboardKind.ALPHABETIC
     }
     expectedState.inputTarget.kind = InputTargetKind.FINDER
-    expectedState.finder.options = ["Number", "Add", "Subtract"]
+    expectedState.finder.options = [
+        "Number", "Add", "Subtract", "Multiply", "Divide", "Equal", "Less Than", "Log"
+    ]
     expect(state1).toEqual(expectedState)
     expect(render).toEqual(true)
 })
@@ -931,7 +714,9 @@ test("control key down when finder is shown are ignored", () => {
         kind: VirtualKeyboardKind.ALPHABETIC
     }
     expectedState.inputTarget.kind = InputTargetKind.FINDER
-    expectedState.finder.options = ["Number", "Add", "Subtract"]
+    expectedState.finder.options = [
+        "Number", "Add", "Subtract", "Multiply", "Divide", "Equal", "Less Than", "Log"
+    ]
     expect(state1).toEqual(expectedState)
     expect(render).toEqual(true)
 })
@@ -949,7 +734,9 @@ test("meta key down when finder is shown are ignored", () => {
         kind: VirtualKeyboardKind.ALPHABETIC
     }
     expectedState.inputTarget.kind = InputTargetKind.FINDER
-    expectedState.finder.options = ["Number", "Add", "Subtract"]
+    expectedState.finder.options = [
+        "Number", "Add", "Subtract", "Multiply", "Divide", "Equal", "Less Than", "Log"
+    ]
     expect(state1).toEqual(expectedState)
     expect(render).toEqual(true)
 })
@@ -968,7 +755,9 @@ test("Tab key down when finder is shown are ignored", () => {
         kind: VirtualKeyboardKind.ALPHABETIC
     }
     expectedState.inputTarget.kind = InputTargetKind.FINDER
-    expectedState.finder.options = ["Number", "Add", "Subtract"]
+    expectedState.finder.options = [
+        "Number", "Add", "Subtract", "Multiply", "Divide", "Equal", "Less Than", "Log"
+    ]
     expect(state1).toEqual(expectedState)
     expect(render).toEqual(true)
 })
@@ -1064,8 +853,10 @@ test("ret virtual key down when finder is shown closes finder", () => {
         key: 'ret'
     })
     const expectedState = initialState()
-    expectedState.finder.options = ['Number', 'Add', 'Subtract']
-    expectedState.graph.nodes[5] = {
+    expectedState.finder.options = [
+        "Number", "Add", "Subtract", "Multiply", "Divide", "Equal", "Less Than", "Log"
+    ]
+    expectedState.graph.nodes[6] = {
         name: "Number",
         inputs: [],
         body: {
@@ -1095,7 +886,9 @@ test("sft virtual key down when finder is shown are ignored", () => {
         kind: VirtualKeyboardKind.ALPHABETIC
     }
     expectedState.inputTarget.kind = InputTargetKind.FINDER
-    expectedState.finder.options = ['Number', 'Add', 'Subtract']
+    expectedState.finder.options = [
+        "Number", "Add", "Subtract", "Multiply", "Divide", "Equal", "Less Than", "Log"
+    ]
     expect(state1).toEqual(expectedState)
     expect(render).toEqual(true)
 })
@@ -1120,7 +913,7 @@ test("pressing number on keyboard appends to number node", () => {
         nodeIndex
     }
     expectedState.graph.nodes[nodeIndex].body!.editing = true
-    expectedState.graph.nodes[nodeIndex].body!.value = 1234567890
+    expectedState.graph.nodes[nodeIndex].body!.value = 151234567890
     expect(state).toEqual(expectedState)
 })
 
@@ -1149,17 +942,20 @@ test("pressing backspace on keyboard deletes from number node", () => {
         nodeIndex
     }
     expectedState.graph.nodes[nodeIndex].body!.editing = true
-    expectedState.graph.nodes[nodeIndex].body!.value = 123456789
+    expectedState.graph.nodes[nodeIndex].body!.value = 15123456789
     expect(state).toEqual(expectedState)
 })
 
 test("pressing backspace when number node value is 0 has no effect", () => {
     const nodeIndex = 3
-    const state = openNumericKeyboard(initialState(), nodeIndex)
-    const { state: state1 } = update(state, {
-        kind: EventKind.KEYDOWN,
-        key: 'Backspace'
-    })
+    let state = openNumericKeyboard(initialState(), nodeIndex)
+    for (let i = 0; i < 3; ++i) {
+        const { state: nextState } = update(state, {
+            kind: EventKind.KEYDOWN,
+            key: 'Backspace'
+        })
+        state = nextState
+    }
     const expectedState = initialState()
     expectedState.virtualKeyboard = {
         show: true,
@@ -1171,16 +967,19 @@ test("pressing backspace when number node value is 0 has no effect", () => {
     }
     expectedState.graph.nodes[nodeIndex].body!.editing = true
     expectedState.graph.nodes[nodeIndex].body!.value = 0
-    expect(state1).toEqual(expectedState)
+    expect(state).toEqual(expectedState)
 })
 
 test("pressing del on virtual keyboard when number node value is 0 has no effect", () => {
     const nodeIndex = 3
-    const state = openNumericKeyboard(initialState(), nodeIndex)
-    const { state: state1 } = update(state, {
-        kind: EventKind.VIRTUAL_KEYDOWN,
-        key: 'del'
-    })
+    let state = openNumericKeyboard(initialState(), nodeIndex)
+    for (let i = 0; i < 3; ++i) {
+        const { state: nextState } = update(state, {
+            kind: EventKind.VIRTUAL_KEYDOWN,
+            key: 'del'
+        })
+        state = nextState
+    }
     const expectedState = initialState()
     expectedState.virtualKeyboard = {
         show: true,
@@ -1192,7 +991,7 @@ test("pressing del on virtual keyboard when number node value is 0 has no effect
     }
     expectedState.graph.nodes[nodeIndex].body!.editing = true
     expectedState.graph.nodes[nodeIndex].body!.value = 0
-    expect(state1).toEqual(expectedState)
+    expect(state).toEqual(expectedState)
 })
 
 test("pressing number on virtual keyboard appends to number node", () => {
@@ -1215,7 +1014,7 @@ test("pressing number on virtual keyboard appends to number node", () => {
         nodeIndex
     }
     expectedState.graph.nodes[nodeIndex].body!.editing = true
-    expectedState.graph.nodes[nodeIndex].body!.value = 1234567890
+    expectedState.graph.nodes[nodeIndex].body!.value = 151234567890
     expect(state).toEqual(expectedState)
 })
 
@@ -1244,7 +1043,7 @@ test("pressing del on virtual keyboard deletes from number node", () => {
         nodeIndex
     }
     expectedState.graph.nodes[nodeIndex].body!.editing = true
-    expectedState.graph.nodes[nodeIndex].body!.value = 123456789
+    expectedState.graph.nodes[nodeIndex].body!.value = 15123456789
     expect(state).toEqual(expectedState)
 })
 
@@ -1265,7 +1064,7 @@ test("pressing enter on keyboard while editing number node exits virtual keyboar
     })
     state = nextState
     const expectedState = initialState()
-    expectedState.graph.nodes[nodeIndex].body!.value = 1234567890
+    expectedState.graph.nodes[nodeIndex].body!.value = 151234567890
     expect(state).toEqual(expectedState)
 })
 
@@ -1285,7 +1084,7 @@ test("pressing ret on virtual keyboard while editing number node exits virtual k
     })
     state = nextState
     const expectedState = initialState()
-    expectedState.graph.nodes[nodeIndex].body!.value = 1234567890
+    expectedState.graph.nodes[nodeIndex].body!.value = 151234567890
     expect(state).toEqual(expectedState)
 })
 
@@ -1372,7 +1171,7 @@ test("clicking a number node opens the numeric keyboard", () => {
         nodeIndex
     }
     expectedState.graph.nodes[nodeIndex].body!.editing = true
-    expectedState.graph.nodes[nodeIndex].body!.value = 0
+    expectedState.graph.nodes[nodeIndex].body!.value = 15
     expect(state1).toEqual(expectedState)
 })
 
@@ -1380,11 +1179,11 @@ test("clicking a number node when another number node is selected switches selec
     const state = initialState()
     const { state: state1 } = update(state, {
         kind: EventKind.CLICKED_NUMBER,
-        nodeIndex: 3
+        nodeIndex: 0
     })
     const { state: state2 } = update(state1, {
         kind: EventKind.CLICKED_NUMBER,
-        nodeIndex: 4
+        nodeIndex: 1
     })
     const expectedState = initialState()
     expectedState.virtualKeyboard = {
@@ -1393,10 +1192,10 @@ test("clicking a number node when another number node is selected switches selec
     }
     expectedState.inputTarget = {
         kind: InputTargetKind.NUMBER,
-        nodeIndex: 4
+        nodeIndex: 1
     }
-    expectedState.graph.nodes[4].body!.editing = true
-    expectedState.graph.nodes[4].body!.value = 0
+    expectedState.graph.nodes[1].body!.editing = true
+    expectedState.graph.nodes[1].body!.value = 10
     expect(state2).toEqual(expectedState)
 })
 

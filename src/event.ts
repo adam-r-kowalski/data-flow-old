@@ -2,7 +2,7 @@ import { fuzzyFind } from "./fuzzy_find"
 import { multiplyMatrices, multiplyMatrixVector, scale, translate } from "./linear_algebra/matrix3x3"
 import { length } from "./linear_algebra/vector3"
 import { UpdateResult } from "./ui/run"
-import { InputPath, InputTargetKind, OutputPath, State, VirtualKeyboardKind } from "./state"
+import { GenerateUUID, InputPath, InputTargetKind, OutputPath, State, UUID, VirtualKeyboardKind } from "./state"
 import { Pointer } from "./ui"
 
 export enum EventKind {
@@ -39,7 +39,7 @@ export interface PointerUp {
 
 export interface ClickedNode {
     kind: EventKind.CLICKED_NODE
-    index: number
+    nodeUUID: UUID
 }
 
 export interface Wheel {
@@ -85,7 +85,7 @@ export interface ClickedFinderOption {
 
 export interface ClickedNumber {
     kind: EventKind.CLICKED_NUMBER,
-    nodeIndex: number
+    nodeUUID: UUID
 }
 
 export interface ClickedBackground {
@@ -197,7 +197,10 @@ const pointerMove = (state: State, event: PointerMove) => {
 }
 
 const clickedNode = (state: State, event: ClickedNode) => {
-    state.draggedNode = event.index
+    state.draggedNode = event.nodeUUID
+    const nodeOrder = state.graph.nodeOrder.filter(uuid => uuid !== event.nodeUUID)
+    nodeOrder.push(event.nodeUUID)
+    state.graph.nodeOrder = nodeOrder
     return { state, render: true }
 }
 
@@ -210,7 +213,10 @@ const wheel = (state: State, event: Wheel) => {
 }
 
 const clickedInput = (state: State, event: ClickedInput) => {
-    state.draggedNode = event.inputPath.nodeIndex
+    state.draggedNode = event.inputPath.nodeUUID
+    const nodeOrder = state.graph.nodeOrder.filter(uuid => uuid !== event.inputPath.nodeUUID)
+    nodeOrder.push(event.inputPath.nodeUUID)
+    state.graph.nodeOrder = nodeOrder
     if (state.selectedOutput) {
         const edgeIndex = state.graph.edges.length
         state.graph.edges.push({
@@ -218,14 +224,14 @@ const clickedInput = (state: State, event: ClickedInput) => {
             output: state.selectedOutput
         })
         {
-            const { nodeIndex, outputIndex } = state.selectedOutput
-            const output = state.graph.nodes[nodeIndex].outputs[outputIndex]
+            const { nodeUUID, outputIndex } = state.selectedOutput
+            const output = state.graph.nodes[nodeUUID].outputs[outputIndex]
             output.edgeIndices.push(edgeIndex)
             output.selected = false
         }
         {
-            const { nodeIndex, inputIndex } = event.inputPath
-            const input = state.graph.nodes[nodeIndex].inputs[inputIndex]
+            const { nodeUUID, inputIndex } = event.inputPath
+            const input = state.graph.nodes[nodeUUID].inputs[inputIndex]
             input.edgeIndices.push(edgeIndex)
         }
         state.selectedOutput = null
@@ -233,17 +239,20 @@ const clickedInput = (state: State, event: ClickedInput) => {
         return { state, render: true }
     }
     if (state.selectedInput) {
-        const { nodeIndex, inputIndex } = state.selectedInput
-        state.graph.nodes[nodeIndex].inputs[inputIndex].selected = false
+        const { nodeUUID, inputIndex } = state.selectedInput
+        state.graph.nodes[nodeUUID].inputs[inputIndex].selected = false
     }
-    const { nodeIndex, inputIndex } = event.inputPath
-    state.graph.nodes[nodeIndex].inputs[inputIndex].selected = true
+    const { nodeUUID, inputIndex } = event.inputPath
+    state.graph.nodes[nodeUUID].inputs[inputIndex].selected = true
     state.selectedInput = event.inputPath
     return { state, render: true }
 }
 
 const clickedOutput = (state: State, event: ClickedOutput) => {
-    state.draggedNode = event.outputPath.nodeIndex
+    state.draggedNode = event.outputPath.nodeUUID
+    const nodeOrder = state.graph.nodeOrder.filter(uuid => uuid !== event.outputPath.nodeUUID)
+    nodeOrder.push(event.outputPath.nodeUUID)
+    state.graph.nodeOrder = nodeOrder
     if (state.selectedInput) {
         const edgeIndex = state.graph.edges.length
         state.graph.edges.push({
@@ -251,14 +260,14 @@ const clickedOutput = (state: State, event: ClickedOutput) => {
             output: event.outputPath
         })
         {
-            const { nodeIndex, inputIndex } = state.selectedInput
-            const input = state.graph.nodes[nodeIndex].inputs[inputIndex]
+            const { nodeUUID, inputIndex } = state.selectedInput
+            const input = state.graph.nodes[nodeUUID].inputs[inputIndex]
             input.edgeIndices.push(edgeIndex)
             input.selected = false
         }
         {
-            const { nodeIndex, outputIndex } = event.outputPath
-            const output = state.graph.nodes[nodeIndex].outputs[outputIndex]
+            const { nodeUUID, outputIndex } = event.outputPath
+            const output = state.graph.nodes[nodeUUID].outputs[outputIndex]
             output.edgeIndices.push(edgeIndex)
         }
         state.selectedInput = null
@@ -266,11 +275,11 @@ const clickedOutput = (state: State, event: ClickedOutput) => {
         return { state, render: true }
     }
     if (state.selectedOutput) {
-        const { nodeIndex, outputIndex } = state.selectedOutput
-        state.graph.nodes[nodeIndex].outputs[outputIndex].selected = false
+        const { nodeUUID, outputIndex } = state.selectedOutput
+        state.graph.nodes[nodeUUID].outputs[outputIndex].selected = false
     }
-    const { nodeIndex, outputIndex } = event.outputPath
-    state.graph.nodes[nodeIndex].outputs[outputIndex].selected = true
+    const { nodeUUID, outputIndex } = event.outputPath
+    state.graph.nodes[nodeUUID].outputs[outputIndex].selected = true
     state.selectedOutput = event.outputPath
     return { state, render: true }
 }
@@ -319,11 +328,13 @@ const closeFinder = (state: State) => {
     return state
 }
 
-const insertOperationFromFinder = (state: State, name: string): State => {
+const insertOperationFromFinder = (state: State, name: string, gnerateUUID: GenerateUUID): State => {
     state = closeFinder(state)
     const operation = state.operations[name]
     const [x, y, _] = multiplyMatrixVector(state.camera, [state.nodePlacementLocation.x, state.nodePlacementLocation.y, 1])
-    state.graph.nodes.push({
+    const uuid = gnerateUUID()
+    state.graph.nodes[uuid] = {
+        uuid,
         name,
         inputs: operation.inputs.map(input => ({
             name: input,
@@ -341,11 +352,12 @@ const insertOperationFromFinder = (state: State, name: string): State => {
             value: operation.body,
             editing: false
         } : undefined
-    })
+    }
+    state.graph.nodeOrder.push(uuid)
     return state
 }
 
-const keyDown = (state: State, { key }: KeyDown) => {
+const keyDown = (state: State, { key }: KeyDown, generateUUID: GenerateUUID) => {
     switch (state.inputTarget.kind) {
         case InputTargetKind.FINDER:
             switch (key) {
@@ -361,7 +373,7 @@ const keyDown = (state: State, { key }: KeyDown) => {
                 case 'Enter':
                     if (state.finder.options.length > 0) {
                         const name = state.finder.options[0]
-                        state = insertOperationFromFinder(state, name)
+                        state = insertOperationFromFinder(state, name, generateUUID)
                     } else {
                         state = closeFinder(state)
                     }
@@ -375,7 +387,7 @@ const keyDown = (state: State, { key }: KeyDown) => {
             }
             return { state: updateFinderOptions(state), render: true }
         case InputTargetKind.NUMBER:
-            const node = state.graph.nodes[state.inputTarget.nodeIndex]
+            const node = state.graph.nodes[state.inputTarget.nodeUUID]
             let value = node.body!.value.toString()
             switch (key) {
                 case 'Backspace':
@@ -417,7 +429,7 @@ const keyDown = (state: State, { key }: KeyDown) => {
     }
 }
 
-const virtualKeyDown = (state: State, { key }: VirtualKeyDown) => {
+const virtualKeyDown = (state: State, { key }: VirtualKeyDown, generateUUID: GenerateUUID) => {
     switch (state.inputTarget.kind) {
         case InputTargetKind.FINDER:
             switch (key) {
@@ -432,7 +444,7 @@ const virtualKeyDown = (state: State, { key }: VirtualKeyDown) => {
                 case 'ret':
                     if (state.finder.options.length > 0) {
                         const name = state.finder.options[0]
-                        state = insertOperationFromFinder(state, name)
+                        state = insertOperationFromFinder(state, name, generateUUID)
                     } else {
                         state = closeFinder(state)
                     }
@@ -443,7 +455,7 @@ const virtualKeyDown = (state: State, { key }: VirtualKeyDown) => {
             }
             return { state: updateFinderOptions(state), render: true }
         case InputTargetKind.NUMBER:
-            const node = state.graph.nodes[state.inputTarget.nodeIndex]
+            const node = state.graph.nodes[state.inputTarget.nodeUUID]
             let value = node.body!.value.toString()
             switch (key) {
                 case 'del':
@@ -483,30 +495,30 @@ const virtualKeyDown = (state: State, { key }: VirtualKeyDown) => {
     }
 }
 
-const clickedFinderOption = (state: State, { option }: ClickedFinderOption) => ({
-    state: insertOperationFromFinder(state, option),
+const clickedFinderOption = (state: State, { option }: ClickedFinderOption, generateUUID: GenerateUUID) => ({
+    state: insertOperationFromFinder(state, option, generateUUID),
     render: true
 })
 
-export const openNumericKeyboard = (state: State, nodeIndex: number): State => {
+export const openNumericKeyboard = (state: State, nodeUUID: UUID): State => {
     state.virtualKeyboard = {
         show: true,
         kind: VirtualKeyboardKind.NUMERIC
     }
     state.inputTarget = {
         kind: InputTargetKind.NUMBER,
-        nodeIndex
+        nodeUUID
     }
-    state.graph.nodes[nodeIndex].body!.editing = true
+    state.graph.nodes[nodeUUID].body!.editing = true
     return state
 }
 
-const clickedNumber = (state: State, { nodeIndex }: ClickedNumber) => {
+const clickedNumber = (state: State, { nodeUUID }: ClickedNumber) => {
     if (state.inputTarget.kind === InputTargetKind.NUMBER) {
-        state.graph.nodes[state.inputTarget.nodeIndex].body!.editing = false
+        state.graph.nodes[state.inputTarget.nodeUUID].body!.editing = false
     }
     state = closeFinder(state)
-    state = openNumericKeyboard(state, nodeIndex)
+    state = openNumericKeyboard(state, nodeUUID)
     return {
         state,
         render: true
@@ -515,7 +527,7 @@ const clickedNumber = (state: State, { nodeIndex }: ClickedNumber) => {
 
 const clickedBackground = (state: State) => {
     if (state.inputTarget.kind === InputTargetKind.NUMBER) {
-        state.graph.nodes[state.inputTarget.nodeIndex].body!.editing = false
+        state.graph.nodes[state.inputTarget.nodeUUID].body!.editing = false
     }
     return {
         state: closeFinder(state),
@@ -523,7 +535,7 @@ const clickedBackground = (state: State) => {
     }
 }
 
-export const update = (state: State, event: AppEvent): UpdateResult<State, AppEvent> => {
+export const update = (generateUUID: GenerateUUID, state: State, event: AppEvent): UpdateResult<State, AppEvent> => {
     switch (event.kind) {
         case EventKind.POINTER_DOWN: return pointerDown(state, event)
         case EventKind.POINTER_UP: return pointerUp(state, event)
@@ -534,9 +546,9 @@ export const update = (state: State, event: AppEvent): UpdateResult<State, AppEv
         case EventKind.CLICKED_OUTPUT: return clickedOutput(state, event)
         case EventKind.DOUBLE_CLICK_TIMEOUT: return doubleClickTimeout(state, event)
         case EventKind.DOUBLE_CLICK: return doubleClick(state, event)
-        case EventKind.KEYDOWN: return keyDown(state, event)
-        case EventKind.VIRTUAL_KEYDOWN: return virtualKeyDown(state, event)
-        case EventKind.CLICKED_FINDER_OPTION: return clickedFinderOption(state, event)
+        case EventKind.KEYDOWN: return keyDown(state, event, generateUUID)
+        case EventKind.VIRTUAL_KEYDOWN: return virtualKeyDown(state, event, generateUUID)
+        case EventKind.CLICKED_FINDER_OPTION: return clickedFinderOption(state, event, generateUUID)
         case EventKind.CLICKED_NUMBER: return clickedNumber(state, event)
         case EventKind.CLICKED_BACKGROUND: return clickedBackground(state)
     }

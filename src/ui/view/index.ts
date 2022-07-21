@@ -1,6 +1,6 @@
 import { CrossAxisAlignment, MainAxisAlignment } from "../alignment"
 import { AppEvent, EventKind } from "../../event"
-import { Body, Finder, Input, Node, Output, State, Theme, VirtualKeyboardKind } from "../../state"
+import { Body, Finder, Input, Node, Output, State, Theme, UUID, VirtualKeyboardKind } from "../../state"
 import { text, stack, scene, row, container, column, Connection, UI } from '..'
 
 
@@ -17,16 +17,16 @@ export const intersperse = <T>(array: T[], seperator: T): T[] => {
 }
 
 
-export const inputUi = (theme: Theme, { name, selected }: Input, nodeIndex: number, inputIndex: number): UI<AppEvent> =>
+export const inputUi = (theme: Theme, { name, selected }: Input, nodeUUID: UUID, inputIndex: number): UI<AppEvent> =>
     container({
         onClick: {
             kind: EventKind.CLICKED_INPUT,
-            inputPath: { nodeIndex: nodeIndex, inputIndex: inputIndex }
+            inputPath: { nodeUUID, inputIndex }
         }
     },
         row({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             container({
-                id: `input ${nodeIndex} ${inputIndex}`,
+                id: `input ${nodeUUID} ${inputIndex}`,
                 width: 14,
                 height: 14,
                 color: selected ? theme.selectedInput : theme.input,
@@ -37,27 +37,27 @@ export const inputUi = (theme: Theme, { name, selected }: Input, nodeIndex: numb
     )
 
 
-export const inputsUi = (theme: Theme, inputs: Input[], nodeIndex: number) =>
+export const inputsUi = (theme: Theme, inputs: Input[], nodeUUID: UUID) =>
     column(
         intersperse(
-            inputs.map((input, inputIndex) => inputUi(theme, input, nodeIndex, inputIndex)),
+            inputs.map((input, inputIndex) => inputUi(theme, input, nodeUUID, inputIndex)),
             spacer(4)
         )
     )
 
 
-export const outputUi = (theme: Theme, { name, selected }: Output, nodeIndex: number, outputIndex: number): UI<AppEvent> =>
+export const outputUi = (theme: Theme, { name, selected }: Output, nodeUUID: UUID, outputIndex: number): UI<AppEvent> =>
     container({
         onClick: {
             kind: EventKind.CLICKED_OUTPUT,
-            outputPath: { nodeIndex: nodeIndex, outputIndex: outputIndex }
+            outputPath: { nodeUUID, outputIndex }
         }
     },
         row({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             text(name),
             spacer(4),
             container({
-                id: `output ${nodeIndex} ${outputIndex}`,
+                id: `output ${nodeUUID} ${outputIndex}`,
                 width: 14,
                 height: 14,
                 color: selected ? theme.selectedInput : theme.input,
@@ -66,33 +66,33 @@ export const outputUi = (theme: Theme, { name, selected }: Output, nodeIndex: nu
     )
 
 
-export const outputsUi = (theme: Theme, outputs: Output[], nodeIndex: number) =>
+export const outputsUi = (theme: Theme, outputs: Output[], nodeUUID: UUID) =>
     column(
         intersperse(
-            outputs.map((output, outputIndex) => outputUi(theme, output, nodeIndex, outputIndex)),
+            outputs.map((output, outputIndex) => outputUi(theme, output, nodeUUID, outputIndex)),
             spacer(4)
         )
     )
 
 
-export const numberUi = (theme: Theme, body: Body, nodeIndex: number): UI<AppEvent> =>
+export const numberUi = (theme: Theme, body: Body, nodeUUID: UUID): UI<AppEvent> =>
     container({
         color: body.editing ? theme.selectedInput : theme.background,
         padding: 5,
         onClick: {
             kind: EventKind.CLICKED_NUMBER,
-            nodeIndex
+            nodeUUID
         }
     },
         text(body.value.toString()))
 
 
-export const nodeUi = (theme: Theme, { name, x, y, inputs, body, outputs }: Node, index: number): UI<AppEvent> => {
+export const nodeUi = (theme: Theme, { name, x, y, inputs, body, outputs, uuid }: Node): UI<AppEvent> => {
     const rowEntries: UI<AppEvent>[] = []
-    if (inputs.length) rowEntries.push(inputsUi(theme, inputs, index))
+    if (inputs.length) rowEntries.push(inputsUi(theme, inputs, uuid))
     if (inputs.length && outputs.length) rowEntries.push(spacer(15))
-    if (body !== undefined) rowEntries.push(numberUi(theme, body, index), spacer(15))
-    if (outputs.length) rowEntries.push(outputsUi(theme, outputs, index))
+    if (body !== undefined) rowEntries.push(numberUi(theme, body, uuid), spacer(15))
+    if (outputs.length) rowEntries.push(outputsUi(theme, outputs, uuid))
     return container(
         {
             color: theme.node,
@@ -100,7 +100,7 @@ export const nodeUi = (theme: Theme, { name, x, y, inputs, body, outputs }: Node
             x, y,
             onClick: {
                 kind: EventKind.CLICKED_NODE,
-                index: index
+                nodeUUID: uuid
             }
         },
         column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
@@ -202,17 +202,10 @@ export const virtualKeyboard = (theme: Theme, kind: VirtualKeyboardKind) => {
 
 
 export const view = (state: State): UI<AppEvent> => {
-    const nodes: UI<AppEvent>[] = []
-    state.graph.nodes.forEach((node, i) => {
-        if (i !== state.draggedNode) nodes.push(nodeUi(state.theme, node, i))
-    })
-    if (state.draggedNode !== null) {
-        const i = state.draggedNode
-        nodes.push(nodeUi(state.theme, state.graph.nodes[i], i))
-    }
+    const nodes = state.graph.nodeOrder.map(nodeUUID => nodeUi(state.theme, state.graph.nodes[nodeUUID]))
     const connections: Connection[] = state.graph.edges.map(({ input, output }) => ({
-        from: `output ${output.nodeIndex} ${output.outputIndex}`,
-        to: `input ${input.nodeIndex} ${input.inputIndex}`,
+        from: `output ${output.nodeUUID} ${output.outputIndex}`,
+        to: `input ${input.nodeUUID} ${input.inputIndex}`,
         color: state.theme.connection
     }))
     const stacked: UI<AppEvent>[] = [

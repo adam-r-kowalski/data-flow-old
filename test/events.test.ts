@@ -1,19 +1,36 @@
-import { EventKind, openFinder, openNumericKeyboard, update } from "../src/event"
+/*
+import { AppEvent, EventKind, openFinder, openNumericKeyboard, update as originalUpdate } from "../src/event"
 import { translate } from "../src/linear_algebra/matrix3x3"
-import { initialState, InputTargetKind, VirtualKeyboardKind } from "../src/state"
+import { initialState as originalInitialState, InputTargetKind, State, VirtualKeyboardKind } from "../src/state"
+*/
+
+import { EventKind, openFinder, update } from "../src/event"
+import { translate } from "../src/linear_algebra/matrix3x3"
+import { initialState } from "../src/state"
+
+const generateUUID = () => {
+    let i = 0
+    return () => {
+        const uuid = i.toString()
+        ++i
+        return uuid
+    }
+}
 
 test("pointer down", () => {
-    const state = initialState()
+    const generateUUID0 = generateUUID()
+    const generateUUID1 = generateUUID()
+    const state = initialState(generateUUID0)
     const pointer = {
         x: 0,
         y: 0,
         id: 0,
     }
-    const { state: state1, schedule } = update(state, {
+    const { state: state1, schedule } = update(generateUUID0, state, {
         kind: EventKind.POINTER_DOWN,
         pointer
     })
-    const expectedState = initialState()
+    const expectedState = initialState(generateUUID1)
     expectedState.dragging = true
     expectedState.pointers = [pointer]
     expectedState.potentialDoubleClick = true
@@ -27,7 +44,9 @@ test("pointer down", () => {
 })
 
 test("two pointers down", () => {
-    const state = initialState()
+    const generateUUID0 = generateUUID()
+    const generateUUID1 = generateUUID()
+    const state = initialState(generateUUID0)
     const pointer0 = {
         x: 0,
         y: 0,
@@ -38,15 +57,15 @@ test("two pointers down", () => {
         y: 0,
         id: 1,
     }
-    const { state: state1, schedule } = update(state, {
+    const { state: state1, schedule } = update(generateUUID0, state, {
         kind: EventKind.POINTER_DOWN,
         pointer: pointer0
     })
-    const { state: state2 } = update(state1, {
+    const { state: state2 } = update(generateUUID0, state1, {
         kind: EventKind.POINTER_DOWN,
         pointer: pointer1
     })
-    const expectedState = initialState()
+    const expectedState = initialState(generateUUID1)
     expectedState.pointers = [pointer0, pointer1]
     expectedState.zooming = true
     expect(state2).toEqual(expectedState)
@@ -59,74 +78,82 @@ test("two pointers down", () => {
 })
 
 test("pointer double click", () => {
-    const state = initialState()
+    const generateUUID0 = generateUUID()
+    const generateUUID1 = generateUUID()
+    const state = initialState(generateUUID0)
     const pointer = {
         x: 0,
         y: 0,
         id: 0,
     }
-    const { state: state1 } = update(state, {
+    const { state: state1 } = update(generateUUID0, state, {
         kind: EventKind.POINTER_DOWN,
         pointer
     })
-    const { state: state2 } = update(state1, {
+    const { state: state2 } = update(generateUUID0, state1, {
         kind: EventKind.POINTER_UP,
         pointer
     })
-    const { state: state3, dispatch } = update(state2, {
+    const { state: state3, dispatch } = update(generateUUID0, state2, {
         kind: EventKind.POINTER_DOWN,
         pointer
     })
-    const expectedState = initialState()
+    const expectedState = initialState(generateUUID1)
     expectedState.pointers = [pointer]
     expect(state3).toEqual(expectedState)
     expect(dispatch).toEqual([{ kind: EventKind.DOUBLE_CLICK, pointer }])
 })
 
 test("pointer double click timeout", () => {
-    const state = initialState()
+    const generateUUID0 = generateUUID()
+    const generateUUID1 = generateUUID()
+    const state = initialState(generateUUID0)
     const pointer = {
         x: 0,
         y: 0,
         id: 0,
     }
-    const { state: state1 } = update(state, {
+    const { state: state1 } = update(generateUUID0, state, {
         kind: EventKind.POINTER_DOWN,
         pointer
     })
-    const { state: state2 } = update(state1, {
+    const { state: state2 } = update(generateUUID0, state1, {
         kind: EventKind.POINTER_UP,
         pointer
     })
-    const { state: state3 } = update(state2, {
+    const { state: state3 } = update(generateUUID0, state2, {
         kind: EventKind.DOUBLE_CLICK_TIMEOUT
     })
-    const expectedState = initialState()
+    const expectedState = initialState(generateUUID1)
     expect(state3).toEqual(expectedState)
 })
 
 test("pointer down then up", () => {
-    const state = initialState()
+    const generateUUID0 = generateUUID()
+    const generateUUID1 = generateUUID()
+    const state = initialState(generateUUID0)
     const pointer = {
         x: 0,
         y: 0,
         id: 0,
     }
-    const { state: state1 } = update(state, {
+    const { state: state1 } = update(generateUUID0, state, {
         kind: EventKind.POINTER_DOWN,
         pointer
     })
-    const { state: state2 } = update(state1, {
+    const { state: state2 } = update(generateUUID0, state1, {
         kind: EventKind.POINTER_UP,
         pointer
     })
-    const expectedState = initialState()
+    const expectedState = initialState(generateUUID1)
     expectedState.potentialDoubleClick = true
     expect(state2).toEqual(expectedState)
 })
 
 test("two pointers down then up", () => {
-    const state = initialState()
+    const generateUUID0 = generateUUID()
+    const generateUUID1 = generateUUID()
+    const state = initialState(generateUUID0)
     const pointer0 = {
         x: 0,
         y: 0,
@@ -137,69 +164,78 @@ test("two pointers down then up", () => {
         y: 0,
         id: 1,
     }
-    const { state: state1 } = update(state, {
+    const { state: state1 } = update(generateUUID0, state, {
         kind: EventKind.POINTER_DOWN,
         pointer: pointer0
     })
-    const { state: state2 } = update(state1, {
+    const { state: state2 } = update(generateUUID0, state1, {
         kind: EventKind.POINTER_DOWN,
         pointer: pointer1
     })
-    const { state: state3 } = update(state2, {
+    const { state: state3 } = update(generateUUID0, state2, {
         kind: EventKind.POINTER_UP,
         pointer: pointer0
     })
-    const expectedState = initialState()
+    const expectedState = initialState(generateUUID1)
     expectedState.dragging = true
     expectedState.pointers = [pointer1]
     expect(state3).toEqual(expectedState)
 })
 
 test("pointer down when finder open", () => {
-    const state = openFinder(initialState())
+    const generateUUID0 = generateUUID()
+    const generateUUID1 = generateUUID()
+    const state = openFinder(initialState(generateUUID0))
     const pointer = {
         x: 0,
         y: 0,
         id: 0,
     }
-    const { state: state1 } = update(state, {
+    const { state: state1 } = update(generateUUID0, state, {
         kind: EventKind.POINTER_DOWN,
         pointer
     })
-    const expectedState = openFinder(initialState())
+    const expectedState = openFinder(initialState(generateUUID1))
     expect(state1).toEqual(expectedState)
 })
 
 
 test("click node", () => {
-    const state = initialState()
-    const { state: state1, render } = update(state, {
+    const generateUUID0 = generateUUID()
+    const generateUUID1 = generateUUID()
+    const state = initialState(generateUUID0)
+    const nodeUUID = state.graph.nodeOrder[0]
+    const { state: state1, render } = update(generateUUID0, state, {
         kind: EventKind.CLICKED_NODE,
-        index: 0
+        nodeUUID
     })
-    const expectedState = initialState()
-    expectedState.draggedNode = 0
+    const expectedState = initialState(generateUUID1)
+    expectedState.draggedNode = nodeUUID
     expect(state1).toEqual(expectedState)
     expect(render).toEqual(true)
 })
 
 test("pointer move before pointer down does nothing", () => {
-    const state = initialState()
+    const generateUUID0 = generateUUID()
+    const generateUUID1 = generateUUID()
+    const state = initialState(generateUUID0)
     const pointer = {
         x: 0,
         y: 0,
         id: 0,
     }
-    const { state: state1 } = update(state, {
+    const { state: state1 } = update(generateUUID0, state, {
         kind: EventKind.POINTER_MOVE,
         pointer
     })
-    expect(state1).toEqual(initialState())
+    expect(state1).toEqual(initialState(generateUUID1))
 })
 
 test("pointer move after pointer down", () => {
-    const state = initialState()
-    const { state: state1 } = update(state, {
+    const generateUUID0 = generateUUID()
+    const generateUUID1 = generateUUID()
+    const state = initialState(generateUUID0)
+    const { state: state1 } = update(generateUUID0, state, {
         kind: EventKind.POINTER_DOWN,
         pointer: {
             x: 0,
@@ -207,7 +243,7 @@ test("pointer move after pointer down", () => {
             id: 0,
         }
     })
-    const { state: state2, render } = update(state1, {
+    const { state: state2, render } = update(generateUUID0, state1, {
         kind: EventKind.POINTER_MOVE,
         pointer: {
             x: 50,
@@ -215,7 +251,7 @@ test("pointer move after pointer down", () => {
             id: 0,
         }
     })
-    const expectedState = initialState()
+    const expectedState = initialState(generateUUID1)
     expectedState.camera = translate(-50, -75)
     expectedState.potentialDoubleClick = true
     expectedState.dragging = true
@@ -231,12 +267,15 @@ test("pointer move after pointer down", () => {
 })
 
 test("pointer move after clicking node pointer down", () => {
-    const state = initialState()
-    const { state: state1 } = update(state, {
+    const generateUUID0 = generateUUID()
+    const generateUUID1 = generateUUID()
+    const state = initialState(generateUUID0)
+    const nodeUUID = state.graph.nodeOrder[0]
+    const { state: state1 } = update(generateUUID0, state, {
         kind: EventKind.CLICKED_NODE,
-        index: 0
+        nodeUUID
     })
-    const { state: state2 } = update(state1, {
+    const { state: state2 } = update(generateUUID0, state1, {
         kind: EventKind.POINTER_DOWN,
         pointer: {
             x: 0,
@@ -244,7 +283,7 @@ test("pointer move after clicking node pointer down", () => {
             id: 0,
         }
     })
-    const { state: state3, render } = update(state2, {
+    const { state: state3, render } = update(generateUUID0, state2, {
         kind: EventKind.POINTER_MOVE,
         pointer: {
             x: 50,
@@ -252,17 +291,20 @@ test("pointer move after clicking node pointer down", () => {
             id: 0,
         }
     })
-    expect(state3.camera).toEqual(initialState().camera)
+    expect(state3.camera).toEqual(initialState(generateUUID1).camera)
     expect(render).toEqual(true)
 })
 
 test("pointer move after clicking node, pointer down, then pointer up", () => {
-    const state = initialState()
-    const { state: state1 } = update(state, {
+    const generateUUID0 = generateUUID()
+    const generateUUID1 = generateUUID()
+    const state = initialState(generateUUID0)
+    const nodeUUID = state.graph.nodeOrder[0]
+    const { state: state1 } = update(generateUUID0, state, {
         kind: EventKind.CLICKED_NODE,
-        index: 0
+        nodeUUID
     })
-    const { state: state2 } = update(state1, {
+    const { state: state2 } = update(generateUUID0, state1, {
         kind: EventKind.POINTER_DOWN,
         pointer: {
             x: 0,
@@ -270,7 +312,7 @@ test("pointer move after clicking node, pointer down, then pointer up", () => {
             id: 0,
         }
     })
-    const { state: state3 } = update(state2, {
+    const { state: state3 } = update(generateUUID0, state2, {
         kind: EventKind.POINTER_UP,
         pointer: {
             x: 0,
@@ -278,7 +320,7 @@ test("pointer move after clicking node, pointer down, then pointer up", () => {
             id: 0,
         }
     })
-    const { state: state4 } = update(state3, {
+    const { state: state4 } = update(generateUUID0, state3, {
         kind: EventKind.POINTER_MOVE,
         pointer: {
             x: 50,
@@ -286,18 +328,20 @@ test("pointer move after clicking node, pointer down, then pointer up", () => {
             id: 0,
         }
     })
-    expect(state4.camera).toEqual(initialState().camera)
+    expect(state4.camera).toEqual(initialState(generateUUID1).camera)
 })
 
 test("mouse wheel zooms in camera relative to mouse position", () => {
-    const state = initialState()
-    const { state: state1 } = update(state, {
+    const generateUUID0 = generateUUID()
+    const generateUUID1 = generateUUID()
+    const state = initialState(generateUUID0)
+    const { state: state1 } = update(generateUUID0, state, {
         kind: EventKind.WHEEL,
         x: 50,
         y: 100,
         deltaY: 10
     })
-    const expectedState = initialState()
+    const expectedState = initialState(generateUUID1)
     expectedState.camera = [
         1.0717734625362931, 0, -3.588673126814655,
         0, 1.0717734625362931, -7.17734625362931,
@@ -307,59 +351,70 @@ test("mouse wheel zooms in camera relative to mouse position", () => {
 })
 
 test("clicking input selects it", () => {
-    const state = initialState()
-    const inputPath = { nodeIndex: 2, inputIndex: 0 }
-    const { state: state1, render } = update(state, {
+    const generateUUID0 = generateUUID()
+    const generateUUID1 = generateUUID()
+    const state = initialState(generateUUID0)
+    const nodeUUID = state.graph.nodeOrder[2]
+    const inputPath = { nodeUUID, inputIndex: 0 }
+    const { state: state1, render } = update(generateUUID0, state, {
         kind: EventKind.CLICKED_INPUT,
         inputPath
     })
-    const expectedState = initialState()
-    expectedState.graph.nodes[2].inputs[0].selected = true
+    const expectedState = initialState(generateUUID1)
+    expectedState.graph.nodes[nodeUUID].inputs[0].selected = true
     expectedState.selectedInput = inputPath
-    expectedState.draggedNode = inputPath.nodeIndex
+    expectedState.draggedNode = inputPath.nodeUUID
     expect(state1).toEqual(expectedState)
     expect(render).toEqual(true)
 })
 
 test("clicking new input selects it and deselects old input", () => {
-    const state = initialState()
-    const { state: state1 } = update(state, {
+    const generateUUID0 = generateUUID()
+    const generateUUID1 = generateUUID()
+    const state = initialState(generateUUID0)
+    const nodeUUID = state.graph.nodeOrder[2]
+    const { state: state1 } = update(generateUUID0, state, {
         kind: EventKind.CLICKED_INPUT,
-        inputPath: { nodeIndex: 2, inputIndex: 0 }
+        inputPath: { nodeUUID, inputIndex: 0 }
     })
-    const { state: state2, render } = update(state1, {
+    const { state: state2, render } = update(generateUUID0, state1, {
         kind: EventKind.CLICKED_INPUT,
-        inputPath: { nodeIndex: 2, inputIndex: 1 }
+        inputPath: { nodeUUID, inputIndex: 1 }
     })
-    const expectedState = initialState()
+    const expectedState = initialState(generateUUID1)
     expectedState.graph.nodes[2].inputs[1].selected = true
-    expectedState.selectedInput = { nodeIndex: 2, inputIndex: 1 }
-    expectedState.draggedNode = 2
+    expectedState.selectedInput = { nodeUUID, inputIndex: 1 }
+    expectedState.draggedNode = nodeUUID
     expect(state2).toEqual(expectedState)
     expect(render).toEqual(true)
 })
 
 test("clicking output after clicking input adds connection", () => {
-    const state = initialState()
-    const { state: state1 } = update(state, {
+    const generateUUID0 = generateUUID()
+    const generateUUID1 = generateUUID()
+    const state = initialState(generateUUID0)
+    const inputUUID = state.graph.nodeOrder[2]
+    const outputUUID = state.graph.nodeOrder[2]
+    const { state: state1 } = update(generateUUID0, state, {
         kind: EventKind.CLICKED_INPUT,
-        inputPath: { nodeIndex: 2, inputIndex: 1 }
+        inputPath: { nodeUUID: inputUUID, inputIndex: 1 }
     })
-    const { state: state2, render } = update(state1, {
+    const { state: state2, render } = update(generateUUID0, state1, {
         kind: EventKind.CLICKED_OUTPUT,
-        outputPath: { nodeIndex: 1, outputIndex: 0 }
+        outputPath: { nodeUUID: outputUUID, outputIndex: 0 }
     })
-    const expectedState = initialState()
+    const expectedState = initialState(generateUUID1)
     expectedState.graph.edges.push({
-        input: { nodeIndex: 2, inputIndex: 1 },
-        output: { nodeIndex: 1, outputIndex: 0 }
+        input: { nodeUUID: inputUUID, inputIndex: 1 },
+        output: { nodeUUID: outputUUID, outputIndex: 0 }
     })
-    expectedState.graph.nodes[2].inputs[1].edgeIndices.push(5)
-    expectedState.graph.nodes[1].outputs[0].edgeIndices.push(5)
+    expectedState.graph.nodes[inputUUID].inputs[1].edgeIndices.push(5)
+    expectedState.graph.nodes[outputUUID].outputs[0].edgeIndices.push(5)
     expect(state2).toEqual(expectedState)
     expect(render).toEqual(true)
 })
 
+/*
 test("clicking output selects it", () => {
     const state = initialState()
     const expectedState = initialState()
@@ -1286,3 +1341,4 @@ test("zooming", () => {
         expect(state4).toEqual(expectedState)
     }
 })
+*/

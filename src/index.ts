@@ -1,14 +1,16 @@
-import { EventKind, update } from "./event"
+import { AppEvent, EventKind, update } from "./event"
 import { run, transformPointer } from "./ui/run"
 import { view } from './ui/view'
-import { initialState } from "./state"
+import { initialState, State } from "./state"
 import { Document } from './ui/dom'
 import { ProgramKind } from "./ui/webgl2"
 
+const generateUUID = crypto.randomUUID
+
 const success_or_error = run({
-    state: initialState(),
+    state: initialState(generateUUID),
     view,
-    update,
+    update: (state: State, event: AppEvent) => update(generateUUID, state, event),
     window,
     document: document as Document,
     requestAnimationFrame,

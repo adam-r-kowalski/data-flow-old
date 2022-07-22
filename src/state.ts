@@ -134,7 +134,7 @@ export interface State {
 export type GenerateUUID = () => UUID
 
 export const initialState = (generateUUID: GenerateUUID): State => {
-    const uuids = Array.from({ length: 5 }, () => generateUUID())
+    const uuids = Array.from({ length: 6 }, () => generateUUID())
     return {
         graph: {
             nodes: {

@@ -203,7 +203,7 @@ export const virtualKeyboard = (theme: Theme, kind: VirtualKeyboardKind) => {
 
 export const view = (state: State): UI<AppEvent> => {
     const nodes = state.graph.nodeOrder.map(nodeUUID => nodeUi(state.theme, state.graph.nodes[nodeUUID]))
-    const connections: Connection[] = state.graph.edges.map(({ input, output }) => ({
+    const connections: Connection[] = Object.values(state.graph.edges).map(({ input, output }) => ({
         from: `output ${output.nodeUUID} ${output.outputIndex}`,
         to: `input ${input.nodeUUID} ${input.inputIndex}`,
         color: state.theme.connection

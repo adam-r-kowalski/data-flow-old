@@ -43,7 +43,7 @@ test("inputUi not selected", () => {
     const input: Input = {
         name,
         selected,
-        edgeIndices: []
+        edgeUUIDs: []
     }
     const nodeUUID = 'some node'
     const inputIndex = 1
@@ -74,7 +74,7 @@ test("inputUi selected", () => {
     const input: Input = {
         name,
         selected,
-        edgeIndices: []
+        edgeUUIDs: []
     }
     const nodeUUID = 'some node'
     const inputIndex = 1
@@ -104,17 +104,17 @@ test("inputsUi", () => {
         {
             name: "first",
             selected: false,
-            edgeIndices: []
+            edgeUUIDs: []
         },
         {
             name: "second",
             selected: false,
-            edgeIndices: []
+            edgeUUIDs: []
         },
         {
             name: "third",
             selected: true,
-            edgeIndices: []
+            edgeUUIDs: []
         }
     ]
     const nodeUUID = 'some node'
@@ -135,7 +135,7 @@ test("outputUi not selected", () => {
     const output: Output = {
         name,
         selected,
-        edgeIndices: []
+        edgeUUIDs: []
     }
     const nodeUUID = 'some node'
     const outputIndex = 1
@@ -166,7 +166,7 @@ test("outputUi selected", () => {
     const output: Output = {
         name,
         selected,
-        edgeIndices: []
+        edgeUUIDs: []
     }
     const nodeUUID = 'some node'
     const outputIndex = 1
@@ -196,17 +196,17 @@ test("outputsUi", () => {
         {
             name: "first",
             selected: false,
-            edgeIndices: []
+            edgeUUIDs: []
         },
         {
             name: "second",
             selected: false,
-            edgeIndices: []
+            edgeUUIDs: []
         },
         {
             name: "third",
             selected: true,
-            edgeIndices: []
+            edgeUUIDs: []
         }
     ]
     const nodeUUID = 'some node'
@@ -301,7 +301,7 @@ test("nodeUi 1 input, no body and no outputs", () => {
             {
                 name: "first",
                 selected: false,
-                edgeIndices: []
+                edgeUUIDs: []
             },
         ],
         outputs: [],
@@ -339,7 +339,7 @@ test("nodeUi 1 output, no body and no inputs", () => {
             {
                 name: "first",
                 selected: false,
-                edgeIndices: []
+                edgeUUIDs: []
             },
         ],
     }
@@ -410,14 +410,14 @@ test("nodeUi 1 input and 1 output but no body", () => {
             {
                 name: "first",
                 selected: false,
-                edgeIndices: []
+                edgeUUIDs: []
             },
         ],
         outputs: [
             {
                 name: "first",
                 selected: false,
-                edgeIndices: []
+                edgeUUIDs: []
             },
         ],
     }
@@ -457,7 +457,7 @@ test("nodeUi 1 input body but no outputs", () => {
             {
                 name: "first",
                 selected: false,
-                edgeIndices: []
+                edgeUUIDs: []
             },
         ],
         body: {
@@ -507,7 +507,7 @@ test("nodeUi 1 output body but no inputs", () => {
             {
                 name: "first",
                 selected: false,
-                edgeIndices: []
+                edgeUUIDs: []
             },
         ],
     }
@@ -548,7 +548,7 @@ test("nodeUi 1 input body and 1 output", () => {
             {
                 name: "first",
                 selected: false,
-                edgeIndices: []
+                edgeUUIDs: []
             },
         ],
         body: {
@@ -559,7 +559,7 @@ test("nodeUi 1 input body and 1 output", () => {
             {
                 name: "first",
                 selected: false,
-                edgeIndices: []
+                edgeUUIDs: []
             },
         ],
     }
@@ -732,7 +732,7 @@ test("view with no nodes or edges", () => {
         graph: {
             nodes: {},
             nodeOrder: [],
-            edges: []
+            edges: {}
         },
         zooming: false,
         dragging: false,
@@ -776,7 +776,7 @@ test("view with no nodes or edges but finder shown", () => {
         graph: {
             nodes: {},
             nodeOrder: [],
-            edges: []
+            edges: {}
         },
         zooming: false,
         dragging: false,
@@ -821,7 +821,7 @@ test("view with no nodes or edges but virtual keyboard shown", () => {
         graph: {
             nodes: {},
             nodeOrder: [],
-            edges: []
+            edges: {}
         },
         zooming: false,
         dragging: false,
@@ -867,7 +867,7 @@ test("view with no nodes or edges but finder and virtual keyboard shown", () => 
         graph: {
             nodes: {},
             nodeOrder: [],
-            edges: []
+            edges: {}
         },
         zooming: false,
         dragging: false,
@@ -938,7 +938,7 @@ test("view with three nodes and no edges", () => {
                 }
             },
             nodeOrder: ["first", "second", "third"],
-            edges: []
+            edges: {}
         },
         zooming: false,
         dragging: false,
@@ -1015,7 +1015,7 @@ test("view with three nodes and no edges", () => {
                 }
             },
             nodeOrder: ["first", "second", "third"],
-            edges: []
+            edges: {}
         },
         zooming: false,
         dragging: false,
@@ -1075,7 +1075,7 @@ test("view with three nodes and one edges", () => {
                         {
                             name: "out",
                             selected: false,
-                            edgeIndices: [0]
+                            edgeUUIDs: ['0']
                         }
                     ],
                     x: 0,
@@ -1088,7 +1088,7 @@ test("view with three nodes and one edges", () => {
                         {
                             name: "in",
                             selected: false,
-                            edgeIndices: [0]
+                            edgeUUIDs: ['0']
                         }
                     ],
                     outputs: [],
@@ -1097,7 +1097,7 @@ test("view with three nodes and one edges", () => {
                 },
                 "third": {
                     uuid: "third",
-                    name: "thirdd",
+                    name: "third",
                     inputs: [],
                     outputs: [],
                     x: 0,
@@ -1105,8 +1105,9 @@ test("view with three nodes and one edges", () => {
                 }
             },
             nodeOrder: ["first", "second", "third"],
-            edges: [
-                {
+            edges: {
+                0: {
+                    uuid: '0',
                     input: {
                         nodeUUID: "second",
                         inputIndex: 0,
@@ -1116,7 +1117,7 @@ test("view with three nodes and one edges", () => {
                         outputIndex: 0,
                     }
                 }
-            ]
+            }
         },
         zooming: false,
         dragging: false,

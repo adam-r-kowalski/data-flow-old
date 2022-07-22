@@ -1,6 +1,6 @@
 import { EventKind, openFinder, openNumericKeyboard, update } from "../src/event"
 import { translate } from "../src/linear_algebra/matrix3x3"
-import { initialState, InputTargetKind, VirtualKeyboardKind } from "../src/state"
+import { Edge, initialState, InputTargetKind, VirtualKeyboardKind } from "../src/state"
 
 const generateUUID = () => {
     let i = 0
@@ -404,12 +404,14 @@ test("clicking output after clicking input adds connection", () => {
         outputPath: { nodeUUID: outputUUID, outputIndex: 0 }
     })
     const expectedState = initialState(generateUUID1)
-    expectedState.graph.edges.push({
+    const edge: Edge = {
+        uuid: generateUUID1(),
         input: { nodeUUID: inputUUID, inputIndex: 1 },
         output: { nodeUUID: outputUUID, outputIndex: 0 }
-    })
-    expectedState.graph.nodes[inputUUID].inputs[1].edgeIndices.push(5)
-    expectedState.graph.nodes[outputUUID].outputs[0].edgeIndices.push(5)
+    }
+    expectedState.graph.edges[edge.uuid] = edge
+    expectedState.graph.nodes[inputUUID].inputs[1].edgeUUIDs.push(edge.uuid)
+    expectedState.graph.nodes[outputUUID].outputs[0].edgeUUIDs.push(edge.uuid)
     const [a, b, c, d, e, f] = expectedState.graph.nodeOrder
     expectedState.graph.nodeOrder = [a, b, e, f, c, d]
     expect(state2).toEqual(expectedState)
@@ -472,12 +474,14 @@ test("clicking input after clicking output adds connection", () => {
         inputPath: { nodeUUID: c, inputIndex: 1 }
     })
     const expectedState = initialState(generateUUID1)
-    expectedState.graph.edges.push({
+    const edge: Edge = {
+        uuid: generateUUID1(),
         input: { nodeUUID: c, inputIndex: 1 },
         output: { nodeUUID: a, outputIndex: 0 }
-    })
-    expectedState.graph.nodes[c].inputs[1].edgeIndices.push(5)
-    expectedState.graph.nodes[a].outputs[0].edgeIndices.push(5)
+    }
+    expectedState.graph.edges[edge.uuid] = edge
+    expectedState.graph.nodes[c].inputs[1].edgeUUIDs.push(edge.uuid)
+    expectedState.graph.nodes[a].outputs[0].edgeUUIDs.push(edge.uuid)
     expectedState.graph.nodeOrder = [b, d, e, f, a, c]
     expect(state2).toEqual(expectedState)
     expect(render).toEqual(true)
@@ -562,7 +566,7 @@ test("clicking a finder option adds node to graph", () => {
             editing: false,
         },
         outputs: [
-            { name: "out", selected: false, edgeIndices: [] }
+            { name: "out", selected: false, edgeUUIDs: [] }
         ],
         x: 0,
         y: 0
@@ -657,7 +661,7 @@ test("enter key down when finder is shown closes finder and adds node", () => {
             editing: false,
         },
         outputs: [
-            { name: "out", selected: false, edgeIndices: [] }
+            { name: "out", selected: false, edgeUUIDs: [] }
         ],
         x: 0,
         y: 0
@@ -692,11 +696,11 @@ test("enter key down when finder is shown and finder has search closes finder an
         uuid,
         name: "Add",
         inputs: [
-            { name: "x", selected: false, edgeIndices: [] },
-            { name: "y", selected: false, edgeIndices: [] }
+            { name: "x", selected: false, edgeUUIDs: [] },
+            { name: "y", selected: false, edgeUUIDs: [] }
         ],
         outputs: [
-            { name: "out", selected: false, edgeIndices: [] }
+            { name: "out", selected: false, edgeUUIDs: [] }
         ],
         x: 0,
         y: 0
@@ -984,7 +988,7 @@ test("ret virtual key down when finder is shown closes finder", () => {
             editing: false,
         },
         outputs: [
-            { name: "out", selected: false, edgeIndices: [] }
+            { name: "out", selected: false, edgeUUIDs: [] }
         ],
         x: 0,
         y: 0
@@ -1449,20 +1453,18 @@ test("zooming", () => {
     }
 })
 
-test("clicking background when a number node is selected deselects it", () => {
+test("pressing d on keyboard with node selected deletes it", () => {
     const generateUUID0 = generateUUID()
     const generateUUID1 = generateUUID()
     const state = initialState(generateUUID0)
     const [a, b, c, d, e, f] = state.graph.nodeOrder
-    const edgeIndices = state.graph.nodes[a].outputs[0].edgeIndices
-    expect(edgeIndices.length).toEqual(1)
-    const edgeIndex = edgeIndices[0]
-    expect(edgeIndex).toEqual(0)
-    const expectedEdges = state.graph.edges.slice(1)
-    const edge = state.graph.edges[edgeIndex]
+    const edgeUUIDs = state.graph.nodes[a].outputs[0].edgeUUIDs
+    expect(edgeUUIDs.length).toEqual(1)
+    const edgeUUID = edgeUUIDs[0]
+    const edge = state.graph.edges[edgeUUID]
     expect(edge.input.nodeUUID).toEqual(c)
     expect(edge.input.inputIndex).toEqual(0)
-    expect(state.graph.nodes[c].inputs[0].edgeIndices.length).toEqual(1)
+    expect(state.graph.nodes[c].inputs[0].edgeUUIDs.length).toEqual(1)
     const { state: state1 } = update(generateUUID0, state, {
         kind: EventKind.CLICKED_NODE,
         nodeUUID: a
@@ -1474,7 +1476,65 @@ test("clicking background when a number node is selected deselects it", () => {
     const expectedState = initialState(generateUUID1)
     expectedState.graph.nodeOrder = [b, c, d, e, f]
     delete expectedState.graph.nodes[a]
-    expectedState.graph.edges = expectedEdges
-    expectedState.graph.nodes[c].inputs[0].edgeIndices = []
+    delete expectedState.graph.edges[edgeUUID]
+    expectedState.graph.nodes[c].inputs[0].edgeUUIDs = []
+    expect(state2).toEqual(expectedState)
+})
+
+test("clicking background when a node is selected deselects it", () => {
+    const generateUUID0 = generateUUID()
+    const generateUUID1 = generateUUID()
+    const state = initialState(generateUUID0)
+    const [a, b, c, d, e, f] = state.graph.nodeOrder
+    const { state: state1 } = update(generateUUID0, state, {
+        kind: EventKind.CLICKED_NODE,
+        nodeUUID: a
+    })
+    const { state: state2 } = update(generateUUID0, state1, {
+        kind: EventKind.CLICKED_BACKGROUND,
+    })
+    const expectedState = initialState(generateUUID1)
+    expectedState.graph.nodeOrder = [b, c, d, e, f, a]
+    expect(state2).toEqual(expectedState)
+})
+
+
+test("clicking background when a input is selected deselects it", () => {
+    const generateUUID0 = generateUUID()
+    const generateUUID1 = generateUUID()
+    const state = initialState(generateUUID0)
+    const [a, b, c, d, e, f] = state.graph.nodeOrder
+    const { state: state1 } = update(generateUUID0, state, {
+        kind: EventKind.CLICKED_INPUT,
+        inputPath: {
+            nodeUUID: c,
+            inputIndex: 0
+        }
+    })
+    const { state: state2 } = update(generateUUID0, state1, {
+        kind: EventKind.CLICKED_BACKGROUND,
+    })
+    const expectedState = initialState(generateUUID1)
+    expectedState.graph.nodeOrder = [a, b, d, e, f, c]
+    expect(state2).toEqual(expectedState)
+})
+
+test("clicking background when a output is selected deselects it", () => {
+    const generateUUID0 = generateUUID()
+    const generateUUID1 = generateUUID()
+    const state = initialState(generateUUID0)
+    const [a, b, c, d, e, f] = state.graph.nodeOrder
+    const { state: state1 } = update(generateUUID0, state, {
+        kind: EventKind.CLICKED_OUTPUT,
+        outputPath: {
+            nodeUUID: c,
+            outputIndex: 0
+        }
+    })
+    const { state: state2 } = update(generateUUID0, state1, {
+        kind: EventKind.CLICKED_BACKGROUND,
+    })
+    const expectedState = initialState(generateUUID1)
+    expectedState.graph.nodeOrder = [a, b, d, e, f, c]
     expect(state2).toEqual(expectedState)
 })

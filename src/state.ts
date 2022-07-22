@@ -115,7 +115,7 @@ export interface State {
     graph: Graph
     zooming: boolean
     dragging: boolean
-    draggedNode: UUID | null
+    selectedNode: UUID | null
     pointers: Pointer[]
     pointerDistance: number
     pointerCenter: [number, number]
@@ -134,7 +134,7 @@ export interface State {
 export type GenerateUUID = () => UUID
 
 export const initialState = (generateUUID: GenerateUUID): State => {
-    const uuids = Array.from({ length: 5 }, () => generateUUID())
+    const uuids = Array.from({ length: 6 }, () => generateUUID())
     return {
         graph: {
             nodes: {
@@ -234,13 +234,13 @@ export const initialState = (generateUUID: GenerateUUID): State => {
         },
         zooming: false,
         dragging: false,
-        draggedNode: null,
         pointers: [],
         pointerDistance: 0,
         pointerCenter: [0, 0],
         camera: identity(),
         selectedOutput: null,
         selectedInput: null,
+        selectedNode: null,
         theme: {
             background: { red: 2, green: 22, blue: 39, alpha: 255 },
             node: { red: 41, green: 95, blue: 120, alpha: 255 },

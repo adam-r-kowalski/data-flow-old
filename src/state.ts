@@ -6,13 +6,13 @@ export type UUID = string
 export interface Input {
     uuid: UUID
     name: string
-    selected: boolean
+    edge?: UUID
 }
 
 export interface Output {
     uuid: UUID
     name: string
-    selected: boolean
+    edges: UUID[]
 }
 
 export interface Body {
@@ -36,11 +36,16 @@ export interface Edge {
     output: UUID
 }
 
+export type Nodes = { [uuid: UUID]: Node }
+export type Edges = { [uuid: UUID]: Edge }
+export type Inputs = { [uuid: UUID]: Input }
+export type Outputs = { [uuid: UUID]: Output }
+
 export interface Graph {
-    nodes: { [uuid: UUID]: Node }
-    inputs: { [uuid: UUID]: Input }
-    outputs: { [uuid: UUID]: Output }
-    edges: { [uuid: UUID]: Edge }
+    nodes: Nodes
+    edges: Edges
+    inputs: Inputs
+    outputs: Outputs
 }
 
 export interface Theme {
@@ -111,9 +116,9 @@ export interface State {
     pointers: Pointer[]
     pointerDistance: number
     pointerCenter: [number, number]
-    selectedOutput: UUID | null
-    selectedInput: UUID | null
-    selectedNode: UUID | null
+    selectedOutput?: UUID
+    selectedInput?: UUID
+    selectedNode?: UUID
     potentialDoubleClick: boolean
     nodePlacementLocation: ScreenCoordinates
     finder: Finder
@@ -130,7 +135,7 @@ export const initialState = (generateUUID: GenerateUUID): State => {
     const node0output0: Output = {
         uuid: generateUUID(),
         name: "out",
-        selected: false
+        edges: []
     }
     const node0: Node = {
         uuid: generateUUID(),
@@ -144,7 +149,7 @@ export const initialState = (generateUUID: GenerateUUID): State => {
     const node1output0: Output = {
         uuid: generateUUID(),
         name: "out",
-        selected: false
+        edges: []
     }
     const node1: Node = {
         uuid: generateUUID(),
@@ -158,17 +163,15 @@ export const initialState = (generateUUID: GenerateUUID): State => {
     const node2input0: Input = {
         uuid: generateUUID(),
         name: "x",
-        selected: false
     }
     const node2input1: Input = {
         uuid: generateUUID(),
         name: "y",
-        selected: false
     }
     const node2output0: Output = {
         uuid: generateUUID(),
         name: "out",
-        selected: false
+        edges: []
     }
     const node2: Node = {
         uuid: generateUUID(),
@@ -181,7 +184,7 @@ export const initialState = (generateUUID: GenerateUUID): State => {
     const node3output0: Output = {
         uuid: generateUUID(),
         name: "out",
-        selected: false
+        edges: []
     }
     const node3: Node = {
         uuid: generateUUID(),
@@ -195,17 +198,15 @@ export const initialState = (generateUUID: GenerateUUID): State => {
     const node4input0: Input = {
         uuid: generateUUID(),
         name: "x",
-        selected: false
     }
     const node4input1: Input = {
         uuid: generateUUID(),
         name: "y",
-        selected: false
     }
     const node4output0: Output = {
         uuid: generateUUID(),
         name: "out",
-        selected: false
+        edges: []
     }
     const node4: Node = {
         uuid: generateUUID(),
@@ -218,7 +219,6 @@ export const initialState = (generateUUID: GenerateUUID): State => {
     const node5input0: Input = {
         uuid: generateUUID(),
         name: "value",
-        selected: false
     }
     const node5: Node = {
         uuid: generateUUID(),
@@ -233,26 +233,36 @@ export const initialState = (generateUUID: GenerateUUID): State => {
         output: node0output0.uuid,
         input: node2input0.uuid
     }
+    node0output0.edges.push(edge0.uuid)
+    node2input0.edge = edge0.uuid
     const edge1 = {
         uuid: generateUUID(),
         output: node1output0.uuid,
         input: node2input1.uuid
     }
+    node1output0.edges.push(edge1.uuid)
+    node2input1.edge = edge1.uuid
     const edge2 = {
         uuid: generateUUID(),
         output: node2output0.uuid,
         input: node4input0.uuid,
     }
+    node2output0.edges.push(edge2.uuid)
+    node4input0.edge = edge2.uuid
     const edge3 = {
         uuid: generateUUID(),
         output: node3output0.uuid,
         input: node4input1.uuid,
     }
+    node3output0.edges.push(edge3.uuid)
+    node4input1.edge = edge3.uuid
     const edge4 = {
         uuid: generateUUID(),
         output: node4output0.uuid,
         input: node5input0.uuid
     }
+    node4output0.edges.push(edge4.uuid)
+    node5input0.edge = edge4.uuid
     return {
         graph: {
             nodes: {
@@ -292,9 +302,6 @@ export const initialState = (generateUUID: GenerateUUID): State => {
         pointerDistance: 0,
         pointerCenter: [0, 0],
         camera: identity(),
-        selectedOutput: null,
-        selectedInput: null,
-        selectedNode: null,
         theme: {
             background: { red: 2, green: 22, blue: 39, alpha: 255 },
             node: { red: 41, green: 95, blue: 120, alpha: 255 },

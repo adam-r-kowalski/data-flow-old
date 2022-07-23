@@ -2,7 +2,7 @@ import { fuzzyFind } from "./fuzzy_find"
 import { multiplyMatrices, multiplyMatrixVector, scale, translate } from "./linear_algebra/matrix3x3"
 import { length } from "./linear_algebra/vector3"
 import { UpdateResult } from "./ui/run"
-import { Edge, GenerateUUID, InputPath, InputTargetKind, OutputPath, State, UUID, VirtualKeyboardKind } from "./state"
+import { Edge, GenerateUUID, Input, InputTargetKind, Output, State, UUID, VirtualKeyboardKind } from "./state"
 import { Pointer } from "./ui"
 
 export enum EventKind {
@@ -39,7 +39,7 @@ export interface PointerUp {
 
 export interface ClickedNode {
     kind: EventKind.CLICKED_NODE
-    nodeUUID: UUID
+    node: UUID
 }
 
 export interface Wheel {
@@ -51,12 +51,12 @@ export interface Wheel {
 
 export interface ClickedInput {
     kind: EventKind.CLICKED_INPUT
-    inputPath: InputPath
+    input: UUID
 }
 
 export interface ClickedOutput {
     kind: EventKind.CLICKED_OUTPUT
-    outputPath: OutputPath
+    output: UUID
 }
 
 export interface DoubleClickTimeout {
@@ -85,7 +85,7 @@ export interface ClickedFinderOption {
 
 export interface ClickedNumber {
     kind: EventKind.CLICKED_NUMBER,
-    nodeUUID: UUID
+    node: UUID
 }
 
 export interface ClickedBackground {
@@ -163,7 +163,7 @@ const pointerMove = (state: State, event: PointerMove) => {
     if (state.dragging) {
         const dx = event.pointer.x - pointer.x
         const dy = event.pointer.y - pointer.y
-        if (state.selectedNode !== null) {
+        if (state.selectedNode) {
             const scaling = length(multiplyMatrixVector(state.camera, [0, 1, 0]))
             const node = state.graph.nodes[state.selectedNode]
             node.x += dx * scaling
@@ -196,10 +196,10 @@ const pointerMove = (state: State, event: PointerMove) => {
 }
 
 const clickedNode = (state: State, event: ClickedNode) => {
-    state.selectedNode = event.nodeUUID
-    const nodeOrder = state.graph.nodeOrder.filter(uuid => uuid !== event.nodeUUID)
-    nodeOrder.push(event.nodeUUID)
-    state.graph.nodeOrder = nodeOrder
+    state.selectedNode = event.node
+    const nodeOrder = state.nodeOrder.filter(uuid => uuid !== event.node)
+    nodeOrder.push(event.node)
+    state.nodeOrder = nodeOrder
     return { state, render: true }
 }
 
@@ -212,76 +212,34 @@ const wheel = (state: State, event: Wheel) => {
 }
 
 const clickedInput = (state: State, event: ClickedInput, generateUUID: GenerateUUID) => {
-    state.selectedNode = event.inputPath.nodeUUID
-    const nodeOrder = state.graph.nodeOrder.filter(uuid => uuid !== event.inputPath.nodeUUID)
-    nodeOrder.push(event.inputPath.nodeUUID)
-    state.graph.nodeOrder = nodeOrder
     if (state.selectedOutput) {
         const edge: Edge = {
             uuid: generateUUID(),
-            input: event.inputPath,
+            input: event.input,
             output: state.selectedOutput
         }
         state.graph.edges[edge.uuid] = edge
-        {
-            const { nodeUUID, outputIndex } = state.selectedOutput
-            const output = state.graph.nodes[nodeUUID].outputs[outputIndex]
-            output.edgeUUIDs.push(edge.uuid)
-            output.selected = false
-        }
-        {
-            const { nodeUUID, inputIndex } = event.inputPath
-            const input = state.graph.nodes[nodeUUID].inputs[inputIndex]
-            input.edgeUUIDs.push(edge.uuid)
-        }
-        state.selectedOutput = null
-        state.selectedNode = null
+        state.selectedInput = undefined
+        state.selectedOutput = undefined
         return { state, render: true }
     }
-    if (state.selectedInput) {
-        const { nodeUUID, inputIndex } = state.selectedInput
-        state.graph.nodes[nodeUUID].inputs[inputIndex].selected = false
-    }
-    const { nodeUUID, inputIndex } = event.inputPath
-    state.graph.nodes[nodeUUID].inputs[inputIndex].selected = true
-    state.selectedInput = event.inputPath
+    state.selectedInput = event.input
     return { state, render: true }
 }
 
 const clickedOutput = (state: State, event: ClickedOutput, generateUUID: GenerateUUID) => {
-    state.selectedNode = event.outputPath.nodeUUID
-    const nodeOrder = state.graph.nodeOrder.filter(uuid => uuid !== event.outputPath.nodeUUID)
-    nodeOrder.push(event.outputPath.nodeUUID)
-    state.graph.nodeOrder = nodeOrder
     if (state.selectedInput) {
         const edge: Edge = {
             uuid: generateUUID(),
             input: state.selectedInput,
-            output: event.outputPath
+            output: event.output
         }
         state.graph.edges[edge.uuid] = edge
-        {
-            const { nodeUUID, inputIndex } = state.selectedInput
-            const input = state.graph.nodes[nodeUUID].inputs[inputIndex]
-            input.edgeUUIDs.push(edge.uuid)
-            input.selected = false
-        }
-        {
-            const { nodeUUID, outputIndex } = event.outputPath
-            const output = state.graph.nodes[nodeUUID].outputs[outputIndex]
-            output.edgeUUIDs.push(edge.uuid)
-        }
-        state.selectedInput = null
-        state.selectedNode = null
+        state.selectedInput = undefined
+        state.selectedOutput = undefined
         return { state, render: true }
     }
-    if (state.selectedOutput) {
-        const { nodeUUID, outputIndex } = state.selectedOutput
-        state.graph.nodes[nodeUUID].outputs[outputIndex].selected = false
-    }
-    const { nodeUUID, outputIndex } = event.outputPath
-    state.graph.nodes[nodeUUID].outputs[outputIndex].selected = true
-    state.selectedOutput = event.outputPath
+    state.selectedOutput = event.output
     return { state, render: true }
 }
 
@@ -329,24 +287,36 @@ const closeFinder = (state: State) => {
     return state
 }
 
-const insertOperationFromFinder = (state: State, name: string, gnerateUUID: GenerateUUID): State => {
+const insertOperationFromFinder = (state: State, name: string, generateUUID: GenerateUUID): State => {
     state = closeFinder(state)
     const operation = state.operations[name]
-    const [x, y, _] = multiplyMatrixVector(state.camera, [state.nodePlacementLocation.x, state.nodePlacementLocation.y, 1])
-    const uuid = gnerateUUID()
+    const [x, y, _] = multiplyMatrixVector(
+        state.camera,
+        [state.nodePlacementLocation.x, state.nodePlacementLocation.y, 1]
+    )
+    const uuid = generateUUID()
+    const inputs = operation.inputs.map(name => {
+        const input: Input = {
+            uuid: generateUUID(),
+            name,
+        }
+        state.graph.inputs[input.uuid] = input
+        return input.uuid
+    })
+    const outputs = operation.outputs.map(name => {
+        const output: Output = {
+            uuid: generateUUID(),
+            name,
+            edges: [],
+        }
+        state.graph.outputs[output.uuid] = output
+        return output.uuid
+    })
     state.graph.nodes[uuid] = {
         uuid,
         name,
-        inputs: operation.inputs.map(input => ({
-            name: input,
-            selected: false,
-            edgeUUIDs: []
-        })),
-        outputs: operation.outputs.map(output => ({
-            name: output,
-            selected: false,
-            edgeUUIDs: []
-        })),
+        inputs,
+        outputs,
         x,
         y,
         body: operation.body !== undefined ? {
@@ -354,7 +324,7 @@ const insertOperationFromFinder = (state: State, name: string, gnerateUUID: Gene
             editing: false
         } : undefined
     }
-    state.graph.nodeOrder.push(uuid)
+    state.nodeOrder.push(uuid)
     return state
 }
 
@@ -427,37 +397,27 @@ const keyDown = (state: State, { key }: KeyDown, generateUUID: GenerateUUID) => 
                 case 'f':
                     return { state: openFinder(state), render: true }
                 case 'd':
-                    const uuid = state.selectedNode
-                    if (uuid === null) return { state }
-                    const node = state.graph.nodes[uuid]
-                    const edgeUUIDs: UUID[] = []
-                    node.inputs.forEach(input => {
-                        input.edgeUUIDs.forEach(edgeUUID => edgeUUIDs.push(edgeUUID))
-                    })
-                    node.outputs.forEach(input => {
-                        input.edgeUUIDs.forEach(edgeUUID => edgeUUIDs.push(edgeUUID))
-                    })
-                    for (const edgeUUID of edgeUUIDs) {
-                        const edge = state.graph.edges[edgeUUID]
-                        {
-                            const { nodeUUID, inputIndex } = edge.input
-                            if (nodeUUID !== uuid) {
-                                const input = state.graph.nodes[nodeUUID].inputs[inputIndex]
-                                input.edgeUUIDs = input.edgeUUIDs.filter(id => id !== edgeUUID)
-                            }
-                        }
-                        {
-                            const { nodeUUID, outputIndex } = edge.output
-                            if (nodeUUID !== uuid) {
-                                const output = state.graph.nodes[nodeUUID].outputs[outputIndex]
-                                output.edgeUUIDs = output.edgeUUIDs.filter(id => id !== edgeUUID)
-                            }
-                        }
-                        delete state.graph.edges[edgeUUID]
+                    if (!state.selectedNode) return { state }
+                    const node = state.graph.nodes[state.selectedNode]
+                    const inputEdges = node.inputs
+                        .map(input => state.graph.inputs[input])
+                        .map(input => input.edge)
+                        .filter(edge => edge !== undefined)
+                        .map(edge => state.graph.edges[edge!])
+                    const outputEdges = node.outputs
+                        .map(output => state.graph.outputs[output])
+                        .flatMap(output => output.edges)
+                        .map(edge => state.graph.edges[edge])
+                    const edges = inputEdges.concat(outputEdges)
+                    for (const edge of edges) {
+                        state.graph.inputs[edge.input].edge = undefined
+                        const output = state.graph.outputs[edge.output]
+                        output.edges = output.edges.filter(uuid => uuid !== edge.uuid)
+                        delete state.graph.edges[edge.uuid]
                     }
-                    delete state.graph.nodes[uuid]
-                    state.graph.nodeOrder = state.graph.nodeOrder.filter(n => n !== uuid)
-                    state.selectedNode = null
+                    delete state.graph.nodes[state.selectedNode]
+                    state.nodeOrder = state.nodeOrder.filter(n => n !== state.selectedNode)
+                    state.selectedNode = undefined
                     return { state, render: true }
                 default:
                     return { state }
@@ -549,12 +509,12 @@ export const openNumericKeyboard = (state: State, nodeUUID: UUID): State => {
     return state
 }
 
-const clickedNumber = (state: State, { nodeUUID }: ClickedNumber) => {
+const clickedNumber = (state: State, { node }: ClickedNumber) => {
     if (state.inputTarget.kind === InputTargetKind.NUMBER) {
         state.graph.nodes[state.inputTarget.nodeUUID].body!.editing = false
     }
     state = closeFinder(state)
-    state = openNumericKeyboard(state, nodeUUID)
+    state = openNumericKeyboard(state, node)
     return {
         state,
         render: true
@@ -565,17 +525,9 @@ const clickedBackground = (state: State) => {
     if (state.inputTarget.kind === InputTargetKind.NUMBER) {
         state.graph.nodes[state.inputTarget.nodeUUID].body!.editing = false
     }
-    state.selectedNode = null
-    if (state.selectedInput !== null) {
-        const { nodeUUID, inputIndex } = state.selectedInput
-        state.graph.nodes[nodeUUID].inputs[inputIndex].selected = false
-        state.selectedInput = null
-    }
-    if (state.selectedOutput !== null) {
-        const { nodeUUID, outputIndex } = state.selectedOutput
-        state.graph.nodes[nodeUUID].outputs[outputIndex].selected = false
-        state.selectedOutput = null
-    }
+    state.selectedNode = undefined
+    state.selectedInput = undefined
+    state.selectedOutput = undefined
     return {
         state: closeFinder(state),
         render: true

@@ -1,6 +1,6 @@
 import { AppEvent, EventKind } from "../../../src/event"
 import { identity } from "../../../src/linear_algebra/matrix3x3"
-import { Input, Output, Theme, Body, Node, VirtualKeyboardKind, InputTargetKind, State } from "../../../src/state"
+import { Body, Input, Inputs, InputTargetKind, Node, Output, Outputs, State, Theme, VirtualKeyboardKind, } from "../../../src/state"
 import { column, container, row, scene, stack, text } from "../../../src/ui"
 import { CrossAxisAlignment, MainAxisAlignment } from "../../../src/ui/alignment"
 import {
@@ -18,7 +18,7 @@ import {
     view,
     virtualKey,
     virtualKeyboard,
-    virtualKeys
+    virtualKeys,
 } from "../../../src/ui/view"
 
 test("spacer", () => {
@@ -38,62 +38,52 @@ const theme: Theme = {
 }
 
 test("inputUi not selected", () => {
-    const name = "node name"
-    const selected = false
     const input: Input = {
-        name,
-        selected,
-        edgeUUIDs: []
+        uuid: 'uuid',
+        name: 'name',
     }
-    const nodeUUID = 'some node'
-    const inputIndex = 1
-    const actual = inputUi(theme, input, nodeUUID, inputIndex)
+    const actual = inputUi(theme, input)
     const expected = container<AppEvent>({
         onClick: {
             kind: EventKind.CLICKED_INPUT,
-            inputPath: { nodeUUID, inputIndex }
+            input: 'uuid'
         }
     },
         row({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             container({
-                id: `input ${nodeUUID} ${inputIndex}`,
+                id: 'uuid',
                 width: 14,
                 height: 14,
                 color: theme.input,
             }),
             spacer(4),
-            text(name)
+            text('name')
         ])
     )
     expect(actual).toEqual(expected)
 })
 
 test("inputUi selected", () => {
-    const name = "node name"
-    const selected = true
     const input: Input = {
-        name,
-        selected,
-        edgeUUIDs: []
+        uuid: 'uuid',
+        name: 'name'
     }
-    const nodeUUID = 'some node'
-    const inputIndex = 1
-    const actual = inputUi(theme, input, nodeUUID, inputIndex)
+    const actual = inputUi(theme, input, 'uuid')
     const expected = container<AppEvent>({
         onClick: {
             kind: EventKind.CLICKED_INPUT,
-            inputPath: { nodeUUID, inputIndex }
+            input: 'uuid'
         }
     },
         row({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             container({
-                id: `input ${nodeUUID} ${inputIndex}`,
+                id: 'uuid',
                 width: 14,
                 height: 14,
                 color: theme.selectedInput,
             }),
             spacer(4),
-            text(name)
+            text('name')
         ])
     )
     expect(actual).toEqual(expected)
@@ -102,55 +92,47 @@ test("inputUi selected", () => {
 test("inputsUi", () => {
     const inputs: Input[] = [
         {
+            uuid: 'first',
             name: "first",
-            selected: false,
-            edgeUUIDs: []
         },
         {
+            uuid: 'second',
             name: "second",
-            selected: false,
-            edgeUUIDs: []
         },
         {
+            uuid: 'third',
             name: "third",
-            selected: true,
-            edgeUUIDs: []
         }
     ]
-    const nodeUUID = 'some node'
-    const actual = inputsUi(theme, inputs, nodeUUID)
+    const actual = inputsUi(theme, inputs, 'third')
     const expected = column([
-        inputUi(theme, inputs[0], nodeUUID, 0),
+        inputUi(theme, inputs[0], 'third'),
         spacer(4),
-        inputUi(theme, inputs[1], nodeUUID, 1),
+        inputUi(theme, inputs[1], 'third'),
         spacer(4),
-        inputUi(theme, inputs[2], nodeUUID, 2),
+        inputUi(theme, inputs[2], 'third'),
     ])
     expect(actual).toEqual(expected)
 })
 
 test("outputUi not selected", () => {
-    const name = "node name"
-    const selected = false
     const output: Output = {
-        name,
-        selected,
-        edgeUUIDs: []
+        uuid: 'uuid',
+        name: 'name',
+        edges: []
     }
-    const nodeUUID = 'some node'
-    const outputIndex = 1
-    const actual = outputUi(theme, output, nodeUUID, outputIndex)
+    const actual = outputUi(theme, output)
     const expected = container<AppEvent>({
         onClick: {
             kind: EventKind.CLICKED_OUTPUT,
-            outputPath: { nodeUUID, outputIndex }
+            output: 'uuid'
         }
     },
         row({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
-            text(name),
+            text('name'),
             spacer(4),
             container({
-                id: `output ${nodeUUID} ${outputIndex}`,
+                id: 'uuid',
                 width: 14,
                 height: 14,
                 color: theme.input,
@@ -161,27 +143,23 @@ test("outputUi not selected", () => {
 })
 
 test("outputUi selected", () => {
-    const name = "node name"
-    const selected = true
     const output: Output = {
-        name,
-        selected,
-        edgeUUIDs: []
+        uuid: "uuid",
+        name: 'name',
+        edges: []
     }
-    const nodeUUID = 'some node'
-    const outputIndex = 1
-    const actual = outputUi(theme, output, nodeUUID, outputIndex)
+    const actual = outputUi(theme, output, 'uuid')
     const expected = container<AppEvent>({
         onClick: {
             kind: EventKind.CLICKED_OUTPUT,
-            outputPath: { nodeUUID, outputIndex }
+            output: 'uuid'
         }
     },
         row({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
-            text(name),
+            text('name'),
             spacer(4),
             container({
-                id: `output ${nodeUUID} ${outputIndex}`,
+                id: 'uuid',
                 width: 14,
                 height: 14,
                 color: theme.selectedInput,
@@ -194,29 +172,28 @@ test("outputUi selected", () => {
 test("outputsUi", () => {
     const outputs: Output[] = [
         {
+            uuid: 'first',
             name: "first",
-            selected: false,
-            edgeUUIDs: []
+            edges: []
         },
         {
+            uuid: 'second',
             name: "second",
-            selected: false,
-            edgeUUIDs: []
+            edges: []
         },
         {
+            uuid: "third",
             name: "third",
-            selected: true,
-            edgeUUIDs: []
+            edges: []
         }
     ]
-    const nodeUUID = 'some node'
-    const actual = outputsUi(theme, outputs, nodeUUID)
+    const actual = outputsUi(theme, outputs, 'third')
     const expected = column([
-        outputUi(theme, outputs[0], nodeUUID, 0),
+        outputUi(theme, outputs[0], 'third'),
         spacer(4),
-        outputUi(theme, outputs[1], nodeUUID, 1),
+        outputUi(theme, outputs[1], 'third'),
         spacer(4),
-        outputUi(theme, outputs[2], nodeUUID, 2),
+        outputUi(theme, outputs[2], 'third'),
     ])
     expect(actual).toEqual(expected)
 })
@@ -226,14 +203,13 @@ test("numberUi not editing", () => {
         value: 0,
         editing: false
     }
-    const nodeUUID = 'some node'
-    const actual = numberUi(theme, body, nodeUUID)
+    const actual = numberUi(theme, body, 'uuid')
     const expected = container({
         color: theme.background,
         padding: 5,
         onClick: {
             kind: EventKind.CLICKED_NUMBER,
-            nodeUUID
+            node: 'uuid'
         }
     },
         text(body.value.toString()))
@@ -245,14 +221,13 @@ test("numberUi editing", () => {
         value: 0,
         editing: true
     }
-    const nodeUUID = 'some node'
-    const actual = numberUi(theme, body, nodeUUID)
+    const actual = numberUi(theme, body, 'uuid')
     const expected = container({
         color: theme.selectedInput,
         padding: 5,
         onClick: {
             kind: EventKind.CLICKED_NUMBER,
-            nodeUUID
+            node: 'uuid'
         }
     },
         text(body.value.toString()))
@@ -260,16 +235,15 @@ test("numberUi editing", () => {
 })
 
 test("nodeUi no inputs body or outputs", () => {
-    const nodeUUID = 'some node'
     const node: Node = {
-        uuid: nodeUUID,
+        uuid: 'uuid',
         name: "node",
         x: 0,
         y: 0,
         inputs: [],
         outputs: [],
     }
-    const actual = nodeUi(theme, node)
+    const actual = nodeUi(theme, node, {}, {})
     const expected = container<AppEvent>(
         {
             color: theme.node,
@@ -278,7 +252,7 @@ test("nodeUi no inputs body or outputs", () => {
             y: 0,
             onClick: {
                 kind: EventKind.CLICKED_NODE,
-                nodeUUID
+                node: 'uuid'
             }
         },
         column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
@@ -291,22 +265,21 @@ test("nodeUi no inputs body or outputs", () => {
 })
 
 test("nodeUi 1 input, no body and no outputs", () => {
-    const nodeUUID = 'some node'
     const node: Node = {
-        uuid: nodeUUID,
+        uuid: 'node uuid',
         name: "node",
         x: 0,
         y: 0,
-        inputs: [
-            {
-                name: "first",
-                selected: false,
-                edgeUUIDs: []
-            },
-        ],
+        inputs: ['input uuid'],
         outputs: [],
     }
-    const actual = nodeUi(theme, node)
+    const inputs: Inputs = {
+        'input uuid': {
+            uuid: 'input uuid',
+            name: 'first'
+        }
+    }
+    const actual = nodeUi(theme, node, inputs, {})
     const expected = container<AppEvent>(
         {
             color: theme.node,
@@ -315,35 +288,35 @@ test("nodeUi 1 input, no body and no outputs", () => {
             y: 0,
             onClick: {
                 kind: EventKind.CLICKED_NODE,
-                nodeUUID
+                node: 'node uuid'
             }
         },
         column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             text("node"),
             spacer(4),
-            row([inputsUi(theme, node.inputs, nodeUUID)])
+            row([inputsUi(theme, node.inputs.map(i => inputs[i]))])
         ])
     )
     expect(actual).toEqual(expected)
 })
 
 test("nodeUi 1 output, no body and no inputs", () => {
-    const nodeUUID = 'some node'
     const node: Node = {
-        uuid: nodeUUID,
+        uuid: 'node uuid',
         name: "node",
         x: 0,
         y: 0,
         inputs: [],
-        outputs: [
-            {
-                name: "first",
-                selected: false,
-                edgeUUIDs: []
-            },
-        ],
+        outputs: ['output uuid'],
     }
-    const actual = nodeUi(theme, node)
+    const outputs: Outputs = {
+        'output uuid': {
+            uuid: 'output uuid',
+            name: 'first',
+            edges: []
+        }
+    }
+    const actual = nodeUi(theme, node, {}, outputs)
     const expected = container<AppEvent>(
         {
             color: theme.node,
@@ -352,22 +325,21 @@ test("nodeUi 1 output, no body and no inputs", () => {
             y: 0,
             onClick: {
                 kind: EventKind.CLICKED_NODE,
-                nodeUUID
+                node: 'node uuid'
             }
         },
         column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             text("node"),
             spacer(4),
-            row([outputsUi(theme, node.outputs, nodeUUID)])
+            row([outputsUi(theme, node.outputs.map(o => outputs[o]))])
         ])
     )
     expect(actual).toEqual(expected)
 })
 
 test("nodeUi no inputs or outputs but body defined", () => {
-    const nodeUUID = 'some node'
     const node: Node = {
-        uuid: nodeUUID,
+        uuid: 'node uuid',
         name: "node",
         x: 0,
         y: 0,
@@ -378,7 +350,7 @@ test("nodeUi no inputs or outputs but body defined", () => {
         },
         outputs: [],
     }
-    const actual = nodeUi(theme, node)
+    const actual = nodeUi(theme, node, {}, {})
     const expected = container<AppEvent>(
         {
             color: theme.node,
@@ -387,41 +359,41 @@ test("nodeUi no inputs or outputs but body defined", () => {
             y: 0,
             onClick: {
                 kind: EventKind.CLICKED_NODE,
-                nodeUUID
+                node: 'node uuid'
             }
         },
         column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             text("node"),
             spacer(4),
-            row([numberUi(theme, node.body!, nodeUUID), spacer(15)])
+            row([numberUi(theme, node.body!, 'node uuid'), spacer(15)])
         ])
     )
     expect(actual).toEqual(expected)
 })
 
 test("nodeUi 1 input and 1 output but no body", () => {
-    const nodeUUID = 'some node'
     const node: Node = {
-        uuid: nodeUUID,
+        uuid: 'node uuid',
         name: "node",
         x: 0,
         y: 0,
-        inputs: [
-            {
-                name: "first",
-                selected: false,
-                edgeUUIDs: []
-            },
-        ],
-        outputs: [
-            {
-                name: "first",
-                selected: false,
-                edgeUUIDs: []
-            },
-        ],
+        inputs: ['input uuid'],
+        outputs: ['output uuid'],
     }
-    const actual = nodeUi(theme, node)
+    const inputs: Inputs = {
+        'input uuid': {
+            uuid: 'input uuid',
+            name: 'first'
+        }
+    }
+    const outputs: Outputs = {
+        'output uuid': {
+            uuid: 'output uuid',
+            name: 'first',
+            edges: []
+        }
+    }
+    const actual = nodeUi(theme, node, inputs, outputs)
     const expected = container<AppEvent>(
         {
             color: theme.node,
@@ -430,16 +402,16 @@ test("nodeUi 1 input and 1 output but no body", () => {
             y: 0,
             onClick: {
                 kind: EventKind.CLICKED_NODE,
-                nodeUUID
+                node: 'node uuid'
             }
         },
         column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             text("node"),
             spacer(4),
             row([
-                inputsUi(theme, node.inputs, nodeUUID),
+                inputsUi(theme, node.inputs.map(i => inputs[i])),
                 spacer(15),
-                outputsUi(theme, node.outputs, nodeUUID)
+                outputsUi(theme, node.outputs.map(o => outputs[o]))
             ])
         ])
     )
@@ -447,26 +419,25 @@ test("nodeUi 1 input and 1 output but no body", () => {
 })
 
 test("nodeUi 1 input body but no outputs", () => {
-    const nodeUUID = 'some node'
     const node: Node = {
-        uuid: nodeUUID,
+        uuid: 'node uuid',
         name: "node",
         x: 0,
         y: 0,
-        inputs: [
-            {
-                name: "first",
-                selected: false,
-                edgeUUIDs: []
-            },
-        ],
+        inputs: ['input uuid'],
         body: {
             value: 0,
             editing: false
         },
         outputs: [],
     }
-    const actual = nodeUi(theme, node)
+    const inputs: Inputs = {
+        'input uuid': {
+            uuid: 'input uuid',
+            name: 'first'
+        }
+    }
+    const actual = nodeUi(theme, node, inputs, {})
     const expected = container<AppEvent>(
         {
             color: theme.node,
@@ -475,15 +446,15 @@ test("nodeUi 1 input body but no outputs", () => {
             y: 0,
             onClick: {
                 kind: EventKind.CLICKED_NODE,
-                nodeUUID
+                node: 'node uuid'
             }
         },
         column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             text("node"),
             spacer(4),
             row([
-                inputsUi(theme, node.inputs, nodeUUID),
-                numberUi(theme, node.body!, nodeUUID),
+                inputsUi(theme, node.inputs.map(i => inputs[i])),
+                numberUi(theme, node.body!, 'node uuid'),
                 spacer(15),
             ])
         ])
@@ -492,9 +463,8 @@ test("nodeUi 1 input body but no outputs", () => {
 })
 
 test("nodeUi 1 output body but no inputs", () => {
-    const nodeUUID = 'some node'
     const node: Node = {
-        uuid: nodeUUID,
+        uuid: 'node uuid',
         name: "node",
         x: 0,
         y: 0,
@@ -503,15 +473,16 @@ test("nodeUi 1 output body but no inputs", () => {
             value: 0,
             editing: false
         },
-        outputs: [
-            {
-                name: "first",
-                selected: false,
-                edgeUUIDs: []
-            },
-        ],
+        outputs: ['output uuid'],
     }
-    const actual = nodeUi(theme, node)
+    const outputs: Outputs = {
+        'output uuid': {
+            uuid: 'output uuid',
+            name: 'first',
+            edges: []
+        }
+    }
+    const actual = nodeUi(theme, node, {}, outputs)
     const expected = container<AppEvent>(
         {
             color: theme.node,
@@ -520,16 +491,16 @@ test("nodeUi 1 output body but no inputs", () => {
             y: 0,
             onClick: {
                 kind: EventKind.CLICKED_NODE,
-                nodeUUID
+                node: 'node uuid'
             }
         },
         column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             text("node"),
             spacer(4),
             row([
-                numberUi(theme, node.body!, nodeUUID),
+                numberUi(theme, node.body!, 'node uuid'),
                 spacer(15),
-                outputsUi(theme, node.outputs, nodeUUID),
+                outputsUi(theme, node.outputs.map(o => outputs[o])),
             ])
         ])
     )
@@ -538,32 +509,32 @@ test("nodeUi 1 output body but no inputs", () => {
 
 
 test("nodeUi 1 input body and 1 output", () => {
-    const nodeUUID = 'some node'
     const node: Node = {
-        uuid: nodeUUID,
+        uuid: 'node uuid',
         name: "node",
         x: 0,
         y: 0,
-        inputs: [
-            {
-                name: "first",
-                selected: false,
-                edgeUUIDs: []
-            },
-        ],
+        inputs: ['input uuid'],
         body: {
             value: 0,
             editing: false
         },
-        outputs: [
-            {
-                name: "first",
-                selected: false,
-                edgeUUIDs: []
-            },
-        ],
+        outputs: ['output uuid'],
     }
-    const actual = nodeUi(theme, node)
+    const inputs: Inputs = {
+        'input uuid': {
+            uuid: 'input uuid',
+            name: 'first'
+        }
+    }
+    const outputs: Outputs = {
+        'output uuid': {
+            uuid: "output uuid",
+            name: 'first',
+            edges: []
+        }
+    }
+    const actual = nodeUi(theme, node, inputs, outputs)
     const expected = container<AppEvent>(
         {
             color: theme.node,
@@ -572,18 +543,18 @@ test("nodeUi 1 input body and 1 output", () => {
             y: 0,
             onClick: {
                 kind: EventKind.CLICKED_NODE,
-                nodeUUID
+                node: 'node uuid'
             }
         },
         column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             text("node"),
             spacer(4),
             row([
-                inputsUi(theme, node.outputs, nodeUUID),
+                inputsUi(theme, node.inputs.map(i => inputs[i])),
                 spacer(15),
-                numberUi(theme, node.body!, nodeUUID),
+                numberUi(theme, node.body!, 'node uuid'),
                 spacer(15),
-                outputsUi(theme, node.outputs, nodeUUID),
+                outputsUi(theme, node.outputs.map(o => outputs[o])),
             ])
         ])
     )
@@ -731,17 +702,16 @@ test("view with no nodes or edges", () => {
     const state: State = {
         graph: {
             nodes: {},
-            nodeOrder: [],
-            edges: {}
+            edges: {},
+            inputs: {},
+            outputs: {}
         },
+        nodeOrder: [],
         zooming: false,
         dragging: false,
-        selectedNode: null,
         pointers: [],
         pointerDistance: 0,
         pointerCenter: [0, 0],
-        selectedOutput: null,
-        selectedInput: null,
         potentialDoubleClick: false,
         nodePlacementLocation: {
             x: 0,
@@ -775,17 +745,16 @@ test("view with no nodes or edges but finder shown", () => {
     const state: State = {
         graph: {
             nodes: {},
-            nodeOrder: [],
-            edges: {}
+            edges: {},
+            inputs: {},
+            outputs: {}
         },
+        nodeOrder: [],
         zooming: false,
         dragging: false,
-        selectedNode: null,
         pointers: [],
         pointerDistance: 0,
         pointerCenter: [0, 0],
-        selectedOutput: null,
-        selectedInput: null,
         potentialDoubleClick: false,
         nodePlacementLocation: {
             x: 0,
@@ -820,17 +789,16 @@ test("view with no nodes or edges but virtual keyboard shown", () => {
     const state: State = {
         graph: {
             nodes: {},
-            nodeOrder: [],
-            edges: {}
+            edges: {},
+            inputs: {},
+            outputs: {}
         },
+        nodeOrder: [],
         zooming: false,
         dragging: false,
-        selectedNode: null,
         pointers: [],
         pointerDistance: 0,
         pointerCenter: [0, 0],
-        selectedOutput: null,
-        selectedInput: null,
         potentialDoubleClick: false,
         nodePlacementLocation: {
             x: 0,
@@ -866,17 +834,16 @@ test("view with no nodes or edges but finder and virtual keyboard shown", () => 
     const state: State = {
         graph: {
             nodes: {},
-            nodeOrder: [],
-            edges: {}
+            edges: {},
+            inputs: {},
+            outputs: {}
         },
+        nodeOrder: [],
         zooming: false,
         dragging: false,
-        selectedNode: null,
         pointers: [],
         pointerDistance: 0,
         pointerCenter: [0, 0],
-        selectedOutput: null,
-        selectedInput: null,
         potentialDoubleClick: false,
         nodePlacementLocation: {
             x: 0,
@@ -937,17 +904,16 @@ test("view with three nodes and no edges", () => {
                     y: 0,
                 }
             },
-            nodeOrder: ["first", "second", "third"],
-            edges: {}
+            edges: {},
+            inputs: {},
+            outputs: {}
         },
+        nodeOrder: ["first", "second", "third"],
         zooming: false,
         dragging: false,
-        selectedNode: null,
         pointers: [],
         pointerDistance: 0,
         pointerCenter: [0, 0],
-        selectedOutput: null,
-        selectedInput: null,
         potentialDoubleClick: false,
         nodePlacementLocation: {
             x: 0,
@@ -975,9 +941,9 @@ test("view with three nodes and no edges", () => {
         scene({
             camera: state.camera,
             children: [
-                nodeUi(state.theme, state.graph.nodes["first"]),
-                nodeUi(state.theme, state.graph.nodes["second"]),
-                nodeUi(state.theme, state.graph.nodes["third"]),
+                nodeUi(state.theme, state.graph.nodes["first"], {}, {}),
+                nodeUi(state.theme, state.graph.nodes["second"], {}, {}),
+                nodeUi(state.theme, state.graph.nodes["third"], {}, {}),
             ],
             connections: []
         }),
@@ -1014,17 +980,17 @@ test("view with three nodes and no edges", () => {
                     y: 0,
                 }
             },
-            nodeOrder: ["first", "second", "third"],
-            edges: {}
+            edges: {},
+            inputs: {},
+            outputs: {}
         },
+        nodeOrder: ["first", "second", "third"],
         zooming: false,
         dragging: false,
         selectedNode: "first",
         pointers: [],
         pointerDistance: 0,
         pointerCenter: [0, 0],
-        selectedOutput: null,
-        selectedInput: null,
         potentialDoubleClick: false,
         nodePlacementLocation: {
             x: 0,
@@ -1052,9 +1018,9 @@ test("view with three nodes and no edges", () => {
         scene({
             camera: state.camera,
             children: [
-                nodeUi(state.theme, state.graph.nodes["first"]),
-                nodeUi(state.theme, state.graph.nodes["second"]),
-                nodeUi(state.theme, state.graph.nodes["third"]),
+                nodeUi(state.theme, state.graph.nodes["first"], {}, {}),
+                nodeUi(state.theme, state.graph.nodes["second"], {}, {}),
+                nodeUi(state.theme, state.graph.nodes["third"], {}, {}),
             ],
             connections: []
         }),
@@ -1071,26 +1037,14 @@ test("view with three nodes and one edges", () => {
                     uuid: "first",
                     name: "first",
                     inputs: [],
-                    outputs: [
-                        {
-                            name: "out",
-                            selected: false,
-                            edgeUUIDs: ['0']
-                        }
-                    ],
+                    outputs: ['output uuid'],
                     x: 0,
                     y: 0,
                 },
                 "second": {
                     uuid: "second",
                     name: "second",
-                    inputs: [
-                        {
-                            name: "in",
-                            selected: false,
-                            edgeUUIDs: ['0']
-                        }
-                    ],
+                    inputs: ['input uuid'],
                     outputs: [],
                     x: 0,
                     y: 0,
@@ -1102,31 +1056,36 @@ test("view with three nodes and one edges", () => {
                     outputs: [],
                     x: 0,
                     y: 0,
+                },
+            },
+            edges: {
+                'edge uuid': {
+                    uuid: 'edge uuid',
+                    input: 'input uuid',
+                    output: 'output uuid'
                 }
             },
-            nodeOrder: ["first", "second", "third"],
-            edges: {
-                0: {
-                    uuid: '0',
-                    input: {
-                        nodeUUID: "second",
-                        inputIndex: 0,
-                    },
-                    output: {
-                        nodeUUID: "first",
-                        outputIndex: 0,
-                    }
+            inputs: {
+                'input uuid': {
+                    uuid: 'input uuid',
+                    name: 'in',
+                    edge: 'edge uuid'
+                }
+            },
+            outputs: {
+                'output uuid': {
+                    uuid: 'output uuid',
+                    name: 'out',
+                    edges: ['edge uuid']
                 }
             }
         },
+        nodeOrder: ["first", "second", "third"],
         zooming: false,
         dragging: false,
-        selectedNode: null,
         pointers: [],
         pointerDistance: 0,
         pointerCenter: [0, 0],
-        selectedOutput: null,
-        selectedInput: null,
         potentialDoubleClick: false,
         nodePlacementLocation: {
             x: 0,
@@ -1154,14 +1113,14 @@ test("view with three nodes and one edges", () => {
         scene({
             camera: state.camera,
             children: [
-                nodeUi(state.theme, state.graph.nodes["first"]),
-                nodeUi(state.theme, state.graph.nodes["second"]),
-                nodeUi(state.theme, state.graph.nodes["third"]),
+                nodeUi(state.theme, state.graph.nodes["first"], state.graph.inputs, state.graph.outputs),
+                nodeUi(state.theme, state.graph.nodes["second"], state.graph.inputs, state.graph.outputs),
+                nodeUi(state.theme, state.graph.nodes["third"], state.graph.inputs, state.graph.outputs),
             ],
             connections: [
                 {
-                    from: "output first 0",
-                    to: "input second 0",
+                    from: 'output uuid',
+                    to: 'input uuid',
                     color: theme.connection
                 }
             ]

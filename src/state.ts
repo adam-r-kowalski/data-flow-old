@@ -3,26 +3,16 @@ import { Pointer, Color } from "./ui"
 
 export type UUID = string
 
-export interface InputPath {
-    nodeUUID: UUID
-    inputIndex: number
-}
-
-export interface OutputPath {
-    nodeUUID: UUID
-    outputIndex: number
-}
-
 export interface Input {
+    uuid: UUID
     name: string
     selected: boolean
-    edgeUUIDs: UUID[]
 }
 
 export interface Output {
+    uuid: UUID
     name: string
     selected: boolean
-    edgeUUIDs: UUID[]
 }
 
 export interface Body {
@@ -33,22 +23,23 @@ export interface Body {
 export interface Node {
     uuid: UUID
     name: string
-    inputs: Input[]
+    inputs: UUID[]
     body?: Body
-    outputs: Output[]
+    outputs: UUID[]
     x: number
     y: number
 }
 
 export interface Edge {
     uuid: UUID
-    input: InputPath
-    output: OutputPath
+    input: UUID
+    output: UUID
 }
 
 export interface Graph {
     nodes: { [uuid: UUID]: Node }
-    nodeOrder: UUID[]
+    inputs: { [uuid: UUID]: Input }
+    outputs: { [uuid: UUID]: Output }
     edges: { [uuid: UUID]: Edge }
 }
 
@@ -114,14 +105,15 @@ export type InputTarget =
 
 export interface State {
     graph: Graph
+    nodeOrder: UUID[]
     zooming: boolean
     dragging: boolean
-    selectedNode: UUID | null
     pointers: Pointer[]
     pointerDistance: number
     pointerCenter: [number, number]
-    selectedOutput: OutputPath | null
-    selectedInput: InputPath | null
+    selectedOutput: UUID | null
+    selectedInput: UUID | null
+    selectedNode: UUID | null
     potentialDoubleClick: boolean
     nodePlacementLocation: ScreenCoordinates
     finder: Finder
@@ -135,96 +127,132 @@ export interface State {
 export type GenerateUUID = () => UUID
 
 export const initialState = (generateUUID: GenerateUUID): State => {
+    const node0output0: Output = {
+        uuid: generateUUID(),
+        name: "out",
+        selected: false
+    }
     const node0: Node = {
         uuid: generateUUID(),
         name: "Number",
         inputs: [],
         body: { value: 5, editing: false },
-        outputs: [],
+        outputs: [node0output0.uuid],
         x: 25,
         y: 25
+    }
+    const node1output0: Output = {
+        uuid: generateUUID(),
+        name: "out",
+        selected: false
     }
     const node1: Node = {
         uuid: generateUUID(),
         name: "Number",
         inputs: [],
         body: { value: 10, editing: false },
-        outputs: [],
+        outputs: [node1output0.uuid],
         x: 25,
         y: 100
+    }
+    const node2input0: Input = {
+        uuid: generateUUID(),
+        name: "x",
+        selected: false
+    }
+    const node2input1: Input = {
+        uuid: generateUUID(),
+        name: "y",
+        selected: false
+    }
+    const node2output0: Output = {
+        uuid: generateUUID(),
+        name: "out",
+        selected: false
     }
     const node2: Node = {
         uuid: generateUUID(),
         name: "Add",
-        inputs: [],
-        outputs: [],
+        inputs: [node2input0.uuid, node2input1.uuid],
+        outputs: [node2output0.uuid],
         x: 150,
         y: 50
+    }
+    const node3output0: Output = {
+        uuid: generateUUID(),
+        name: "out",
+        selected: false
     }
     const node3: Node = {
         uuid: generateUUID(),
         name: "Number",
         inputs: [],
         body: { value: 15, editing: false },
-        outputs: [],
+        outputs: [node3output0.uuid],
         x: 175,
         y: 150
+    }
+    const node4input0: Input = {
+        uuid: generateUUID(),
+        name: "x",
+        selected: false
+    }
+    const node4input1: Input = {
+        uuid: generateUUID(),
+        name: "y",
+        selected: false
+    }
+    const node4output0: Output = {
+        uuid: generateUUID(),
+        name: "out",
+        selected: false
     }
     const node4: Node = {
         uuid: generateUUID(),
         name: "Divide",
-        inputs: [],
-        outputs: [],
+        inputs: [node4input0.uuid, node4input1.uuid],
+        outputs: [node4output0.uuid],
         x: 350,
         y: 50
+    }
+    const node5input0: Input = {
+        uuid: generateUUID(),
+        name: "value",
+        selected: false
     }
     const node5: Node = {
         uuid: generateUUID(),
         name: "Log",
-        inputs: [],
+        inputs: [node5input0.uuid],
         outputs: [],
         x: 550,
         y: 50
     }
     const edge0: Edge = {
         uuid: generateUUID(),
-        output: { nodeUUID: node0.uuid, outputIndex: 0 },
-        input: { nodeUUID: node2.uuid, inputIndex: 0 },
+        output: node0output0.uuid,
+        input: node2input0.uuid
     }
     const edge1 = {
         uuid: generateUUID(),
-        output: { nodeUUID: node1.uuid, outputIndex: 0 },
-        input: { nodeUUID: node2.uuid, inputIndex: 1 },
+        output: node1output0.uuid,
+        input: node2input1.uuid
     }
     const edge2 = {
         uuid: generateUUID(),
-        output: { nodeUUID: node2.uuid, outputIndex: 0 },
-        input: { nodeUUID: node4.uuid, inputIndex: 0 },
+        output: node2output0.uuid,
+        input: node4input0.uuid,
     }
     const edge3 = {
         uuid: generateUUID(),
-        output: { nodeUUID: node3.uuid, outputIndex: 0 },
-        input: { nodeUUID: node4.uuid, inputIndex: 1 },
+        output: node3output0.uuid,
+        input: node4input1.uuid,
     }
     const edge4 = {
         uuid: generateUUID(),
-        output: { nodeUUID: node4.uuid, outputIndex: 0 },
-        input: { nodeUUID: node5.uuid, inputIndex: 0 },
+        output: node4output0.uuid,
+        input: node5input0.uuid
     }
-    node0.outputs.push({ name: "out", selected: false, edgeUUIDs: [edge0.uuid] })
-    node1.outputs.push({ name: "out", selected: false, edgeUUIDs: [edge1.uuid] })
-    node2.inputs.push(
-        { name: "x", selected: false, edgeUUIDs: [edge0.uuid] },
-        { name: "y", selected: false, edgeUUIDs: [edge1.uuid] }
-    )
-    node2.outputs.push({ name: "out", selected: false, edgeUUIDs: [edge2.uuid] })
-    node3.outputs.push({ name: "out", selected: false, edgeUUIDs: [edge3.uuid] })
-    node4.inputs.push(
-        { name: "x", selected: false, edgeUUIDs: [edge2.uuid] },
-        { name: "y", selected: false, edgeUUIDs: [edge3.uuid] }
-    )
-    node4.outputs.push({ name: "out", selected: false, edgeUUIDs: [edge4.uuid] })
-    node5.inputs.push({ name: "value", selected: false, edgeUUIDs: [edge4.uuid] })
     return {
         graph: {
             nodes: {
@@ -235,15 +263,29 @@ export const initialState = (generateUUID: GenerateUUID): State => {
                 [node4.uuid]: node4,
                 [node5.uuid]: node5,
             },
-            nodeOrder: [node0.uuid, node1.uuid, node2.uuid, node3.uuid, node4.uuid, node5.uuid],
             edges: {
                 [edge0.uuid]: edge0,
                 [edge1.uuid]: edge1,
                 [edge2.uuid]: edge2,
                 [edge3.uuid]: edge3,
                 [edge4.uuid]: edge4,
+            },
+            inputs: {
+                [node2input0.uuid]: node2input0,
+                [node2input1.uuid]: node2input1,
+                [node4input0.uuid]: node4input0,
+                [node4input1.uuid]: node4input1,
+                [node5input0.uuid]: node5input0,
+            },
+            outputs: {
+                [node0output0.uuid]: node0output0,
+                [node1output0.uuid]: node1output0,
+                [node2output0.uuid]: node2output0,
+                [node3output0.uuid]: node3output0,
+                [node4output0.uuid]: node4output0,
             }
         },
+        nodeOrder: [node0.uuid, node1.uuid, node2.uuid, node3.uuid, node4.uuid, node5.uuid],
         zooming: false,
         dragging: false,
         pointers: [],

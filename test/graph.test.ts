@@ -1,4 +1,4 @@
-import { emptyGraph, Input, Node, Output, addNode, Edge, addEdge } from "../src/graph"
+import { emptyGraph, Input, Node, Output, addNode, Edge, addEdge, changePosition } from "../src/graph"
 
 const generateUUID = () => {
     let i = 0
@@ -269,4 +269,80 @@ test("add edge between two operations", () => {
         },
     })
     expect(actualEdgeUUID).toEqual(edge.uuid)
+})
+
+test("change node position", () => {
+    const generateUUID0 = generateUUID()
+    const generateUUID1 = generateUUID()
+    const graph = emptyGraph()
+    const { graph: graph1, node } = addNode({
+        graph,
+        operation: {
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out'],
+        },
+        position: { x: 0, y: 0 },
+        generateUUID: generateUUID0
+    })
+    const graph2 = changePosition(graph1, node, p => ({ x: p.x + 25, y: p.y - 25 }))
+    const addUUID = generateUUID1()
+    const xUUID = generateUUID1()
+    const yUUID = generateUUID1()
+    const outUUID = generateUUID1()
+    const add: Node = {
+        uuid: addUUID,
+        name: 'Add',
+        inputs: [xUUID, yUUID],
+        outputs: [outUUID],
+        position: { x: 0, y: 0 },
+    }
+    const x: Input = {
+        uuid: xUUID,
+        name: 'x'
+    }
+    const y: Input = {
+        uuid: yUUID,
+        name: 'y'
+    }
+    const out: Output = {
+        uuid: outUUID,
+        name: 'out',
+        edges: []
+    }
+    expect(graph).toEqual(emptyGraph())
+    expect(graph1).toEqual({
+        nodes: {
+            [add.uuid]: add
+        },
+        edges: {},
+        inputs: {
+            [x.uuid]: x,
+            [y.uuid]: y,
+        },
+        bodys: {},
+        outputs: {
+            [out.uuid]: out
+        },
+    })
+    expect(graph2).toEqual({
+        nodes: {
+            [add.uuid]: {
+                uuid: addUUID,
+                name: 'Add',
+                inputs: [xUUID, yUUID],
+                outputs: [outUUID],
+                position: { x: 25, y: -25 },
+            }
+        },
+        edges: {},
+        inputs: {
+            [x.uuid]: x,
+            [y.uuid]: y,
+        },
+        bodys: {},
+        outputs: {
+            [out.uuid]: out
+        },
+    })
 })

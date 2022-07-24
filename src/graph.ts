@@ -124,3 +124,50 @@ export const addNode = ({ graph, operation, position, generateUUID }: AddNodeInp
         node: nodeUUID
     }
 }
+
+interface AddEdgeInputs {
+    graph: Graph
+    input: UUID
+    output: UUID
+    generateUUID: GenerateUUID
+}
+
+interface AddEdgeOutputs {
+    graph: Graph
+    edge: UUID
+}
+
+export const addEdge = ({ graph, input, output, generateUUID }: AddEdgeInputs): AddEdgeOutputs => {
+    const edge: Edge = {
+        uuid: generateUUID(),
+        input,
+        output
+    }
+    const inputs: Inputs = {
+        ...graph.inputs,
+        [input]: {
+            ...graph.inputs[input],
+            edge: edge.uuid
+        }
+    }
+    const currentOutput = graph.outputs[output]
+    const outputs: Outputs = {
+        ...graph.outputs,
+        [output]: {
+            ...currentOutput,
+            edges: [...currentOutput.edges, edge.uuid]
+        }
+    }
+    return {
+        graph: {
+            ...graph,
+            inputs,
+            outputs,
+            edges: {
+                ...graph.edges,
+                [edge.uuid]: edge
+            }
+        },
+        edge: edge.uuid
+    }
+}

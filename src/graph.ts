@@ -125,6 +125,48 @@ export const addNode = ({ graph, operation, position, generateUUID }: AddNodeInp
     }
 }
 
+export const removeNode = (graph: Graph, node: UUID): Graph => {
+    const nodes = { ...graph.nodes }
+    const removedNode = nodes[node]
+    delete nodes[node]
+    const edgeUUIDs: UUID[] = []
+    for (const input of removedNode.inputs) {
+        const edge = graph.inputs[input].edge
+        if (edge) edgeUUIDs.push(edge)
+    }
+    for (const output of removedNode.outputs) {
+        for (const edge of graph.outputs[output].edges) {
+            edgeUUIDs.push(edge)
+        }
+    }
+    const edges = { ...graph.edges }
+    const inputs = { ...graph.inputs }
+    const outputs = { ...graph.outputs }
+    for (const uuid of edgeUUIDs) {
+        const edge = edges[uuid]
+        const input = inputs[edge.input]
+        inputs[edge.input] = {
+            ...input,
+            edge: undefined
+        }
+        const output = outputs[edge.output]
+        outputs[edge.output] = {
+            ...output,
+            edges: output.edges.filter(e => e !== uuid)
+        }
+        delete edges[uuid]
+    }
+    for (const input of removedNode.inputs) delete inputs[input]
+    for (const output of removedNode.outputs) delete outputs[output]
+    return {
+        ...graph,
+        nodes,
+        edges,
+        inputs,
+        outputs
+    }
+}
+
 interface AddEdgeInputs {
     graph: Graph
     input: UUID

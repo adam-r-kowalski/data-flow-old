@@ -172,7 +172,7 @@ export const addEdge = ({ graph, input, output, generateUUID }: AddEdgeInputs): 
     }
 }
 
-export const changePosition = (graph: Graph, node: UUID, transform: (position: Position) => Position): Graph => {
+export const changeNodePosition = (graph: Graph, node: UUID, transform: (position: Position) => Position): Graph => {
     const currentNode = graph.nodes[node]
     return {
         ...graph,

@@ -1,4 +1,4 @@
-import { emptyGraph, Input, Node, Output, addNode, Edge, addEdge, changePosition } from "../src/graph"
+import { emptyGraph, Input, Node, Output, addNode, Edge, addEdge, changeNodePosition } from "../src/graph"
 
 const generateUUID = () => {
     let i = 0
@@ -285,7 +285,7 @@ test("change node position", () => {
         position: { x: 0, y: 0 },
         generateUUID: generateUUID0
     })
-    const graph2 = changePosition(graph1, node, p => ({ x: p.x + 25, y: p.y - 25 }))
+    const graph2 = changeNodePosition(graph1, node, p => ({ x: p.x + 25, y: p.y - 25 }))
     const addUUID = generateUUID1()
     const xUUID = generateUUID1()
     const yUUID = generateUUID1()

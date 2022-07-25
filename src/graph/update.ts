@@ -172,3 +172,17 @@ export const changeNodePosition = (graph: Graph, node: UUID, transform: (positio
         }
     }
 }
+
+export const changeBodyValue = (graph: Graph, body: UUID, transform: (value: number) => number): Graph => {
+    const currentBody = graph.bodys[body]
+    return {
+        ...graph,
+        bodys: {
+            ...graph.bodys,
+            [body]: {
+                ...currentBody,
+                value: transform(currentBody.value)
+            }
+        }
+    }
+}

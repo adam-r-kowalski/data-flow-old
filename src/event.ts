@@ -5,7 +5,7 @@ import { UpdateResult } from "./ui/run"
 import { InputTargetKind, SelectedKind, State, VirtualKeyboardKind } from "./state"
 import { GenerateUUID, Position, UUID } from './graph/model'
 import { Pointer } from "./ui"
-import { addEdge, addNode, changeNodePosition, removeNode } from "./graph/update"
+import { addEdge, addNode, changeBodyValue, changeNodePosition, removeNode } from "./graph/update"
 
 export enum EventKind {
     POINTER_MOVE,
@@ -396,18 +396,11 @@ const updateFinderSearch = (state: State, transform: (search: string) => string)
     render: true
 })
 
-const updateBodyValue = (state: State, bodyUUID: UUID, transform: (value: number) => number): UpdateResult<State, AppEvent> => {
-    const body = state.graph.bodys[bodyUUID]
+const updateBodyValue = (state: State, body: UUID, transform: (value: number) => number): UpdateResult<State, AppEvent> => {
     return {
         state: {
             ...state,
-            graph: {
-                ...state.graph,
-                bodys: {
-                    ...state.graph.bodys,
-                    [body.uuid]: { ...body, value: transform(body.value) }
-                }
-            }
+            graph: changeBodyValue(state.graph, body, transform)
         },
         render: true
     }

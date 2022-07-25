@@ -1,4 +1,4 @@
-import { emptyGraph, Input, Node, Output, Edge } from "../src/graph/model"
+import { emptyGraph, Input, Node, Output, Edge, Body } from "../src/graph/model"
 import { addNode, addEdge, changeNodePosition, removeNode } from "../src/graph/update"
 
 const generateUUID = () => {
@@ -75,6 +75,53 @@ test("add operation to graph", () => {
     })
     expect(node).toEqual(add.uuid)
 })
+
+test("add operation with body to graph", () => {
+    const generateUUID0 = generateUUID()
+    const generateUUID1 = generateUUID()
+    const graph = emptyGraph()
+    const { graph: graph1, node } = addNode({
+        graph,
+        operation: {
+            name: 'Number',
+            inputs: [],
+            body: 0,
+            outputs: ['out'],
+        },
+        position: { x: 0, y: 0 },
+        generateUUID: generateUUID0
+    })
+    expect(graph).toEqual(emptyGraph())
+    const numberUUID = generateUUID1()
+    const outUUID = generateUUID1()
+    const bodyUUID = generateUUID1()
+    const number: Node = {
+        uuid: numberUUID,
+        name: 'Number',
+        inputs: [],
+        outputs: [outUUID],
+        body: bodyUUID,
+        position: { x: 0, y: 0 },
+    }
+    const out: Output = {
+        uuid: outUUID,
+        name: 'out',
+        edges: []
+    }
+    const body: Body = {
+        uuid: bodyUUID,
+        value: 0
+    }
+    expect(graph1).toEqual({
+        nodes: { [number.uuid]: number },
+        edges: {},
+        inputs: {},
+        bodys: { [body.uuid]: body },
+        outputs: { [out.uuid]: out },
+    })
+    expect(node).toEqual(number.uuid)
+})
+
 
 test("add two operations to graph", () => {
     const generateUUID0 = generateUUID()

@@ -1,4 +1,4 @@
-import { Edge, GenerateUUID, Graph, Inputs, Nodes, Operation, Outputs, Position, UUID } from "./model"
+import { Body, Edge, GenerateUUID, Graph, Inputs, Node, Operation, Outputs, Position, UUID } from "./model"
 
 interface AddNodeInputs {
     graph: Graph
@@ -35,24 +35,38 @@ export const addNode = ({ graph, operation, position, generateUUID }: AddNodeInp
         }
         outputUUIDs.push(uuid)
     }
-    const nodes: Nodes = {
-        ...graph.nodes,
-        [nodeUUID]: {
-            uuid: nodeUUID,
-            name: operation.name,
-            inputs: inputUUIDs,
-            outputs: outputUUIDs,
-            position
-        }
+    const node: Node = {
+        uuid: nodeUUID,
+        name: operation.name,
+        inputs: inputUUIDs,
+        outputs: outputUUIDs,
+        position
     }
-    return {
-        graph: {
-            ...graph,
-            nodes,
-            inputs,
-            outputs
-        },
-        node: nodeUUID
+    if (operation.body !== undefined) {
+        const body: Body = {
+            uuid: generateUUID(),
+            value: operation.body
+        }
+        return {
+            graph: {
+                ...graph,
+                nodes: { ...graph.nodes, [node.uuid]: { ...node, body: body.uuid } },
+                inputs,
+                outputs,
+                bodys: { ...graph.bodys, [body.uuid]: body }
+            },
+            node: nodeUUID
+        }
+    } else {
+        return {
+            graph: {
+                ...graph,
+                nodes: { ...graph.nodes, [node.uuid]: node },
+                inputs,
+                outputs
+            },
+            node: nodeUUID
+        }
     }
 }
 

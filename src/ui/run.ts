@@ -5,9 +5,8 @@ import { Pointer, UI } from "."
 import { Document, Window, PointerEvent } from "./dom"
 
 export const transformPointer = (p: PointerEvent): Pointer => ({
-    x: p.clientX,
-    y: p.clientY,
     id: p.pointerId,
+    position: { x: p.clientX, y: p.clientY }
 })
 
 export type Dispatch<AppEvent> = (event: AppEvent) => void

@@ -1,7 +1,8 @@
 import { CrossAxisAlignment, MainAxisAlignment } from "../alignment"
 import { AppEvent, EventKind } from "../../event"
-import { Body, Finder, Input, Inputs, Node, Output, Outputs, State, Theme, UUID, VirtualKeyboardKind } from "../../state"
+import { Finder, SelectedKind, State, Theme, VirtualKeyboardKind } from "../../state"
 import { text, stack, scene, row, container, column, Connection, UI } from '..'
+import { Body, Bodys, Input, Inputs, Node, Output, Outputs, UUID } from "../../graph/model"
 
 
 export const spacer = (size: number): UI<AppEvent> =>
@@ -75,9 +76,9 @@ export const outputsUi = (theme: Theme, outputs: Output[], selectedOutput?: UUID
     )
 
 
-export const numberUi = (theme: Theme, body: Body, node: UUID): UI<AppEvent> =>
+export const numberUi = (theme: Theme, body: Body, node: UUID, selectedBody?: UUID): UI<AppEvent> =>
     container({
-        color: body.editing ? theme.selectedInput : theme.background,
+        color: body.uuid === selectedBody ? theme.selectedInput : theme.background,
         padding: 5,
         onClick: {
             kind: EventKind.CLICKED_NUMBER,
@@ -87,7 +88,7 @@ export const numberUi = (theme: Theme, body: Body, node: UUID): UI<AppEvent> =>
         text(body.value.toString()))
 
 
-export const nodeUi = (theme: Theme, node: Node, inputs: Inputs, outputs: Outputs, selectedInput?: UUID, selectedOutput?: UUID): UI<AppEvent> => {
+export const nodeUi = (theme: Theme, node: Node, inputs: Inputs, outputs: Outputs, bodys: Bodys, selectedInput?: UUID, selectedOutput?: UUID, selectedBody?: UUID): UI<AppEvent> => {
     const rowEntries: UI<AppEvent>[] = []
     if (node.inputs.length) {
         rowEntries.push(inputsUi(theme, node.inputs.map(i => inputs[i]), selectedInput))
@@ -96,7 +97,7 @@ export const nodeUi = (theme: Theme, node: Node, inputs: Inputs, outputs: Output
         rowEntries.push(spacer(15))
     }
     if (node.body) {
-        rowEntries.push(numberUi(theme, node.body, node.uuid), spacer(15))
+        rowEntries.push(numberUi(theme, bodys[node.body], node.uuid, selectedBody), spacer(15))
     }
     if (node.outputs.length) {
         rowEntries.push(outputsUi(theme, node.outputs.map(o => outputs[o]), selectedOutput))
@@ -105,8 +106,8 @@ export const nodeUi = (theme: Theme, node: Node, inputs: Inputs, outputs: Output
         {
             color: theme.node,
             padding: 4,
-            x: node.x,
-            y: node.y,
+            x: node.position.x,
+            y: node.position.y,
             onClick: {
                 kind: EventKind.CLICKED_NODE,
                 node: node.uuid
@@ -211,6 +212,9 @@ export const virtualKeyboard = (theme: Theme, kind: VirtualKeyboardKind) => {
 
 
 export const view = (state: State): UI<AppEvent> => {
+    const selectedInput = state.selected.kind === SelectedKind.INPUT ? state.selected.input : undefined
+    const selectedOutput = state.selected.kind === SelectedKind.OUTPUT ? state.selected.output : undefined
+    const selectedBody = state.selected.kind === SelectedKind.BODY ? state.selected.body : undefined
     const nodes = state.nodeOrder
         .map(node =>
             nodeUi(
@@ -218,8 +222,10 @@ export const view = (state: State): UI<AppEvent> => {
                 state.graph.nodes[node],
                 state.graph.inputs,
                 state.graph.outputs,
-                state.selectedInput,
-                state.selectedOutput))
+                state.graph.bodys,
+                selectedInput,
+                selectedOutput,
+                selectedBody))
     const connections: Connection[] = Object.values(state.graph.edges).map(({ input, output }) => ({
         from: output,
         to: input,

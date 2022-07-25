@@ -1,4 +1,5 @@
-import { emptyGraph, Input, Node, Output, addNode, Edge, addEdge, changeNodePosition, removeNode } from "../src/graph"
+import { emptyGraph, Input, Node, Output, Edge } from "../src/graph/model"
+import { addNode, addEdge, changeNodePosition, removeNode } from "../src/graph/update"
 
 const generateUUID = () => {
     let i = 0
@@ -8,7 +9,6 @@ const generateUUID = () => {
         return uuid
     }
 }
-
 
 test("empty graph", () => {
     expect(emptyGraph()).toEqual({

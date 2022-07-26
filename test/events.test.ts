@@ -1,5 +1,6 @@
 import { addNodeToGraph, EventKind, openFinder, update } from "../src/event"
 import { Operations } from "../src/graph/model"
+import { translate } from "../src/linear_algebra/matrix3x3"
 import { emptyState, SelectedKind, State } from "../src/state"
 import { Pointer } from "../src/ui"
 
@@ -234,58 +235,54 @@ test("clicking node selects it and puts it on top of of the node order", () => {
     expect(render).toEqual(true)
 })
 
-/*
 test("pointer move before pointer down does nothing", () => {
     const generateUUID0 = generateUUID()
-    const generateUUID1 = generateUUID()
-    const state = initialState(generateUUID0)
-    const pointer = {
-        x: 0,
-        y: 0,
+    const state = emptyState()
+    const pointer: Pointer = {
         id: 0,
+        position: { x: 0, y: 0 }
     }
     const { state: state1 } = update(generateUUID0, state, {
         kind: EventKind.POINTER_MOVE,
         pointer
     })
-    expect(state1).toEqual(initialState(generateUUID1))
+    expect(state1).toEqual(emptyState())
 })
 
 test("pointer move after pointer down", () => {
     const generateUUID0 = generateUUID()
-    const generateUUID1 = generateUUID()
-    const state = initialState(generateUUID0)
+    const state = emptyState()
     const { state: state1 } = update(generateUUID0, state, {
         kind: EventKind.POINTER_DOWN,
         pointer: {
-            x: 0,
-            y: 0,
             id: 0,
+            position: { x: 0, y: 0 }
         }
     })
     const { state: state2, render } = update(generateUUID0, state1, {
         kind: EventKind.POINTER_MOVE,
         pointer: {
-            x: 50,
-            y: 75,
             id: 0,
+            position: { x: 50, y: 75 }
         }
     })
-    const expectedState = initialState(generateUUID1)
-    expectedState.camera = translate(-50, -75)
-    expectedState.potentialDoubleClick = true
-    expectedState.dragging = true
-    expectedState.pointers = [
-        {
-            id: 0,
-            x: 50,
-            y: 75
-        }
-    ]
+    const expectedState = {
+        ...emptyState(),
+        camera: translate(-50, -75),
+        potentialDoubleClick: true,
+        dragging: true,
+        pointers: [
+            {
+                id: 0,
+                position: { x: 50, y: 75 }
+            }
+        ]
+    }
     expect(state2).toEqual(expectedState)
     expect(render).toEqual(true)
 })
 
+/*
 test("pointer move after clicking node pointer down", () => {
     const generateUUID0 = generateUUID()
     const generateUUID1 = generateUUID()

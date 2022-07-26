@@ -172,7 +172,7 @@ const pointerUp = (state: State, event: PointerUp): UpdateResult<State, AppEvent
 }
 
 export const changeNth = <T>(xs: Readonly<T[]>, i: number, x: T): T[] =>
-    [...xs.slice(0, i), x, ...xs.slice(i)]
+    [...xs.slice(0, i), x, ...xs.slice(i + 1)]
 
 const pointerMove = (state: State, event: PointerMove): UpdateResult<State, AppEvent> => {
     if (!state.dragging && !state.zooming) {

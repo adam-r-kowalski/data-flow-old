@@ -65,7 +65,10 @@ test("click first container", () => {
         ]
     })
     renderer = render(renderer, ui)
-    renderer = pointerDown<AppEvent, WebGL2Renderer<AppEvent>>(renderer, { x: 125, y: 225, id: 0 })
+    renderer = pointerDown<AppEvent, WebGL2Renderer<AppEvent>>(renderer, {
+        position: { x: 125, y: 225 },
+        id: 0
+    })
     expect(state).toEqual({ a: 1, b: 0 })
 })
 
@@ -95,7 +98,10 @@ test("click second container", () => {
         ]
     })
     renderer = render(renderer, ui)
-    renderer = pointerDown<AppEvent, WebGL2Renderer<AppEvent>>(renderer, { x: 325, y: 275, id: 0 })
+    renderer = pointerDown<AppEvent, WebGL2Renderer<AppEvent>>(renderer, {
+        position: { x: 325, y: 275 },
+        id: 0
+    })
     expect(state).toEqual({ a: 0, b: 1 })
 })
 
@@ -125,7 +131,10 @@ test("click translated container", () => {
         ]
     })
     renderer = render(renderer, ui)
-    renderer = pointerDown<AppEvent, WebGL2Renderer<AppEvent>>(renderer, { x: 25, y: 225, id: 0 })
+    renderer = pointerDown<AppEvent, WebGL2Renderer<AppEvent>>(renderer, {
+        position: { x: 25, y: 225 },
+        id: 0
+    })
     expect(state).toEqual({ a: 1, b: 0 })
 })
 

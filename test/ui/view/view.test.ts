@@ -1,6 +1,7 @@
 import { AppEvent, EventKind } from "../../../src/event"
+import { Body, Bodys, Input, Inputs, Node, Output, Outputs } from "../../../src/graph/model"
 import { identity } from "../../../src/linear_algebra/matrix3x3"
-import { Body, Input, Inputs, InputTargetKind, Node, Output, Outputs, State, Theme, VirtualKeyboardKind, } from "../../../src/state"
+import { InputTargetKind, SelectedKind, State, Theme, VirtualKeyboardKind } from "../../../src/state"
 import { column, container, row, scene, stack, text } from "../../../src/ui"
 import { CrossAxisAlignment, MainAxisAlignment } from "../../../src/ui/alignment"
 import {
@@ -198,18 +199,18 @@ test("outputsUi", () => {
     expect(actual).toEqual(expected)
 })
 
-test("numberUi not editing", () => {
+test("numberUi not selected", () => {
     const body: Body = {
+        uuid: 'body uuid',
         value: 0,
-        editing: false
     }
-    const actual = numberUi(theme, body, 'uuid')
+    const actual = numberUi(theme, body, 'node uuid')
     const expected = container({
         color: theme.background,
         padding: 5,
         onClick: {
             kind: EventKind.CLICKED_NUMBER,
-            node: 'uuid'
+            node: 'node uuid'
         }
     },
         text(body.value.toString()))
@@ -218,16 +219,16 @@ test("numberUi not editing", () => {
 
 test("numberUi editing", () => {
     const body: Body = {
+        uuid: 'body uuid',
         value: 0,
-        editing: true
     }
-    const actual = numberUi(theme, body, 'uuid')
+    const actual = numberUi(theme, body, 'node uuid', 'body uuid')
     const expected = container({
         color: theme.selectedInput,
         padding: 5,
         onClick: {
             kind: EventKind.CLICKED_NUMBER,
-            node: 'uuid'
+            node: 'node uuid'
         }
     },
         text(body.value.toString()))
@@ -238,12 +239,11 @@ test("nodeUi no inputs body or outputs", () => {
     const node: Node = {
         uuid: 'uuid',
         name: "node",
-        x: 0,
-        y: 0,
+        position: { x: 0, y: 0 },
         inputs: [],
         outputs: [],
     }
-    const actual = nodeUi(theme, node, {}, {})
+    const actual = nodeUi(theme, node, {}, {}, {})
     const expected = container<AppEvent>(
         {
             color: theme.node,
@@ -268,8 +268,7 @@ test("nodeUi 1 input, no body and no outputs", () => {
     const node: Node = {
         uuid: 'node uuid',
         name: "node",
-        x: 0,
-        y: 0,
+        position: { x: 0, y: 0 },
         inputs: ['input uuid'],
         outputs: [],
     }
@@ -279,7 +278,7 @@ test("nodeUi 1 input, no body and no outputs", () => {
             name: 'first'
         }
     }
-    const actual = nodeUi(theme, node, inputs, {})
+    const actual = nodeUi(theme, node, inputs, {}, {})
     const expected = container<AppEvent>(
         {
             color: theme.node,
@@ -304,8 +303,7 @@ test("nodeUi 1 output, no body and no inputs", () => {
     const node: Node = {
         uuid: 'node uuid',
         name: "node",
-        x: 0,
-        y: 0,
+        position: { x: 0, y: 0 },
         inputs: [],
         outputs: ['output uuid'],
     }
@@ -316,7 +314,7 @@ test("nodeUi 1 output, no body and no inputs", () => {
             edges: []
         }
     }
-    const actual = nodeUi(theme, node, {}, outputs)
+    const actual = nodeUi(theme, node, {}, outputs, {})
     const expected = container<AppEvent>(
         {
             color: theme.node,
@@ -341,16 +339,18 @@ test("nodeUi no inputs or outputs but body defined", () => {
     const node: Node = {
         uuid: 'node uuid',
         name: "node",
-        x: 0,
-        y: 0,
+        position: { x: 0, y: 0 },
         inputs: [],
-        body: {
-            value: 0,
-            editing: false
-        },
+        body: 'body uuid',
         outputs: [],
     }
-    const actual = nodeUi(theme, node, {}, {})
+    const bodys: Bodys = {
+        'body uuid': {
+            uuid: 'body uuid',
+            value: 0
+        }
+    }
+    const actual = nodeUi(theme, node, {}, {}, bodys)
     const expected = container<AppEvent>(
         {
             color: theme.node,
@@ -365,7 +365,7 @@ test("nodeUi no inputs or outputs but body defined", () => {
         column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             text("node"),
             spacer(4),
-            row([numberUi(theme, node.body!, 'node uuid'), spacer(15)])
+            row([numberUi(theme, bodys[node.body!], 'node uuid'), spacer(15)])
         ])
     )
     expect(actual).toEqual(expected)
@@ -375,8 +375,7 @@ test("nodeUi 1 input and 1 output but no body", () => {
     const node: Node = {
         uuid: 'node uuid',
         name: "node",
-        x: 0,
-        y: 0,
+        position: { x: 0, y: 0 },
         inputs: ['input uuid'],
         outputs: ['output uuid'],
     }
@@ -393,7 +392,7 @@ test("nodeUi 1 input and 1 output but no body", () => {
             edges: []
         }
     }
-    const actual = nodeUi(theme, node, inputs, outputs)
+    const actual = nodeUi(theme, node, inputs, outputs, {})
     const expected = container<AppEvent>(
         {
             color: theme.node,
@@ -422,13 +421,9 @@ test("nodeUi 1 input body but no outputs", () => {
     const node: Node = {
         uuid: 'node uuid',
         name: "node",
-        x: 0,
-        y: 0,
+        position: { x: 0, y: 0 },
         inputs: ['input uuid'],
-        body: {
-            value: 0,
-            editing: false
-        },
+        body: 'body uuid',
         outputs: [],
     }
     const inputs: Inputs = {
@@ -437,7 +432,13 @@ test("nodeUi 1 input body but no outputs", () => {
             name: 'first'
         }
     }
-    const actual = nodeUi(theme, node, inputs, {})
+    const bodys: Bodys = {
+        'body uuid': {
+            uuid: 'body uuid',
+            value: 0
+        }
+    }
+    const actual = nodeUi(theme, node, inputs, {}, bodys)
     const expected = container<AppEvent>(
         {
             color: theme.node,
@@ -454,7 +455,7 @@ test("nodeUi 1 input body but no outputs", () => {
             spacer(4),
             row([
                 inputsUi(theme, node.inputs.map(i => inputs[i])),
-                numberUi(theme, node.body!, 'node uuid'),
+                numberUi(theme, bodys[node.body!], 'node uuid'),
                 spacer(15),
             ])
         ])
@@ -466,13 +467,9 @@ test("nodeUi 1 output body but no inputs", () => {
     const node: Node = {
         uuid: 'node uuid',
         name: "node",
-        x: 0,
-        y: 0,
+        position: { x: 0, y: 0 },
         inputs: [],
-        body: {
-            value: 0,
-            editing: false
-        },
+        body: 'body uuid',
         outputs: ['output uuid'],
     }
     const outputs: Outputs = {
@@ -482,7 +479,13 @@ test("nodeUi 1 output body but no inputs", () => {
             edges: []
         }
     }
-    const actual = nodeUi(theme, node, {}, outputs)
+    const bodys: Bodys = {
+        'body uuid': {
+            uuid: 'body uuid',
+            value: 0
+        }
+    }
+    const actual = nodeUi(theme, node, {}, outputs, bodys)
     const expected = container<AppEvent>(
         {
             color: theme.node,
@@ -498,7 +501,7 @@ test("nodeUi 1 output body but no inputs", () => {
             text("node"),
             spacer(4),
             row([
-                numberUi(theme, node.body!, 'node uuid'),
+                numberUi(theme, bodys[node.body!], 'node uuid'),
                 spacer(15),
                 outputsUi(theme, node.outputs.map(o => outputs[o])),
             ])
@@ -512,13 +515,9 @@ test("nodeUi 1 input body and 1 output", () => {
     const node: Node = {
         uuid: 'node uuid',
         name: "node",
-        x: 0,
-        y: 0,
+        position: { x: 0, y: 0 },
         inputs: ['input uuid'],
-        body: {
-            value: 0,
-            editing: false
-        },
+        body: 'body uuid',
         outputs: ['output uuid'],
     }
     const inputs: Inputs = {
@@ -534,7 +533,13 @@ test("nodeUi 1 input body and 1 output", () => {
             edges: []
         }
     }
-    const actual = nodeUi(theme, node, inputs, outputs)
+    const bodys: Bodys = {
+        'body uuid': {
+            uuid: 'body uuid',
+            value: 0
+        }
+    }
+    const actual = nodeUi(theme, node, inputs, outputs, bodys)
     const expected = container<AppEvent>(
         {
             color: theme.node,
@@ -552,7 +557,7 @@ test("nodeUi 1 input body and 1 output", () => {
             row([
                 inputsUi(theme, node.inputs.map(i => inputs[i])),
                 spacer(15),
-                numberUi(theme, node.body!, 'node uuid'),
+                numberUi(theme, bodys[node.body!], 'node uuid'),
                 spacer(15),
                 outputsUi(theme, node.outputs.map(o => outputs[o])),
             ])
@@ -704,19 +709,17 @@ test("view with no nodes or edges", () => {
             nodes: {},
             edges: {},
             inputs: {},
-            outputs: {}
+            outputs: {},
+            bodys: {}
         },
         nodeOrder: [],
         zooming: false,
         dragging: false,
         pointers: [],
         pointerDistance: 0,
-        pointerCenter: [0, 0],
+        pointerCenter: { x: 0, y: 0 },
         potentialDoubleClick: false,
-        nodePlacementLocation: {
-            x: 0,
-            y: 0,
-        },
+        nodePlacementLocation: { x: 0, y: 0 },
         finder: {
             search: "",
             options: [],
@@ -726,9 +729,8 @@ test("view with no nodes or edges", () => {
             show: false,
             kind: VirtualKeyboardKind.ALPHABETIC
         },
-        inputTarget: {
-            kind: InputTargetKind.NONE,
-        },
+        inputTarget: { kind: InputTargetKind.NONE },
+        selected: { kind: SelectedKind.NONE },
         camera: identity(),
         operations: {},
         theme
@@ -747,19 +749,17 @@ test("view with no nodes or edges but finder shown", () => {
             nodes: {},
             edges: {},
             inputs: {},
-            outputs: {}
+            outputs: {},
+            bodys: {}
         },
         nodeOrder: [],
         zooming: false,
         dragging: false,
         pointers: [],
         pointerDistance: 0,
-        pointerCenter: [0, 0],
+        pointerCenter: { x: 0, y: 0 },
         potentialDoubleClick: false,
-        nodePlacementLocation: {
-            x: 0,
-            y: 0,
-        },
+        nodePlacementLocation: { x: 0, y: 0 },
         finder: {
             search: "",
             options: [],
@@ -769,9 +769,8 @@ test("view with no nodes or edges but finder shown", () => {
             show: false,
             kind: VirtualKeyboardKind.ALPHABETIC
         },
-        inputTarget: {
-            kind: InputTargetKind.NONE,
-        },
+        inputTarget: { kind: InputTargetKind.NONE },
+        selected: { kind: SelectedKind.NONE },
         camera: identity(),
         operations: {},
         theme
@@ -791,19 +790,17 @@ test("view with no nodes or edges but virtual keyboard shown", () => {
             nodes: {},
             edges: {},
             inputs: {},
-            outputs: {}
+            outputs: {},
+            bodys: {}
         },
         nodeOrder: [],
         zooming: false,
         dragging: false,
         pointers: [],
         pointerDistance: 0,
-        pointerCenter: [0, 0],
+        pointerCenter: { x: 0, y: 0 },
         potentialDoubleClick: false,
-        nodePlacementLocation: {
-            x: 0,
-            y: 0,
-        },
+        nodePlacementLocation: { x: 0, y: 0 },
         finder: {
             search: "",
             options: [],
@@ -813,9 +810,8 @@ test("view with no nodes or edges but virtual keyboard shown", () => {
             show: true,
             kind: VirtualKeyboardKind.ALPHABETIC
         },
-        inputTarget: {
-            kind: InputTargetKind.NONE,
-        },
+        inputTarget: { kind: InputTargetKind.NONE },
+        selected: { kind: SelectedKind.NONE },
         camera: identity(),
         operations: {},
         theme
@@ -836,14 +832,15 @@ test("view with no nodes or edges but finder and virtual keyboard shown", () => 
             nodes: {},
             edges: {},
             inputs: {},
-            outputs: {}
+            outputs: {},
+            bodys: {}
         },
         nodeOrder: [],
         zooming: false,
         dragging: false,
         pointers: [],
         pointerDistance: 0,
-        pointerCenter: [0, 0],
+        pointerCenter: { x: 0, y: 0 },
         potentialDoubleClick: false,
         nodePlacementLocation: {
             x: 0,
@@ -858,9 +855,8 @@ test("view with no nodes or edges but finder and virtual keyboard shown", () => 
             show: true,
             kind: VirtualKeyboardKind.ALPHABETIC
         },
-        inputTarget: {
-            kind: InputTargetKind.NONE,
-        },
+        inputTarget: { kind: InputTargetKind.NONE },
+        selected: { kind: SelectedKind.NONE },
         camera: identity(),
         operations: {},
         theme
@@ -884,36 +880,34 @@ test("view with three nodes and no edges", () => {
                     name: "first",
                     inputs: [],
                     outputs: [],
-                    x: 0,
-                    y: 0,
+                    position: { x: 0, y: 0 }
                 },
                 "second": {
                     uuid: "second",
                     name: "second",
                     inputs: [],
                     outputs: [],
-                    x: 0,
-                    y: 0,
+                    position: { x: 0, y: 0 }
                 },
                 "third": {
                     uuid: "thrid",
                     name: "thrid",
                     inputs: [],
                     outputs: [],
-                    x: 0,
-                    y: 0,
+                    position: { x: 0, y: 0 }
                 }
             },
             edges: {},
             inputs: {},
-            outputs: {}
+            outputs: {},
+            bodys: {}
         },
         nodeOrder: ["first", "second", "third"],
         zooming: false,
         dragging: false,
         pointers: [],
         pointerDistance: 0,
-        pointerCenter: [0, 0],
+        pointerCenter: { x: 0, y: 0 },
         potentialDoubleClick: false,
         nodePlacementLocation: {
             x: 0,
@@ -928,9 +922,8 @@ test("view with three nodes and no edges", () => {
             show: false,
             kind: VirtualKeyboardKind.ALPHABETIC
         },
-        inputTarget: {
-            kind: InputTargetKind.NONE,
-        },
+        inputTarget: { kind: InputTargetKind.NONE },
+        selected: { kind: SelectedKind.NONE },
         camera: identity(),
         operations: {},
         theme
@@ -941,9 +934,9 @@ test("view with three nodes and no edges", () => {
         scene({
             camera: state.camera,
             children: [
-                nodeUi(state.theme, state.graph.nodes["first"], {}, {}),
-                nodeUi(state.theme, state.graph.nodes["second"], {}, {}),
-                nodeUi(state.theme, state.graph.nodes["third"], {}, {}),
+                nodeUi(state.theme, state.graph.nodes["first"], {}, {}, {}),
+                nodeUi(state.theme, state.graph.nodes["second"], {}, {}, {}),
+                nodeUi(state.theme, state.graph.nodes["third"], {}, {}, {}),
             ],
             connections: []
         }),
@@ -960,42 +953,36 @@ test("view with three nodes and no edges", () => {
                     name: "first",
                     inputs: [],
                     outputs: [],
-                    x: 0,
-                    y: 0,
+                    position: { x: 0, y: 0 },
                 },
                 "second": {
                     uuid: "second",
                     name: "second",
                     inputs: [],
                     outputs: [],
-                    x: 0,
-                    y: 0,
+                    position: { x: 0, y: 0 },
                 },
                 "third": {
                     uuid: "thrid",
                     name: "thrid",
                     inputs: [],
                     outputs: [],
-                    x: 0,
-                    y: 0,
+                    position: { x: 0, y: 0 },
                 }
             },
             edges: {},
             inputs: {},
-            outputs: {}
+            outputs: {},
+            bodys: {}
         },
         nodeOrder: ["first", "second", "third"],
         zooming: false,
         dragging: false,
-        selectedNode: "first",
         pointers: [],
         pointerDistance: 0,
-        pointerCenter: [0, 0],
+        pointerCenter: { x: 0, y: 0 },
         potentialDoubleClick: false,
-        nodePlacementLocation: {
-            x: 0,
-            y: 0,
-        },
+        nodePlacementLocation: { x: 0, y: 0, },
         finder: {
             search: "",
             options: [],
@@ -1005,8 +992,10 @@ test("view with three nodes and no edges", () => {
             show: false,
             kind: VirtualKeyboardKind.ALPHABETIC
         },
-        inputTarget: {
-            kind: InputTargetKind.NONE,
+        inputTarget: { kind: InputTargetKind.NONE },
+        selected: {
+            kind: SelectedKind.NODE,
+            node: 'first'
         },
         camera: identity(),
         operations: {},
@@ -1018,9 +1007,9 @@ test("view with three nodes and no edges", () => {
         scene({
             camera: state.camera,
             children: [
-                nodeUi(state.theme, state.graph.nodes["first"], {}, {}),
-                nodeUi(state.theme, state.graph.nodes["second"], {}, {}),
-                nodeUi(state.theme, state.graph.nodes["third"], {}, {}),
+                nodeUi(state.theme, state.graph.nodes["first"], {}, {}, {}),
+                nodeUi(state.theme, state.graph.nodes["second"], {}, {}, {}),
+                nodeUi(state.theme, state.graph.nodes["third"], {}, {}, {}),
             ],
             connections: []
         }),
@@ -1038,24 +1027,21 @@ test("view with three nodes and one edges", () => {
                     name: "first",
                     inputs: [],
                     outputs: ['output uuid'],
-                    x: 0,
-                    y: 0,
+                    position: { x: 0, y: 0 }
                 },
                 "second": {
                     uuid: "second",
                     name: "second",
                     inputs: ['input uuid'],
                     outputs: [],
-                    x: 0,
-                    y: 0,
+                    position: { x: 0, y: 0 }
                 },
                 "third": {
                     uuid: "third",
                     name: "third",
                     inputs: [],
                     outputs: [],
-                    x: 0,
-                    y: 0,
+                    position: { x: 0, y: 0 }
                 },
             },
             edges: {
@@ -1078,14 +1064,15 @@ test("view with three nodes and one edges", () => {
                     name: 'out',
                     edges: ['edge uuid']
                 }
-            }
+            },
+            bodys: {}
         },
         nodeOrder: ["first", "second", "third"],
         zooming: false,
         dragging: false,
         pointers: [],
         pointerDistance: 0,
-        pointerCenter: [0, 0],
+        pointerCenter: { x: 0, y: 0 },
         potentialDoubleClick: false,
         nodePlacementLocation: {
             x: 0,
@@ -1100,9 +1087,8 @@ test("view with three nodes and one edges", () => {
             show: false,
             kind: VirtualKeyboardKind.ALPHABETIC
         },
-        inputTarget: {
-            kind: InputTargetKind.NONE,
-        },
+        inputTarget: { kind: InputTargetKind.NONE },
+        selected: { kind: SelectedKind.NONE },
         camera: identity(),
         operations: {},
         theme
@@ -1113,9 +1099,9 @@ test("view with three nodes and one edges", () => {
         scene({
             camera: state.camera,
             children: [
-                nodeUi(state.theme, state.graph.nodes["first"], state.graph.inputs, state.graph.outputs),
-                nodeUi(state.theme, state.graph.nodes["second"], state.graph.inputs, state.graph.outputs),
-                nodeUi(state.theme, state.graph.nodes["third"], state.graph.inputs, state.graph.outputs),
+                nodeUi(state.theme, state.graph.nodes["first"], state.graph.inputs, state.graph.outputs, {}),
+                nodeUi(state.theme, state.graph.nodes["second"], state.graph.inputs, state.graph.outputs, {}),
+                nodeUi(state.theme, state.graph.nodes["third"], state.graph.inputs, state.graph.outputs, {}),
             ],
             connections: [
                 {

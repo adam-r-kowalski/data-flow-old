@@ -3,7 +3,7 @@ import { multiplyMatrices, multiplyMatrixVector, scale, translate } from "./line
 import { length } from "./linear_algebra/vector3"
 import { UpdateResult } from "./ui/run"
 import { InputTargetKind, SelectedKind, State, VirtualKeyboardKind } from "./state"
-import { GenerateUUID, Position, UUID } from './graph/model'
+import { GenerateUUID, Operation, Position, UUID } from './graph/model'
 import { Pointer } from "./ui"
 import { addEdge, addNode, changeBodyValue, changeNodePosition, removeNode } from "./graph/update"
 
@@ -369,18 +369,9 @@ const insertOperationFromFinder = (state: State, name: string, generateUUID: Gen
         state.camera,
         [state.nodePlacementLocation.x, state.nodePlacementLocation.y, 1]
     )
-    const { graph, node } = addNode({
-        graph: state.graph,
-        operation,
-        position: { x, y },
-        generateUUID
-    })
+    const { state: nextState } = addNodeToGraph({ state, operation, position: { x, y }, generateUUID })
     return {
-        state: closeFinder({
-            ...state,
-            graph,
-            nodeOrder: [...state.nodeOrder, node]
-        }),
+        state: closeFinder(nextState),
         render: true
     }
 }
@@ -403,6 +394,31 @@ const updateBodyValue = (state: State, body: UUID, transform: (value: number) =>
             graph: changeBodyValue(state.graph, body, transform)
         },
         render: true
+    }
+}
+
+interface AddNodeInputs {
+    state: State
+    operation: Operation
+    position: Position
+    generateUUID: GenerateUUID
+}
+
+interface AddNodeOutputs {
+    state: State
+    node: UUID
+}
+
+
+export const addNodeToGraph = ({ state, operation, position, generateUUID }: AddNodeInputs): AddNodeOutputs => {
+    const { graph, node } = addNode({ graph: state.graph, operation, position, generateUUID })
+    return {
+        state: {
+            ...state,
+            graph,
+            nodeOrder: [...state.nodeOrder, node]
+        },
+        node
     }
 }
 

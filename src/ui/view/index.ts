@@ -3,6 +3,7 @@ import { AppEvent, EventKind } from "../../event"
 import { Finder, SelectedKind, State, Theme, VirtualKeyboardKind } from "../../state"
 import { text, stack, scene, row, container, column, Connection, UI } from '..'
 import { Body, Bodys, Input, Inputs, Node, Output, Outputs, UUID } from "../../graph/model"
+import { contextMenu } from "./context_menu"
 
 
 export const spacer = (size: number): UI<AppEvent> =>
@@ -210,7 +211,6 @@ export const virtualKeyboard = (theme: Theme, kind: VirtualKeyboardKind) => {
     }
 }
 
-
 export const view = (state: State): UI<AppEvent> => {
     const selectedInput = state.selected.kind === SelectedKind.INPUT ? state.selected.input : undefined
     const selectedOutput = state.selected.kind === SelectedKind.OUTPUT ? state.selected.output : undefined
@@ -237,5 +237,21 @@ export const view = (state: State): UI<AppEvent> => {
     ]
     if (state.finder.show) stacked.push(finder(state.finder, state.theme))
     if (state.virtualKeyboard.show) stacked.push(virtualKeyboard(state.theme, state.virtualKeyboard.kind))
+    switch (state.selected.kind) {
+        case SelectedKind.NODE:
+            stacked.push(contextMenu({
+                items: [{
+                    name: 'Delete Node',
+                    shortcut: 'd',
+                    onClick: {
+                        kind: EventKind.DELETE_NODE,
+                        node: state.selected.node
+                    }
+                }],
+                backgroundColor: state.theme.node
+            }))
+            break
+        default: break
+    }
     return stack(stacked)
 }

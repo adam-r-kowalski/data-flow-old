@@ -1,6 +1,6 @@
 import { addNodeToGraph, EventKind, openFinder, update } from "../src/event"
 import { Operations } from "../src/graph/model"
-import { addEdge, changeNodePosition } from "../src/graph/update"
+import { addEdge, addNode, changeNodePosition } from "../src/graph/update"
 import { translate } from "../src/linear_algebra/matrix3x3"
 import { emptyState, InputTargetKind, SelectedKind, State, VirtualKeyboardKind } from "../src/state"
 import { Pointer } from "../src/ui"
@@ -927,50 +927,64 @@ test("enter key down when finder is shown closes finder and adds node", () => {
     expect(render).toEqual(true)
 })
 
-/*
 test("enter key down when finder is shown and finder has search closes finder and adds node", () => {
-    const generateUUID = generateUUID()
-    const generateUUID1 = generateUUID()
-    let state = openFinder(initialState(generateUUID))
+    const generateUUID = makeGenerateUUID()
+    const operations: Operations = {
+        'Add': {
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        },
+        'Sub': {
+            name: 'Sub',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        }
+    }
+    let state0 = openFinder({
+        ...emptyState(),
+        operations
+    })
+    let state1 = state0
     for (const key of 'add') {
-        const { state: nextState } = update(generateUUID, state, {
+        const { state } = update(generateUUID, state1, {
             kind: EventKind.KEYDOWN,
             key
         })
-        state = nextState
+        state1 = state
     }
-    const { state: nextState } = update(generateUUID, state, {
+    const { state: state2 } = update(generateUUID, state1, {
         kind: EventKind.KEYDOWN,
         key: 'Enter'
     })
-    state = nextState
-    const expectedState = initialState(generateUUID1)
-    expectedState.finder.options = [
-        "Number", "Add", "Subtract", "Multiply", "Divide", "Equal", "Less Than", "Log"
-    ]
-    const uuid = generateUUID1()
-    expectedState.graph.nodes[uuid] = {
-        uuid,
-        name: "Add",
-        inputs: [
-            { name: "x", selected: false, edgeUUIDs: [] },
-            { name: "y", selected: false, edgeUUIDs: [] }
-        ],
-        outputs: [
-            { name: "out", selected: false, edgeUUIDs: [] }
-        ],
-        x: 0,
-        y: 0
-    }
-    expectedState.graph.nodeOrder.push(uuid)
-    expect(state).toEqual(expectedState)
+    const expectedState = addNodeToGraph({
+        state: state0,
+        operation: operations['Add'],
+        position: { x: 0, y: 0 },
+        generateUUID: makeGenerateUUID()
+    })
+    expect(state2).toEqual(expectedState)
 })
 
 test("enter key down when finder is shown and finder has search eliminates all options closes finder", () => {
-    const generateUUID = generateUUID()
-    const generateUUID1 = generateUUID()
-    let state = openFinder(initialState(generateUUID))
-    const { state: state1 } = update(generateUUID, state, {
+    const generateUUID = makeGenerateUUID()
+    const operations: Operations = {
+        'Add': {
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        },
+        'Sub': {
+            name: 'Sub',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        }
+    }
+    let state0 = openFinder({
+        ...emptyState(),
+        operations
+    })
+    const { state: state1 } = update(generateUUID, state0, {
         kind: EventKind.KEYDOWN,
         key: 'x'
     })
@@ -978,14 +992,11 @@ test("enter key down when finder is shown and finder has search eliminates all o
         kind: EventKind.KEYDOWN,
         key: 'Enter'
     })
-    const expectedState = initialState(generateUUID1)
-    expectedState.finder.options = [
-        "Number", "Add", "Subtract", "Multiply", "Divide", "Equal", "Less Than", "Log"
-    ]
-    expect(state2).toEqual(expectedState)
+    expect(state2).toEqual(state0)
 })
 
 
+/*
 test("ret virtual key down when finder is shown and finder has search eliminates all options closes finder", () => {
     const generateUUID = generateUUID()
     const generateUUID1 = generateUUID()

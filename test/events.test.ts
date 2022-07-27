@@ -1,15 +1,14 @@
 import { addNodeToGraph, EventKind, openFinder, update } from "../src/event"
 import { Operations } from "../src/graph/model"
-import { changeNodePosition } from "../src/graph/update"
+import { addEdge, changeNodePosition } from "../src/graph/update"
 import { translate } from "../src/linear_algebra/matrix3x3"
 import { emptyState, SelectedKind, State } from "../src/state"
 import { Pointer } from "../src/ui"
 
-const generateUUID = () => {
-    let i = 0
+const makeGenerateUUID = (state: { i: number } = { i: 0 }) => {
     return () => {
-        const uuid = i.toString()
-        ++i
+        const uuid = state.i.toString()
+        ++state.i
         return uuid
     }
 }
@@ -20,7 +19,7 @@ test("pointer down", () => {
         id: 0,
         position: { x: 0, y: 0 }
     }
-    const { state: state1, schedule } = update(generateUUID(), state, {
+    const { state: state1, schedule } = update(makeGenerateUUID(), state, {
         kind: EventKind.POINTER_DOWN,
         pointer
     })
@@ -40,7 +39,7 @@ test("pointer down", () => {
 })
 
 test("two pointers down", () => {
-    const generateUUID0 = generateUUID()
+    const generateUUID = makeGenerateUUID()
     const state = emptyState()
     const pointer0: Pointer = {
         id: 0,
@@ -50,11 +49,11 @@ test("two pointers down", () => {
         id: 1,
         position: { x: 0, y: 0 }
     }
-    const { state: state1, schedule } = update(generateUUID0, state, {
+    const { state: state1, schedule } = update(generateUUID, state, {
         kind: EventKind.POINTER_DOWN,
         pointer: pointer0
     })
-    const { state: state2 } = update(generateUUID0, state1, {
+    const { state: state2 } = update(generateUUID, state1, {
         kind: EventKind.POINTER_DOWN,
         pointer: pointer1
     })
@@ -73,21 +72,21 @@ test("two pointers down", () => {
 })
 
 test("pointer double click", () => {
-    const generateUUID0 = generateUUID()
+    const generateUUID = makeGenerateUUID()
     const state = emptyState()
     const pointer: Pointer = {
         id: 0,
         position: { x: 0, y: 0 }
     }
-    const { state: state1 } = update(generateUUID0, state, {
+    const { state: state1 } = update(generateUUID, state, {
         kind: EventKind.POINTER_DOWN,
         pointer
     })
-    const { state: state2 } = update(generateUUID0, state1, {
+    const { state: state2 } = update(generateUUID, state1, {
         kind: EventKind.POINTER_UP,
         pointer
     })
-    const { state: state3, dispatch } = update(generateUUID0, state2, {
+    const { state: state3, dispatch } = update(generateUUID, state2, {
         kind: EventKind.POINTER_DOWN,
         pointer
     })
@@ -100,21 +99,21 @@ test("pointer double click", () => {
 })
 
 test("pointer double click timeout", () => {
-    const generateUUID0 = generateUUID()
+    const generateUUID = makeGenerateUUID()
     const state = emptyState()
     const pointer = {
         id: 0,
         position: { x: 0, y: 0 }
     }
-    const { state: state1 } = update(generateUUID0, state, {
+    const { state: state1 } = update(generateUUID, state, {
         kind: EventKind.POINTER_DOWN,
         pointer
     })
-    const { state: state2 } = update(generateUUID0, state1, {
+    const { state: state2 } = update(generateUUID, state1, {
         kind: EventKind.POINTER_UP,
         pointer
     })
-    const { state: state3 } = update(generateUUID0, state2, {
+    const { state: state3 } = update(generateUUID, state2, {
         kind: EventKind.DOUBLE_CLICK_TIMEOUT
     })
     const expectedState = emptyState()
@@ -122,17 +121,17 @@ test("pointer double click timeout", () => {
 })
 
 test("pointer down then up", () => {
-    const generateUUID0 = generateUUID()
+    const generateUUID = makeGenerateUUID()
     const state = emptyState()
     const pointer: Pointer = {
         id: 0,
         position: { x: 0, y: 0 }
     }
-    const { state: state1 } = update(generateUUID0, state, {
+    const { state: state1 } = update(generateUUID, state, {
         kind: EventKind.POINTER_DOWN,
         pointer
     })
-    const { state: state2 } = update(generateUUID0, state1, {
+    const { state: state2 } = update(generateUUID, state1, {
         kind: EventKind.POINTER_UP,
         pointer
     })
@@ -144,7 +143,7 @@ test("pointer down then up", () => {
 })
 
 test("two pointers down then up", () => {
-    const generateUUID0 = generateUUID()
+    const generateUUID = makeGenerateUUID()
     const state = emptyState()
     const pointer0: Pointer = {
         id: 0,
@@ -154,15 +153,15 @@ test("two pointers down then up", () => {
         id: 1,
         position: { x: 0, y: 0 }
     }
-    const { state: state1 } = update(generateUUID0, state, {
+    const { state: state1 } = update(generateUUID, state, {
         kind: EventKind.POINTER_DOWN,
         pointer: pointer0
     })
-    const { state: state2 } = update(generateUUID0, state1, {
+    const { state: state2 } = update(generateUUID, state1, {
         kind: EventKind.POINTER_DOWN,
         pointer: pointer1
     })
-    const { state: state3 } = update(generateUUID0, state2, {
+    const { state: state3 } = update(generateUUID, state2, {
         kind: EventKind.POINTER_UP,
         pointer: pointer0
     })
@@ -175,13 +174,13 @@ test("two pointers down then up", () => {
 })
 
 test("pointer down when finder open", () => {
-    const generateUUID0 = generateUUID()
+    const generateUUID = makeGenerateUUID()
     const state = openFinder(emptyState())
     const pointer = {
         id: 0,
         position: { x: 0, y: 0 }
     }
-    const { state: state1 } = update(generateUUID0, state, {
+    const { state: state1 } = update(generateUUID, state, {
         kind: EventKind.POINTER_DOWN,
         pointer
     })
@@ -191,7 +190,7 @@ test("pointer down when finder open", () => {
 
 
 test("clicking node selects it and puts it on top of of the node order", () => {
-    const generateUUID0 = generateUUID()
+    const generateUUID = makeGenerateUUID()
     const operations: Operations = {
         'Add': {
             name: 'Add',
@@ -212,15 +211,15 @@ test("clicking node selects it and puts it on top of of the node order", () => {
         state: state0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: generateUUID0
+        generateUUID: generateUUID
     })
     const { state: state2, node: node1 } = addNodeToGraph({
         state: state1,
         operation: operations['Sub'],
         position: { x: 0, y: 0 },
-        generateUUID: generateUUID0
+        generateUUID: generateUUID
     })
-    const { state: state3, render } = update(generateUUID0, state2, {
+    const { state: state3, render } = update(generateUUID, state2, {
         kind: EventKind.CLICKED_NODE,
         node: node0
     })
@@ -237,13 +236,13 @@ test("clicking node selects it and puts it on top of of the node order", () => {
 })
 
 test("pointer move before pointer down does nothing", () => {
-    const generateUUID0 = generateUUID()
+    const generateUUID = makeGenerateUUID()
     const state = emptyState()
     const pointer: Pointer = {
         id: 0,
         position: { x: 0, y: 0 }
     }
-    const { state: state1 } = update(generateUUID0, state, {
+    const { state: state1 } = update(generateUUID, state, {
         kind: EventKind.POINTER_MOVE,
         pointer
     })
@@ -251,16 +250,16 @@ test("pointer move before pointer down does nothing", () => {
 })
 
 test("pointer move after pointer down", () => {
-    const generateUUID0 = generateUUID()
+    const generateUUID = makeGenerateUUID()
     const state = emptyState()
-    const { state: state1 } = update(generateUUID0, state, {
+    const { state: state1 } = update(generateUUID, state, {
         kind: EventKind.POINTER_DOWN,
         pointer: {
             id: 0,
             position: { x: 0, y: 0 }
         }
     })
-    const { state: state2, render } = update(generateUUID0, state1, {
+    const { state: state2, render } = update(generateUUID, state1, {
         kind: EventKind.POINTER_MOVE,
         pointer: {
             id: 0,
@@ -284,7 +283,7 @@ test("pointer move after pointer down", () => {
 })
 
 test("pointer move after clicking node pointer down", () => {
-    const generateUUID0 = generateUUID()
+    const generateUUID = makeGenerateUUID()
     const operations: Operations = {
         'Add': {
             name: 'Add',
@@ -305,26 +304,26 @@ test("pointer move after clicking node pointer down", () => {
         state: state0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: generateUUID0
+        generateUUID: generateUUID
     })
     const { state: state2, node: node1 } = addNodeToGraph({
         state: state1,
         operation: operations['Sub'],
         position: { x: 0, y: 0 },
-        generateUUID: generateUUID0
+        generateUUID: generateUUID
     })
-    const { state: state3 } = update(generateUUID0, state2, {
+    const { state: state3 } = update(generateUUID, state2, {
         kind: EventKind.CLICKED_NODE,
         node: node0
     })
-    const { state: state4 } = update(generateUUID0, state3, {
+    const { state: state4 } = update(generateUUID, state3, {
         kind: EventKind.POINTER_DOWN,
         pointer: {
             id: 0,
             position: { x: 0, y: 0 }
         }
     })
-    const { state: state5, render } = update(generateUUID0, state4, {
+    const { state: state5, render } = update(generateUUID, state4, {
         kind: EventKind.POINTER_MOVE,
         pointer: {
             id: 0,
@@ -353,7 +352,7 @@ test("pointer move after clicking node pointer down", () => {
 })
 
 test("pointer move after clicking node, pointer down, then pointer up", () => {
-    const generateUUID0 = generateUUID()
+    const generateUUID = makeGenerateUUID()
     const operations: Operations = {
         'Add': {
             name: 'Add',
@@ -369,27 +368,27 @@ test("pointer move after clicking node, pointer down, then pointer up", () => {
         state: state0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: generateUUID0
+        generateUUID: generateUUID
     })
-    const { state: state2 } = update(generateUUID0, state1, {
+    const { state: state2 } = update(generateUUID, state1, {
         kind: EventKind.CLICKED_NODE,
         node: node0
     })
-    const { state: state3 } = update(generateUUID0, state2, {
+    const { state: state3 } = update(generateUUID, state2, {
         kind: EventKind.POINTER_DOWN,
         pointer: {
             id: 0,
             position: { x: 0, y: 0 }
         }
     })
-    const { state: state4 } = update(generateUUID0, state3, {
+    const { state: state4 } = update(generateUUID, state3, {
         kind: EventKind.POINTER_UP,
         pointer: {
             id: 0,
             position: { x: 0, y: 0 }
         }
     })
-    const { state: state5 } = update(generateUUID0, state4, {
+    const { state: state5 } = update(generateUUID, state4, {
         kind: EventKind.POINTER_MOVE,
         pointer: {
             id: 0,
@@ -409,9 +408,9 @@ test("pointer move after clicking node, pointer down, then pointer up", () => {
 })
 
 test("mouse wheel zooms in camera relative to mouse position", () => {
-    const generateUUID0 = generateUUID()
+    const generateUUID = makeGenerateUUID()
     const state = emptyState()
-    const { state: state1 } = update(generateUUID0, state, {
+    const { state: state1 } = update(generateUUID, state, {
         kind: EventKind.WHEEL,
         deltaY: 10,
         position: { x: 50, y: 100 }
@@ -428,7 +427,7 @@ test("mouse wheel zooms in camera relative to mouse position", () => {
 })
 
 test("clicking input selects it", () => {
-    const generateUUID0 = generateUUID()
+    const generateUUID = makeGenerateUUID()
     const operations: Operations = {
         'Add': {
             name: 'Add',
@@ -444,10 +443,10 @@ test("clicking input selects it", () => {
         state: state0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: generateUUID0
+        generateUUID: generateUUID
     })
     const input = state1.graph.nodes[node0].inputs[0]
-    const { state: state2, render } = update(generateUUID0, state1, {
+    const { state: state2, render } = update(generateUUID, state1, {
         kind: EventKind.CLICKED_INPUT,
         input
     })
@@ -462,66 +461,108 @@ test("clicking input selects it", () => {
     expect(render).toEqual(true)
 })
 
-/*
 test("clicking new input selects it and deselects old input", () => {
-    const generateUUID0 = generateUUID()
-    const generateUUID1 = generateUUID()
-    const state = initialState(generateUUID0)
-    const nodeUUID = state.graph.nodeOrder[2]
-    const { state: state1 } = update(generateUUID0, state, {
-        kind: EventKind.CLICKED_INPUT,
-        inputPath: { nodeUUID, inputIndex: 0 }
+    const generateUUID = makeGenerateUUID()
+    const operations: Operations = {
+        'Add': {
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        },
+    }
+    const state0: State = {
+        ...emptyState(),
+        operations
+    }
+    const { state: state1, node: node0 } = addNodeToGraph({
+        state: state0,
+        operation: operations['Add'],
+        position: { x: 0, y: 0 },
+        generateUUID: generateUUID
     })
-    const { state: state2, render } = update(generateUUID0, state1, {
+    const [input0, input1] = state1.graph.nodes[node0].inputs
+    const { state: state2 } = update(generateUUID, state1, {
         kind: EventKind.CLICKED_INPUT,
-        inputPath: { nodeUUID, inputIndex: 1 }
+        input: input0
     })
-    const expectedState = initialState(generateUUID1)
-    expectedState.graph.nodes[2].inputs[1].selected = true
-    expectedState.selectedInput = { nodeUUID, inputIndex: 1 }
-    expectedState.selectedNode = nodeUUID
-    const [a, b, c, d, e, f] = expectedState.graph.nodeOrder
-    expectedState.graph.nodeOrder = [a, b, d, e, f, c]
-    expect(state2).toEqual(expectedState)
+    const { state: state3, render } = update(generateUUID, state2, {
+        kind: EventKind.CLICKED_INPUT,
+        input: input1
+    })
+    const expectedState = {
+        ...state1,
+        selected: {
+            kind: SelectedKind.INPUT,
+            input: input1
+        }
+    }
+    expect(state3).toEqual(expectedState)
     expect(render).toEqual(true)
 })
 
 test("clicking output after clicking input adds connection", () => {
-    const generateUUID0 = generateUUID()
-    const generateUUID1 = generateUUID()
-    const state = initialState(generateUUID0)
-    const inputUUID = state.graph.nodeOrder[2]
-    const outputUUID = state.graph.nodeOrder[3]
-    const { state: state1 } = update(generateUUID0, state, {
-        kind: EventKind.CLICKED_INPUT,
-        inputPath: { nodeUUID: inputUUID, inputIndex: 1 }
-    })
-    const { state: state2, render } = update(generateUUID0, state1, {
-        kind: EventKind.CLICKED_OUTPUT,
-        outputPath: { nodeUUID: outputUUID, outputIndex: 0 }
-    })
-    const expectedState = initialState(generateUUID1)
-    const edge: Edge = {
-        uuid: generateUUID1(),
-        input: { nodeUUID: inputUUID, inputIndex: 1 },
-        output: { nodeUUID: outputUUID, outputIndex: 0 }
+    const uuidState = { i: 0 }
+    const generateUUID = makeGenerateUUID(uuidState)
+    const operations: Operations = {
+        'Add': {
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        },
+        'Sub': {
+            name: 'Sub',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        }
     }
-    expectedState.graph.edges[edge.uuid] = edge
-    expectedState.graph.nodes[inputUUID].inputs[1].edgeUUIDs.push(edge.uuid)
-    expectedState.graph.nodes[outputUUID].outputs[0].edgeUUIDs.push(edge.uuid)
-    const [a, b, c, d, e, f] = expectedState.graph.nodeOrder
-    expectedState.graph.nodeOrder = [a, b, e, f, c, d]
-    expect(state2).toEqual(expectedState)
+    const state0: State = {
+        ...emptyState(),
+        operations
+    }
+    const { state: state1, node: node0 } = addNodeToGraph({
+        state: state0,
+        operation: operations['Add'],
+        position: { x: 0, y: 0 },
+        generateUUID: generateUUID
+    })
+    const { state: state2, node: node1 } = addNodeToGraph({
+        state: state1,
+        operation: operations['Sub'],
+        position: { x: 0, y: 0 },
+        generateUUID: generateUUID
+    })
+    const input = state2.graph.nodes[node0].inputs[0]
+    const { state: state3 } = update(generateUUID, state2, {
+        kind: EventKind.CLICKED_INPUT,
+        input
+    })
+    const output = state3.graph.nodes[node1].outputs[0]
+    const newUuidState = { ...uuidState }
+    const { state: state4, render } = update(generateUUID, state3, {
+        kind: EventKind.CLICKED_OUTPUT,
+        output
+    })
+    const expectedState = {
+        ...state2,
+        graph: addEdge({
+            graph: state2.graph,
+            input,
+            output,
+            generateUUID: makeGenerateUUID(newUuidState)
+        }).graph
+    }
+    expect(state4).toEqual(expectedState)
     expect(render).toEqual(true)
 })
 
+/*
 test("clicking output selects it", () => {
-    const generateUUID0 = generateUUID()
+    const generateUUID = generateUUID()
     const generateUUID1 = generateUUID()
-    const state = initialState(generateUUID0)
+    const state = initialState(generateUUID)
     const nodeUUID = state.graph.nodeOrder[0]
     const outputPath = { nodeUUID, outputIndex: 0 }
-    const { state: state1, render } = update(generateUUID0, state, {
+    const { state: state1, render } = update(generateUUID, state, {
         kind: EventKind.CLICKED_OUTPUT,
         outputPath
     })
@@ -536,15 +577,15 @@ test("clicking output selects it", () => {
 })
 
 test("clicking new output selects it and deselects old output", () => {
-    const generateUUID0 = generateUUID()
+    const generateUUID = generateUUID()
     const generateUUID1 = generateUUID()
-    const state = initialState(generateUUID0)
+    const state = initialState(generateUUID)
     const [a, b, c, d, e, f] = state.graph.nodeOrder
-    const { state: state1 } = update(generateUUID0, state, {
+    const { state: state1 } = update(generateUUID, state, {
         kind: EventKind.CLICKED_OUTPUT,
         outputPath: { nodeUUID: a, outputIndex: 0 }
     })
-    const { state: state2, render } = update(generateUUID0, state1, {
+    const { state: state2, render } = update(generateUUID, state1, {
         kind: EventKind.CLICKED_OUTPUT,
         outputPath: { nodeUUID: b, outputIndex: 0 }
     })
@@ -558,15 +599,15 @@ test("clicking new output selects it and deselects old output", () => {
 })
 
 test("clicking input after clicking output adds connection", () => {
-    const generateUUID0 = generateUUID()
+    const generateUUID = generateUUID()
     const generateUUID1 = generateUUID()
-    const state = initialState(generateUUID0)
+    const state = initialState(generateUUID)
     const [a, b, c, d, e, f] = state.graph.nodeOrder
-    const { state: state1 } = update(generateUUID0, state, {
+    const { state: state1 } = update(generateUUID, state, {
         kind: EventKind.CLICKED_OUTPUT,
         outputPath: { nodeUUID: a, outputIndex: 0 }
     })
-    const { state: state2, render } = update(generateUUID0, state1, {
+    const { state: state2, render } = update(generateUUID, state1, {
         kind: EventKind.CLICKED_INPUT,
         inputPath: { nodeUUID: c, inputIndex: 1 }
     })
@@ -585,10 +626,10 @@ test("clicking input after clicking output adds connection", () => {
 })
 
 test("double click opens finder", () => {
-    const generateUUID0 = generateUUID()
+    const generateUUID = generateUUID()
     const generateUUID1 = generateUUID()
-    const state = initialState(generateUUID0)
-    const { state: state1, render } = update(generateUUID0, state, {
+    const state = initialState(generateUUID)
+    const { state: state1, render } = update(generateUUID, state, {
         kind: EventKind.DOUBLE_CLICK,
         pointer: {
             x: 50,
@@ -610,10 +651,10 @@ test("double click opens finder", () => {
 
 
 test("key down when finder is not shown does nothing", () => {
-    const generateUUID0 = generateUUID()
+    const generateUUID = generateUUID()
     const generateUUID1 = generateUUID()
-    const state = initialState(generateUUID0)
-    const { state: state1 } = update(generateUUID0, state, {
+    const state = initialState(generateUUID)
+    const { state: state1 } = update(generateUUID, state, {
         kind: EventKind.KEYDOWN,
         key: 'a'
     })
@@ -623,10 +664,10 @@ test("key down when finder is not shown does nothing", () => {
 
 
 test("f key down when finder is not shown opens finder", () => {
-    const generateUUID0 = generateUUID()
+    const generateUUID = generateUUID()
     const generateUUID1 = generateUUID()
-    const state = initialState(generateUUID0)
-    const { state: state1, render } = update(generateUUID0, state, {
+    const state = initialState(generateUUID)
+    const { state: state1, render } = update(generateUUID, state, {
         kind: EventKind.KEYDOWN,
         key: 'f'
     })
@@ -642,10 +683,10 @@ test("f key down when finder is not shown opens finder", () => {
 })
 
 test("clicking a finder option adds node to graph", () => {
-    const generateUUID0 = generateUUID()
+    const generateUUID = generateUUID()
     const generateUUID1 = generateUUID()
-    const state = openFinder(initialState(generateUUID0))
-    const { state: state1, render } = update(generateUUID0, state, {
+    const state = openFinder(initialState(generateUUID))
+    const { state: state1, render } = update(generateUUID, state, {
         kind: EventKind.CLICKED_FINDER_OPTION,
         option: 'Number'
     })
@@ -674,18 +715,18 @@ test("clicking a finder option adds node to graph", () => {
 })
 
 test("key down when finder is shown appends to search", () => {
-    const generateUUID0 = generateUUID()
+    const generateUUID = generateUUID()
     const generateUUID1 = generateUUID()
-    const state = openFinder(initialState(generateUUID0))
-    const { state: state1 } = update(generateUUID0, state, {
+    const state = openFinder(initialState(generateUUID))
+    const { state: state1 } = update(generateUUID, state, {
         kind: EventKind.KEYDOWN,
         key: 'a'
     })
-    const { state: state2 } = update(generateUUID0, state1, {
+    const { state: state2 } = update(generateUUID, state1, {
         kind: EventKind.KEYDOWN,
         key: 'd'
     })
-    const { state: state3, render } = update(generateUUID0, state2, {
+    const { state: state3, render } = update(generateUUID, state2, {
         kind: EventKind.KEYDOWN,
         key: 'd'
     })
@@ -704,22 +745,22 @@ test("key down when finder is shown appends to search", () => {
 
 
 test("backspace key down when finder is shown deletes from search", () => {
-    const generateUUID0 = generateUUID()
+    const generateUUID = generateUUID()
     const generateUUID1 = generateUUID()
-    const state = openFinder(initialState(generateUUID0))
-    const { state: state1 } = update(generateUUID0, state, {
+    const state = openFinder(initialState(generateUUID))
+    const { state: state1 } = update(generateUUID, state, {
         kind: EventKind.KEYDOWN,
         key: 'a'
     })
-    const { state: state2 } = update(generateUUID0, state1, {
+    const { state: state2 } = update(generateUUID, state1, {
         kind: EventKind.KEYDOWN,
         key: 'd'
     })
-    const { state: state3 } = update(generateUUID0, state2, {
+    const { state: state3 } = update(generateUUID, state2, {
         kind: EventKind.KEYDOWN,
         key: 'd'
     })
-    const { state: state4, render } = update(generateUUID0, state3, {
+    const { state: state4, render } = update(generateUUID, state3, {
         kind: EventKind.KEYDOWN,
         key: 'Backspace'
     })
@@ -737,10 +778,10 @@ test("backspace key down when finder is shown deletes from search", () => {
 })
 
 test("enter key down when finder is shown closes finder and adds node", () => {
-    const generateUUID0 = generateUUID()
+    const generateUUID = generateUUID()
     const generateUUID1 = generateUUID()
-    const state = openFinder(initialState(generateUUID0))
-    const { state: state1, render } = update(generateUUID0, state, {
+    const state = openFinder(initialState(generateUUID))
+    const { state: state1, render } = update(generateUUID, state, {
         kind: EventKind.KEYDOWN,
         key: 'Enter'
     })
@@ -769,17 +810,17 @@ test("enter key down when finder is shown closes finder and adds node", () => {
 })
 
 test("enter key down when finder is shown and finder has search closes finder and adds node", () => {
-    const generateUUID0 = generateUUID()
+    const generateUUID = generateUUID()
     const generateUUID1 = generateUUID()
-    let state = openFinder(initialState(generateUUID0))
+    let state = openFinder(initialState(generateUUID))
     for (const key of 'add') {
-        const { state: nextState } = update(generateUUID0, state, {
+        const { state: nextState } = update(generateUUID, state, {
             kind: EventKind.KEYDOWN,
             key
         })
         state = nextState
     }
-    const { state: nextState } = update(generateUUID0, state, {
+    const { state: nextState } = update(generateUUID, state, {
         kind: EventKind.KEYDOWN,
         key: 'Enter'
     })
@@ -807,14 +848,14 @@ test("enter key down when finder is shown and finder has search closes finder an
 })
 
 test("enter key down when finder is shown and finder has search eliminates all options closes finder", () => {
-    const generateUUID0 = generateUUID()
+    const generateUUID = generateUUID()
     const generateUUID1 = generateUUID()
-    let state = openFinder(initialState(generateUUID0))
-    const { state: state1 } = update(generateUUID0, state, {
+    let state = openFinder(initialState(generateUUID))
+    const { state: state1 } = update(generateUUID, state, {
         kind: EventKind.KEYDOWN,
         key: 'x'
     })
-    const { state: state2 } = update(generateUUID0, state1, {
+    const { state: state2 } = update(generateUUID, state1, {
         kind: EventKind.KEYDOWN,
         key: 'Enter'
     })
@@ -827,14 +868,14 @@ test("enter key down when finder is shown and finder has search eliminates all o
 
 
 test("ret virtual key down when finder is shown and finder has search eliminates all options closes finder", () => {
-    const generateUUID0 = generateUUID()
+    const generateUUID = generateUUID()
     const generateUUID1 = generateUUID()
-    let state = openFinder(initialState(generateUUID0))
-    const { state: state1 } = update(generateUUID0, state, {
+    let state = openFinder(initialState(generateUUID))
+    const { state: state1 } = update(generateUUID, state, {
         kind: EventKind.VIRTUAL_KEYDOWN,
         key: 'x'
     })
-    const { state: state2 } = update(generateUUID0, state1, {
+    const { state: state2 } = update(generateUUID, state1, {
         kind: EventKind.VIRTUAL_KEYDOWN,
         key: 'ret'
     })
@@ -847,10 +888,10 @@ test("ret virtual key down when finder is shown and finder has search eliminates
 
 
 test("escape key down when finder is shown closes finder", () => {
-    const generateUUID0 = generateUUID()
+    const generateUUID = generateUUID()
     const generateUUID1 = generateUUID()
-    const state = openFinder(initialState(generateUUID0))
-    const { state: state1, render } = update(generateUUID0, state, {
+    const state = openFinder(initialState(generateUUID))
+    const { state: state1, render } = update(generateUUID, state, {
         kind: EventKind.KEYDOWN,
         key: 'Escape'
     })
@@ -863,10 +904,10 @@ test("escape key down when finder is shown closes finder", () => {
 })
 
 test("shift key down when finder is shown are ignored", () => {
-    const generateUUID0 = generateUUID()
+    const generateUUID = generateUUID()
     const generateUUID1 = generateUUID()
-    const state = openFinder(initialState(generateUUID0))
-    const { state: state1, render } = update(generateUUID0, state, {
+    const state = openFinder(initialState(generateUUID))
+    const { state: state1, render } = update(generateUUID, state, {
         kind: EventKind.KEYDOWN,
         key: 'Shift'
     })
@@ -885,10 +926,10 @@ test("shift key down when finder is shown are ignored", () => {
 })
 
 test("alt key down when finder is shown are ignored", () => {
-    const generateUUID0 = generateUUID()
+    const generateUUID = generateUUID()
     const generateUUID1 = generateUUID()
-    const state = openFinder(initialState(generateUUID0))
-    const { state: state1, render } = update(generateUUID0, state, {
+    const state = openFinder(initialState(generateUUID))
+    const { state: state1, render } = update(generateUUID, state, {
         kind: EventKind.KEYDOWN,
         key: 'Alt'
     })
@@ -907,10 +948,10 @@ test("alt key down when finder is shown are ignored", () => {
 })
 
 test("control key down when finder is shown are ignored", () => {
-    const generateUUID0 = generateUUID()
+    const generateUUID = generateUUID()
     const generateUUID1 = generateUUID()
-    const state = openFinder(initialState(generateUUID0))
-    const { state: state1, render } = update(generateUUID0, state, {
+    const state = openFinder(initialState(generateUUID))
+    const { state: state1, render } = update(generateUUID, state, {
         kind: EventKind.KEYDOWN,
         key: 'Control'
     })
@@ -929,10 +970,10 @@ test("control key down when finder is shown are ignored", () => {
 })
 
 test("meta key down when finder is shown are ignored", () => {
-    const generateUUID0 = generateUUID()
+    const generateUUID = generateUUID()
     const generateUUID1 = generateUUID()
-    const state = openFinder(initialState(generateUUID0))
-    const { state: state1, render } = update(generateUUID0, state, {
+    const state = openFinder(initialState(generateUUID))
+    const { state: state1, render } = update(generateUUID, state, {
         kind: EventKind.KEYDOWN,
         key: 'Meta'
     })
@@ -951,11 +992,11 @@ test("meta key down when finder is shown are ignored", () => {
 })
 
 test("Tab key down when finder is shown are ignored", () => {
-    const generateUUID0 = generateUUID()
+    const generateUUID = generateUUID()
     const generateUUID1 = generateUUID()
-    const state = openFinder(initialState(generateUUID0))
+    const state = openFinder(initialState(generateUUID))
     state.finder.show = true
-    const { state: state1, render } = update(generateUUID0, state, {
+    const { state: state1, render } = update(generateUUID, state, {
         kind: EventKind.KEYDOWN,
         key: 'Tab'
     })
@@ -974,18 +1015,18 @@ test("Tab key down when finder is shown are ignored", () => {
 })
 
 test("virtual key down when finder is shown appends to search", () => {
-    const generateUUID0 = generateUUID()
+    const generateUUID = generateUUID()
     const generateUUID1 = generateUUID()
-    const state = openFinder(initialState(generateUUID0))
-    const { state: state1 } = update(generateUUID0, state, {
+    const state = openFinder(initialState(generateUUID))
+    const { state: state1 } = update(generateUUID, state, {
         kind: EventKind.VIRTUAL_KEYDOWN,
         key: 'a'
     })
-    const { state: state2 } = update(generateUUID0, state1, {
+    const { state: state2 } = update(generateUUID, state1, {
         kind: EventKind.VIRTUAL_KEYDOWN,
         key: 'd'
     })
-    const { state: state3, render } = update(generateUUID0, state2, {
+    const { state: state3, render } = update(generateUUID, state2, {
         kind: EventKind.KEYDOWN,
         key: 'd'
     })
@@ -1003,22 +1044,22 @@ test("virtual key down when finder is shown appends to search", () => {
 })
 
 test("del virtual key down when finder is shown deletes from search", () => {
-    const generateUUID0 = generateUUID()
+    const generateUUID = generateUUID()
     const generateUUID1 = generateUUID()
-    const state = openFinder(initialState(generateUUID0))
-    const { state: state1 } = update(generateUUID0, state, {
+    const state = openFinder(initialState(generateUUID))
+    const { state: state1 } = update(generateUUID, state, {
         kind: EventKind.VIRTUAL_KEYDOWN,
         key: 'a'
     })
-    const { state: state2 } = update(generateUUID0, state1, {
+    const { state: state2 } = update(generateUUID, state1, {
         kind: EventKind.VIRTUAL_KEYDOWN,
         key: 'd'
     })
-    const { state: state3 } = update(generateUUID0, state2, {
+    const { state: state3 } = update(generateUUID, state2, {
         kind: EventKind.VIRTUAL_KEYDOWN,
         key: 'd'
     })
-    const { state: state4, render } = update(generateUUID0, state3, {
+    const { state: state4, render } = update(generateUUID, state3, {
         kind: EventKind.VIRTUAL_KEYDOWN,
         key: 'del'
     })
@@ -1036,18 +1077,18 @@ test("del virtual key down when finder is shown deletes from search", () => {
 })
 
 test("space virtual key down when finder is shown adds space to search", () => {
-    const generateUUID0 = generateUUID()
+    const generateUUID = generateUUID()
     const generateUUID1 = generateUUID()
-    const state = openFinder(initialState(generateUUID0))
-    const { state: state1 } = update(generateUUID0, state, {
+    const state = openFinder(initialState(generateUUID))
+    const { state: state1 } = update(generateUUID, state, {
         kind: EventKind.VIRTUAL_KEYDOWN,
         key: 'a'
     })
-    const { state: state2 } = update(generateUUID0, state1, {
+    const { state: state2 } = update(generateUUID, state1, {
         kind: EventKind.VIRTUAL_KEYDOWN,
         key: 'space'
     })
-    const { state: state3, render } = update(generateUUID0, state2, {
+    const { state: state3, render } = update(generateUUID, state2, {
         kind: EventKind.VIRTUAL_KEYDOWN,
         key: 'd'
     })
@@ -1064,10 +1105,10 @@ test("space virtual key down when finder is shown adds space to search", () => {
 })
 
 test("ret virtual key down when finder is shown closes finder", () => {
-    const generateUUID0 = generateUUID()
+    const generateUUID = generateUUID()
     const generateUUID1 = generateUUID()
-    const state = openFinder(initialState(generateUUID0))
-    const { state: state1, render } = update(generateUUID0, state, {
+    const state = openFinder(initialState(generateUUID))
+    const { state: state1, render } = update(generateUUID, state, {
         kind: EventKind.VIRTUAL_KEYDOWN,
         key: 'ret'
     })
@@ -1096,10 +1137,10 @@ test("ret virtual key down when finder is shown closes finder", () => {
 })
 
 test("sft virtual key down when finder is shown are ignored", () => {
-    const generateUUID0 = generateUUID()
+    const generateUUID = generateUUID()
     const generateUUID1 = generateUUID()
-    const state = openFinder(initialState(generateUUID0))
-    const { state: state1, render } = update(generateUUID0, state, {
+    const state = openFinder(initialState(generateUUID))
+    const { state: state1, render } = update(generateUUID, state, {
         kind: EventKind.VIRTUAL_KEYDOWN,
         key: 'sft'
     })
@@ -1118,13 +1159,13 @@ test("sft virtual key down when finder is shown are ignored", () => {
 })
 
 test("pressing number on keyboard appends to number node", () => {
-    const generateUUID0 = generateUUID()
+    const generateUUID = generateUUID()
     const generateUUID1 = generateUUID()
-    let state = initialState(generateUUID0)
+    let state = initialState(generateUUID)
     const nodeUUID = state.graph.nodeOrder[3]
     state = openNumericKeyboard(state, nodeUUID)
     for (const key of '1234567890') {
-        const { state: nextState } = update(generateUUID0, state, {
+        const { state: nextState } = update(generateUUID, state, {
             kind: EventKind.KEYDOWN,
             key
         })
@@ -1145,19 +1186,19 @@ test("pressing number on keyboard appends to number node", () => {
 })
 
 test("pressing backspace on keyboard deletes from number node", () => {
-    const generateUUID0 = generateUUID()
+    const generateUUID = generateUUID()
     const generateUUID1 = generateUUID()
-    let state = initialState(generateUUID0)
+    let state = initialState(generateUUID)
     const nodeUUID = state.graph.nodeOrder[3]
     state = openNumericKeyboard(state, nodeUUID)
     for (const key of '1234567890') {
-        const { state: nextState } = update(generateUUID0, state, {
+        const { state: nextState } = update(generateUUID, state, {
             kind: EventKind.KEYDOWN,
             key
         })
         state = nextState
     }
-    const { state: nextState } = update(generateUUID0, state, {
+    const { state: nextState } = update(generateUUID, state, {
         kind: EventKind.KEYDOWN,
         key: 'Backspace'
     })
@@ -1177,13 +1218,13 @@ test("pressing backspace on keyboard deletes from number node", () => {
 })
 
 test("pressing backspace when number node value is 0 has no effect", () => {
-    const generateUUID0 = generateUUID()
+    const generateUUID = generateUUID()
     const generateUUID1 = generateUUID()
-    let state = initialState(generateUUID0)
+    let state = initialState(generateUUID)
     const nodeUUID = state.graph.nodeOrder[3]
     state = openNumericKeyboard(state, nodeUUID)
     for (let i = 0; i < 3; ++i) {
-        const { state: nextState } = update(generateUUID0, state, {
+        const { state: nextState } = update(generateUUID, state, {
             kind: EventKind.KEYDOWN,
             key: 'Backspace'
         })
@@ -1204,13 +1245,13 @@ test("pressing backspace when number node value is 0 has no effect", () => {
 })
 
 test("pressing del on virtual keyboard when number node value is 0 has no effect", () => {
-    const generateUUID0 = generateUUID()
+    const generateUUID = generateUUID()
     const generateUUID1 = generateUUID()
-    let state = initialState(generateUUID0)
+    let state = initialState(generateUUID)
     const nodeUUID = state.graph.nodeOrder[3]
     state = openNumericKeyboard(state, nodeUUID)
     for (let i = 0; i < 3; ++i) {
-        const { state: nextState } = update(generateUUID0, state, {
+        const { state: nextState } = update(generateUUID, state, {
             kind: EventKind.VIRTUAL_KEYDOWN,
             key: 'del'
         })
@@ -1231,13 +1272,13 @@ test("pressing del on virtual keyboard when number node value is 0 has no effect
 })
 
 test("pressing number on virtual keyboard appends to number node", () => {
-    const generateUUID0 = generateUUID()
+    const generateUUID = generateUUID()
     const generateUUID1 = generateUUID()
-    let state = initialState(generateUUID0)
+    let state = initialState(generateUUID)
     const nodeUUID = state.graph.nodeOrder[3]
     state = openNumericKeyboard(state, nodeUUID)
     for (const key of '1234567890') {
-        const { state: nextState } = update(generateUUID0, state, {
+        const { state: nextState } = update(generateUUID, state, {
             kind: EventKind.VIRTUAL_KEYDOWN,
             key
         })
@@ -1258,19 +1299,19 @@ test("pressing number on virtual keyboard appends to number node", () => {
 })
 
 test("pressing del on virtual keyboard deletes from number node", () => {
-    const generateUUID0 = generateUUID()
+    const generateUUID = generateUUID()
     const generateUUID1 = generateUUID()
-    let state = initialState(generateUUID0)
+    let state = initialState(generateUUID)
     const nodeUUID = state.graph.nodeOrder[3]
     state = openNumericKeyboard(state, nodeUUID)
     for (const key of '1234567890') {
-        const { state: nextState } = update(generateUUID0, state, {
+        const { state: nextState } = update(generateUUID, state, {
             kind: EventKind.VIRTUAL_KEYDOWN,
             key
         })
         state = nextState
     }
-    const { state: nextState } = update(generateUUID0, state, {
+    const { state: nextState } = update(generateUUID, state, {
         kind: EventKind.VIRTUAL_KEYDOWN,
         key: 'del'
     })
@@ -1291,19 +1332,19 @@ test("pressing del on virtual keyboard deletes from number node", () => {
 
 
 test("pressing enter on keyboard while editing number node exits virtual keyboard", () => {
-    const generateUUID0 = generateUUID()
+    const generateUUID = generateUUID()
     const generateUUID1 = generateUUID()
-    let state = initialState(generateUUID0)
+    let state = initialState(generateUUID)
     const nodeUUID = state.graph.nodeOrder[3]
     state = openNumericKeyboard(state, nodeUUID)
     for (const key of '1234567890') {
-        const { state: nextState } = update(generateUUID0, state, {
+        const { state: nextState } = update(generateUUID, state, {
             kind: EventKind.KEYDOWN,
             key
         })
         state = nextState
     }
-    const { state: nextState } = update(generateUUID0, state, {
+    const { state: nextState } = update(generateUUID, state, {
         kind: EventKind.KEYDOWN,
         key: 'Enter'
     })
@@ -1314,19 +1355,19 @@ test("pressing enter on keyboard while editing number node exits virtual keyboar
 })
 
 test("pressing ret on virtual keyboard while editing number node exits virtual keyboard", () => {
-    const generateUUID0 = generateUUID()
+    const generateUUID = generateUUID()
     const generateUUID1 = generateUUID()
-    let state = initialState(generateUUID0)
+    let state = initialState(generateUUID)
     const nodeUUID = state.graph.nodeOrder[3]
     state = openNumericKeyboard(state, nodeUUID)
     for (const key of '1234567890') {
-        const { state: nextState } = update(generateUUID0, state, {
+        const { state: nextState } = update(generateUUID, state, {
             kind: EventKind.VIRTUAL_KEYDOWN,
             key
         })
         state = nextState
     }
-    const { state: nextState } = update(generateUUID0, state, {
+    const { state: nextState } = update(generateUUID, state, {
         kind: EventKind.VIRTUAL_KEYDOWN,
         key: 'ret'
     })
@@ -1338,13 +1379,13 @@ test("pressing ret on virtual keyboard while editing number node exits virtual k
 
 
 test("pressing non number on keyboard while editing number node is ignored", () => {
-    const generateUUID0 = generateUUID()
+    const generateUUID = generateUUID()
     const generateUUID1 = generateUUID()
-    let state = initialState(generateUUID0)
+    let state = initialState(generateUUID)
     const nodeUUID = state.graph.nodeOrder[3]
     state = openNumericKeyboard(state, nodeUUID)
     for (const key of 'qwertyuiopasdfghjklzxcvbnm') {
-        const { state: nextState } = update(generateUUID0, state, {
+        const { state: nextState } = update(generateUUID, state, {
             kind: EventKind.KEYDOWN,
             key
         })
@@ -1365,13 +1406,13 @@ test("pressing non number on keyboard while editing number node is ignored", () 
 
 
 test("pressing non number on virtual keyboard while editing number node is ignored", () => {
-    const generateUUID0 = generateUUID()
+    const generateUUID = generateUUID()
     const generateUUID1 = generateUUID()
-    let state = initialState(generateUUID0)
+    let state = initialState(generateUUID)
     const nodeUUID = state.graph.nodeOrder[3]
     state = openNumericKeyboard(state, nodeUUID)
     for (const key of 'qwertyuiopasdfghjklzxcvbnm') {
-        const { state: nextState } = update(generateUUID0, state, {
+        const { state: nextState } = update(generateUUID, state, {
             kind: EventKind.VIRTUAL_KEYDOWN,
             key
         })
@@ -1391,14 +1432,14 @@ test("pressing non number on virtual keyboard while editing number node is ignor
 })
 
 test("pressing a key on virtual keyboard while no input target selected doesn't change the state", () => {
-    const generateUUID0 = generateUUID()
+    const generateUUID = generateUUID()
     const generateUUID1 = generateUUID()
-    let state = initialState(generateUUID0)
+    let state = initialState(generateUUID)
     state.virtualKeyboard = {
         show: true,
         kind: VirtualKeyboardKind.NUMERIC
     }
-    const { state: state1 } = update(generateUUID0, state, {
+    const { state: state1 } = update(generateUUID, state, {
         kind: EventKind.VIRTUAL_KEYDOWN,
         key: '1'
     })
@@ -1411,11 +1452,11 @@ test("pressing a key on virtual keyboard while no input target selected doesn't 
 })
 
 test("clicking a number node opens the numeric keyboard", () => {
-    const generateUUID0 = generateUUID()
+    const generateUUID = generateUUID()
     const generateUUID1 = generateUUID()
-    let state = initialState(generateUUID0)
+    let state = initialState(generateUUID)
     const nodeUUID = state.graph.nodeOrder[3]
-    const { state: state1 } = update(generateUUID0, state, {
+    const { state: state1 } = update(generateUUID, state, {
         kind: EventKind.CLICKED_NUMBER,
         nodeUUID
     })
@@ -1434,15 +1475,15 @@ test("clicking a number node opens the numeric keyboard", () => {
 })
 
 test("clicking a number node when another number node is selected switches selections", () => {
-    const generateUUID0 = generateUUID()
+    const generateUUID = generateUUID()
     const generateUUID1 = generateUUID()
-    let state = initialState(generateUUID0)
+    let state = initialState(generateUUID)
     const [a, b] = state.graph.nodeOrder
-    const { state: state1 } = update(generateUUID0, state, {
+    const { state: state1 } = update(generateUUID, state, {
         kind: EventKind.CLICKED_NUMBER,
         nodeUUID: a
     })
-    const { state: state2 } = update(generateUUID0, state1, {
+    const { state: state2 } = update(generateUUID, state1, {
         kind: EventKind.CLICKED_NUMBER,
         nodeUUID: b
     })
@@ -1461,14 +1502,14 @@ test("clicking a number node when another number node is selected switches selec
 })
 
 test("clicking background when a number node is selected deselects it", () => {
-    const generateUUID0 = generateUUID()
+    const generateUUID = generateUUID()
     const generateUUID1 = generateUUID()
-    const state = initialState(generateUUID0)
-    const { state: state1 } = update(generateUUID0, state, {
+    const state = initialState(generateUUID)
+    const { state: state1 } = update(generateUUID, state, {
         kind: EventKind.CLICKED_NUMBER,
         nodeUUID: state.graph.nodeOrder[3]
     })
-    const { state: state2 } = update(generateUUID0, state1, {
+    const { state: state2 } = update(generateUUID, state1, {
         kind: EventKind.CLICKED_BACKGROUND,
     })
     const expectedState = initialState(generateUUID1)
@@ -1476,8 +1517,8 @@ test("clicking background when a number node is selected deselects it", () => {
 })
 
 test("zooming", () => {
-    const generateUUID0 = generateUUID()
-    const state = initialState(generateUUID0)
+    const generateUUID = generateUUID()
+    const state = initialState(generateUUID)
     const pointer0 = {
         x: 0,
         y: 0,
@@ -1498,7 +1539,7 @@ test("zooming", () => {
         y: 30,
         id: 1,
     }
-    const { state: state1 } = update(generateUUID0, state, {
+    const { state: state1 } = update(generateUUID, state, {
         kind: EventKind.POINTER_DOWN,
         pointer: pointer0
     })
@@ -1509,7 +1550,7 @@ test("zooming", () => {
         expectedState.pointers = [pointer0]
         expect(state1).toEqual(expectedState)
     }
-    const { state: state2 } = update(generateUUID0, state1, {
+    const { state: state2 } = update(generateUUID, state1, {
         kind: EventKind.POINTER_DOWN,
         pointer: pointer1
     })
@@ -1519,7 +1560,7 @@ test("zooming", () => {
         expectedState.pointers = [pointer0, pointer1]
         expect(state2).toEqual(expectedState)
     }
-    const { state: state3 } = update(generateUUID0, state2, {
+    const { state: state3 } = update(generateUUID, state2, {
         kind: EventKind.POINTER_MOVE,
         pointer: pointer2
     })
@@ -1531,7 +1572,7 @@ test("zooming", () => {
         expectedState.pointers = [pointer0, pointer2]
         expect(state3).toEqual(expectedState)
     }
-    const { state: state4 } = update(generateUUID0, state3, {
+    const { state: state4 } = update(generateUUID, state3, {
         kind: EventKind.POINTER_MOVE,
         pointer: pointer3
     })
@@ -1551,9 +1592,9 @@ test("zooming", () => {
 })
 
 test("pressing d on keyboard with node selected deletes it", () => {
-    const generateUUID0 = generateUUID()
+    const generateUUID = generateUUID()
     const generateUUID1 = generateUUID()
-    const state = initialState(generateUUID0)
+    const state = initialState(generateUUID)
     const [a, b, c, d, e, f] = state.graph.nodeOrder
     const edgeUUIDs = state.graph.nodes[a].outputs[0].edgeUUIDs
     expect(edgeUUIDs.length).toEqual(1)
@@ -1562,11 +1603,11 @@ test("pressing d on keyboard with node selected deletes it", () => {
     expect(edge.input.nodeUUID).toEqual(c)
     expect(edge.input.inputIndex).toEqual(0)
     expect(state.graph.nodes[c].inputs[0].edgeUUIDs.length).toEqual(1)
-    const { state: state1 } = update(generateUUID0, state, {
+    const { state: state1 } = update(generateUUID, state, {
         kind: EventKind.CLICKED_NODE,
         nodeUUID: a
     })
-    const { state: state2 } = update(generateUUID0, state1, {
+    const { state: state2 } = update(generateUUID, state1, {
         kind: EventKind.KEYDOWN,
         key: 'd'
     })
@@ -1579,15 +1620,15 @@ test("pressing d on keyboard with node selected deletes it", () => {
 })
 
 test("clicking background when a node is selected deselects it", () => {
-    const generateUUID0 = generateUUID()
+    const generateUUID = generateUUID()
     const generateUUID1 = generateUUID()
-    const state = initialState(generateUUID0)
+    const state = initialState(generateUUID)
     const [a, b, c, d, e, f] = state.graph.nodeOrder
-    const { state: state1 } = update(generateUUID0, state, {
+    const { state: state1 } = update(generateUUID, state, {
         kind: EventKind.CLICKED_NODE,
         nodeUUID: a
     })
-    const { state: state2 } = update(generateUUID0, state1, {
+    const { state: state2 } = update(generateUUID, state1, {
         kind: EventKind.CLICKED_BACKGROUND,
     })
     const expectedState = initialState(generateUUID1)
@@ -1597,18 +1638,18 @@ test("clicking background when a node is selected deselects it", () => {
 
 
 test("clicking background when a input is selected deselects it", () => {
-    const generateUUID0 = generateUUID()
+    const generateUUID = generateUUID()
     const generateUUID1 = generateUUID()
-    const state = initialState(generateUUID0)
+    const state = initialState(generateUUID)
     const [a, b, c, d, e, f] = state.graph.nodeOrder
-    const { state: state1 } = update(generateUUID0, state, {
+    const { state: state1 } = update(generateUUID, state, {
         kind: EventKind.CLICKED_INPUT,
         inputPath: {
             nodeUUID: c,
             inputIndex: 0
         }
     })
-    const { state: state2 } = update(generateUUID0, state1, {
+    const { state: state2 } = update(generateUUID, state1, {
         kind: EventKind.CLICKED_BACKGROUND,
     })
     const expectedState = initialState(generateUUID1)
@@ -1617,18 +1658,18 @@ test("clicking background when a input is selected deselects it", () => {
 })
 
 test("clicking background when a output is selected deselects it", () => {
-    const generateUUID0 = generateUUID()
+    const generateUUID = generateUUID()
     const generateUUID1 = generateUUID()
-    const state = initialState(generateUUID0)
+    const state = initialState(generateUUID)
     const [a, b, c, d, e, f] = state.graph.nodeOrder
-    const { state: state1 } = update(generateUUID0, state, {
+    const { state: state1 } = update(generateUUID, state, {
         kind: EventKind.CLICKED_OUTPUT,
         outputPath: {
             nodeUUID: c,
             outputIndex: 0
         }
     })
-    const { state: state2 } = update(generateUUID0, state1, {
+    const { state: state2 } = update(generateUUID, state1, {
         kind: EventKind.CLICKED_BACKGROUND,
     })
     const expectedState = initialState(generateUUID1)

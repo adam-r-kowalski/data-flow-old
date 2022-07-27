@@ -776,44 +776,56 @@ test("f key down when finder is not shown opens finder", () => {
     expect(render).toEqual(true)
 })
 
-/*
 test("clicking a finder option adds node to graph", () => {
-    const generateUUID = generateUUID()
-    const generateUUID1 = generateUUID()
-    const state = openFinder(initialState(generateUUID))
-    const { state: state1, render } = update(generateUUID, state, {
-        kind: EventKind.CLICKED_FINDER_OPTION,
-        option: 'Number'
-    })
-    const expectedState = initialState(generateUUID1)
-    expectedState.finder.options = [
-        "Number", "Add", "Subtract", "Multiply", "Divide", "Equal", "Less Than", "Log"
-    ]
-    const uuid = generateUUID1()
-    expectedState.graph.nodes[uuid] = {
-        uuid,
-        name: "Number",
-        inputs: [],
-        body: {
-            value: 0,
-            editing: false,
+    const operations: Operations = {
+        'Add': {
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out']
         },
-        outputs: [
-            { name: "out", selected: false, edgeUUIDs: [] }
-        ],
-        x: 0,
-        y: 0
+        'Sub': {
+            name: 'Sub',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        }
     }
-    expectedState.graph.nodeOrder.push(uuid)
+    const state0 = openFinder({
+        ...emptyState(),
+        operations
+    })
+    const { state: state1, render } = update(makeGenerateUUID(), state0, {
+        kind: EventKind.CLICKED_FINDER_OPTION,
+        option: 'Add'
+    })
+    const { state: expectedState } = addNodeToGraph({
+        state: { ...emptyState(), operations },
+        position: { x: 0, y: 0 },
+        operation: operations['Add'],
+        generateUUID: makeGenerateUUID()
+    })
     expect(state1).toEqual(expectedState)
     expect(render).toEqual(true)
 })
 
 test("key down when finder is shown appends to search", () => {
-    const generateUUID = generateUUID()
-    const generateUUID1 = generateUUID()
-    const state = openFinder(initialState(generateUUID))
-    const { state: state1 } = update(generateUUID, state, {
+    const generateUUID = makeGenerateUUID()
+    const operations: Operations = {
+        'Add': {
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        },
+        'Sub': {
+            name: 'Sub',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        }
+    }
+    const state0 = openFinder({
+        ...emptyState(),
+        operations
+    })
+    const { state: state1 } = update(generateUUID, state0, {
         kind: EventKind.KEYDOWN,
         key: 'a'
     })
@@ -825,20 +837,20 @@ test("key down when finder is shown appends to search", () => {
         kind: EventKind.KEYDOWN,
         key: 'd'
     })
-    const expectedState = initialState(generateUUID1)
-    expectedState.finder.show = true
-    expectedState.finder.search = 'add'
-    expectedState.virtualKeyboard = {
-        show: true,
-        kind: VirtualKeyboardKind.ALPHABETIC
+    const expectedState = {
+        ...state0,
+        finder: {
+            show: true,
+            search: 'add',
+            options: ['Add']
+        }
     }
-    expectedState.inputTarget.kind = InputTargetKind.FINDER
-    expectedState.finder.options = ["Add"]
     expect(state3).toEqual(expectedState)
     expect(render).toEqual(true)
 })
 
 
+/*
 test("backspace key down when finder is shown deletes from search", () => {
     const generateUUID = generateUUID()
     const generateUUID1 = generateUUID()

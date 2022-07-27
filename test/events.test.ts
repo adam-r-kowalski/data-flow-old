@@ -1,5 +1,6 @@
 import { addNodeToGraph, EventKind, openFinder, update } from "../src/event"
 import { Operations } from "../src/graph/model"
+import { changeNodePosition } from "../src/graph/update"
 import { translate } from "../src/linear_algebra/matrix3x3"
 import { emptyState, SelectedKind, State } from "../src/state"
 import { Pointer } from "../src/ui"
@@ -282,36 +283,76 @@ test("pointer move after pointer down", () => {
     expect(render).toEqual(true)
 })
 
-/*
 test("pointer move after clicking node pointer down", () => {
     const generateUUID0 = generateUUID()
-    const generateUUID1 = generateUUID()
-    const state = initialState(generateUUID0)
-    const nodeUUID = state.graph.nodeOrder[0]
-    const { state: state1 } = update(generateUUID0, state, {
-        kind: EventKind.CLICKED_NODE,
-        nodeUUID
+    const operations: Operations = {
+        'Add': {
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        },
+        'Sub': {
+            name: 'Sub',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        }
+    }
+    const state0: State = {
+        ...emptyState(),
+        operations
+    }
+    const { state: state1, node: node0 } = addNodeToGraph({
+        state: state0,
+        operation: operations['Add'],
+        position: { x: 0, y: 0 },
+        generateUUID: generateUUID0
     })
-    const { state: state2 } = update(generateUUID0, state1, {
+    const { state: state2, node: node1 } = addNodeToGraph({
+        state: state1,
+        operation: operations['Sub'],
+        position: { x: 0, y: 0 },
+        generateUUID: generateUUID0
+    })
+    const { state: state3 } = update(generateUUID0, state2, {
+        kind: EventKind.CLICKED_NODE,
+        node: node0
+    })
+    const { state: state4 } = update(generateUUID0, state3, {
         kind: EventKind.POINTER_DOWN,
         pointer: {
-            x: 0,
-            y: 0,
             id: 0,
+            position: { x: 0, y: 0 }
         }
     })
-    const { state: state3, render } = update(generateUUID0, state2, {
+    const { state: state5, render } = update(generateUUID0, state4, {
         kind: EventKind.POINTER_MOVE,
         pointer: {
-            x: 50,
-            y: 75,
             id: 0,
+            position: { x: 50, y: 75 }
         }
     })
-    expect(state3.camera).toEqual(initialState(generateUUID1).camera)
+    const expectedState = {
+        ...state2,
+        pointers: [
+            {
+                id: 0,
+                position: { x: 50, y: 75 }
+            }
+        ],
+        graph: changeNodePosition(state2.graph, node0, () => ({ x: 50, y: 75 })),
+        nodeOrder: [node1, node0],
+        dragging: true,
+        potentialDoubleClick: true,
+        selected: {
+            kind: SelectedKind.NODE,
+            node: node0
+        }
+    }
+    expect(state5).toEqual(expectedState)
     expect(render).toEqual(true)
 })
 
+/*
 test("pointer move after clicking node, pointer down, then pointer up", () => {
     const generateUUID0 = generateUUID()
     const generateUUID1 = generateUUID()

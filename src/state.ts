@@ -1,83 +1,20 @@
 import { identity, Matrix3x3 } from "./linear_algebra/matrix3x3"
 import { Pointer, Color } from "./ui"
-
-export type UUID = string
-
-export interface InputPath {
-    nodeUUID: UUID
-    inputIndex: number
-}
-
-export interface OutputPath {
-    nodeUUID: UUID
-    outputIndex: number
-}
-
-export interface Input {
-    name: string
-    selected: boolean
-    edgeUUIDs: UUID[]
-}
-
-export interface Output {
-    name: string
-    selected: boolean
-    edgeUUIDs: UUID[]
-}
-
-export interface Body {
-    value: number
-    editing: boolean
-}
-
-export interface Node {
-    uuid: UUID
-    name: string
-    inputs: Input[]
-    body?: Body
-    outputs: Output[]
-    x: number
-    y: number
-}
-
-export interface Edge {
-    uuid: UUID
-    input: InputPath
-    output: OutputPath
-}
-
-export interface Graph {
-    nodes: { [uuid: UUID]: Node }
-    nodeOrder: UUID[]
-    edges: { [uuid: UUID]: Edge }
-}
+import { Graph, Operations, Position, UUID, emptyGraph, GenerateUUID } from './graph/model'
+import { addEdge, addNode, changeBodyValue } from "./graph/update"
 
 export interface Theme {
-    background: Color
-    node: Color
-    input: Color
-    selectedInput: Color
-    connection: Color
+    readonly background: Color
+    readonly node: Color
+    readonly input: Color
+    readonly selectedInput: Color
+    readonly connection: Color
 }
 
 export interface Finder {
-    search: string
-    show: boolean
-    options: string[]
-}
-
-export interface Operation {
-    name: string
-    inputs: string[]
-    body?: number
-    outputs: string[]
-}
-
-export type Operations = { [name: string]: Operation }
-
-export interface ScreenCoordinates {
-    x: number
-    y: number
+    readonly search: string
+    readonly show: boolean
+    readonly options: Readonly<string[]>
 }
 
 export enum VirtualKeyboardKind {
@@ -86,8 +23,8 @@ export enum VirtualKeyboardKind {
 }
 
 export interface VirtualKeyboard {
-    show: boolean
-    kind: VirtualKeyboardKind
+    readonly show: boolean
+    readonly kind: VirtualKeyboardKind
 }
 
 export enum InputTargetKind {
@@ -96,15 +33,17 @@ export enum InputTargetKind {
     NONE
 }
 
-export interface FinderInputTarget { kind: InputTargetKind.FINDER }
+export interface FinderInputTarget {
+    readonly kind: InputTargetKind.FINDER
+}
 
 export interface NumberInputTarget {
-    kind: InputTargetKind.NUMBER,
-    nodeUUID: UUID
+    readonly kind: InputTargetKind.NUMBER,
+    readonly node: UUID
 }
 
 export interface NoInputTarget {
-    kind: InputTargetKind.NONE,
+    readonly kind: InputTargetKind.NONE,
 }
 
 export type InputTarget =
@@ -112,166 +51,101 @@ export type InputTarget =
     | NumberInputTarget
     | NoInputTarget
 
-export interface State {
-    graph: Graph
-    zooming: boolean
-    dragging: boolean
-    selectedNode: UUID | null
-    pointers: Pointer[]
-    pointerDistance: number
-    pointerCenter: [number, number]
-    selectedOutput: OutputPath | null
-    selectedInput: InputPath | null
-    potentialDoubleClick: boolean
-    nodePlacementLocation: ScreenCoordinates
-    finder: Finder
-    virtualKeyboard: VirtualKeyboard
-    inputTarget: InputTarget
-    camera: Matrix3x3
-    operations: Operations
-    theme: Theme
+
+export enum SelectedKind {
+    NODE,
+    INPUT,
+    OUTPUT,
+    BODY,
+    NONE
 }
 
-export type GenerateUUID = () => UUID
+export interface SelectedNode {
+    kind: SelectedKind.NODE
+    node: UUID
+}
 
-export const initialState = (generateUUID: GenerateUUID): State => {
-    const node0: Node = {
-        uuid: generateUUID(),
-        name: "Number",
-        inputs: [],
-        body: { value: 5, editing: false },
-        outputs: [],
-        x: 25,
-        y: 25
-    }
-    const node1: Node = {
-        uuid: generateUUID(),
-        name: "Number",
-        inputs: [],
-        body: { value: 10, editing: false },
-        outputs: [],
-        x: 25,
-        y: 100
-    }
-    const node2: Node = {
-        uuid: generateUUID(),
-        name: "Add",
-        inputs: [],
-        outputs: [],
-        x: 150,
-        y: 50
-    }
-    const node3: Node = {
-        uuid: generateUUID(),
-        name: "Number",
-        inputs: [],
-        body: { value: 15, editing: false },
-        outputs: [],
-        x: 175,
-        y: 150
-    }
-    const node4: Node = {
-        uuid: generateUUID(),
-        name: "Divide",
-        inputs: [],
-        outputs: [],
-        x: 350,
-        y: 50
-    }
-    const node5: Node = {
-        uuid: generateUUID(),
-        name: "Log",
-        inputs: [],
-        outputs: [],
-        x: 550,
-        y: 50
-    }
-    const edge0: Edge = {
-        uuid: generateUUID(),
-        output: { nodeUUID: node0.uuid, outputIndex: 0 },
-        input: { nodeUUID: node2.uuid, inputIndex: 0 },
-    }
-    const edge1 = {
-        uuid: generateUUID(),
-        output: { nodeUUID: node1.uuid, outputIndex: 0 },
-        input: { nodeUUID: node2.uuid, inputIndex: 1 },
-    }
-    const edge2 = {
-        uuid: generateUUID(),
-        output: { nodeUUID: node2.uuid, outputIndex: 0 },
-        input: { nodeUUID: node4.uuid, inputIndex: 0 },
-    }
-    const edge3 = {
-        uuid: generateUUID(),
-        output: { nodeUUID: node3.uuid, outputIndex: 0 },
-        input: { nodeUUID: node4.uuid, inputIndex: 1 },
-    }
-    const edge4 = {
-        uuid: generateUUID(),
-        output: { nodeUUID: node4.uuid, outputIndex: 0 },
-        input: { nodeUUID: node5.uuid, inputIndex: 0 },
-    }
-    node0.outputs.push({ name: "out", selected: false, edgeUUIDs: [edge0.uuid] })
-    node1.outputs.push({ name: "out", selected: false, edgeUUIDs: [edge1.uuid] })
-    node2.inputs.push(
-        { name: "x", selected: false, edgeUUIDs: [edge0.uuid] },
-        { name: "y", selected: false, edgeUUIDs: [edge1.uuid] }
-    )
-    node2.outputs.push({ name: "out", selected: false, edgeUUIDs: [edge2.uuid] })
-    node3.outputs.push({ name: "out", selected: false, edgeUUIDs: [edge3.uuid] })
-    node4.inputs.push(
-        { name: "x", selected: false, edgeUUIDs: [edge2.uuid] },
-        { name: "y", selected: false, edgeUUIDs: [edge3.uuid] }
-    )
-    node4.outputs.push({ name: "out", selected: false, edgeUUIDs: [edge4.uuid] })
-    node5.inputs.push({ name: "value", selected: false, edgeUUIDs: [edge4.uuid] })
-    return {
-        graph: {
-            nodes: {
-                [node0.uuid]: node0,
-                [node1.uuid]: node1,
-                [node2.uuid]: node2,
-                [node3.uuid]: node3,
-                [node4.uuid]: node4,
-                [node5.uuid]: node5,
-            },
-            nodeOrder: [node0.uuid, node1.uuid, node2.uuid, node3.uuid, node4.uuid, node5.uuid],
-            edges: {
-                [edge0.uuid]: edge0,
-                [edge1.uuid]: edge1,
-                [edge2.uuid]: edge2,
-                [edge3.uuid]: edge3,
-                [edge4.uuid]: edge4,
-            }
-        },
-        zooming: false,
-        dragging: false,
-        pointers: [],
-        pointerDistance: 0,
-        pointerCenter: [0, 0],
-        camera: identity(),
-        selectedOutput: null,
-        selectedInput: null,
-        selectedNode: null,
-        theme: {
-            background: { red: 2, green: 22, blue: 39, alpha: 255 },
-            node: { red: 41, green: 95, blue: 120, alpha: 255 },
-            input: { red: 188, green: 240, blue: 192, alpha: 255 },
-            selectedInput: { red: 175, green: 122, blue: 208, alpha: 255 },
-            connection: { red: 255, green: 255, blue: 255, alpha: 255 },
-        },
-        potentialDoubleClick: false,
-        nodePlacementLocation: { x: 0, y: 0 },
-        finder: {
-            search: '',
-            options: [],
-            show: false
-        },
-        virtualKeyboard: {
-            show: false,
-            kind: VirtualKeyboardKind.ALPHABETIC
-        },
-        inputTarget: { kind: InputTargetKind.NONE },
+
+export interface SelectedInput {
+    kind: SelectedKind.INPUT
+    input: UUID
+}
+
+export interface SelectedOutput {
+    kind: SelectedKind.OUTPUT
+    output: UUID
+}
+
+export interface SelectedBody {
+    kind: SelectedKind.BODY
+    body: UUID
+}
+
+export interface SelectedNone {
+    kind: SelectedKind.NONE
+}
+
+export type Selected =
+    | SelectedNode
+    | SelectedInput
+    | SelectedOutput
+    | SelectedBody
+    | SelectedNone
+
+export interface State {
+    readonly graph: Graph
+    readonly nodeOrder: Readonly<UUID[]>
+    readonly zooming: boolean
+    readonly dragging: boolean
+    readonly pointers: Readonly<Pointer[]>
+    readonly pointerDistance: number
+    readonly pointerCenter: Position
+    readonly selected: Selected
+    readonly potentialDoubleClick: boolean
+    readonly nodePlacementLocation: Position
+    readonly finder: Finder
+    readonly virtualKeyboard: VirtualKeyboard
+    readonly inputTarget: InputTarget
+    readonly camera: Readonly<Matrix3x3>
+    readonly operations: Readonly<Operations>
+    readonly theme: Theme
+}
+
+export const emptyState = (): State => ({
+    graph: emptyGraph(),
+    nodeOrder: [],
+    zooming: false,
+    dragging: false,
+    pointers: [],
+    pointerDistance: 0,
+    pointerCenter: { x: 0, y: 0 },
+    camera: identity(),
+    selected: { kind: SelectedKind.NONE },
+    theme: {
+        background: { red: 2, green: 22, blue: 39, alpha: 255 },
+        node: { red: 41, green: 95, blue: 120, alpha: 255 },
+        input: { red: 188, green: 240, blue: 192, alpha: 255 },
+        selectedInput: { red: 175, green: 122, blue: 208, alpha: 255 },
+        connection: { red: 255, green: 255, blue: 255, alpha: 255 },
+    },
+    potentialDoubleClick: false,
+    nodePlacementLocation: { x: 0, y: 0 },
+    finder: {
+        search: '',
+        options: [],
+        show: false
+    },
+    virtualKeyboard: {
+        show: false,
+        kind: VirtualKeyboardKind.ALPHABETIC
+    },
+    inputTarget: { kind: InputTargetKind.NONE },
+    operations: {}
+})
+
+export const demoState = (generateUUID: GenerateUUID): State => {
+    const state = {
+        ...emptyState(),
         operations: {
             "Number": {
                 name: "Number",
@@ -309,11 +183,85 @@ export const initialState = (generateUUID: GenerateUUID): State => {
                 inputs: ["x", "y"],
                 outputs: ["out"]
             },
-            "Log": {
-                name: "Log",
+            "Print": {
+                name: "Print",
                 inputs: ["value"],
                 outputs: []
             }
         }
+    }
+    const { graph: graph0, node: number0 } = addNode({
+        graph: state.graph,
+        operation: state.operations["Number"],
+        position: { x: 25, y: 20 },
+        generateUUID
+    })
+    const graph1 = changeBodyValue(graph0, graph0.nodes[number0].body!, () => 10)
+    const { graph: graph2, node: number1 } = addNode({
+        graph: graph1,
+        operation: state.operations["Number"],
+        position: { x: 55, y: 105 },
+        generateUUID
+    })
+    const graph3 = changeBodyValue(graph2, graph2.nodes[number1].body!, () => 25)
+    const { graph: graph4, node: add } = addNode({
+        graph: graph3,
+        operation: state.operations["Add"],
+        position: { x: 175, y: 55 },
+        generateUUID
+    })
+    const { graph: graph5 } = addEdge({
+        graph: graph4,
+        input: graph4.nodes[add].inputs[0],
+        output: graph4.nodes[number0].outputs[0],
+        generateUUID
+    })
+    const { graph: graph6 } = addEdge({
+        graph: graph5,
+        input: graph5.nodes[add].inputs[1],
+        output: graph5.nodes[number1].outputs[0],
+        generateUUID
+    })
+    const { graph: graph7, node: number2 } = addNode({
+        graph: graph6,
+        operation: state.operations["Number"],
+        position: { x: 225, y: 145 },
+        generateUUID
+    })
+    const graph8 = changeBodyValue(graph7, graph7.nodes[number2].body!, () => 5)
+    const { graph: graph9, node: div } = addNode({
+        graph: graph8,
+        operation: state.operations["Divide"],
+        position: { x: 355, y: 75 },
+        generateUUID
+    })
+    const { graph: graph10 } = addEdge({
+        graph: graph9,
+        input: graph9.nodes[div].inputs[0],
+        output: graph9.nodes[add].outputs[0],
+        generateUUID
+    })
+    const { graph: graph11 } = addEdge({
+        graph: graph10,
+        input: graph10.nodes[div].inputs[1],
+        output: graph10.nodes[number2].outputs[0],
+        generateUUID
+    })
+    const { graph: graph12, node: print } = addNode({
+        graph: graph11,
+        operation: state.operations["Print"],
+        position: { x: 535, y: 85 },
+        generateUUID
+    })
+    const { graph: graph13 } = addEdge({
+        graph: graph12,
+        input: graph12.nodes[print].inputs[0],
+        output: graph12.nodes[div].outputs[0],
+        generateUUID
+    })
+    return {
+        ...state,
+        graph: graph13,
+        nodeOrder: [number0, number1, add, number2, div, print]
     }
 }

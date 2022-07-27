@@ -1,14 +1,14 @@
 import { AppEvent, EventKind, update } from "./event"
 import { run, transformPointer } from "./ui/run"
 import { view } from './ui/view'
-import { initialState, State } from "./state"
+import { demoState, State } from "./state"
 import { Document } from './ui/dom'
 import { ProgramKind } from "./ui/webgl2"
 
 const generateUUID = () => crypto.randomUUID()
 
 const success_or_error = run({
-    state: initialState(generateUUID),
+    state: demoState(generateUUID),
     view,
     update: (state: State, event: AppEvent) => update(generateUUID, state, event),
     window,
@@ -59,8 +59,7 @@ document.addEventListener('wheel', e => {
     e.preventDefault()
     dispatch({
         kind: EventKind.WHEEL,
-        x: e.clientX,
-        y: e.clientY,
+        position: { x: e.clientX, y: e.clientY },
         deltaY: e.deltaY,
     })
 }, { passive: false })

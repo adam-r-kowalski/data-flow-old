@@ -1,7 +1,7 @@
 import { Size } from "../ui"
 import { Vector3 } from "./vector3"
 
-export type Matrix3x3 = number[]
+export type Matrix3x3 = Readonly<number[]>
 
 export const identity = (): Matrix3x3 => [
     1, 0, 0,

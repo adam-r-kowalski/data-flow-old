@@ -360,11 +360,6 @@ test("pointer move after clicking node, pointer down, then pointer up", () => {
             inputs: ['x', 'y'],
             outputs: ['out']
         },
-        'Sub': {
-            name: 'Sub',
-            inputs: ['x', 'y'],
-            outputs: ['out']
-        }
     }
     const state0: State = {
         ...emptyState(),
@@ -413,46 +408,61 @@ test("pointer move after clicking node, pointer down, then pointer up", () => {
     expect(state5).toEqual(expectedState)
 })
 
-/*
 test("mouse wheel zooms in camera relative to mouse position", () => {
     const generateUUID0 = generateUUID()
-    const generateUUID1 = generateUUID()
-    const state = initialState(generateUUID0)
+    const state = emptyState()
     const { state: state1 } = update(generateUUID0, state, {
         kind: EventKind.WHEEL,
-        x: 50,
-        y: 100,
-        deltaY: 10
+        deltaY: 10,
+        position: { x: 50, y: 100 }
     })
-    const expectedState = initialState(generateUUID1)
-    expectedState.camera = [
-        1.0717734625362931, 0, -3.588673126814655,
-        0, 1.0717734625362931, -7.17734625362931,
-        0, 0, 1,
-    ]
+    const expectedState = {
+        ...emptyState(),
+        camera: [
+            1.0717734625362931, 0, -3.588673126814655,
+            0, 1.0717734625362931, -7.17734625362931,
+            0, 0, 1,
+        ]
+    }
     expect(state1).toEqual(expectedState)
 })
 
 test("clicking input selects it", () => {
     const generateUUID0 = generateUUID()
-    const generateUUID1 = generateUUID()
-    const state = initialState(generateUUID0)
-    const nodeUUID = state.graph.nodeOrder[2]
-    const inputPath = { nodeUUID, inputIndex: 0 }
-    const { state: state1, render } = update(generateUUID0, state, {
-        kind: EventKind.CLICKED_INPUT,
-        inputPath
+    const operations: Operations = {
+        'Add': {
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        },
+    }
+    const state0: State = {
+        ...emptyState(),
+        operations
+    }
+    const { state: state1, node: node0 } = addNodeToGraph({
+        state: state0,
+        operation: operations['Add'],
+        position: { x: 0, y: 0 },
+        generateUUID: generateUUID0
     })
-    const expectedState = initialState(generateUUID1)
-    expectedState.graph.nodes[nodeUUID].inputs[0].selected = true
-    expectedState.selectedInput = inputPath
-    expectedState.selectedNode = inputPath.nodeUUID
-    const [a, b, c, d, e, f] = expectedState.graph.nodeOrder
-    expectedState.graph.nodeOrder = [a, b, d, e, f, c]
-    expect(state1).toEqual(expectedState)
+    const input = state1.graph.nodes[node0].inputs[0]
+    const { state: state2, render } = update(generateUUID0, state1, {
+        kind: EventKind.CLICKED_INPUT,
+        input
+    })
+    const expectedState = {
+        ...state1,
+        selected: {
+            kind: SelectedKind.INPUT,
+            input
+        }
+    }
+    expect(state2).toEqual(expectedState)
     expect(render).toEqual(true)
 })
 
+/*
 test("clicking new input selects it and deselects old input", () => {
     const generateUUID0 = generateUUID()
     const generateUUID1 = generateUUID()

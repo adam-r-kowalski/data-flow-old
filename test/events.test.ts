@@ -2,7 +2,7 @@ import { addNodeToGraph, EventKind, openFinder, update } from "../src/event"
 import { Operations } from "../src/graph/model"
 import { addEdge, changeNodePosition } from "../src/graph/update"
 import { translate } from "../src/linear_algebra/matrix3x3"
-import { emptyState, SelectedKind, State } from "../src/state"
+import { emptyState, InputTargetKind, SelectedKind, State, VirtualKeyboardKind } from "../src/state"
 import { Pointer } from "../src/ui"
 
 const makeGenerateUUID = (state: { i: number } = { i: 0 }) => {
@@ -555,101 +555,180 @@ test("clicking output after clicking input adds connection", () => {
     expect(render).toEqual(true)
 })
 
-/*
 test("clicking output selects it", () => {
-    const generateUUID = generateUUID()
-    const generateUUID1 = generateUUID()
-    const state = initialState(generateUUID)
-    const nodeUUID = state.graph.nodeOrder[0]
-    const outputPath = { nodeUUID, outputIndex: 0 }
-    const { state: state1, render } = update(generateUUID, state, {
-        kind: EventKind.CLICKED_OUTPUT,
-        outputPath
+    const generateUUID = makeGenerateUUID()
+    const operations: Operations = {
+        'Add': {
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        },
+    }
+    const state0: State = {
+        ...emptyState(),
+        operations
+    }
+    const { state: state1, node: node0 } = addNodeToGraph({
+        state: state0,
+        operation: operations['Add'],
+        position: { x: 0, y: 0 },
+        generateUUID: generateUUID
     })
-    const expectedState = initialState(generateUUID1)
-    expectedState.graph.nodes[0].outputs[0].selected = true
-    expectedState.selectedOutput = outputPath
-    expectedState.selectedNode = outputPath.nodeUUID
-    const [a, b, c, d, e, f] = expectedState.graph.nodeOrder
-    expectedState.graph.nodeOrder = [b, c, d, e, f, a]
-    expect(state1).toEqual(expectedState)
+    const output = state1.graph.nodes[node0].outputs[0]
+    const { state: state2, render } = update(generateUUID, state1, {
+        kind: EventKind.CLICKED_OUTPUT,
+        output
+    })
+    const expectedState = {
+        ...state1,
+        selected: {
+            kind: SelectedKind.OUTPUT,
+            output
+        }
+    }
+    expect(state2).toEqual(expectedState)
     expect(render).toEqual(true)
 })
 
 test("clicking new output selects it and deselects old output", () => {
-    const generateUUID = generateUUID()
-    const generateUUID1 = generateUUID()
-    const state = initialState(generateUUID)
-    const [a, b, c, d, e, f] = state.graph.nodeOrder
-    const { state: state1 } = update(generateUUID, state, {
-        kind: EventKind.CLICKED_OUTPUT,
-        outputPath: { nodeUUID: a, outputIndex: 0 }
+    const generateUUID = makeGenerateUUID()
+    const operations: Operations = {
+        'Add': {
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        },
+    }
+    const state0: State = {
+        ...emptyState(),
+        operations
+    }
+    const { state: state1, node: node0 } = addNodeToGraph({
+        state: state0,
+        operation: operations['Add'],
+        position: { x: 0, y: 0 },
+        generateUUID: generateUUID
     })
-    const { state: state2, render } = update(generateUUID, state1, {
+    const [output0, output1] = state1.graph.nodes[node0].outputs
+    const { state: state2 } = update(generateUUID, state1, {
         kind: EventKind.CLICKED_OUTPUT,
-        outputPath: { nodeUUID: b, outputIndex: 0 }
+        output: output0
     })
-    const expectedState = initialState(generateUUID1)
-    expectedState.graph.nodes[b].outputs[0].selected = true
-    expectedState.selectedOutput = { nodeUUID: b, outputIndex: 0 }
-    expectedState.selectedNode = b
-    expectedState.graph.nodeOrder = [c, d, e, f, a, b]
-    expect(state2).toEqual(expectedState)
+    const { state: state3, render } = update(generateUUID, state2, {
+        kind: EventKind.CLICKED_OUTPUT,
+        output: output1
+    })
+    const expectedState = {
+        ...state1,
+        selected: {
+            kind: SelectedKind.OUTPUT,
+            output: output1
+        }
+    }
+    expect(state3).toEqual(expectedState)
     expect(render).toEqual(true)
 })
 
 test("clicking input after clicking output adds connection", () => {
-    const generateUUID = generateUUID()
-    const generateUUID1 = generateUUID()
-    const state = initialState(generateUUID)
-    const [a, b, c, d, e, f] = state.graph.nodeOrder
-    const { state: state1 } = update(generateUUID, state, {
-        kind: EventKind.CLICKED_OUTPUT,
-        outputPath: { nodeUUID: a, outputIndex: 0 }
-    })
-    const { state: state2, render } = update(generateUUID, state1, {
-        kind: EventKind.CLICKED_INPUT,
-        inputPath: { nodeUUID: c, inputIndex: 1 }
-    })
-    const expectedState = initialState(generateUUID1)
-    const edge: Edge = {
-        uuid: generateUUID1(),
-        input: { nodeUUID: c, inputIndex: 1 },
-        output: { nodeUUID: a, outputIndex: 0 }
+    const uuidState = { i: 0 }
+    const generateUUID = makeGenerateUUID(uuidState)
+    const operations: Operations = {
+        'Add': {
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        },
+        'Sub': {
+            name: 'Sub',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        }
     }
-    expectedState.graph.edges[edge.uuid] = edge
-    expectedState.graph.nodes[c].inputs[1].edgeUUIDs.push(edge.uuid)
-    expectedState.graph.nodes[a].outputs[0].edgeUUIDs.push(edge.uuid)
-    expectedState.graph.nodeOrder = [b, d, e, f, a, c]
-    expect(state2).toEqual(expectedState)
+    const state0: State = {
+        ...emptyState(),
+        operations
+    }
+    const { state: state1, node: node0 } = addNodeToGraph({
+        state: state0,
+        operation: operations['Add'],
+        position: { x: 0, y: 0 },
+        generateUUID: generateUUID
+    })
+    const { state: state2, node: node1 } = addNodeToGraph({
+        state: state1,
+        operation: operations['Sub'],
+        position: { x: 0, y: 0 },
+        generateUUID: generateUUID
+    })
+    const output = state2.graph.nodes[node1].outputs[0]
+    const { state: state3, render } = update(generateUUID, state2, {
+        kind: EventKind.CLICKED_OUTPUT,
+        output
+    })
+    const newUuidState = { ...uuidState }
+    const input = state3.graph.nodes[node0].inputs[0]
+    const { state: state4 } = update(generateUUID, state3, {
+        kind: EventKind.CLICKED_INPUT,
+        input
+    })
+    const expectedState = {
+        ...state2,
+        graph: addEdge({
+            graph: state2.graph,
+            input,
+            output,
+            generateUUID: makeGenerateUUID(newUuidState)
+        }).graph
+    }
+    expect(state4).toEqual(expectedState)
     expect(render).toEqual(true)
 })
 
 test("double click opens finder", () => {
-    const generateUUID = generateUUID()
-    const generateUUID1 = generateUUID()
-    const state = initialState(generateUUID)
-    const { state: state1, render } = update(generateUUID, state, {
+    const generateUUID = makeGenerateUUID()
+    const operations: Operations = {
+        'Add': {
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        },
+        'Sub': {
+            name: 'Sub',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        }
+    }
+    const state0: State = {
+        ...emptyState(),
+        operations
+    }
+    const { state: state1, render } = update(generateUUID, state0, {
         kind: EventKind.DOUBLE_CLICK,
         pointer: {
-            x: 50,
-            y: 50,
-            id: 0
+            id: 0,
+            position: { x: 50, y: 50 }
         }
     })
-    const expectedState = initialState(generateUUID1)
-    expectedState.finder.show = true
-    expectedState.virtualKeyboard.show = true
-    expectedState.inputTarget = { kind: InputTargetKind.FINDER }
-    expectedState.finder.options = [
-        "Number", "Add", "Subtract", "Multiply", "Divide", "Equal", "Less Than", "Log"
-    ]
-    expectedState.nodePlacementLocation = { x: 50, y: 50 }
+    const expectedState: State = {
+        ...state0,
+        finder: {
+            show: true,
+            search: '',
+            options: ['Add', 'Sub']
+        },
+        nodePlacementLocation: { x: 50, y: 50 },
+        virtualKeyboard: {
+            kind: VirtualKeyboardKind.ALPHABETIC,
+            show: true,
+        },
+        inputTarget: { kind: InputTargetKind.FINDER },
+    }
     expect(state1).toEqual(expectedState)
     expect(render).toEqual(true)
 })
 
 
+/*
 test("key down when finder is not shown does nothing", () => {
     const generateUUID = generateUUID()
     const generateUUID1 = generateUUID()

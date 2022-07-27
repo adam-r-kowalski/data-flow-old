@@ -1,6 +1,6 @@
 import { addNodeToGraph, EventKind, openFinder, update } from "../src/event"
 import { Operations } from "../src/graph/model"
-import { addEdge, addNode, changeNodePosition } from "../src/graph/update"
+import { addEdge, changeNodePosition } from "../src/graph/update"
 import { translate } from "../src/linear_algebra/matrix3x3"
 import { emptyState, InputTargetKind, SelectedKind, State, VirtualKeyboardKind } from "../src/state"
 import { Pointer } from "../src/ui"
@@ -957,8 +957,8 @@ test("enter key down when finder is shown and finder has search closes finder an
         kind: EventKind.KEYDOWN,
         key: 'Enter'
     })
-    const expectedState = addNodeToGraph({
-        state: state0,
+    const { state: expectedState } = addNodeToGraph({
+        state: { ...emptyState(), operations },
         operation: operations['Add'],
         position: { x: 0, y: 0 },
         generateUUID: makeGenerateUUID()
@@ -992,7 +992,7 @@ test("enter key down when finder is shown and finder has search eliminates all o
         kind: EventKind.KEYDOWN,
         key: 'Enter'
     })
-    expect(state2).toEqual(state0)
+    expect(state2).toEqual({ ...emptyState(), operations })
 })
 
 

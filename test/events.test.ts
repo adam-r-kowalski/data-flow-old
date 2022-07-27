@@ -1399,7 +1399,7 @@ test("pressing number on keyboard appends to number node", () => {
         state2 = state
     }
     const body = makeGenerateUUID({ i: uuidState.i - 1 })()
-    const expectedState1: State = {
+    const expectedState: State = {
         ...state0,
         operations,
         virtualKeyboard: {
@@ -1424,42 +1424,69 @@ test("pressing number on keyboard appends to number node", () => {
             }
         }
     }
-    expect(state2).toEqual(expectedState1)
+    expect(state2).toEqual(expectedState)
 })
 
-/*
 test("pressing backspace on keyboard deletes from number node", () => {
-    const generateUUID = generateUUID()
-    const generateUUID1 = generateUUID()
-    let state = initialState(generateUUID)
-    const nodeUUID = state.graph.nodeOrder[3]
-    state = openNumericKeyboard(state, nodeUUID)
+    const uuidState = { i: 0 }
+    const generateUUID = makeGenerateUUID(uuidState)
+    const operations: Operations = {
+        'Number': {
+            name: 'Number',
+            inputs: [],
+            body: 0,
+            outputs: ['out']
+        }
+    }
+    const { state: state0, node } = addNodeToGraph({
+        state: { ...emptyState(), operations },
+        operation: operations['Number'],
+        position: { x: 0, y: 0 },
+        generateUUID
+    })
+    const state1 = openNumericKeyboard(state0, node)
+    let state2 = state1
     for (const key of '1234567890') {
-        const { state: nextState } = update(generateUUID, state, {
+        const { state } = update(generateUUID, state2, {
             kind: EventKind.KEYDOWN,
             key
         })
-        state = nextState
+        state2 = state
     }
-    const { state: nextState } = update(generateUUID, state, {
+    const { state: state3 } = update(generateUUID, state2, {
         kind: EventKind.KEYDOWN,
         key: 'Backspace'
     })
-    state = nextState
-    const expectedState = initialState(generateUUID1)
-    expectedState.virtualKeyboard = {
-        show: true,
-        kind: VirtualKeyboardKind.NUMERIC
+    const body = makeGenerateUUID({ i: uuidState.i - 1 })()
+    const expectedState: State = {
+        ...state0,
+        operations,
+        virtualKeyboard: {
+            show: true,
+            kind: VirtualKeyboardKind.NUMERIC
+        },
+        inputTarget: {
+            kind: InputTargetKind.NUMBER,
+            node
+        },
+        selected: {
+            kind: SelectedKind.BODY,
+            body
+        },
+        graph: {
+            ...state0.graph,
+            bodys: {
+                [body]: {
+                    uuid: body,
+                    value: 123456789
+                }
+            }
+        }
     }
-    expectedState.inputTarget = {
-        kind: InputTargetKind.NUMBER,
-        nodeUUID
-    }
-    expectedState.graph.nodes[nodeUUID].body!.editing = true
-    expectedState.graph.nodes[nodeUUID].body!.value = 15123456789
-    expect(state).toEqual(expectedState)
+    expect(state3).toEqual(expectedState)
 })
 
+/*
 test("pressing backspace when number node value is 0 has no effect", () => {
     const generateUUID = generateUUID()
     const generateUUID1 = generateUUID()

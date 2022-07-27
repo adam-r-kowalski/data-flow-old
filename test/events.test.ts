@@ -1227,12 +1227,25 @@ test("virtual key down when finder is shown appends to search", () => {
     expect(render).toEqual(true)
 })
 
-/*
 test("del virtual key down when finder is shown deletes from search", () => {
-    const generateUUID = generateUUID()
-    const generateUUID1 = generateUUID()
-    const state = openFinder(initialState(generateUUID))
-    const { state: state1 } = update(generateUUID, state, {
+    const generateUUID = makeGenerateUUID()
+    const operations: Operations = {
+        'Add': {
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        },
+        'Sub': {
+            name: 'Sub',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        }
+    }
+    const state0 = openFinder({
+        ...emptyState(),
+        operations
+    })
+    const { state: state1 } = update(generateUUID, state0, {
         kind: EventKind.VIRTUAL_KEYDOWN,
         key: 'a'
     })
@@ -1248,24 +1261,37 @@ test("del virtual key down when finder is shown deletes from search", () => {
         kind: EventKind.VIRTUAL_KEYDOWN,
         key: 'del'
     })
-    const expectedState = initialState(generateUUID1)
-    expectedState.finder.show = true
-    expectedState.finder.search = 'ad'
-    expectedState.virtualKeyboard = {
-        show: true,
-        kind: VirtualKeyboardKind.ALPHABETIC
+    const expectedState = {
+        ...state0,
+        finder: {
+            show: true,
+            search: 'ad',
+            options: ['Add']
+        }
     }
-    expectedState.inputTarget.kind = InputTargetKind.FINDER
-    expectedState.finder.options = ['Add']
     expect(state4).toEqual(expectedState)
     expect(render).toEqual(true)
 })
 
 test("space virtual key down when finder is shown adds space to search", () => {
-    const generateUUID = generateUUID()
-    const generateUUID1 = generateUUID()
-    const state = openFinder(initialState(generateUUID))
-    const { state: state1 } = update(generateUUID, state, {
+    const generateUUID = makeGenerateUUID()
+    const operations: Operations = {
+        'Add': {
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        },
+        'Sub': {
+            name: 'Sub',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        }
+    }
+    const state0 = openFinder({
+        ...emptyState(),
+        operations
+    })
+    const { state: state1 } = update(generateUUID, state0, {
         kind: EventKind.VIRTUAL_KEYDOWN,
         key: 'a'
     })
@@ -1277,18 +1303,19 @@ test("space virtual key down when finder is shown adds space to search", () => {
         kind: EventKind.VIRTUAL_KEYDOWN,
         key: 'd'
     })
-    const expectedState = initialState(generateUUID1)
-    expectedState.finder.show = true
-    expectedState.finder.search = 'a d'
-    expectedState.virtualKeyboard = {
-        show: true,
-        kind: VirtualKeyboardKind.ALPHABETIC
+    const expectedState = {
+        ...state0,
+        finder: {
+            show: true,
+            search: 'a d',
+            options: []
+        }
     }
-    expectedState.inputTarget.kind = InputTargetKind.FINDER
     expect(state3).toEqual(expectedState)
     expect(render).toEqual(true)
 })
 
+/*
 test("ret virtual key down when finder is shown closes finder", () => {
     const generateUUID = generateUUID()
     const generateUUID1 = generateUUID()

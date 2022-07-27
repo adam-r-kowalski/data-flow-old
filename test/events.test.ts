@@ -1,4 +1,4 @@
-import { addNodeToGraph, EventKind, openFinder, update } from "../src/event"
+import { addNodeToGraph, EventKind, openFinder, openNumericKeyboard, update } from "../src/event"
 import { Operations } from "../src/graph/model"
 import { addEdge, changeNodePosition } from "../src/graph/update"
 import { translate } from "../src/linear_algebra/matrix3x3"
@@ -1315,88 +1315,119 @@ test("space virtual key down when finder is shown adds space to search", () => {
     expect(render).toEqual(true)
 })
 
-/*
-test("ret virtual key down when finder is shown closes finder", () => {
-    const generateUUID = generateUUID()
-    const generateUUID1 = generateUUID()
-    const state = openFinder(initialState(generateUUID))
-    const { state: state1, render } = update(generateUUID, state, {
+test("ret virtual key down when finder is shown closes finder and adds node", () => {
+    const operations: Operations = {
+        'Add': {
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        },
+        'Sub': {
+            name: 'Sub',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        }
+    }
+    const state0 = openFinder({
+        ...emptyState(),
+        operations
+    })
+    const { state: state1, render } = update(makeGenerateUUID(), state0, {
         kind: EventKind.VIRTUAL_KEYDOWN,
         key: 'ret'
     })
-    const expectedState = initialState(generateUUID1)
-    expectedState.finder.options = [
-        "Number", "Add", "Subtract", "Multiply", "Divide", "Equal", "Less Than", "Log"
-    ]
-    const uuid = generateUUID1()
-    expectedState.graph.nodes[uuid] = {
-        uuid,
-        name: "Number",
-        inputs: [],
-        body: {
-            value: 0,
-            editing: false,
-        },
-        outputs: [
-            { name: "out", selected: false, edgeUUIDs: [] }
-        ],
-        x: 0,
-        y: 0
-    }
-    expectedState.graph.nodeOrder.push(uuid)
+    const { state: expectedState } = addNodeToGraph({
+        state: { ...emptyState(), operations },
+        position: { x: 0, y: 0 },
+        operation: operations['Add'],
+        generateUUID: makeGenerateUUID()
+    })
     expect(state1).toEqual(expectedState)
     expect(render).toEqual(true)
 })
 
 test("sft virtual key down when finder is shown are ignored", () => {
-    const generateUUID = generateUUID()
-    const generateUUID1 = generateUUID()
-    const state = openFinder(initialState(generateUUID))
-    const { state: state1, render } = update(generateUUID, state, {
+    const generateUUID = makeGenerateUUID()
+    const operations: Operations = {
+        'Add': {
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        },
+        'Sub': {
+            name: 'Sub',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        }
+    }
+    let state0 = openFinder({
+        ...emptyState(),
+        operations
+    })
+    const { state: state1, render } = update(generateUUID, state0, {
         kind: EventKind.VIRTUAL_KEYDOWN,
         key: 'sft'
     })
-    const expectedState = initialState(generateUUID1)
-    expectedState.finder.show = true
-    expectedState.virtualKeyboard = {
-        show: true,
-        kind: VirtualKeyboardKind.ALPHABETIC
-    }
-    expectedState.inputTarget.kind = InputTargetKind.FINDER
-    expectedState.finder.options = [
-        "Number", "Add", "Subtract", "Multiply", "Divide", "Equal", "Less Than", "Log"
-    ]
-    expect(state1).toEqual(expectedState)
-    expect(render).toEqual(true)
+    expect(state1).toEqual(state0)
+    expect(render).toBeUndefined()
 })
 
 test("pressing number on keyboard appends to number node", () => {
-    const generateUUID = generateUUID()
-    const generateUUID1 = generateUUID()
-    let state = initialState(generateUUID)
-    const nodeUUID = state.graph.nodeOrder[3]
-    state = openNumericKeyboard(state, nodeUUID)
+    const uuidState = { i: 0 }
+    const generateUUID = makeGenerateUUID(uuidState)
+    const operations: Operations = {
+        'Number': {
+            name: 'Number',
+            inputs: [],
+            body: 0,
+            outputs: ['out']
+        }
+    }
+    const { state: state0, node } = addNodeToGraph({
+        state: { ...emptyState(), operations },
+        operation: operations['Number'],
+        position: { x: 0, y: 0 },
+        generateUUID
+    })
+    const state1 = openNumericKeyboard(state0, node)
+    let state2 = state1
     for (const key of '1234567890') {
-        const { state: nextState } = update(generateUUID, state, {
+        const { state } = update(generateUUID, state2, {
             kind: EventKind.KEYDOWN,
             key
         })
-        state = nextState
+        state2 = state
     }
-    const expectedState = initialState(generateUUID1)
-    expectedState.virtualKeyboard = {
-        show: true,
-        kind: VirtualKeyboardKind.NUMERIC
+    const body = makeGenerateUUID({ i: uuidState.i - 1 })()
+    const expectedState1: State = {
+        ...state0,
+        operations,
+        virtualKeyboard: {
+            show: true,
+            kind: VirtualKeyboardKind.NUMERIC
+        },
+        inputTarget: {
+            kind: InputTargetKind.NUMBER,
+            node
+        },
+        selected: {
+            kind: SelectedKind.BODY,
+            body
+        },
+        graph: {
+            ...state0.graph,
+            bodys: {
+                [body]: {
+                    uuid: body,
+                    value: 1234567890
+                }
+            }
+        }
     }
-    expectedState.inputTarget = {
-        kind: InputTargetKind.NUMBER,
-        nodeUUID
-    }
-    expectedState.graph.nodes[nodeUUID].body!.editing = true
-    expectedState.graph.nodes[nodeUUID].body!.value = 151234567890
-    expect(state).toEqual(expectedState)
+    expect(state2).toEqual(expectedState1)
 })
 
+/*
 test("pressing backspace on keyboard deletes from number node", () => {
     const generateUUID = generateUUID()
     const generateUUID1 = generateUUID()

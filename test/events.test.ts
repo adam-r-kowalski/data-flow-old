@@ -996,12 +996,25 @@ test("enter key down when finder is shown and finder has search eliminates all o
 })
 
 
-/*
 test("ret virtual key down when finder is shown and finder has search eliminates all options closes finder", () => {
-    const generateUUID = generateUUID()
-    const generateUUID1 = generateUUID()
-    let state = openFinder(initialState(generateUUID))
-    const { state: state1 } = update(generateUUID, state, {
+    const generateUUID = makeGenerateUUID()
+    const operations: Operations = {
+        'Add': {
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        },
+        'Sub': {
+            name: 'Sub',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        }
+    }
+    let state0 = openFinder({
+        ...emptyState(),
+        operations
+    })
+    const { state: state1 } = update(generateUUID, state0, {
         kind: EventKind.VIRTUAL_KEYDOWN,
         key: 'x'
     })
@@ -1009,14 +1022,12 @@ test("ret virtual key down when finder is shown and finder has search eliminates
         kind: EventKind.VIRTUAL_KEYDOWN,
         key: 'ret'
     })
-    const expectedState = initialState(generateUUID1)
-    expectedState.finder.options = [
-        "Number", "Add", "Subtract", "Multiply", "Divide", "Equal", "Less Than", "Log"
-    ]
+    const expectedState = { ...emptyState(), operations }
     expect(state2).toEqual(expectedState)
 })
 
 
+/*
 test("escape key down when finder is shown closes finder", () => {
     const generateUUID = generateUUID()
     const generateUUID1 = generateUUID()

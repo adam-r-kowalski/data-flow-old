@@ -728,39 +728,55 @@ test("double click opens finder", () => {
 })
 
 
-/*
 test("key down when finder is not shown does nothing", () => {
-    const generateUUID = generateUUID()
-    const generateUUID1 = generateUUID()
-    const state = initialState(generateUUID)
-    const { state: state1 } = update(generateUUID, state, {
+    const state = emptyState()
+    const { state: state1 } = update(makeGenerateUUID(), state, {
         kind: EventKind.KEYDOWN,
         key: 'a'
     })
-    const expectedState = initialState(generateUUID1)
-    expect(state1).toEqual(expectedState)
+    expect(state1).toEqual(emptyState())
 })
 
 
 test("f key down when finder is not shown opens finder", () => {
-    const generateUUID = generateUUID()
-    const generateUUID1 = generateUUID()
-    const state = initialState(generateUUID)
-    const { state: state1, render } = update(generateUUID, state, {
+    const operations: Operations = {
+        'Add': {
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        },
+        'Sub': {
+            name: 'Sub',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        }
+    }
+    const state0: State = {
+        ...emptyState(),
+        operations
+    }
+    const { state: state1, render } = update(makeGenerateUUID(), state0, {
         kind: EventKind.KEYDOWN,
         key: 'f'
     })
-    const expectedState = initialState(generateUUID1)
-    expectedState.finder.show = true
-    expectedState.virtualKeyboard.show = true
-    expectedState.inputTarget = { kind: InputTargetKind.FINDER }
-    expectedState.finder.options = [
-        "Number", "Add", "Subtract", "Multiply", "Divide", "Equal", "Less Than", "Log"
-    ]
+    const expectedState = {
+        ...state0,
+        finder: {
+            show: true,
+            search: '',
+            options: ["Add", "Sub"]
+        },
+        virtualKeyboard: {
+            kind: VirtualKeyboardKind.ALPHABETIC,
+            show: true,
+        },
+        inputTarget: { kind: InputTargetKind.FINDER }
+    }
     expect(state1).toEqual(expectedState)
     expect(render).toEqual(true)
 })
 
+/*
 test("clicking a finder option adds node to graph", () => {
     const generateUUID = generateUUID()
     const generateUUID1 = generateUUID()

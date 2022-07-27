@@ -1027,139 +1027,183 @@ test("ret virtual key down when finder is shown and finder has search eliminates
 })
 
 
-/*
 test("escape key down when finder is shown closes finder", () => {
-    const generateUUID = generateUUID()
-    const generateUUID1 = generateUUID()
-    const state = openFinder(initialState(generateUUID))
-    const { state: state1, render } = update(generateUUID, state, {
+    const generateUUID = makeGenerateUUID()
+    const operations: Operations = {
+        'Add': {
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        },
+        'Sub': {
+            name: 'Sub',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        }
+    }
+    let state0 = openFinder({
+        ...emptyState(),
+        operations
+    })
+    const { state: state1, render } = update(generateUUID, state0, {
         kind: EventKind.KEYDOWN,
         key: 'Escape'
     })
-    const expectedState = initialState(generateUUID1)
-    expectedState.finder.options = [
-        "Number", "Add", "Subtract", "Multiply", "Divide", "Equal", "Less Than", "Log"
-    ]
+    const expectedState = { ...emptyState(), operations }
     expect(state1).toEqual(expectedState)
     expect(render).toEqual(true)
 })
 
 test("shift key down when finder is shown are ignored", () => {
-    const generateUUID = generateUUID()
-    const generateUUID1 = generateUUID()
-    const state = openFinder(initialState(generateUUID))
-    const { state: state1, render } = update(generateUUID, state, {
+    const generateUUID = makeGenerateUUID()
+    const operations: Operations = {
+        'Add': {
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        },
+        'Sub': {
+            name: 'Sub',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        }
+    }
+    let state0 = openFinder({
+        ...emptyState(),
+        operations
+    })
+    const { state: state1, render } = update(generateUUID, state0, {
         kind: EventKind.KEYDOWN,
         key: 'Shift'
     })
-    const expectedState = initialState(generateUUID1)
-    expectedState.finder.show = true
-    expectedState.virtualKeyboard = {
-        show: true,
-        kind: VirtualKeyboardKind.ALPHABETIC
-    }
-    expectedState.inputTarget.kind = InputTargetKind.FINDER
-    expectedState.finder.options = [
-        "Number", "Add", "Subtract", "Multiply", "Divide", "Equal", "Less Than", "Log"
-    ]
-    expect(state1).toEqual(expectedState)
-    expect(render).toEqual(true)
+    expect(state1).toEqual(state0)
+    expect(render).toBeUndefined()
 })
 
 test("alt key down when finder is shown are ignored", () => {
-    const generateUUID = generateUUID()
-    const generateUUID1 = generateUUID()
-    const state = openFinder(initialState(generateUUID))
-    const { state: state1, render } = update(generateUUID, state, {
+    const generateUUID = makeGenerateUUID()
+    const operations: Operations = {
+        'Add': {
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        },
+        'Sub': {
+            name: 'Sub',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        }
+    }
+    let state0 = openFinder({
+        ...emptyState(),
+        operations
+    })
+    const { state: state1, render } = update(generateUUID, state0, {
         kind: EventKind.KEYDOWN,
         key: 'Alt'
     })
-    const expectedState = initialState(generateUUID1)
-    expectedState.finder.show = true
-    expectedState.virtualKeyboard = {
-        show: true,
-        kind: VirtualKeyboardKind.ALPHABETIC
-    }
-    expectedState.inputTarget.kind = InputTargetKind.FINDER
-    expectedState.finder.options = [
-        "Number", "Add", "Subtract", "Multiply", "Divide", "Equal", "Less Than", "Log"
-    ]
-    expect(state1).toEqual(expectedState)
-    expect(render).toEqual(true)
+    expect(state1).toEqual(state0)
+    expect(render).toBeUndefined()
 })
 
 test("control key down when finder is shown are ignored", () => {
-    const generateUUID = generateUUID()
-    const generateUUID1 = generateUUID()
-    const state = openFinder(initialState(generateUUID))
-    const { state: state1, render } = update(generateUUID, state, {
+    const generateUUID = makeGenerateUUID()
+    const operations: Operations = {
+        'Add': {
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        },
+        'Sub': {
+            name: 'Sub',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        }
+    }
+    let state0 = openFinder({
+        ...emptyState(),
+        operations
+    })
+    const { state: state1, render } = update(generateUUID, state0, {
         kind: EventKind.KEYDOWN,
         key: 'Control'
     })
-    const expectedState = initialState(generateUUID1)
-    expectedState.finder.show = true
-    expectedState.virtualKeyboard = {
-        show: true,
-        kind: VirtualKeyboardKind.ALPHABETIC
-    }
-    expectedState.inputTarget.kind = InputTargetKind.FINDER
-    expectedState.finder.options = [
-        "Number", "Add", "Subtract", "Multiply", "Divide", "Equal", "Less Than", "Log"
-    ]
-    expect(state1).toEqual(expectedState)
-    expect(render).toEqual(true)
+    expect(state1).toEqual(state0)
+    expect(render).toBeUndefined()
 })
 
 test("meta key down when finder is shown are ignored", () => {
-    const generateUUID = generateUUID()
-    const generateUUID1 = generateUUID()
-    const state = openFinder(initialState(generateUUID))
-    const { state: state1, render } = update(generateUUID, state, {
+    const generateUUID = makeGenerateUUID()
+    const operations: Operations = {
+        'Add': {
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        },
+        'Sub': {
+            name: 'Sub',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        }
+    }
+    let state0 = openFinder({
+        ...emptyState(),
+        operations
+    })
+    const { state: state1, render } = update(generateUUID, state0, {
         kind: EventKind.KEYDOWN,
         key: 'Meta'
     })
-    const expectedState = initialState(generateUUID1)
-    expectedState.finder.show = true
-    expectedState.virtualKeyboard = {
-        show: true,
-        kind: VirtualKeyboardKind.ALPHABETIC
-    }
-    expectedState.inputTarget.kind = InputTargetKind.FINDER
-    expectedState.finder.options = [
-        "Number", "Add", "Subtract", "Multiply", "Divide", "Equal", "Less Than", "Log"
-    ]
-    expect(state1).toEqual(expectedState)
-    expect(render).toEqual(true)
+    expect(state1).toEqual(state0)
+    expect(render).toBeUndefined()
 })
 
 test("Tab key down when finder is shown are ignored", () => {
-    const generateUUID = generateUUID()
-    const generateUUID1 = generateUUID()
-    const state = openFinder(initialState(generateUUID))
-    state.finder.show = true
-    const { state: state1, render } = update(generateUUID, state, {
+    const generateUUID = makeGenerateUUID()
+    const operations: Operations = {
+        'Add': {
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        },
+        'Sub': {
+            name: 'Sub',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        }
+    }
+    let state0 = openFinder({
+        ...emptyState(),
+        operations
+    })
+    const { state: state1, render } = update(generateUUID, state0, {
         kind: EventKind.KEYDOWN,
         key: 'Tab'
     })
-    const expectedState = initialState(generateUUID1)
-    expectedState.finder.show = true
-    expectedState.virtualKeyboard = {
-        show: true,
-        kind: VirtualKeyboardKind.ALPHABETIC
-    }
-    expectedState.inputTarget.kind = InputTargetKind.FINDER
-    expectedState.finder.options = [
-        "Number", "Add", "Subtract", "Multiply", "Divide", "Equal", "Less Than", "Log"
-    ]
-    expect(state1).toEqual(expectedState)
-    expect(render).toEqual(true)
+    expect(state1).toEqual(state0)
+    expect(render).toBeUndefined()
+
 })
 
 test("virtual key down when finder is shown appends to search", () => {
-    const generateUUID = generateUUID()
-    const generateUUID1 = generateUUID()
-    const state = openFinder(initialState(generateUUID))
-    const { state: state1 } = update(generateUUID, state, {
+    const generateUUID = makeGenerateUUID()
+    const operations: Operations = {
+        'Add': {
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        },
+        'Sub': {
+            name: 'Sub',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        }
+    }
+    let state0 = openFinder({
+        ...emptyState(),
+        operations
+    })
+    const { state: state1 } = update(generateUUID, state0, {
         kind: EventKind.VIRTUAL_KEYDOWN,
         key: 'a'
     })
@@ -1171,19 +1215,19 @@ test("virtual key down when finder is shown appends to search", () => {
         kind: EventKind.KEYDOWN,
         key: 'd'
     })
-    const expectedState = initialState(generateUUID1)
-    expectedState.finder.show = true
-    expectedState.finder.search = 'add'
-    expectedState.finder.options = ['Add']
-    expectedState.virtualKeyboard = {
-        show: true,
-        kind: VirtualKeyboardKind.ALPHABETIC
+    const expectedState = {
+        ...state0,
+        finder: {
+            show: true,
+            search: 'add',
+            options: ['Add']
+        }
     }
-    expectedState.inputTarget.kind = InputTargetKind.FINDER
     expect(state3).toEqual(expectedState)
     expect(render).toEqual(true)
 })
 
+/*
 test("del virtual key down when finder is shown deletes from search", () => {
     const generateUUID = generateUUID()
     const generateUUID1 = generateUUID()

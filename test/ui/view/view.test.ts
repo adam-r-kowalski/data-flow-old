@@ -21,6 +21,7 @@ import {
     virtualKeyboard,
     virtualKeys,
 } from "../../../src/ui/view"
+import { contextMenu } from "../../../src/ui/view/context_menu"
 
 test("spacer", () => {
     expect(spacer(10)).toEqual(container({ width: 10, height: 10 }))
@@ -1013,6 +1014,17 @@ test("view with three nodes and no edges", () => {
             ],
             connections: []
         }),
+        contextMenu({
+            items: [{
+                name: "Delete Node",
+                shortcut: 'd',
+                onClick: {
+                    kind: EventKind.DELETE_NODE,
+                    node: 'first'
+                }
+            }],
+            backgroundColor: state.theme.node
+        })
     ])
     expect(actual).toEqual(expected)
 })

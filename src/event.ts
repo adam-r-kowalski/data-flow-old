@@ -21,7 +21,8 @@ export enum EventKind {
     VIRTUAL_KEYDOWN,
     CLICKED_FINDER_OPTION,
     CLICKED_NUMBER,
-    CLICKED_BACKGROUND
+    CLICKED_BACKGROUND,
+    DELETE_NODE
 }
 
 export interface PointerMove {
@@ -93,6 +94,11 @@ export interface ClickedBackground {
     readonly kind: EventKind.CLICKED_BACKGROUND,
 }
 
+export interface DeleteNode {
+    readonly kind: EventKind.DELETE_NODE,
+    readonly node: UUID
+}
+
 export type AppEvent =
     | PointerMove
     | PointerDown
@@ -108,6 +114,7 @@ export type AppEvent =
     | ClickedFinderOption
     | ClickedNumber
     | ClickedBackground
+    | DeleteNode
 
 
 const pointerDown = (state: State, event: PointerDown): UpdateResult<State, AppEvent> => {
@@ -422,6 +429,13 @@ export const addNodeToGraph = ({ state, operation, position, generateUUID }: Add
     }
 }
 
+export const removeNodeFromGraph = (state: State, node: UUID): State => ({
+    ...state,
+    graph: removeNode(state.graph, node),
+    nodeOrder: state.nodeOrder.filter(n => n !== node),
+    selected: { kind: SelectedKind.NONE }
+})
+
 const keyDown = (state: State, { key }: KeyDown, generateUUID: GenerateUUID): UpdateResult<State, AppEvent> => {
     switch (state.inputTarget.kind) {
         case InputTargetKind.FINDER:
@@ -488,14 +502,8 @@ const keyDown = (state: State, { key }: KeyDown, generateUUID: GenerateUUID): Up
                 case 'd':
                     switch (state.selected.kind) {
                         case SelectedKind.NODE:
-                            const node = state.selected.node
                             return {
-                                state: {
-                                    ...state,
-                                    graph: removeNode(state.graph, node),
-                                    nodeOrder: state.nodeOrder.filter(n => n !== node),
-                                    selected: { kind: SelectedKind.NONE }
-                                },
+                                state: removeNodeFromGraph(state, state.selected.node),
                                 render: true
                             }
                         default:
@@ -587,13 +595,18 @@ export const openNumericKeyboard = (state: State, node: UUID): State => ({
     }
 })
 
-const clickedNumber = (state: State, { node }: ClickedNumber) => ({
+const clickedNumber = (state: State, { node }: ClickedNumber): UpdateResult<State, AppEvent> => ({
     state: openNumericKeyboard(closeFinder(state), node),
     render: true
 })
 
-const clickedBackground = (state: State) => ({
+const clickedBackground = (state: State): UpdateResult<State, AppEvent> => ({
     state: closeFinder({ ...state, selected: { kind: SelectedKind.NONE } }),
+    render: true
+})
+
+const deleteNode = (state: State, { node }: DeleteNode): UpdateResult<State, AppEvent> => ({
+    state: removeNodeFromGraph(state, node),
     render: true
 })
 
@@ -613,5 +626,6 @@ export const update = (generateUUID: GenerateUUID, state: State, event: AppEvent
         case EventKind.CLICKED_FINDER_OPTION: return clickedFinderOption(state, event, generateUUID)
         case EventKind.CLICKED_NUMBER: return clickedNumber(state, event)
         case EventKind.CLICKED_BACKGROUND: return clickedBackground(state)
+        case EventKind.DELETE_NODE: return deleteNode(state, event)
     }
 }

@@ -1711,267 +1711,374 @@ test("pressing del on virtual keyboard deletes from number node", () => {
 })
 
 
-/*
 test("pressing enter on keyboard while editing number node exits virtual keyboard", () => {
-    const generateUUID = generateUUID()
-    const generateUUID1 = generateUUID()
-    let state = initialState(generateUUID)
-    const nodeUUID = state.graph.nodeOrder[3]
-    state = openNumericKeyboard(state, nodeUUID)
+    const uuidState = { i: 0 }
+    const generateUUID = makeGenerateUUID(uuidState)
+    const operations: Operations = {
+        'Number': {
+            name: 'Number',
+            inputs: [],
+            body: 0,
+            outputs: ['out']
+        }
+    }
+    const { state: state0, node } = addNodeToGraph({
+        state: { ...emptyState(), operations },
+        operation: operations['Number'],
+        position: { x: 0, y: 0 },
+        generateUUID
+    })
+    const state1 = openNumericKeyboard(state0, node)
+    let state2 = state1
     for (const key of '1234567890') {
-        const { state: nextState } = update(generateUUID, state, {
+        const { state } = update(generateUUID, state2, {
             kind: EventKind.KEYDOWN,
             key
         })
-        state = nextState
+        state2 = state
     }
-    const { state: nextState } = update(generateUUID, state, {
+    const { state: state3 } = update(generateUUID, state2, {
         kind: EventKind.KEYDOWN,
         key: 'Enter'
     })
-    state = nextState
-    const expectedState = initialState(generateUUID1)
-    expectedState.graph.nodes[nodeUUID].body!.value = 151234567890
-    expect(state).toEqual(expectedState)
+    const body = makeGenerateUUID({ i: uuidState.i - 1 })()
+    const expectedState: State = {
+        ...state0,
+        operations,
+        graph: {
+            ...state0.graph,
+            bodys: {
+                [body]: {
+                    uuid: body,
+                    value: 1234567890
+                }
+            }
+        }
+    }
+    expect(state3).toEqual(expectedState)
 })
 
 test("pressing ret on virtual keyboard while editing number node exits virtual keyboard", () => {
-    const generateUUID = generateUUID()
-    const generateUUID1 = generateUUID()
-    let state = initialState(generateUUID)
-    const nodeUUID = state.graph.nodeOrder[3]
-    state = openNumericKeyboard(state, nodeUUID)
+    const uuidState = { i: 0 }
+    const generateUUID = makeGenerateUUID(uuidState)
+    const operations: Operations = {
+        'Number': {
+            name: 'Number',
+            inputs: [],
+            body: 0,
+            outputs: ['out']
+        }
+    }
+    const { state: state0, node } = addNodeToGraph({
+        state: { ...emptyState(), operations },
+        operation: operations['Number'],
+        position: { x: 0, y: 0 },
+        generateUUID
+    })
+    const state1 = openNumericKeyboard(state0, node)
+    let state2 = state1
     for (const key of '1234567890') {
-        const { state: nextState } = update(generateUUID, state, {
+        const { state } = update(generateUUID, state2, {
             kind: EventKind.VIRTUAL_KEYDOWN,
             key
         })
-        state = nextState
+        state2 = state
     }
-    const { state: nextState } = update(generateUUID, state, {
+    const { state: state3 } = update(generateUUID, state2, {
         kind: EventKind.VIRTUAL_KEYDOWN,
         key: 'ret'
     })
-    state = nextState
-    const expectedState = initialState(generateUUID1)
-    expectedState.graph.nodes[nodeUUID].body!.value = 151234567890
-    expect(state).toEqual(expectedState)
+    const body = makeGenerateUUID({ i: uuidState.i - 1 })()
+    const expectedState: State = {
+        ...state0,
+        operations,
+        graph: {
+            ...state0.graph,
+            bodys: {
+                [body]: {
+                    uuid: body,
+                    value: 1234567890
+                }
+            }
+        }
+    }
+    expect(state3).toEqual(expectedState)
 })
 
 
 test("pressing non number on keyboard while editing number node is ignored", () => {
-    const generateUUID = generateUUID()
-    const generateUUID1 = generateUUID()
-    let state = initialState(generateUUID)
-    const nodeUUID = state.graph.nodeOrder[3]
-    state = openNumericKeyboard(state, nodeUUID)
+    const uuidState = { i: 0 }
+    const generateUUID = makeGenerateUUID(uuidState)
+    const operations: Operations = {
+        'Number': {
+            name: 'Number',
+            inputs: [],
+            body: 0,
+            outputs: ['out']
+        }
+    }
+    const { state: state0, node } = addNodeToGraph({
+        state: { ...emptyState(), operations },
+        operation: operations['Number'],
+        position: { x: 0, y: 0 },
+        generateUUID
+    })
+    const state1 = openNumericKeyboard(state0, node)
+    let state2 = state1
     for (const key of 'qwertyuiopasdfghjklzxcvbnm') {
-        const { state: nextState } = update(generateUUID, state, {
+        const { state } = update(generateUUID, state2, {
             kind: EventKind.KEYDOWN,
             key
         })
-        state = nextState
+        state2 = state
     }
-    const expectedState = initialState(generateUUID1)
-    expectedState.virtualKeyboard = {
-        show: true,
-        kind: VirtualKeyboardKind.NUMERIC
+    const body = makeGenerateUUID({ i: uuidState.i - 1 })()
+    const expectedState: State = {
+        ...state1,
+        operations,
+        graph: {
+            ...state0.graph,
+            bodys: {
+                [body]: {
+                    uuid: body,
+                    value: 0
+                }
+            }
+        }
     }
-    expectedState.inputTarget = {
-        kind: InputTargetKind.NUMBER,
-        nodeUUID
-    }
-    expectedState.graph.nodes[nodeUUID].body!.editing = true
-    expect(state).toEqual(expectedState)
+    expect(state2).toEqual(expectedState)
 })
 
 
 test("pressing non number on virtual keyboard while editing number node is ignored", () => {
-    const generateUUID = generateUUID()
-    const generateUUID1 = generateUUID()
-    let state = initialState(generateUUID)
-    const nodeUUID = state.graph.nodeOrder[3]
-    state = openNumericKeyboard(state, nodeUUID)
+    const uuidState = { i: 0 }
+    const generateUUID = makeGenerateUUID(uuidState)
+    const operations: Operations = {
+        'Number': {
+            name: 'Number',
+            inputs: [],
+            body: 0,
+            outputs: ['out']
+        }
+    }
+    const { state: state0, node } = addNodeToGraph({
+        state: { ...emptyState(), operations },
+        operation: operations['Number'],
+        position: { x: 0, y: 0 },
+        generateUUID
+    })
+    const state1 = openNumericKeyboard(state0, node)
+    let state2 = state1
     for (const key of 'qwertyuiopasdfghjklzxcvbnm') {
-        const { state: nextState } = update(generateUUID, state, {
+        const { state } = update(generateUUID, state2, {
             kind: EventKind.VIRTUAL_KEYDOWN,
             key
         })
-        state = nextState
+        state2 = state
     }
-    const expectedState = initialState(generateUUID1)
-    expectedState.virtualKeyboard = {
-        show: true,
-        kind: VirtualKeyboardKind.NUMERIC
+    const body = makeGenerateUUID({ i: uuidState.i - 1 })()
+    const expectedState: State = {
+        ...state1,
+        operations,
+        graph: {
+            ...state0.graph,
+            bodys: {
+                [body]: {
+                    uuid: body,
+                    value: 0
+                }
+            }
+        }
     }
-    expectedState.inputTarget = {
-        kind: InputTargetKind.NUMBER,
-        nodeUUID
-    }
-    expectedState.graph.nodes[nodeUUID].body!.editing = true
-    expect(state).toEqual(expectedState)
+    expect(state2).toEqual(expectedState)
 })
 
 test("pressing a key on virtual keyboard while no input target selected doesn't change the state", () => {
-    const generateUUID = generateUUID()
-    const generateUUID1 = generateUUID()
-    let state = initialState(generateUUID)
-    state.virtualKeyboard = {
-        show: true,
-        kind: VirtualKeyboardKind.NUMERIC
+    const generateUUID = makeGenerateUUID()
+    const operations: Operations = {
+        'Number': {
+            name: 'Number',
+            inputs: [],
+            body: 0,
+            outputs: ['out']
+        }
     }
-    const { state: state1 } = update(generateUUID, state, {
+    const { state: state0 } = addNodeToGraph({
+        state: {
+            ...emptyState(),
+            operations,
+            virtualKeyboard: {
+                show: true,
+                kind: VirtualKeyboardKind.NUMERIC
+            },
+        },
+        operation: operations['Number'],
+        position: { x: 0, y: 0 },
+        generateUUID
+    })
+    const { state: state1 } = update(generateUUID, state0, {
         kind: EventKind.VIRTUAL_KEYDOWN,
         key: '1'
     })
-    const expectedState = initialState(generateUUID1)
-    expectedState.virtualKeyboard = {
-        show: true,
-        kind: VirtualKeyboardKind.NUMERIC
-    }
-    expect(state1).toEqual(expectedState)
+    expect(state1).toEqual(state0)
 })
 
 test("clicking a number node opens the numeric keyboard", () => {
-    const generateUUID = generateUUID()
-    const generateUUID1 = generateUUID()
-    let state = initialState(generateUUID)
-    const nodeUUID = state.graph.nodeOrder[3]
-    const { state: state1 } = update(generateUUID, state, {
-        kind: EventKind.CLICKED_NUMBER,
-        nodeUUID
+    const generateUUID = makeGenerateUUID()
+    const operations: Operations = {
+        'Number': {
+            name: 'Number',
+            inputs: [],
+            body: 0,
+            outputs: ['out']
+        }
+    }
+    const { state: state0, node } = addNodeToGraph({
+        state: { ...emptyState(), operations },
+        operation: operations['Number'],
+        position: { x: 0, y: 0 },
+        generateUUID
     })
-    const expectedState = initialState(generateUUID1)
-    expectedState.virtualKeyboard = {
-        show: true,
-        kind: VirtualKeyboardKind.NUMERIC
-    }
-    expectedState.inputTarget = {
-        kind: InputTargetKind.NUMBER,
-        nodeUUID
-    }
-    expectedState.graph.nodes[nodeUUID].body!.editing = true
-    expectedState.graph.nodes[nodeUUID].body!.value = 15
+    const { state: state1 } = update(generateUUID, state0, {
+        kind: EventKind.CLICKED_NUMBER,
+        node
+    })
+    const expectedState = openNumericKeyboard(state0, node)
     expect(state1).toEqual(expectedState)
 })
 
 test("clicking a number node when another number node is selected switches selections", () => {
-    const generateUUID = generateUUID()
-    const generateUUID1 = generateUUID()
-    let state = initialState(generateUUID)
-    const [a, b] = state.graph.nodeOrder
-    const { state: state1 } = update(generateUUID, state, {
-        kind: EventKind.CLICKED_NUMBER,
-        nodeUUID: a
+    const generateUUID = makeGenerateUUID()
+    const operations: Operations = {
+        'Number': {
+            name: 'Number',
+            inputs: [],
+            body: 0,
+            outputs: ['out']
+        }
+    }
+    const { state: state0, node: node0 } = addNodeToGraph({
+        state: { ...emptyState(), operations },
+        operation: operations['Number'],
+        position: { x: 0, y: 0 },
+        generateUUID
+    })
+    const { state: state1, node: node1 } = addNodeToGraph({
+        state: state0,
+        operation: operations['Number'],
+        position: { x: 0, y: 0 },
+        generateUUID
     })
     const { state: state2 } = update(generateUUID, state1, {
         kind: EventKind.CLICKED_NUMBER,
-        nodeUUID: b
+        node: node0
     })
-    const expectedState = initialState(generateUUID1)
-    expectedState.virtualKeyboard = {
-        show: true,
-        kind: VirtualKeyboardKind.NUMERIC
-    }
-    expectedState.inputTarget = {
-        kind: InputTargetKind.NUMBER,
-        nodeUUID: b
-    }
-    expectedState.graph.nodes[b].body!.editing = true
-    expectedState.graph.nodes[b].body!.value = 10
-    expect(state2).toEqual(expectedState)
+    const { state: state3 } = update(generateUUID, state2, {
+        kind: EventKind.CLICKED_NUMBER,
+        node: node1
+    })
+    const expectedState = openNumericKeyboard(state1, node1)
+    expect(state3).toEqual(expectedState)
 })
 
 test("clicking background when a number node is selected deselects it", () => {
-    const generateUUID = generateUUID()
-    const generateUUID1 = generateUUID()
-    const state = initialState(generateUUID)
-    const { state: state1 } = update(generateUUID, state, {
+    const generateUUID = makeGenerateUUID()
+    const operations: Operations = {
+        'Number': {
+            name: 'Number',
+            inputs: [],
+            body: 0,
+            outputs: ['out']
+        }
+    }
+    const { state: state0, node } = addNodeToGraph({
+        state: { ...emptyState(), operations },
+        operation: operations['Number'],
+        position: { x: 0, y: 0 },
+        generateUUID
+    })
+    const { state: state1 } = update(generateUUID, state0, {
         kind: EventKind.CLICKED_NUMBER,
-        nodeUUID: state.graph.nodeOrder[3]
+        node
     })
     const { state: state2 } = update(generateUUID, state1, {
         kind: EventKind.CLICKED_BACKGROUND,
     })
-    const expectedState = initialState(generateUUID1)
-    expect(state2).toEqual(expectedState)
+    expect(state2).toEqual(state0)
 })
 
 test("zooming", () => {
-    const generateUUID = generateUUID()
-    const state = initialState(generateUUID)
-    const pointer0 = {
-        x: 0,
-        y: 0,
+    const generateUUID = makeGenerateUUID()
+    const pointer0: Pointer = {
         id: 0,
+        position: { x: 0, y: 0 }
     }
-    const pointer1 = {
-        x: 10,
-        y: 10,
+    const pointer1: Pointer = {
         id: 1,
+        position: { x: 10, y: 10 }
     }
-    const pointer2 = {
-        x: 20,
-        y: 20,
+    const pointer2: Pointer = {
         id: 1,
+        position: { x: 20, y: 20 }
     }
-    const pointer3 = {
-        x: 30,
-        y: 30,
+    const pointer3: Pointer = {
         id: 1,
+        position: { x: 30, y: 30 }
     }
-    const { state: state1 } = update(generateUUID, state, {
+    const state0 = emptyState()
+    const { state: state1 } = update(generateUUID, state0, {
         kind: EventKind.POINTER_DOWN,
         pointer: pointer0
     })
-    {
-        const expectedState = initialState(generateUUID())
-        expectedState.dragging = true
-        expectedState.potentialDoubleClick = true
-        expectedState.pointers = [pointer0]
-        expect(state1).toEqual(expectedState)
+    const expectedState0 = {
+        ...emptyState(),
+        dragging: true,
+        potentialDoubleClick: true,
+        pointers: [pointer0]
     }
+    expect(state1).toEqual(expectedState0)
     const { state: state2 } = update(generateUUID, state1, {
         kind: EventKind.POINTER_DOWN,
         pointer: pointer1
     })
-    {
-        const expectedState = initialState(generateUUID())
-        expectedState.zooming = true
-        expectedState.pointers = [pointer0, pointer1]
-        expect(state2).toEqual(expectedState)
+    const expectedState1 = {
+        ...emptyState(),
+        zooming: true,
+        pointers: [pointer0, pointer1]
     }
+    expect(state2).toEqual(expectedState1)
     const { state: state3 } = update(generateUUID, state2, {
         kind: EventKind.POINTER_MOVE,
         pointer: pointer2
     })
-    {
-        const expectedState = initialState(generateUUID())
-        expectedState.zooming = true
-        expectedState.pointerDistance = Math.sqrt(Math.pow(20, 2) + Math.pow(20, 2))
-        expectedState.pointerCenter = [10, 10]
-        expectedState.pointers = [pointer0, pointer2]
-        expect(state3).toEqual(expectedState)
+    const expectedState2 = {
+        ...emptyState(),
+        zooming: true,
+        pointerDistance: Math.sqrt(Math.pow(20, 2) + Math.pow(20, 2)),
+        pointerCenter: { x: 10, y: 10 },
+        pointers: [pointer0, pointer2]
     }
+    expect(state3).toEqual(expectedState2)
     const { state: state4 } = update(generateUUID, state3, {
         kind: EventKind.POINTER_MOVE,
         pointer: pointer3
     })
-    {
-        const expectedState = initialState(generateUUID())
-        expectedState.zooming = true
-        expectedState.pointerDistance = Math.sqrt(Math.pow(30, 2) + Math.pow(30, 2))
-        expectedState.pointerCenter = [15, 15]
-        expectedState.pointers = [pointer0, pointer3]
-        expectedState.camera = [
+    const expectedState3 = {
+        ...emptyState(),
+        zooming: true,
+        pointerDistance: Math.sqrt(Math.pow(30, 2) + Math.pow(30, 2)),
+        pointerCenter: { x: 15, y: 15 },
+        pointers: [pointer0, pointer3],
+        camera: [
             0.906625499506728, 0, -3.13250999013456,
             0, 0.906625499506728, -3.13250999013456,
             0, 0, 1,
         ]
-        expect(state4).toEqual(expectedState)
     }
+    expect(state4).toEqual(expectedState3)
 })
 
+/*
 test("pressing d on keyboard with node selected deletes it", () => {
     const generateUUID = generateUUID()
     const generateUUID1 = generateUUID()

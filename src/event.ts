@@ -206,9 +206,9 @@ const pointerMove = (state: State, event: PointerMove): UpdateResult<State, AppE
             }
         } else {
             // must be zooming
-            const [p0, p1] = [state.pointers[0], state.pointers[1]]
-            const [x1, y1] = [p0.position.x, p0.position.y]
-            const [x2, y2] = [p1.position.x, p1.position.y]
+            const [p0, p1] = [pointers[0], pointers[1]]
+            const { x: x1, y: y1 } = p0.position
+            const { x: x2, y: y2 } = p1.position
             const pointerDistance = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2))
             const previousDistance = state.pointerDistance
             const previousCenter = state.pointerCenter
@@ -223,11 +223,11 @@ const pointerMove = (state: State, event: PointerMove): UpdateResult<State, AppE
                 const dy = y - previousCenter.y
                 const camera = multiplyMatrices(state.camera, move, scale(zoom, zoom), moveBack, translate(-dx, -dy))
                 return {
-                    state: { ...state, pointerCenter, pointerDistance, camera },
+                    state: { ...state, pointerCenter, pointerDistance, pointers, camera },
                     render: true
                 }
             } else {
-                return { state: { ...state, pointerCenter, pointerDistance } }
+                return { state: { ...state, pointerCenter, pointerDistance, pointers } }
             }
         }
     }

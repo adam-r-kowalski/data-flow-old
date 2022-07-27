@@ -2078,91 +2078,109 @@ test("zooming", () => {
     expect(state4).toEqual(expectedState3)
 })
 
-/*
 test("pressing d on keyboard with node selected deletes it", () => {
-    const generateUUID = generateUUID()
-    const generateUUID1 = generateUUID()
-    const state = initialState(generateUUID)
-    const [a, b, c, d, e, f] = state.graph.nodeOrder
-    const edgeUUIDs = state.graph.nodes[a].outputs[0].edgeUUIDs
-    expect(edgeUUIDs.length).toEqual(1)
-    const edgeUUID = edgeUUIDs[0]
-    const edge = state.graph.edges[edgeUUID]
-    expect(edge.input.nodeUUID).toEqual(c)
-    expect(edge.input.inputIndex).toEqual(0)
-    expect(state.graph.nodes[c].inputs[0].edgeUUIDs.length).toEqual(1)
-    const { state: state1 } = update(generateUUID, state, {
-        kind: EventKind.CLICKED_NODE,
-        nodeUUID: a
+    const generateUUID = makeGenerateUUID()
+    const operations: Operations = {
+        'Add': {
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        },
+    }
+    let state0 = { ...emptyState(), operations }
+    const { state: state1, node } = addNodeToGraph({
+        state: state0,
+        operation: operations['Add'],
+        position: { x: 0, y: 0 },
+        generateUUID
     })
     const { state: state2 } = update(generateUUID, state1, {
+        kind: EventKind.CLICKED_NODE,
+        node
+    })
+    const { state: state3 } = update(generateUUID, state2, {
         kind: EventKind.KEYDOWN,
         key: 'd'
     })
-    const expectedState = initialState(generateUUID1)
-    expectedState.graph.nodeOrder = [b, c, d, e, f]
-    delete expectedState.graph.nodes[a]
-    delete expectedState.graph.edges[edgeUUID]
-    expectedState.graph.nodes[c].inputs[0].edgeUUIDs = []
-    expect(state2).toEqual(expectedState)
+    expect(state3).toEqual(state0)
 })
 
 test("clicking background when a node is selected deselects it", () => {
-    const generateUUID = generateUUID()
-    const generateUUID1 = generateUUID()
-    const state = initialState(generateUUID)
-    const [a, b, c, d, e, f] = state.graph.nodeOrder
-    const { state: state1 } = update(generateUUID, state, {
-        kind: EventKind.CLICKED_NODE,
-        nodeUUID: a
+    const generateUUID = makeGenerateUUID()
+    const operations: Operations = {
+        'Add': {
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        },
+    }
+    let state0 = { ...emptyState(), operations }
+    const { state: state1, node } = addNodeToGraph({
+        state: state0,
+        operation: operations['Add'],
+        position: { x: 0, y: 0 },
+        generateUUID
     })
     const { state: state2 } = update(generateUUID, state1, {
+        kind: EventKind.CLICKED_NODE,
+        node
+    })
+    const { state: state3 } = update(generateUUID, state2, {
         kind: EventKind.CLICKED_BACKGROUND,
     })
-    const expectedState = initialState(generateUUID1)
-    expectedState.graph.nodeOrder = [b, c, d, e, f, a]
-    expect(state2).toEqual(expectedState)
+    expect(state3).toEqual(state1)
 })
 
-
 test("clicking background when a input is selected deselects it", () => {
-    const generateUUID = generateUUID()
-    const generateUUID1 = generateUUID()
-    const state = initialState(generateUUID)
-    const [a, b, c, d, e, f] = state.graph.nodeOrder
-    const { state: state1 } = update(generateUUID, state, {
-        kind: EventKind.CLICKED_INPUT,
-        inputPath: {
-            nodeUUID: c,
-            inputIndex: 0
-        }
+    const generateUUID = makeGenerateUUID()
+    const operations: Operations = {
+        'Add': {
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        },
+    }
+    let state0 = { ...emptyState(), operations }
+    const { state: state1, node } = addNodeToGraph({
+        state: state0,
+        operation: operations['Add'],
+        position: { x: 0, y: 0 },
+        generateUUID
     })
+    const input = state1.graph.nodes[node].inputs[0]
     const { state: state2 } = update(generateUUID, state1, {
+        kind: EventKind.CLICKED_INPUT,
+        input
+    })
+    const { state: state3 } = update(generateUUID, state2, {
         kind: EventKind.CLICKED_BACKGROUND,
     })
-    const expectedState = initialState(generateUUID1)
-    expectedState.graph.nodeOrder = [a, b, d, e, f, c]
-    expect(state2).toEqual(expectedState)
+    expect(state3).toEqual(state1)
 })
 
 test("clicking background when a output is selected deselects it", () => {
-    const generateUUID = generateUUID()
-    const generateUUID1 = generateUUID()
-    const state = initialState(generateUUID)
-    const [a, b, c, d, e, f] = state.graph.nodeOrder
-    const { state: state1 } = update(generateUUID, state, {
-        kind: EventKind.CLICKED_OUTPUT,
-        outputPath: {
-            nodeUUID: c,
-            outputIndex: 0
-        }
+    const generateUUID = makeGenerateUUID()
+    const operations: Operations = {
+        'Add': {
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        },
+    }
+    let state0 = { ...emptyState(), operations }
+    const { state: state1, node } = addNodeToGraph({
+        state: state0,
+        operation: operations['Add'],
+        position: { x: 0, y: 0 },
+        generateUUID
     })
+    const output = state1.graph.nodes[node].outputs[0]
     const { state: state2 } = update(generateUUID, state1, {
+        kind: EventKind.CLICKED_OUTPUT,
+        output
+    })
+    const { state: state3 } = update(generateUUID, state2, {
         kind: EventKind.CLICKED_BACKGROUND,
     })
-    const expectedState = initialState(generateUUID1)
-    expectedState.graph.nodeOrder = [a, b, d, e, f, c]
-    expect(state2).toEqual(expectedState)
+    expect(state3).toEqual(state1)
 })
-
-*/

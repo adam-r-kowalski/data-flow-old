@@ -284,11 +284,16 @@ const wheel = (state: State, event: Wheel): UpdateResult<State, AppEvent> => {
 
 const clickedInput = (state: State, event: ClickedInput, generateUUID: GenerateUUID): UpdateResult<State, AppEvent> => {
     if (state.selected.kind === SelectedKind.OUTPUT) {
-        if (state.graph.inputs[event.input].node === state.graph.outputs[state.selected.output].node) {
+        const input = state.graph.inputs[event.input]
+        const output = state.graph.outputs[state.selected.output]
+        if (input.node === output.node) {
             return { state }
         } else {
-            const { graph } = addEdge({
-                graph: state.graph,
+            const graph0 = input.edge !== undefined ?
+                removeInputEdge(state.graph, input.uuid) :
+                state.graph
+            const { graph: graph1 } = addEdge({
+                graph: graph0,
                 input: event.input,
                 output: state.selected.output,
                 generateUUID
@@ -297,7 +302,7 @@ const clickedInput = (state: State, event: ClickedInput, generateUUID: GenerateU
                 state: {
                     ...state,
                     selected: { kind: SelectedKind.NONE },
-                    graph
+                    graph: graph1
                 },
                 render: true
             }
@@ -315,11 +320,16 @@ const clickedInput = (state: State, event: ClickedInput, generateUUID: GenerateU
 
 const clickedOutput = (state: State, event: ClickedOutput, generateUUID: GenerateUUID): UpdateResult<State, AppEvent> => {
     if (state.selected.kind === SelectedKind.INPUT) {
-        if (state.graph.outputs[event.output].node === state.graph.inputs[state.selected.input].node) {
+        const input = state.graph.inputs[state.selected.input]
+        const output = state.graph.outputs[event.output]
+        if (output.node === input.node) {
             return { state }
         } else {
-            const { graph } = addEdge({
-                graph: state.graph,
+            const graph0 = input.edge !== undefined ?
+                removeInputEdge(state.graph, input.uuid) :
+                state.graph
+            const { graph: graph1 } = addEdge({
+                graph: graph0,
                 input: state.selected.input,
                 output: event.output,
                 generateUUID
@@ -328,7 +338,7 @@ const clickedOutput = (state: State, event: ClickedOutput, generateUUID: Generat
                 state: {
                     ...state,
                     selected: { kind: SelectedKind.NONE },
-                    graph
+                    graph: graph1
                 },
                 render: true
             }

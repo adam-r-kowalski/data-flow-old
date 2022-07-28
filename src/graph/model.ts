@@ -4,18 +4,21 @@ export type GenerateUUID = () => UUID
 
 export interface Input {
     readonly uuid: UUID
+    readonly node: UUID
     readonly name: string
     readonly edge?: UUID
 }
 
 export interface Output {
     readonly uuid: UUID
+    readonly node: UUID
     readonly name: string
     readonly edges: Readonly<UUID[]>
 }
 
 export interface Body {
     readonly uuid: UUID
+    readonly node: UUID
     readonly value: number
 }
 

@@ -43,6 +43,7 @@ const theme: Theme = {
 test("inputUi not selected", () => {
     const input: Input = {
         uuid: 'uuid',
+        node: 'node',
         name: 'name',
     }
     const actual = inputUi(theme, input, { kind: SelectedKind.NONE })
@@ -69,6 +70,7 @@ test("inputUi not selected", () => {
 test("inputUi selected", () => {
     const input: Input = {
         uuid: 'uuid',
+        node: 'node',
         name: 'name'
     }
     const actual = inputUi(theme, input, { kind: SelectedKind.INPUT, input: 'uuid' })
@@ -96,14 +98,17 @@ test("inputsUi", () => {
     const inputs: Input[] = [
         {
             uuid: 'first',
+            node: 'node',
             name: "first",
         },
         {
             uuid: 'second',
+            node: 'node',
             name: "second",
         },
         {
             uuid: 'third',
+            node: 'node',
             name: "third",
         }
     ]
@@ -122,6 +127,7 @@ test("inputsUi", () => {
 test("outputUi not selected", () => {
     const output: Output = {
         uuid: 'uuid',
+        node: 'node',
         name: 'name',
         edges: []
     }
@@ -149,6 +155,7 @@ test("outputUi not selected", () => {
 test("outputUi selected", () => {
     const output: Output = {
         uuid: "uuid",
+        node: 'node',
         name: 'name',
         edges: []
     }
@@ -177,16 +184,19 @@ test("outputsUi", () => {
     const outputs: Output[] = [
         {
             uuid: 'first',
+            node: 'node',
             name: "first",
             edges: []
         },
         {
             uuid: 'second',
+            node: 'node',
             name: "second",
             edges: []
         },
         {
             uuid: "third",
+            node: 'node',
             name: "third",
             edges: []
         }
@@ -206,6 +216,7 @@ test("outputsUi", () => {
 test("numberUi not selected", () => {
     const body: Body = {
         uuid: 'body uuid',
+        node: 'node',
         value: 0,
     }
     const actual = numberUi(theme, body, { kind: SelectedKind.NONE })
@@ -224,6 +235,7 @@ test("numberUi not selected", () => {
 test("numberUi editing", () => {
     const body: Body = {
         uuid: 'body uuid',
+        node: 'node',
         value: 0,
     }
     const actual = numberUi(theme, body, { kind: SelectedKind.BODY, body: 'body uuid' })
@@ -282,6 +294,7 @@ test("nodeUi 1 input, no body and no outputs", () => {
     }
     const input: Input = {
         uuid: 'input uuid',
+        node: 'node',
         name: 'first'
     }
     const graph: Graph = {
@@ -321,6 +334,7 @@ test("nodeUi 1 output, no body and no inputs", () => {
     }
     const output: Output = {
         uuid: 'output uuid',
+        node: 'node',
         name: 'first',
         edges: []
     }
@@ -362,6 +376,7 @@ test("nodeUi no inputs or outputs but body defined", () => {
     }
     const body: Body = {
         uuid: 'body uuid',
+        node: 'node',
         value: 0
     }
     const graph: Graph = {
@@ -401,10 +416,12 @@ test("nodeUi 1 input and 1 output but no body", () => {
     }
     const input: Input = {
         uuid: 'input uuid',
+        node: 'node',
         name: 'first'
     }
     const output: Output = {
         uuid: 'output uuid',
+        node: 'node',
         name: 'first',
         edges: []
     }
@@ -451,10 +468,12 @@ test("nodeUi 1 input body but no outputs", () => {
     }
     const input: Input = {
         uuid: 'input uuid',
+        node: 'node uuid',
         name: 'first'
     }
     const body: Body = {
         uuid: 'body uuid',
+        node: 'node uuid',
         value: 0
     }
     const graph: Graph = {
@@ -500,11 +519,13 @@ test("nodeUi 1 output body but no inputs", () => {
     }
     const output: Output = {
         uuid: 'output uuid',
+        node: 'node uuid',
         name: 'first',
         edges: []
     }
     const body: Body = {
         uuid: 'body uuid',
+        node: 'node uuid',
         value: 0
     }
     const graph: Graph = {
@@ -551,15 +572,18 @@ test("nodeUi 1 input body and 1 output", () => {
     }
     const input: Input = {
         uuid: 'input uuid',
+        node: 'node uuid',
         name: 'first'
     }
     const output: Output = {
         uuid: "output uuid",
+        node: 'node uuid',
         name: 'first',
         edges: []
     }
     const body: Body = {
         uuid: 'body uuid',
+        node: 'node uuid',
         value: 0
     }
     const graph: Graph = {
@@ -1096,6 +1120,7 @@ test("view with three nodes and one edges", () => {
             inputs: {
                 'input uuid': {
                     uuid: 'input uuid',
+                    node: 'second',
                     name: 'in',
                     edge: 'edge uuid'
                 }
@@ -1103,6 +1128,7 @@ test("view with three nodes and one edges", () => {
             outputs: {
                 'output uuid': {
                     uuid: 'output uuid',
+                    node: 'first',
                     name: 'out',
                     edges: ['edge uuid']
                 }

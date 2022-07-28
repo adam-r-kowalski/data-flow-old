@@ -20,6 +20,7 @@ export const addNode = ({ graph, operation, position, generateUUID }: AddNodeInp
         const uuid = generateUUID()
         inputs[uuid] = {
             uuid,
+            node: nodeUUID,
             name
         }
         inputUUIDs.push(uuid)
@@ -30,6 +31,7 @@ export const addNode = ({ graph, operation, position, generateUUID }: AddNodeInp
         const uuid = generateUUID()
         outputs[uuid] = {
             uuid,
+            node: nodeUUID,
             name,
             edges: []
         }
@@ -45,6 +47,7 @@ export const addNode = ({ graph, operation, position, generateUUID }: AddNodeInp
     if (operation.body !== undefined) {
         const body: Body = {
             uuid: generateUUID(),
+            node: nodeUUID,
             value: operation.body
         }
         return {

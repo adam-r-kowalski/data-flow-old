@@ -1,7 +1,7 @@
 import { AppEvent, EventKind } from "../../../src/event"
-import { Body, Bodys, Input, Inputs, Node, Output, Outputs } from "../../../src/graph/model"
+import { Body, emptyGraph, Graph, Input, Node, Output } from "../../../src/graph/model"
 import { identity } from "../../../src/linear_algebra/matrix3x3"
-import { InputTargetKind, SelectedKind, State, Theme, VirtualKeyboardKind } from "../../../src/state"
+import { InputTargetKind, Selected, SelectedKind, State, Theme, VirtualKeyboardKind } from "../../../src/state"
 import { column, container, row, scene, stack, text } from "../../../src/ui"
 import { CrossAxisAlignment, MainAxisAlignment } from "../../../src/ui/alignment"
 import {
@@ -34,6 +34,7 @@ test("intersperse", () => {
 const theme: Theme = {
     background: { red: 2, green: 22, blue: 39, alpha: 255 },
     node: { red: 41, green: 95, blue: 120, alpha: 255 },
+    selectedNode: { red: 23, green: 54, blue: 69, alpha: 255 },
     input: { red: 188, green: 240, blue: 192, alpha: 255 },
     selectedInput: { red: 175, green: 122, blue: 208, alpha: 255 },
     connection: { red: 255, green: 255, blue: 255, alpha: 255 },
@@ -44,7 +45,7 @@ test("inputUi not selected", () => {
         uuid: 'uuid',
         name: 'name',
     }
-    const actual = inputUi(theme, input)
+    const actual = inputUi(theme, input, { kind: SelectedKind.NONE })
     const expected = container<AppEvent>({
         onClick: {
             kind: EventKind.CLICKED_INPUT,
@@ -70,7 +71,7 @@ test("inputUi selected", () => {
         uuid: 'uuid',
         name: 'name'
     }
-    const actual = inputUi(theme, input, 'uuid')
+    const actual = inputUi(theme, input, { kind: SelectedKind.INPUT, input: 'uuid' })
     const expected = container<AppEvent>({
         onClick: {
             kind: EventKind.CLICKED_INPUT,
@@ -106,13 +107,14 @@ test("inputsUi", () => {
             name: "third",
         }
     ]
-    const actual = inputsUi(theme, inputs, 'third')
+    const selected: Selected = { kind: SelectedKind.INPUT, input: 'third' }
+    const actual = inputsUi(theme, inputs, selected)
     const expected = column([
-        inputUi(theme, inputs[0], 'third'),
+        inputUi(theme, inputs[0], selected),
         spacer(4),
-        inputUi(theme, inputs[1], 'third'),
+        inputUi(theme, inputs[1], selected),
         spacer(4),
-        inputUi(theme, inputs[2], 'third'),
+        inputUi(theme, inputs[2], selected),
     ])
     expect(actual).toEqual(expected)
 })
@@ -123,7 +125,7 @@ test("outputUi not selected", () => {
         name: 'name',
         edges: []
     }
-    const actual = outputUi(theme, output)
+    const actual = outputUi(theme, output, { kind: SelectedKind.NONE })
     const expected = container<AppEvent>({
         onClick: {
             kind: EventKind.CLICKED_OUTPUT,
@@ -150,7 +152,7 @@ test("outputUi selected", () => {
         name: 'name',
         edges: []
     }
-    const actual = outputUi(theme, output, 'uuid')
+    const actual = outputUi(theme, output, { kind: SelectedKind.OUTPUT, output: 'uuid' })
     const expected = container<AppEvent>({
         onClick: {
             kind: EventKind.CLICKED_OUTPUT,
@@ -189,13 +191,14 @@ test("outputsUi", () => {
             edges: []
         }
     ]
-    const actual = outputsUi(theme, outputs, 'third')
+    const selected: Selected = { kind: SelectedKind.OUTPUT, output: 'third' }
+    const actual = outputsUi(theme, outputs, selected)
     const expected = column([
-        outputUi(theme, outputs[0], 'third'),
+        outputUi(theme, outputs[0], selected),
         spacer(4),
-        outputUi(theme, outputs[1], 'third'),
+        outputUi(theme, outputs[1], selected),
         spacer(4),
-        outputUi(theme, outputs[2], 'third'),
+        outputUi(theme, outputs[2], selected),
     ])
     expect(actual).toEqual(expected)
 })
@@ -205,13 +208,13 @@ test("numberUi not selected", () => {
         uuid: 'body uuid',
         value: 0,
     }
-    const actual = numberUi(theme, body, 'node uuid')
+    const actual = numberUi(theme, body, { kind: SelectedKind.NONE })
     const expected = container({
         color: theme.background,
         padding: 5,
         onClick: {
             kind: EventKind.CLICKED_NUMBER,
-            node: 'node uuid'
+            body: 'body uuid'
         }
     },
         text(body.value.toString()))
@@ -223,13 +226,13 @@ test("numberUi editing", () => {
         uuid: 'body uuid',
         value: 0,
     }
-    const actual = numberUi(theme, body, 'node uuid', 'body uuid')
+    const actual = numberUi(theme, body, { kind: SelectedKind.BODY, body: 'body uuid' })
     const expected = container({
         color: theme.selectedInput,
         padding: 5,
         onClick: {
             kind: EventKind.CLICKED_NUMBER,
-            node: 'node uuid'
+            body: 'body uuid'
         }
     },
         text(body.value.toString()))
@@ -244,7 +247,11 @@ test("nodeUi no inputs body or outputs", () => {
         inputs: [],
         outputs: [],
     }
-    const actual = nodeUi(theme, node, {}, {}, {})
+    const graph: Graph = {
+        ...emptyGraph(),
+        nodes: { [node.uuid]: node }
+    }
+    const actual = nodeUi(theme, node.uuid, graph, { kind: SelectedKind.NONE })
     const expected = container<AppEvent>(
         {
             color: theme.node,
@@ -273,13 +280,17 @@ test("nodeUi 1 input, no body and no outputs", () => {
         inputs: ['input uuid'],
         outputs: [],
     }
-    const inputs: Inputs = {
-        'input uuid': {
-            uuid: 'input uuid',
-            name: 'first'
-        }
+    const input: Input = {
+        uuid: 'input uuid',
+        name: 'first'
     }
-    const actual = nodeUi(theme, node, inputs, {}, {})
+    const graph: Graph = {
+        ...emptyGraph(),
+        nodes: { [node.uuid]: node },
+        inputs: { [input.uuid]: input }
+    }
+    const selected: Selected = { kind: SelectedKind.NONE }
+    const actual = nodeUi(theme, node.uuid, graph, selected)
     const expected = container<AppEvent>(
         {
             color: theme.node,
@@ -294,7 +305,7 @@ test("nodeUi 1 input, no body and no outputs", () => {
         column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             text("node"),
             spacer(4),
-            row([inputsUi(theme, node.inputs.map(i => inputs[i]))])
+            row([inputsUi(theme, node.inputs.map(i => graph.inputs[i]), selected)])
         ])
     )
     expect(actual).toEqual(expected)
@@ -308,14 +319,18 @@ test("nodeUi 1 output, no body and no inputs", () => {
         inputs: [],
         outputs: ['output uuid'],
     }
-    const outputs: Outputs = {
-        'output uuid': {
-            uuid: 'output uuid',
-            name: 'first',
-            edges: []
-        }
+    const output: Output = {
+        uuid: 'output uuid',
+        name: 'first',
+        edges: []
     }
-    const actual = nodeUi(theme, node, {}, outputs, {})
+    const graph: Graph = {
+        ...emptyGraph(),
+        nodes: { [node.uuid]: node },
+        outputs: { [output.uuid]: output }
+    }
+    const selected: Selected = { kind: SelectedKind.NONE }
+    const actual = nodeUi(theme, node.uuid, graph, selected)
     const expected = container<AppEvent>(
         {
             color: theme.node,
@@ -330,7 +345,7 @@ test("nodeUi 1 output, no body and no inputs", () => {
         column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             text("node"),
             spacer(4),
-            row([outputsUi(theme, node.outputs.map(o => outputs[o]))])
+            row([outputsUi(theme, node.outputs.map(o => graph.outputs[o]), selected)])
         ])
     )
     expect(actual).toEqual(expected)
@@ -345,13 +360,17 @@ test("nodeUi no inputs or outputs but body defined", () => {
         body: 'body uuid',
         outputs: [],
     }
-    const bodys: Bodys = {
-        'body uuid': {
-            uuid: 'body uuid',
-            value: 0
-        }
+    const body: Body = {
+        uuid: 'body uuid',
+        value: 0
     }
-    const actual = nodeUi(theme, node, {}, {}, bodys)
+    const graph: Graph = {
+        ...emptyGraph(),
+        nodes: { [node.uuid]: node },
+        bodys: { [body.uuid]: body }
+    }
+    const selected: Selected = { kind: SelectedKind.NONE }
+    const actual = nodeUi(theme, node.uuid, graph, selected)
     const expected = container<AppEvent>(
         {
             color: theme.node,
@@ -366,7 +385,7 @@ test("nodeUi no inputs or outputs but body defined", () => {
         column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             text("node"),
             spacer(4),
-            row([numberUi(theme, bodys[node.body!], 'node uuid'), spacer(15)])
+            row([numberUi(theme, body, selected), spacer(15)])
         ])
     )
     expect(actual).toEqual(expected)
@@ -380,20 +399,23 @@ test("nodeUi 1 input and 1 output but no body", () => {
         inputs: ['input uuid'],
         outputs: ['output uuid'],
     }
-    const inputs: Inputs = {
-        'input uuid': {
-            uuid: 'input uuid',
-            name: 'first'
-        }
+    const input: Input = {
+        uuid: 'input uuid',
+        name: 'first'
     }
-    const outputs: Outputs = {
-        'output uuid': {
-            uuid: 'output uuid',
-            name: 'first',
-            edges: []
-        }
+    const output: Output = {
+        uuid: 'output uuid',
+        name: 'first',
+        edges: []
     }
-    const actual = nodeUi(theme, node, inputs, outputs, {})
+    const graph: Graph = {
+        ...emptyGraph(),
+        nodes: { [node.uuid]: node },
+        inputs: { [input.uuid]: input },
+        outputs: { [output.uuid]: output }
+    }
+    const selected: Selected = { kind: SelectedKind.NONE }
+    const actual = nodeUi(theme, node.uuid, graph, selected)
     const expected = container<AppEvent>(
         {
             color: theme.node,
@@ -409,9 +431,9 @@ test("nodeUi 1 input and 1 output but no body", () => {
             text("node"),
             spacer(4),
             row([
-                inputsUi(theme, node.inputs.map(i => inputs[i])),
+                inputsUi(theme, node.inputs.map(i => graph.inputs[i]), selected),
                 spacer(15),
-                outputsUi(theme, node.outputs.map(o => outputs[o]))
+                outputsUi(theme, node.outputs.map(o => graph.outputs[o]), selected)
             ])
         ])
     )
@@ -427,19 +449,22 @@ test("nodeUi 1 input body but no outputs", () => {
         body: 'body uuid',
         outputs: [],
     }
-    const inputs: Inputs = {
-        'input uuid': {
-            uuid: 'input uuid',
-            name: 'first'
-        }
+    const input: Input = {
+        uuid: 'input uuid',
+        name: 'first'
     }
-    const bodys: Bodys = {
-        'body uuid': {
-            uuid: 'body uuid',
-            value: 0
-        }
+    const body: Body = {
+        uuid: 'body uuid',
+        value: 0
     }
-    const actual = nodeUi(theme, node, inputs, {}, bodys)
+    const graph: Graph = {
+        ...emptyGraph(),
+        nodes: { [node.uuid]: node },
+        inputs: { [input.uuid]: input },
+        bodys: { [body.uuid]: body }
+    }
+    const selected: Selected = { kind: SelectedKind.NONE }
+    const actual = nodeUi(theme, node.uuid, graph, selected)
     const expected = container<AppEvent>(
         {
             color: theme.node,
@@ -455,8 +480,8 @@ test("nodeUi 1 input body but no outputs", () => {
             text("node"),
             spacer(4),
             row([
-                inputsUi(theme, node.inputs.map(i => inputs[i])),
-                numberUi(theme, bodys[node.body!], 'node uuid'),
+                inputsUi(theme, node.inputs.map(i => graph.inputs[i]), selected),
+                numberUi(theme, body, selected),
                 spacer(15),
             ])
         ])
@@ -473,20 +498,23 @@ test("nodeUi 1 output body but no inputs", () => {
         body: 'body uuid',
         outputs: ['output uuid'],
     }
-    const outputs: Outputs = {
-        'output uuid': {
-            uuid: 'output uuid',
-            name: 'first',
-            edges: []
-        }
+    const output: Output = {
+        uuid: 'output uuid',
+        name: 'first',
+        edges: []
     }
-    const bodys: Bodys = {
-        'body uuid': {
-            uuid: 'body uuid',
-            value: 0
-        }
+    const body: Body = {
+        uuid: 'body uuid',
+        value: 0
     }
-    const actual = nodeUi(theme, node, {}, outputs, bodys)
+    const graph: Graph = {
+        ...emptyGraph(),
+        nodes: { [node.uuid]: node },
+        outputs: { [output.uuid]: output },
+        bodys: { [body.uuid]: body }
+    }
+    const selected: Selected = { kind: SelectedKind.NONE }
+    const actual = nodeUi(theme, node.uuid, graph, selected)
     const expected = container<AppEvent>(
         {
             color: theme.node,
@@ -502,9 +530,9 @@ test("nodeUi 1 output body but no inputs", () => {
             text("node"),
             spacer(4),
             row([
-                numberUi(theme, bodys[node.body!], 'node uuid'),
+                numberUi(theme, body, selected),
                 spacer(15),
-                outputsUi(theme, node.outputs.map(o => outputs[o])),
+                outputsUi(theme, node.outputs.map(o => graph.outputs[o]), selected),
             ])
         ])
     )
@@ -521,26 +549,28 @@ test("nodeUi 1 input body and 1 output", () => {
         body: 'body uuid',
         outputs: ['output uuid'],
     }
-    const inputs: Inputs = {
-        'input uuid': {
-            uuid: 'input uuid',
-            name: 'first'
-        }
+    const input: Input = {
+        uuid: 'input uuid',
+        name: 'first'
     }
-    const outputs: Outputs = {
-        'output uuid': {
-            uuid: "output uuid",
-            name: 'first',
-            edges: []
-        }
+    const output: Output = {
+        uuid: "output uuid",
+        name: 'first',
+        edges: []
     }
-    const bodys: Bodys = {
-        'body uuid': {
-            uuid: 'body uuid',
-            value: 0
-        }
+    const body: Body = {
+        uuid: 'body uuid',
+        value: 0
     }
-    const actual = nodeUi(theme, node, inputs, outputs, bodys)
+    const graph: Graph = {
+        ...emptyGraph(),
+        nodes: { [node.uuid]: node },
+        inputs: { [input.uuid]: input },
+        outputs: { [output.uuid]: output },
+        bodys: { [body.uuid]: body }
+    }
+    const selected: Selected = { kind: SelectedKind.NONE }
+    const actual = nodeUi(theme, node.uuid, graph, selected)
     const expected = container<AppEvent>(
         {
             color: theme.node,
@@ -556,11 +586,11 @@ test("nodeUi 1 input body and 1 output", () => {
             text("node"),
             spacer(4),
             row([
-                inputsUi(theme, node.inputs.map(i => inputs[i])),
+                inputsUi(theme, node.inputs.map(i => graph.inputs[i]), selected),
                 spacer(15),
-                numberUi(theme, bodys[node.body!], 'node uuid'),
+                numberUi(theme, body, selected),
                 spacer(15),
-                outputsUi(theme, node.outputs.map(o => outputs[o])),
+                outputsUi(theme, node.outputs.map(o => graph.outputs[o]), selected),
             ])
         ])
     )
@@ -935,9 +965,9 @@ test("view with three nodes and no edges", () => {
         scene({
             camera: state.camera,
             children: [
-                nodeUi(state.theme, state.graph.nodes["first"], {}, {}, {}),
-                nodeUi(state.theme, state.graph.nodes["second"], {}, {}, {}),
-                nodeUi(state.theme, state.graph.nodes["third"], {}, {}, {}),
+                nodeUi(state.theme, "first", state.graph, state.selected),
+                nodeUi(state.theme, "second", state.graph, state.selected),
+                nodeUi(state.theme, "third", state.graph, state.selected),
             ],
             connections: []
         }),
@@ -1008,9 +1038,9 @@ test("view with three nodes and no edges", () => {
         scene({
             camera: state.camera,
             children: [
-                nodeUi(state.theme, state.graph.nodes["first"], {}, {}, {}),
-                nodeUi(state.theme, state.graph.nodes["second"], {}, {}, {}),
-                nodeUi(state.theme, state.graph.nodes["third"], {}, {}, {}),
+                nodeUi(state.theme, "first", state.graph, state.selected),
+                nodeUi(state.theme, "second", state.graph, state.selected),
+                nodeUi(state.theme, "third", state.graph, state.selected),
             ],
             connections: []
         }),
@@ -1111,9 +1141,9 @@ test("view with three nodes and one edges", () => {
         scene({
             camera: state.camera,
             children: [
-                nodeUi(state.theme, state.graph.nodes["first"], state.graph.inputs, state.graph.outputs, {}),
-                nodeUi(state.theme, state.graph.nodes["second"], state.graph.inputs, state.graph.outputs, {}),
-                nodeUi(state.theme, state.graph.nodes["third"], state.graph.inputs, state.graph.outputs, {}),
+                nodeUi(state.theme, "first", state.graph, state.selected),
+                nodeUi(state.theme, "second", state.graph, state.selected),
+                nodeUi(state.theme, "third", state.graph, state.selected),
             ],
             connections: [
                 {

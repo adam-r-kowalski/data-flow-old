@@ -5,7 +5,7 @@ import { UpdateResult } from "./ui/run"
 import { InputTargetKind, SelectedKind, State, VirtualKeyboardKind } from "./state"
 import { GenerateUUID, Operation, Position, UUID } from './graph/model'
 import { Pointer } from "./ui"
-import { addEdge, addNode, changeBodyValue, changeNodePosition, removeNode } from "./graph/update"
+import { addEdge, addNode, changeBodyValue, changeNodePosition, removeInputEdge, removeNode } from "./graph/update"
 
 export enum EventKind {
     POINTER_MOVE,
@@ -22,7 +22,8 @@ export enum EventKind {
     CLICKED_FINDER_OPTION,
     CLICKED_NUMBER,
     CLICKED_BACKGROUND,
-    DELETE_NODE
+    DELETE_NODE,
+    DELETE_INPUT_EDGE
 }
 
 export interface PointerMove {
@@ -87,7 +88,7 @@ export interface ClickedFinderOption {
 
 export interface ClickedNumber {
     readonly kind: EventKind.CLICKED_NUMBER,
-    readonly node: UUID
+    readonly body: UUID
 }
 
 export interface ClickedBackground {
@@ -97,6 +98,11 @@ export interface ClickedBackground {
 export interface DeleteNode {
     readonly kind: EventKind.DELETE_NODE,
     readonly node: UUID
+}
+
+export interface DeleteInputEdge {
+    readonly kind: EventKind.DELETE_INPUT_EDGE,
+    readonly input: UUID
 }
 
 export type AppEvent =
@@ -115,6 +121,7 @@ export type AppEvent =
     | ClickedNumber
     | ClickedBackground
     | DeleteNode
+    | DeleteInputEdge
 
 
 const pointerDown = (state: State, event: PointerDown): UpdateResult<State, AppEvent> => {
@@ -461,10 +468,9 @@ const keyDown = (state: State, { key }: KeyDown, generateUUID: GenerateUUID): Up
                     return updateFinderSearch(state, search => search + key)
             }
         case InputTargetKind.NUMBER:
-            const node = state.graph.nodes[state.inputTarget.node]
             switch (key) {
                 case 'Backspace':
-                    return updateBodyValue(state, node.body!, value => {
+                    return updateBodyValue(state, state.inputTarget.body, value => {
                         let newValue = value.toString().slice(0, -1)
                         return newValue === '' ? 0 : parseFloat(newValue)
                     })
@@ -478,7 +484,7 @@ const keyDown = (state: State, { key }: KeyDown, generateUUID: GenerateUUID): Up
                 case '8':
                 case '9':
                 case '0':
-                    return updateBodyValue(state, node.body!, value => parseFloat(value.toString() + key))
+                    return updateBodyValue(state, state.inputTarget.body, value => parseFloat(value.toString() + key))
                 case 'Enter':
                     return {
                         state: {
@@ -504,6 +510,15 @@ const keyDown = (state: State, { key }: KeyDown, generateUUID: GenerateUUID): Up
                         case SelectedKind.NODE:
                             return {
                                 state: removeNodeFromGraph(state, state.selected.node),
+                                render: true
+                            }
+                        case SelectedKind.INPUT:
+                            return {
+                                state: {
+                                    ...state,
+                                    graph: removeInputEdge(state.graph, state.selected.input),
+                                    selected: { kind: SelectedKind.NONE },
+                                },
                                 render: true
                             }
                         default:
@@ -536,10 +551,9 @@ const virtualKeyDown = (state: State, { key }: VirtualKeyDown, generateUUID: Gen
                     return updateFinderSearch(state, search => search + key)
             }
         case InputTargetKind.NUMBER:
-            const node = state.graph.nodes[state.inputTarget.node]
             switch (key) {
                 case 'del':
-                    return updateBodyValue(state, node.body!, value => {
+                    return updateBodyValue(state, state.inputTarget.body, value => {
                         let newValue = value.toString().slice(0, -1)
                         return newValue === '' ? 0 : parseFloat(newValue)
                     })
@@ -554,7 +568,7 @@ const virtualKeyDown = (state: State, { key }: VirtualKeyDown, generateUUID: Gen
                 case '9':
                 case '0':
                 case '.':
-                    return updateBodyValue(state, node.body!, value => parseFloat(value.toString() + key))
+                    return updateBodyValue(state, state.inputTarget.body, value => parseFloat(value.toString() + key))
                 case 'ret':
                     return {
                         state: {
@@ -579,7 +593,7 @@ const virtualKeyDown = (state: State, { key }: VirtualKeyDown, generateUUID: Gen
 const clickedFinderOption = (state: State, { option }: ClickedFinderOption, generateUUID: GenerateUUID): UpdateResult<State, AppEvent> =>
     insertOperationFromFinder(state, option, generateUUID)
 
-export const openNumericKeyboard = (state: State, node: UUID): State => ({
+export const openNumericKeyboard = (state: State, body: UUID): State => ({
     ...state,
     virtualKeyboard: {
         show: true,
@@ -587,16 +601,16 @@ export const openNumericKeyboard = (state: State, node: UUID): State => ({
     },
     inputTarget: {
         kind: InputTargetKind.NUMBER,
-        node
+        body
     },
     selected: {
         kind: SelectedKind.BODY,
-        body: state.graph.nodes[node].body!
+        body
     }
 })
 
-const clickedNumber = (state: State, { node }: ClickedNumber): UpdateResult<State, AppEvent> => ({
-    state: openNumericKeyboard(closeFinder(state), node),
+const clickedNumber = (state: State, { body }: ClickedNumber): UpdateResult<State, AppEvent> => ({
+    state: openNumericKeyboard(closeFinder(state), body),
     render: true
 })
 
@@ -607,6 +621,15 @@ const clickedBackground = (state: State): UpdateResult<State, AppEvent> => ({
 
 const deleteNode = (state: State, { node }: DeleteNode): UpdateResult<State, AppEvent> => ({
     state: removeNodeFromGraph(state, node),
+    render: true
+})
+
+const deleteInputEdge = (state: State, { input }: DeleteInputEdge): UpdateResult<State, AppEvent> => ({
+    state: {
+        ...state,
+        graph: removeInputEdge(state.graph, input),
+        selected: { kind: SelectedKind.NONE },
+    },
     render: true
 })
 
@@ -627,5 +650,6 @@ export const update = (generateUUID: GenerateUUID, state: State, event: AppEvent
         case EventKind.CLICKED_NUMBER: return clickedNumber(state, event)
         case EventKind.CLICKED_BACKGROUND: return clickedBackground(state)
         case EventKind.DELETE_NODE: return deleteNode(state, event)
+        case EventKind.DELETE_INPUT_EDGE: return deleteInputEdge(state, event)
     }
 }

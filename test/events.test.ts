@@ -1389,7 +1389,7 @@ test("pressing number on keyboard appends to number node", () => {
         position: { x: 0, y: 0 },
         generateUUID
     })
-    const state1 = openNumericKeyboard(state0, node)
+    const state1 = openNumericKeyboard(state0, state0.graph.nodes[node].body!)
     let state2 = state1
     for (const key of '1234567890') {
         const { state } = update(generateUUID, state2, {
@@ -1408,7 +1408,7 @@ test("pressing number on keyboard appends to number node", () => {
         },
         inputTarget: {
             kind: InputTargetKind.NUMBER,
-            node
+            body
         },
         selected: {
             kind: SelectedKind.BODY,
@@ -1444,7 +1444,7 @@ test("pressing backspace on keyboard deletes from number node", () => {
         position: { x: 0, y: 0 },
         generateUUID
     })
-    const state1 = openNumericKeyboard(state0, node)
+    const state1 = openNumericKeyboard(state0, state0.graph.nodes[node].body!)
     let state2 = state1
     for (const key of '1234567890') {
         const { state } = update(generateUUID, state2, {
@@ -1467,7 +1467,7 @@ test("pressing backspace on keyboard deletes from number node", () => {
         },
         inputTarget: {
             kind: InputTargetKind.NUMBER,
-            node
+            body
         },
         selected: {
             kind: SelectedKind.BODY,
@@ -1503,7 +1503,7 @@ test("pressing backspace when number node value is 0 has no effect", () => {
         position: { x: 0, y: 0 },
         generateUUID
     })
-    const state1 = openNumericKeyboard(state0, node)
+    const state1 = openNumericKeyboard(state0, state0.graph.nodes[node].body!)
     let state2 = state1
     for (let i = 0; i < 3; ++i) {
         const { state } = update(generateUUID, state1, {
@@ -1522,7 +1522,7 @@ test("pressing backspace when number node value is 0 has no effect", () => {
         },
         inputTarget: {
             kind: InputTargetKind.NUMBER,
-            node
+            body
         },
         selected: {
             kind: SelectedKind.BODY,
@@ -1558,7 +1558,7 @@ test("pressing del on virtual keyboard when number node value is 0 has no effect
         position: { x: 0, y: 0 },
         generateUUID
     })
-    const state1 = openNumericKeyboard(state0, node)
+    const state1 = openNumericKeyboard(state0, state0.graph.nodes[node].body!)
     let state2 = state1
     for (let i = 0; i < 3; ++i) {
         const { state } = update(generateUUID, state2, {
@@ -1577,7 +1577,7 @@ test("pressing del on virtual keyboard when number node value is 0 has no effect
         },
         inputTarget: {
             kind: InputTargetKind.NUMBER,
-            node
+            body
         },
         selected: {
             kind: SelectedKind.BODY,
@@ -1613,7 +1613,7 @@ test("pressing number on virtual keyboard appends to number node", () => {
         position: { x: 0, y: 0 },
         generateUUID
     })
-    const state1 = openNumericKeyboard(state0, node)
+    const state1 = openNumericKeyboard(state0, state0.graph.nodes[node].body!)
     let state2 = state1
     for (const key of '1234567890') {
         const { state } = update(generateUUID, state2, {
@@ -1632,7 +1632,7 @@ test("pressing number on virtual keyboard appends to number node", () => {
         },
         inputTarget: {
             kind: InputTargetKind.NUMBER,
-            node
+            body
         },
         selected: {
             kind: SelectedKind.BODY,
@@ -1668,7 +1668,7 @@ test("pressing del on virtual keyboard deletes from number node", () => {
         position: { x: 0, y: 0 },
         generateUUID
     })
-    const state1 = openNumericKeyboard(state0, node)
+    const state1 = openNumericKeyboard(state0, state0.graph.nodes[node].body!)
     let state2 = state1
     for (const key of '1234567890') {
         const { state } = update(generateUUID, state2, {
@@ -1691,7 +1691,7 @@ test("pressing del on virtual keyboard deletes from number node", () => {
         },
         inputTarget: {
             kind: InputTargetKind.NUMBER,
-            node
+            body
         },
         selected: {
             kind: SelectedKind.BODY,
@@ -1728,7 +1728,7 @@ test("pressing enter on keyboard while editing number node exits virtual keyboar
         position: { x: 0, y: 0 },
         generateUUID
     })
-    const state1 = openNumericKeyboard(state0, node)
+    const state1 = openNumericKeyboard(state0, state0.graph.nodes[node].body!)
     let state2 = state1
     for (const key of '1234567890') {
         const { state } = update(generateUUID, state2, {
@@ -1775,7 +1775,7 @@ test("pressing ret on virtual keyboard while editing number node exits virtual k
         position: { x: 0, y: 0 },
         generateUUID
     })
-    const state1 = openNumericKeyboard(state0, node)
+    const state1 = openNumericKeyboard(state0, state0.graph.nodes[node].body!)
     let state2 = state1
     for (const key of '1234567890') {
         const { state } = update(generateUUID, state2, {
@@ -1939,11 +1939,12 @@ test("clicking a number node opens the numeric keyboard", () => {
         position: { x: 0, y: 0 },
         generateUUID
     })
+    const body = state0.graph.nodes[node].body!
     const { state: state1 } = update(generateUUID, state0, {
         kind: EventKind.CLICKED_NUMBER,
-        node
+        body
     })
-    const expectedState = openNumericKeyboard(state0, node)
+    const expectedState = openNumericKeyboard(state0, body)
     expect(state1).toEqual(expectedState)
 })
 
@@ -1969,15 +1970,17 @@ test("clicking a number node when another number node is selected switches selec
         position: { x: 0, y: 0 },
         generateUUID
     })
+    const body0 = state1.graph.nodes[node0].body!
     const { state: state2 } = update(generateUUID, state1, {
         kind: EventKind.CLICKED_NUMBER,
-        node: node0
+        body: body0
     })
+    const body1 = state2.graph.nodes[node1].body!
     const { state: state3 } = update(generateUUID, state2, {
         kind: EventKind.CLICKED_NUMBER,
-        node: node1
+        body: body1
     })
-    const expectedState = openNumericKeyboard(state1, node1)
+    const expectedState = openNumericKeyboard(state1, body1)
     expect(state3).toEqual(expectedState)
 })
 
@@ -1997,9 +2000,10 @@ test("clicking background when a number node is selected deselects it", () => {
         position: { x: 0, y: 0 },
         generateUUID
     })
+    const body = state0.graph.nodes[node].body!
     const { state: state1 } = update(generateUUID, state0, {
         kind: EventKind.CLICKED_NUMBER,
-        node
+        body
     })
     const { state: state2 } = update(generateUUID, state1, {
         kind: EventKind.CLICKED_BACKGROUND,

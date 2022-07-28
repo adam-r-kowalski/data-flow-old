@@ -1,8 +1,8 @@
 import { CrossAxisAlignment, MainAxisAlignment } from "../alignment"
 import { AppEvent, EventKind } from "../../event"
-import { Finder, SelectedKind, State, Theme, VirtualKeyboardKind } from "../../state"
+import { Finder, Selected, SelectedKind, State, Theme, VirtualKeyboardKind } from "../../state"
 import { text, stack, scene, row, container, column, Connection, UI } from '..'
-import { Body, Bodys, Input, Inputs, Node, Output, Outputs, UUID } from "../../graph/model"
+import { Body, Graph, Input, Output, UUID } from "../../graph/model"
 import { contextMenu } from "./context_menu"
 
 
@@ -18,8 +18,17 @@ export const intersperse = <T>(array: T[], seperator: T): T[] => {
     return result
 }
 
+export const isSelected = (selected: Selected, uuid: UUID): boolean => {
+    switch (selected.kind) {
+        case SelectedKind.BODY: return selected.body === uuid
+        case SelectedKind.INPUT: return selected.input === uuid
+        case SelectedKind.NODE: return selected.node === uuid
+        case SelectedKind.NONE: return false
+        case SelectedKind.OUTPUT: return selected.output === uuid
+    }
+}
 
-export const inputUi = (theme: Theme, { name, uuid }: Input, selectedInput?: UUID): UI<AppEvent> =>
+export const inputUi = (theme: Theme, { name, uuid }: Input, selected: Selected): UI<AppEvent> =>
     container({
         onClick: {
             kind: EventKind.CLICKED_INPUT,
@@ -31,7 +40,7 @@ export const inputUi = (theme: Theme, { name, uuid }: Input, selectedInput?: UUI
                 id: uuid,
                 width: 14,
                 height: 14,
-                color: selectedInput === uuid ? theme.selectedInput : theme.input,
+                color: isSelected(selected, uuid) ? theme.selectedInput : theme.input,
             }),
             spacer(4),
             text(name)
@@ -39,16 +48,16 @@ export const inputUi = (theme: Theme, { name, uuid }: Input, selectedInput?: UUI
     )
 
 
-export const inputsUi = (theme: Theme, inputs: Input[], selectedInput?: UUID) =>
+export const inputsUi = (theme: Theme, inputs: Input[], selected: Selected) =>
     column(
         intersperse(
-            inputs.map(input => inputUi(theme, input, selectedInput)),
+            inputs.map(input => inputUi(theme, input, selected)),
             spacer(4)
         )
     )
 
 
-export const outputUi = (theme: Theme, { name, uuid }: Output, selectedOutput?: UUID): UI<AppEvent> =>
+export const outputUi = (theme: Theme, { name, uuid }: Output, selected: Selected): UI<AppEvent> =>
     container({
         onClick: {
             kind: EventKind.CLICKED_OUTPUT,
@@ -62,50 +71,51 @@ export const outputUi = (theme: Theme, { name, uuid }: Output, selectedOutput?: 
                 id: uuid,
                 width: 14,
                 height: 14,
-                color: selectedOutput === uuid ? theme.selectedInput : theme.input,
+                color: isSelected(selected, uuid) ? theme.selectedInput : theme.input,
             }),
         ])
     )
 
 
-export const outputsUi = (theme: Theme, outputs: Output[], selectedOutput?: UUID) =>
+export const outputsUi = (theme: Theme, outputs: Output[], selected: Selected) =>
     column(
         intersperse(
-            outputs.map(output => outputUi(theme, output, selectedOutput)),
+            outputs.map(output => outputUi(theme, output, selected)),
             spacer(4)
         )
     )
 
 
-export const numberUi = (theme: Theme, body: Body, node: UUID, selectedBody?: UUID): UI<AppEvent> =>
+export const numberUi = (theme: Theme, body: Body, selected: Selected): UI<AppEvent> =>
     container({
-        color: body.uuid === selectedBody ? theme.selectedInput : theme.background,
+        color: isSelected(selected, body.uuid) ? theme.selectedInput : theme.background,
         padding: 5,
         onClick: {
             kind: EventKind.CLICKED_NUMBER,
-            node
+            body: body.uuid
         }
     },
         text(body.value.toString()))
 
 
-export const nodeUi = (theme: Theme, node: Node, inputs: Inputs, outputs: Outputs, bodys: Bodys, selectedInput?: UUID, selectedOutput?: UUID, selectedBody?: UUID): UI<AppEvent> => {
+export const nodeUi = (theme: Theme, nodeUUID: UUID, graph: Graph, selected: Selected): UI<AppEvent> => {
+    const node = graph.nodes[nodeUUID]
     const rowEntries: UI<AppEvent>[] = []
     if (node.inputs.length) {
-        rowEntries.push(inputsUi(theme, node.inputs.map(i => inputs[i]), selectedInput))
+        rowEntries.push(inputsUi(theme, node.inputs.map(i => graph.inputs[i]), selected))
     }
     if (node.inputs.length && node.outputs.length) {
         rowEntries.push(spacer(15))
     }
     if (node.body) {
-        rowEntries.push(numberUi(theme, bodys[node.body], node.uuid, selectedBody), spacer(15))
+        rowEntries.push(numberUi(theme, graph.bodys[node.body], selected), spacer(15))
     }
     if (node.outputs.length) {
-        rowEntries.push(outputsUi(theme, node.outputs.map(o => outputs[o]), selectedOutput))
+        rowEntries.push(outputsUi(theme, node.outputs.map(o => graph.outputs[o]), selected))
     }
     return container(
         {
-            color: theme.node,
+            color: isSelected(selected, node.uuid) ? theme.selectedNode : theme.node,
             padding: 4,
             x: node.position.x,
             y: node.position.y,
@@ -212,20 +222,15 @@ export const virtualKeyboard = (theme: Theme, kind: VirtualKeyboardKind) => {
 }
 
 export const view = (state: State): UI<AppEvent> => {
-    const selectedInput = state.selected.kind === SelectedKind.INPUT ? state.selected.input : undefined
-    const selectedOutput = state.selected.kind === SelectedKind.OUTPUT ? state.selected.output : undefined
-    const selectedBody = state.selected.kind === SelectedKind.BODY ? state.selected.body : undefined
     const nodes = state.nodeOrder
         .map(node =>
             nodeUi(
                 state.theme,
-                state.graph.nodes[node],
-                state.graph.inputs,
-                state.graph.outputs,
-                state.graph.bodys,
-                selectedInput,
-                selectedOutput,
-                selectedBody))
+                node,
+                state.graph,
+                state.selected
+            )
+        )
     const connections: Connection[] = Object.values(state.graph.edges).map(({ input, output }) => ({
         from: output,
         to: input,
@@ -250,6 +255,21 @@ export const view = (state: State): UI<AppEvent> => {
                 }],
                 backgroundColor: state.theme.node
             }))
+            break
+        case SelectedKind.INPUT:
+            if (state.graph.inputs[state.selected.input].edge) {
+                stacked.push(contextMenu({
+                    items: [{
+                        name: 'Delete Edge',
+                        shortcut: 'd',
+                        onClick: {
+                            kind: EventKind.DELETE_INPUT_EDGE,
+                            input: state.selected.input
+                        }
+                    }],
+                    backgroundColor: state.theme.node
+                }))
+            }
             break
         default: break
     }

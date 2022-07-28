@@ -2457,3 +2457,145 @@ test("connecting input of same node where output is selected is not allowed", ()
     })
     expect(state3).toEqual(state2)
 })
+
+test("connecting output to input if input already has edge replaces it", () => {
+    const uuidState = { i: 0 }
+    const generateUUID = makeGenerateUUID(uuidState)
+    const operations: Operations = {
+        'Add': {
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        },
+        'Sub': {
+            name: 'Div',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        },
+        'Div': {
+            name: 'Div',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        },
+    }
+    let state0 = { ...emptyState(), operations }
+    const { state: state1, node: node0 } = addNodeToGraph({
+        state: state0,
+        operation: operations['Add'],
+        position: { x: 0, y: 0 },
+        generateUUID
+    })
+    const { state: state2, node: node1 } = addNodeToGraph({
+        state: state1,
+        operation: operations['Sub'],
+        position: { x: 0, y: 0 },
+        generateUUID
+    })
+    const { state: state3, node: node2 } = addNodeToGraph({
+        state: state2,
+        operation: operations['Div'],
+        position: { x: 0, y: 0 },
+        generateUUID
+    })
+    const input = state3.graph.nodes[node0].inputs[0]
+    const { state: state4 } = update(generateUUID, state3, {
+        kind: EventKind.CLICKED_INPUT,
+        input
+    })
+    const output0 = state4.graph.nodes[node1].outputs[0]
+    const { state: state5 } = update(generateUUID, state4, {
+        kind: EventKind.CLICKED_OUTPUT,
+        output: output0
+    })
+    const { state: state6 } = update(generateUUID, state5, {
+        kind: EventKind.CLICKED_INPUT,
+        input
+    })
+    const output1 = state6.graph.nodes[node2].outputs[0]
+    const { state: state7 } = update(generateUUID, state6, {
+        kind: EventKind.CLICKED_OUTPUT,
+        output: output1
+    })
+    const expectedState: State = {
+        ...state3,
+        graph: addEdge({
+            graph: state3.graph,
+            input,
+            output: output1,
+            generateUUID: makeGenerateUUID({ i: uuidState.i - 1 })
+        }).graph
+    }
+    expect(state7).toEqual(expectedState)
+})
+
+
+test("connecting input to output if input already has edge replaces it", () => {
+    const uuidState = { i: 0 }
+    const generateUUID = makeGenerateUUID(uuidState)
+    const operations: Operations = {
+        'Add': {
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        },
+        'Sub': {
+            name: 'Div',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        },
+        'Div': {
+            name: 'Div',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        },
+    }
+    let state0 = { ...emptyState(), operations }
+    const { state: state1, node: node0 } = addNodeToGraph({
+        state: state0,
+        operation: operations['Add'],
+        position: { x: 0, y: 0 },
+        generateUUID
+    })
+    const { state: state2, node: node1 } = addNodeToGraph({
+        state: state1,
+        operation: operations['Sub'],
+        position: { x: 0, y: 0 },
+        generateUUID
+    })
+    const { state: state3, node: node2 } = addNodeToGraph({
+        state: state2,
+        operation: operations['Div'],
+        position: { x: 0, y: 0 },
+        generateUUID
+    })
+    const input = state3.graph.nodes[node0].inputs[0]
+    const { state: state4 } = update(generateUUID, state3, {
+        kind: EventKind.CLICKED_INPUT,
+        input
+    })
+    const output0 = state4.graph.nodes[node1].outputs[0]
+    const { state: state5 } = update(generateUUID, state4, {
+        kind: EventKind.CLICKED_OUTPUT,
+        output: output0
+    })
+    const output1 = state5.graph.nodes[node2].outputs[0]
+    const { state: state6 } = update(generateUUID, state5, {
+        kind: EventKind.CLICKED_OUTPUT,
+        output: output1
+    })
+    const { state: state7 } = update(generateUUID, state6, {
+        kind: EventKind.CLICKED_INPUT,
+        input
+    })
+    const expectedState: State = {
+        ...state3,
+        graph: addEdge({
+            graph: state3.graph,
+            input,
+            output: output1,
+            generateUUID: makeGenerateUUID({ i: uuidState.i - 1 })
+        }).graph
+    }
+    expect(state7).toEqual(expectedState)
+})
+

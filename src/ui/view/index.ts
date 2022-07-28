@@ -3,7 +3,7 @@ import { AppEvent, EventKind } from "../../event"
 import { Finder, Selected, SelectedKind, State, Theme, VirtualKeyboardKind } from "../../state"
 import { text, stack, scene, row, container, column, Connection, UI } from '..'
 import { Body, Graph, Input, Output, UUID } from "../../graph/model"
-import { contextMenu } from "./context_menu"
+import { contextMenu, ContextMenuItem } from "./context_menu"
 
 
 export const spacer = (size: number): UI<AppEvent> =>
@@ -221,6 +221,45 @@ export const virtualKeyboard = (theme: Theme, kind: VirtualKeyboardKind) => {
     }
 }
 
+export const selectedMenuItem = (theme: Theme, graph: Graph, selected: Selected): ContextMenuItem<AppEvent> | null => {
+    switch (selected.kind) {
+        case SelectedKind.NODE:
+            return {
+                name: 'Delete Node',
+                shortcut: 'd',
+                onClick: {
+                    kind: EventKind.DELETE_NODE,
+                    node: selected.node
+                }
+            }
+        case SelectedKind.INPUT:
+            if (graph.inputs[selected.input].edge) {
+                return {
+                    name: 'Delete Edge',
+                    shortcut: 'd',
+                    onClick: {
+                        kind: EventKind.DELETE_INPUT_EDGE,
+                        input: selected.input
+                    }
+                }
+            }
+            return null
+        case SelectedKind.OUTPUT:
+            if (graph.outputs[selected.output].edges.length > 0) {
+                return {
+                    name: 'Delete Edge',
+                    shortcut: 'd',
+                    onClick: {
+                        kind: EventKind.DELETE_OUTPUT_EDGES,
+                        output: selected.output
+                    }
+                }
+            }
+            return null
+        default: return null
+    }
+}
+
 export const view = (state: State): UI<AppEvent> => {
     const nodes = state.nodeOrder
         .map(node =>
@@ -242,36 +281,7 @@ export const view = (state: State): UI<AppEvent> => {
     ]
     if (state.finder.show) stacked.push(finder(state.finder, state.theme))
     if (state.virtualKeyboard.show) stacked.push(virtualKeyboard(state.theme, state.virtualKeyboard.kind))
-    switch (state.selected.kind) {
-        case SelectedKind.NODE:
-            stacked.push(contextMenu({
-                items: [{
-                    name: 'Delete Node',
-                    shortcut: 'd',
-                    onClick: {
-                        kind: EventKind.DELETE_NODE,
-                        node: state.selected.node
-                    }
-                }],
-                backgroundColor: state.theme.node
-            }))
-            break
-        case SelectedKind.INPUT:
-            if (state.graph.inputs[state.selected.input].edge) {
-                stacked.push(contextMenu({
-                    items: [{
-                        name: 'Delete Edge',
-                        shortcut: 'd',
-                        onClick: {
-                            kind: EventKind.DELETE_INPUT_EDGE,
-                            input: state.selected.input
-                        }
-                    }],
-                    backgroundColor: state.theme.node
-                }))
-            }
-            break
-        default: break
-    }
+    const menuItem = selectedMenuItem(state.theme, state.graph, state.selected)
+    if (menuItem) stacked.push(contextMenu({ items: [menuItem], backgroundColor: state.theme.node }))
     return stack(stacked)
 }

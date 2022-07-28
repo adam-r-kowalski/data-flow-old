@@ -2188,3 +2188,203 @@ test("clicking background when a output is selected deselects it", () => {
     })
     expect(state3).toEqual(state1)
 })
+
+test("delete input edge", () => {
+    const generateUUID = makeGenerateUUID()
+    const operations: Operations = {
+        'Add': {
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        },
+        'Sub': {
+            name: 'Sub',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        },
+    }
+    let state0 = { ...emptyState(), operations }
+    const { state: state1, node: node0 } = addNodeToGraph({
+        state: state0,
+        operation: operations['Add'],
+        position: { x: 0, y: 0 },
+        generateUUID
+    })
+    const { state: state2, node: node1 } = addNodeToGraph({
+        state: state1,
+        operation: operations['Sub'],
+        position: { x: 0, y: 0 },
+        generateUUID
+    })
+    const input = state2.graph.nodes[node0].inputs[0]
+    const { state: state3 } = update(generateUUID, state2, {
+        kind: EventKind.CLICKED_INPUT,
+        input
+    })
+    const output = state3.graph.nodes[node1].outputs[0]
+    const { state: state4 } = update(generateUUID, state3, {
+        kind: EventKind.CLICKED_OUTPUT,
+        output
+    })
+    const { state: state5 } = update(generateUUID, state4, {
+        kind: EventKind.DELETE_INPUT_EDGE,
+        input
+    })
+    expect(state5).toEqual(state2)
+})
+
+test("pressing d on keyboard with input selected delete edge attached", () => {
+    const generateUUID = makeGenerateUUID()
+    const operations: Operations = {
+        'Add': {
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        },
+        'Sub': {
+            name: 'Sub',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        },
+    }
+    let state0 = { ...emptyState(), operations }
+    const { state: state1, node: node0 } = addNodeToGraph({
+        state: state0,
+        operation: operations['Add'],
+        position: { x: 0, y: 0 },
+        generateUUID
+    })
+    const { state: state2, node: node1 } = addNodeToGraph({
+        state: state1,
+        operation: operations['Sub'],
+        position: { x: 0, y: 0 },
+        generateUUID
+    })
+    const input = state2.graph.nodes[node0].inputs[0]
+    const { state: state3 } = update(generateUUID, state2, {
+        kind: EventKind.CLICKED_INPUT,
+        input
+    })
+    const output = state3.graph.nodes[node1].outputs[0]
+    const { state: state4 } = update(generateUUID, state3, {
+        kind: EventKind.CLICKED_OUTPUT,
+        output
+    })
+    const { state: state5 } = update(generateUUID, state4, {
+        kind: EventKind.CLICKED_INPUT,
+        input
+    })
+    const { state: state6 } = update(generateUUID, state5, {
+        kind: EventKind.KEYDOWN,
+        key: 'd'
+    })
+    expect(state6).toEqual(state2)
+})
+
+test("delete output edges", () => {
+    const generateUUID = makeGenerateUUID()
+    const operations: Operations = {
+        'Add': {
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        },
+        'Sub': {
+            name: 'Sub',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        },
+    }
+    let state0 = { ...emptyState(), operations }
+    const { state: state1, node: node0 } = addNodeToGraph({
+        state: state0,
+        operation: operations['Add'],
+        position: { x: 0, y: 0 },
+        generateUUID
+    })
+    const { state: state2, node: node1 } = addNodeToGraph({
+        state: state1,
+        operation: operations['Sub'],
+        position: { x: 0, y: 0 },
+        generateUUID
+    })
+    const [input0, input1] = state2.graph.nodes[node0].inputs
+    const { state: state3 } = update(generateUUID, state2, {
+        kind: EventKind.CLICKED_INPUT,
+        input: input0
+    })
+    const output = state3.graph.nodes[node1].outputs[0]
+    const { state: state4 } = update(generateUUID, state3, {
+        kind: EventKind.CLICKED_OUTPUT,
+        output
+    })
+    const { state: state5 } = update(generateUUID, state4, {
+        kind: EventKind.CLICKED_INPUT,
+        input: input1
+    })
+    const { state: state6 } = update(generateUUID, state5, {
+        kind: EventKind.CLICKED_OUTPUT,
+        output
+    })
+    const { state: state7 } = update(generateUUID, state6, {
+        kind: EventKind.DELETE_OUTPUT_EDGES,
+        output
+    })
+    expect(state7).toEqual(state2)
+})
+
+test("pressing d on keyboard with output selected delete edges attached", () => {
+    const generateUUID = makeGenerateUUID()
+    const operations: Operations = {
+        'Add': {
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        },
+        'Sub': {
+            name: 'Sub',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        },
+    }
+    let state0 = { ...emptyState(), operations }
+    const { state: state1, node: node0 } = addNodeToGraph({
+        state: state0,
+        operation: operations['Add'],
+        position: { x: 0, y: 0 },
+        generateUUID
+    })
+    const { state: state2, node: node1 } = addNodeToGraph({
+        state: state1,
+        operation: operations['Sub'],
+        position: { x: 0, y: 0 },
+        generateUUID
+    })
+    const [input0, input1] = state2.graph.nodes[node0].inputs
+    const { state: state3 } = update(generateUUID, state2, {
+        kind: EventKind.CLICKED_INPUT,
+        input: input0
+    })
+    const output = state3.graph.nodes[node1].outputs[0]
+    const { state: state4 } = update(generateUUID, state3, {
+        kind: EventKind.CLICKED_OUTPUT,
+        output
+    })
+    const { state: state5 } = update(generateUUID, state4, {
+        kind: EventKind.CLICKED_INPUT,
+        input: input1
+    })
+    const { state: state6 } = update(generateUUID, state5, {
+        kind: EventKind.CLICKED_OUTPUT,
+        output
+    })
+    const { state: state7 } = update(generateUUID, state6, {
+        kind: EventKind.CLICKED_OUTPUT,
+        output
+    })
+    const { state: state8 } = update(generateUUID, state7, {
+        kind: EventKind.KEYDOWN,
+        key: 'd'
+    })
+    expect(state8).toEqual(state2)
+})

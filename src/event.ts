@@ -5,7 +5,7 @@ import { UpdateResult } from "./ui/run"
 import { InputTargetKind, SelectedKind, State, VirtualKeyboardKind } from "./state"
 import { GenerateUUID, Operation, Position, UUID } from './graph/model'
 import { Pointer } from "./ui"
-import { addEdge, addNode, changeBodyValue, changeNodePosition, removeInputEdge, removeNode } from "./graph/update"
+import { addEdge, addNode, changeBodyValue, changeNodePosition, removeInputEdge, removeNode, removeOutputEdges } from "./graph/update"
 
 export enum EventKind {
     POINTER_MOVE,
@@ -23,7 +23,8 @@ export enum EventKind {
     CLICKED_NUMBER,
     CLICKED_BACKGROUND,
     DELETE_NODE,
-    DELETE_INPUT_EDGE
+    DELETE_INPUT_EDGE,
+    DELETE_OUTPUT_EDGES,
 }
 
 export interface PointerMove {
@@ -105,6 +106,12 @@ export interface DeleteInputEdge {
     readonly input: UUID
 }
 
+export interface DeleteOutputEdges {
+    readonly kind: EventKind.DELETE_OUTPUT_EDGES,
+    readonly output: UUID
+}
+
+
 export type AppEvent =
     | PointerMove
     | PointerDown
@@ -122,6 +129,7 @@ export type AppEvent =
     | ClickedBackground
     | DeleteNode
     | DeleteInputEdge
+    | DeleteOutputEdges
 
 
 const pointerDown = (state: State, event: PointerDown): UpdateResult<State, AppEvent> => {
@@ -521,6 +529,15 @@ const keyDown = (state: State, { key }: KeyDown, generateUUID: GenerateUUID): Up
                                 },
                                 render: true
                             }
+                        case SelectedKind.OUTPUT:
+                            return {
+                                state: {
+                                    ...state,
+                                    graph: removeOutputEdges(state.graph, state.selected.output),
+                                    selected: { kind: SelectedKind.NONE },
+                                },
+                                render: true
+                            }
                         default:
                             return { state }
                     }
@@ -633,6 +650,15 @@ const deleteInputEdge = (state: State, { input }: DeleteInputEdge): UpdateResult
     render: true
 })
 
+const deleteOutputEdges = (state: State, { output }: DeleteOutputEdges): UpdateResult<State, AppEvent> => ({
+    state: {
+        ...state,
+        graph: removeOutputEdges(state.graph, output),
+        selected: { kind: SelectedKind.NONE },
+    },
+    render: true
+})
+
 export const update = (generateUUID: GenerateUUID, state: State, event: AppEvent): UpdateResult<State, AppEvent> => {
     switch (event.kind) {
         case EventKind.POINTER_DOWN: return pointerDown(state, event)
@@ -651,5 +677,6 @@ export const update = (generateUUID: GenerateUUID, state: State, event: AppEvent
         case EventKind.CLICKED_BACKGROUND: return clickedBackground(state)
         case EventKind.DELETE_NODE: return deleteNode(state, event)
         case EventKind.DELETE_INPUT_EDGE: return deleteInputEdge(state, event)
+        case EventKind.DELETE_OUTPUT_EDGES: return deleteOutputEdges(state, event)
     }
 }

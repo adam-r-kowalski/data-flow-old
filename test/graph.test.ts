@@ -1,5 +1,5 @@
 import { emptyGraph, Input, Node, Output, Edge, Body } from "../src/graph/model"
-import { addNode, addEdge, changeNodePosition, removeNode, removeInputEdge } from "../src/graph/update"
+import { addNode, addEdge, changeNodePosition, removeNode, removeInputEdge, removeOutputEdges } from "../src/graph/update"
 
 const generateUUID = () => {
     let i = 0
@@ -541,6 +541,127 @@ test("remove input edge", () => {
         generateUUID: generateUUID0
     })
     const graph4 = removeInputEdge(graph3, value)
+    {
+        const addUUID = generateUUID1()
+        const xUUID = generateUUID1()
+        const yUUID = generateUUID1()
+        const outUUID = generateUUID1()
+        const logUUID = generateUUID1()
+        const valueUUID = generateUUID1()
+        const edgeUUID = generateUUID1()
+        const add: Node = {
+            uuid: addUUID,
+            name: 'Add',
+            inputs: [xUUID, yUUID],
+            outputs: [outUUID],
+            position: { x: 0, y: 0 },
+        }
+        const x: Input = {
+            uuid: xUUID,
+            name: 'x'
+        }
+        const y: Input = {
+            uuid: yUUID,
+            name: 'y'
+        }
+        const out: Output = {
+            uuid: outUUID,
+            name: 'out',
+            edges: [edgeUUID]
+        }
+        const log: Node = {
+            uuid: logUUID,
+            name: 'Log To Console',
+            inputs: [valueUUID],
+            outputs: [],
+            position: { x: 50, y: 50 }
+        }
+        const value: Input = {
+            uuid: valueUUID,
+            name: 'value',
+            edge: edgeUUID
+        }
+        const edge: Edge = {
+            uuid: edgeUUID,
+            input: value.uuid,
+            output: out.uuid,
+        }
+        expect(graph3).toEqual({
+            nodes: {
+                [add.uuid]: add,
+                [log.uuid]: log
+            },
+            edges: {
+                [edge.uuid]: edge,
+            },
+            inputs: {
+                [x.uuid]: x,
+                [y.uuid]: y,
+                [value.uuid]: value,
+            },
+            bodys: {},
+            outputs: {
+                [out.uuid]: out
+            },
+        })
+        expect(graph4).toEqual({
+            nodes: {
+                [add.uuid]: add,
+                [log.uuid]: log
+            },
+            edges: {},
+            inputs: {
+                [x.uuid]: x,
+                [y.uuid]: y,
+                [value.uuid]: {
+                    uuid: valueUUID,
+                    name: 'value',
+                },
+            },
+            bodys: {},
+            outputs: {
+                [out.uuid]: {
+                    ...out,
+                    edges: []
+                }
+            },
+        })
+    }
+})
+
+test("remove output edge", () => {
+    const generateUUID0 = generateUUID()
+    const generateUUID1 = generateUUID()
+    const graph = emptyGraph()
+    const { graph: graph1, node: add } = addNode({
+        graph,
+        operation: {
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out'],
+        },
+        position: { x: 0, y: 0 },
+        generateUUID: generateUUID0
+    })
+    const { graph: graph2, node: log } = addNode({
+        graph: graph1,
+        operation: {
+            name: 'Log To Console',
+            inputs: ['value'],
+            outputs: [],
+        },
+        position: { x: 50, y: 50 },
+        generateUUID: generateUUID0
+    })
+    const value = graph2.nodes[log].inputs[0]
+    const out = graph2.nodes[add].outputs[0]
+    const { graph: graph3 } = addEdge({
+        graph: graph2,
+        input: value,
+        output: out,
+        generateUUID: generateUUID0
+    })
+    const graph4 = removeOutputEdges(graph3, out)
     {
         const addUUID = generateUUID1()
         const xUUID = generateUUID1()

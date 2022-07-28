@@ -1,14 +1,14 @@
 import { UI, row, column, container, Color, text } from ".."
 import { MainAxisAlignment } from "../alignment"
 
-interface Item<AppEvent> {
+export interface ContextMenuItem<AppEvent> {
     name: string
     shortcut: string
     onClick: AppEvent
 }
 
 interface Properties<AppEvent> {
-    items: Item<AppEvent>[]
+    items: ContextMenuItem<AppEvent>[]
     backgroundColor: Color
 }
 

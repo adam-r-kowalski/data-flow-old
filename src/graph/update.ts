@@ -146,6 +146,33 @@ export const removeInputEdge = (graph: Graph, input: UUID): Graph => {
 }
 
 
+export const removeOutputEdges = (graph: Graph, output: UUID): Graph => {
+    const edges = { ...graph.edges }
+    const inputs = { ...graph.inputs }
+    const outputs = { ...graph.outputs }
+    for (const uuid of graph.outputs[output].edges) {
+        const edge = graph.edges[uuid]
+        const input = inputs[edge.input]
+        inputs[edge.input] = {
+            ...input,
+            edge: undefined
+        }
+        const output = outputs[edge.output]
+        outputs[edge.output] = {
+            ...output,
+            edges: output.edges.filter(e => e !== uuid)
+        }
+        delete edges[uuid]
+    }
+    return {
+        ...graph,
+        outputs,
+        inputs,
+        edges
+    }
+}
+
+
 interface AddEdgeInputs {
     graph: Graph
     input: UUID

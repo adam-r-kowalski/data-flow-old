@@ -6,6 +6,7 @@ import { addEdge, addNode, changeBodyValue } from "./graph/update"
 export interface Theme {
     readonly background: Color
     readonly node: Color
+    readonly selectedNode: Color
     readonly input: Color
     readonly selectedInput: Color
     readonly connection: Color
@@ -39,7 +40,7 @@ export interface FinderInputTarget {
 
 export interface NumberInputTarget {
     readonly kind: InputTargetKind.NUMBER,
-    readonly node: UUID
+    readonly body: UUID
 }
 
 export interface NoInputTarget {
@@ -124,6 +125,7 @@ export const emptyState = (): State => ({
     theme: {
         background: { red: 2, green: 22, blue: 39, alpha: 255 },
         node: { red: 41, green: 95, blue: 120, alpha: 255 },
+        selectedNode: { red: 23, green: 54, blue: 69, alpha: 255 },
         input: { red: 188, green: 240, blue: 192, alpha: 255 },
         selectedInput: { red: 175, green: 122, blue: 208, alpha: 255 },
         connection: { red: 255, green: 255, blue: 255, alpha: 255 },

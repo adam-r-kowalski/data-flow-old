@@ -1419,6 +1419,7 @@ test("pressing number on keyboard appends to number node", () => {
             bodys: {
                 [body]: {
                     uuid: body,
+                    node,
                     value: 1234567890
                 }
             }
@@ -1478,6 +1479,7 @@ test("pressing backspace on keyboard deletes from number node", () => {
             bodys: {
                 [body]: {
                     uuid: body,
+                    node,
                     value: 123456789
                 }
             }
@@ -1533,6 +1535,7 @@ test("pressing backspace when number node value is 0 has no effect", () => {
             bodys: {
                 [body]: {
                     uuid: body,
+                    node,
                     value: 0
                 }
             }
@@ -1588,6 +1591,7 @@ test("pressing del on virtual keyboard when number node value is 0 has no effect
             bodys: {
                 [body]: {
                     uuid: body,
+                    node,
                     value: 0
                 }
             }
@@ -1643,6 +1647,7 @@ test("pressing number on virtual keyboard appends to number node", () => {
             bodys: {
                 [body]: {
                     uuid: body,
+                    node,
                     value: 1234567890
                 }
             }
@@ -1702,6 +1707,7 @@ test("pressing del on virtual keyboard deletes from number node", () => {
             bodys: {
                 [body]: {
                     uuid: body,
+                    node,
                     value: 123456789
                 }
             }
@@ -1750,6 +1756,7 @@ test("pressing enter on keyboard while editing number node exits virtual keyboar
             bodys: {
                 [body]: {
                     uuid: body,
+                    node,
                     value: 1234567890
                 }
             }
@@ -1797,6 +1804,7 @@ test("pressing ret on virtual keyboard while editing number node exits virtual k
             bodys: {
                 [body]: {
                     uuid: body,
+                    node,
                     value: 1234567890
                 }
             }
@@ -1841,6 +1849,7 @@ test("pressing non number on keyboard while editing number node is ignored", () 
             bodys: {
                 [body]: {
                     uuid: body,
+                    node,
                     value: 0
                 }
             }
@@ -1885,6 +1894,7 @@ test("pressing non number on virtual keyboard while editing number node is ignor
             bodys: {
                 [body]: {
                     uuid: body,
+                    node,
                     value: 0
                 }
             }
@@ -2387,4 +2397,63 @@ test("pressing d on keyboard with output selected delete edges attached", () => 
         key: 'd'
     })
     expect(state8).toEqual(state2)
+})
+
+test("connecting output of same node where input is selected is not allowed", () => {
+    const generateUUID = makeGenerateUUID()
+    const operations: Operations = {
+        'Add': {
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        },
+    }
+    let state0 = { ...emptyState(), operations }
+    const { state: state1, node: node0 } = addNodeToGraph({
+        state: state0,
+        operation: operations['Add'],
+        position: { x: 0, y: 0 },
+        generateUUID
+    })
+    const input = state1.graph.nodes[node0].inputs[0]
+    const { state: state2 } = update(generateUUID, state1, {
+        kind: EventKind.CLICKED_INPUT,
+        input
+    })
+    const output = state2.graph.nodes[node0].outputs[0]
+    const { state: state3 } = update(generateUUID, state2, {
+        kind: EventKind.CLICKED_OUTPUT,
+        output
+    })
+    expect(state3).toEqual(state2)
+})
+
+
+test("connecting input of same node where output is selected is not allowed", () => {
+    const generateUUID = makeGenerateUUID()
+    const operations: Operations = {
+        'Add': {
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        },
+    }
+    let state0 = { ...emptyState(), operations }
+    const { state: state1, node: node0 } = addNodeToGraph({
+        state: state0,
+        operation: operations['Add'],
+        position: { x: 0, y: 0 },
+        generateUUID
+    })
+    const output = state1.graph.nodes[node0].outputs[0]
+    const { state: state2 } = update(generateUUID, state1, {
+        kind: EventKind.CLICKED_OUTPUT,
+        output
+    })
+    const input = state1.graph.nodes[node0].inputs[0]
+    const { state: state3 } = update(generateUUID, state2, {
+        kind: EventKind.CLICKED_INPUT,
+        input
+    })
+    expect(state3).toEqual(state2)
 })

@@ -48,14 +48,17 @@ test("add operation to graph", () => {
     }
     const x: Input = {
         uuid: xUUID,
+        node: addUUID,
         name: 'x'
     }
     const y: Input = {
         uuid: yUUID,
+        node: addUUID,
         name: 'y'
     }
     const out: Output = {
         uuid: outUUID,
+        node: addUUID,
         name: 'out',
         edges: []
     }
@@ -105,11 +108,13 @@ test("add operation with body to graph", () => {
     }
     const out: Output = {
         uuid: outUUID,
+        node: numberUUID,
         name: 'out',
         edges: []
     }
     const body: Body = {
         uuid: bodyUUID,
+        node: numberUUID,
         value: 0
     }
     expect(graph1).toEqual({
@@ -161,14 +166,17 @@ test("add two operations to graph", () => {
     }
     const x: Input = {
         uuid: xUUID,
+        node: addUUID,
         name: 'x'
     }
     const y: Input = {
         uuid: yUUID,
+        node: addUUID,
         name: 'y'
     }
     const out: Output = {
         uuid: outUUID,
+        node: addUUID,
         name: 'out',
         edges: []
     }
@@ -183,6 +191,7 @@ test("add two operations to graph", () => {
     }
     const value: Input = {
         uuid: valueUUID,
+        node: logUUID,
         name: 'value'
     }
     expect(graph1).toEqual({
@@ -269,14 +278,17 @@ test("add edge between two operations", () => {
     }
     const x: Input = {
         uuid: xUUID,
+        node: addUUID,
         name: 'x'
     }
     const y: Input = {
         uuid: yUUID,
+        node: addUUID,
         name: 'y'
     }
     const out: Output = {
         uuid: outUUID,
+        node: addUUID,
         name: 'out',
         edges: [edgeUUID]
     }
@@ -289,6 +301,7 @@ test("add edge between two operations", () => {
     }
     const value: Input = {
         uuid: valueUUID,
+        node: logUUID,
         name: 'value',
         edge: edgeUUID
     }
@@ -346,14 +359,17 @@ test("change node position", () => {
     }
     const x: Input = {
         uuid: xUUID,
+        node: addUUID,
         name: 'x'
     }
     const y: Input = {
         uuid: yUUID,
+        node: addUUID,
         name: 'y'
     }
     const out: Output = {
         uuid: outUUID,
+        node: addUUID,
         name: 'out',
         edges: []
     }
@@ -444,14 +460,17 @@ test("remove node from graph", () => {
         }
         const x: Input = {
             uuid: xUUID,
+            node: addUUID,
             name: 'x'
         }
         const y: Input = {
             uuid: yUUID,
+            node: addUUID,
             name: 'y'
         }
         const out: Output = {
             uuid: outUUID,
+            node: addUUID,
             name: 'out',
             edges: [edgeUUID]
         }
@@ -464,6 +483,7 @@ test("remove node from graph", () => {
         }
         const value: Input = {
             uuid: valueUUID,
+            node: logUUID,
             name: 'value',
             edge: edgeUUID
         }
@@ -498,6 +518,7 @@ test("remove node from graph", () => {
             inputs: {
                 [value.uuid]: {
                     uuid: valueUUID,
+                    node: log.uuid,
                     name: 'value',
                 },
             },
@@ -558,14 +579,17 @@ test("remove input edge", () => {
         }
         const x: Input = {
             uuid: xUUID,
+            node: addUUID,
             name: 'x'
         }
         const y: Input = {
             uuid: yUUID,
+            node: addUUID,
             name: 'y'
         }
         const out: Output = {
             uuid: outUUID,
+            node: addUUID,
             name: 'out',
             edges: [edgeUUID]
         }
@@ -578,6 +602,7 @@ test("remove input edge", () => {
         }
         const value: Input = {
             uuid: valueUUID,
+            node: logUUID,
             name: 'value',
             edge: edgeUUID
         }
@@ -615,6 +640,7 @@ test("remove input edge", () => {
                 [y.uuid]: y,
                 [value.uuid]: {
                     uuid: valueUUID,
+                    node: log.uuid,
                     name: 'value',
                 },
             },
@@ -679,14 +705,17 @@ test("remove output edge", () => {
         }
         const x: Input = {
             uuid: xUUID,
+            node: addUUID,
             name: 'x'
         }
         const y: Input = {
             uuid: yUUID,
+            node: addUUID,
             name: 'y'
         }
         const out: Output = {
             uuid: outUUID,
+            node: addUUID,
             name: 'out',
             edges: [edgeUUID]
         }
@@ -699,6 +728,7 @@ test("remove output edge", () => {
         }
         const value: Input = {
             uuid: valueUUID,
+            node: logUUID,
             name: 'value',
             edge: edgeUUID
         }
@@ -736,6 +766,7 @@ test("remove output edge", () => {
                 [y.uuid]: y,
                 [value.uuid]: {
                     uuid: valueUUID,
+                    node: log.uuid,
                     name: 'value',
                 },
             },

@@ -284,19 +284,23 @@ const wheel = (state: State, event: Wheel): UpdateResult<State, AppEvent> => {
 
 const clickedInput = (state: State, event: ClickedInput, generateUUID: GenerateUUID): UpdateResult<State, AppEvent> => {
     if (state.selected.kind === SelectedKind.OUTPUT) {
-        const { graph } = addEdge({
-            graph: state.graph,
-            input: event.input,
-            output: state.selected.output,
-            generateUUID
-        })
-        return {
-            state: {
-                ...state,
-                selected: { kind: SelectedKind.NONE },
-                graph
-            },
-            render: true
+        if (state.graph.inputs[event.input].node === state.graph.outputs[state.selected.output].node) {
+            return { state }
+        } else {
+            const { graph } = addEdge({
+                graph: state.graph,
+                input: event.input,
+                output: state.selected.output,
+                generateUUID
+            })
+            return {
+                state: {
+                    ...state,
+                    selected: { kind: SelectedKind.NONE },
+                    graph
+                },
+                render: true
+            }
         }
     } else {
         return {
@@ -311,19 +315,23 @@ const clickedInput = (state: State, event: ClickedInput, generateUUID: GenerateU
 
 const clickedOutput = (state: State, event: ClickedOutput, generateUUID: GenerateUUID): UpdateResult<State, AppEvent> => {
     if (state.selected.kind === SelectedKind.INPUT) {
-        const { graph } = addEdge({
-            graph: state.graph,
-            input: state.selected.input,
-            output: event.output,
-            generateUUID
-        })
-        return {
-            state: {
-                ...state,
-                selected: { kind: SelectedKind.NONE },
-                graph
-            },
-            render: true
+        if (state.graph.outputs[event.output].node === state.graph.inputs[state.selected.input].node) {
+            return { state }
+        } else {
+            const { graph } = addEdge({
+                graph: state.graph,
+                input: state.selected.input,
+                output: event.output,
+                generateUUID
+            })
+            return {
+                state: {
+                    ...state,
+                    selected: { kind: SelectedKind.NONE },
+                    graph
+                },
+                render: true
+            }
         }
     } else {
         return {

@@ -622,7 +622,7 @@ test("nodeUi 1 input body and 1 output", () => {
 })
 
 test("finder", () => {
-    const actual = finder({ search: "text", options: ["foo", "bar"], show: true }, theme)
+    const actual = finder({ search: "text", options: ["foo", "bar"], show: true, openTimeout: false }, theme)
     const expected = column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
         container({ height: 10 }),
         container({ color: theme.node, padding: 4 },
@@ -773,12 +773,12 @@ test("view with no nodes or edges", () => {
         pointers: [],
         pointerDistance: 0,
         pointerCenter: { x: 0, y: 0 },
-        potentialDoubleClick: false,
         nodePlacementLocation: { x: 0, y: 0 },
         finder: {
             search: "",
             options: [],
             show: false,
+            openTimeout: false
         },
         virtualKeyboard: {
             show: false,
@@ -813,12 +813,12 @@ test("view with no nodes or edges but finder shown", () => {
         pointers: [],
         pointerDistance: 0,
         pointerCenter: { x: 0, y: 0 },
-        potentialDoubleClick: false,
         nodePlacementLocation: { x: 0, y: 0 },
         finder: {
             search: "",
             options: [],
             show: true,
+            openTimeout: false
         },
         virtualKeyboard: {
             show: false,
@@ -854,12 +854,12 @@ test("view with no nodes or edges but virtual keyboard shown", () => {
         pointers: [],
         pointerDistance: 0,
         pointerCenter: { x: 0, y: 0 },
-        potentialDoubleClick: false,
         nodePlacementLocation: { x: 0, y: 0 },
         finder: {
             search: "",
             options: [],
             show: false,
+            openTimeout: false
         },
         virtualKeyboard: {
             show: true,
@@ -896,7 +896,6 @@ test("view with no nodes or edges but finder and virtual keyboard shown", () => 
         pointers: [],
         pointerDistance: 0,
         pointerCenter: { x: 0, y: 0 },
-        potentialDoubleClick: false,
         nodePlacementLocation: {
             x: 0,
             y: 0,
@@ -905,6 +904,7 @@ test("view with no nodes or edges but finder and virtual keyboard shown", () => 
             search: "",
             options: [],
             show: true,
+            openTimeout: false,
         },
         virtualKeyboard: {
             show: true,
@@ -963,7 +963,6 @@ test("view with three nodes and no edges", () => {
         pointers: [],
         pointerDistance: 0,
         pointerCenter: { x: 0, y: 0 },
-        potentialDoubleClick: false,
         nodePlacementLocation: {
             x: 0,
             y: 0,
@@ -972,6 +971,7 @@ test("view with three nodes and no edges", () => {
             search: "",
             options: [],
             show: false,
+            openTimeout: false,
         },
         virtualKeyboard: {
             show: false,
@@ -1036,12 +1036,12 @@ test("view with three nodes and no edges", () => {
         pointers: [],
         pointerDistance: 0,
         pointerCenter: { x: 0, y: 0 },
-        potentialDoubleClick: false,
         nodePlacementLocation: { x: 0, y: 0, },
         finder: {
             search: "",
             options: [],
             show: false,
+            openTimeout: false,
         },
         virtualKeyboard: {
             show: false,
@@ -1141,7 +1141,6 @@ test("view with three nodes and one edges", () => {
         pointers: [],
         pointerDistance: 0,
         pointerCenter: { x: 0, y: 0 },
-        potentialDoubleClick: false,
         nodePlacementLocation: {
             x: 0,
             y: 0,
@@ -1150,6 +1149,7 @@ test("view with three nodes and one edges", () => {
             search: "",
             options: [],
             show: false,
+            openTimeout: false,
         },
         virtualKeyboard: {
             show: false,

@@ -14,7 +14,13 @@ const success_or_error = run({
     window,
     document: document as Document,
     requestAnimationFrame,
-    setTimeout
+    setTimeout,
+    pointerDown: (dispatch, pointer) => {
+        dispatch({
+            kind: EventKind.POINTER_DOWN,
+            pointer
+        })
+    }
 })
 
 if (success_or_error.kind == ProgramKind.ERROR) {
@@ -40,13 +46,6 @@ if (typeof PointerEvent.prototype.getCoalescedEvents === 'function') {
         })
     )
 }
-
-document.addEventListener("pointerdown", p => {
-    dispatch({
-        kind: EventKind.POINTER_DOWN,
-        pointer: transformPointer(p)
-    })
-})
 
 document.addEventListener("pointerup", p => {
     dispatch({

@@ -19,23 +19,16 @@ test("pointer down", () => {
         id: 0,
         position: { x: 0, y: 0 }
     }
-    const { state: state1, schedule } = update(makeGenerateUUID(), state, {
+    const { state: state1 } = update(makeGenerateUUID(), state, {
         kind: EventKind.POINTER_DOWN,
         pointer
     })
-    const expectedState = {
+    const expectedState: State = {
         ...emptyState(),
         dragging: true,
         pointers: [pointer],
-        potentialDoubleClick: true
     }
     expect(state1).toEqual(expectedState)
-    expect(schedule).toEqual([
-        {
-            after: { milliseconds: 300 },
-            event: { kind: EventKind.DOUBLE_CLICK_TIMEOUT }
-        }
-    ])
 })
 
 test("two pointers down", () => {
@@ -49,7 +42,7 @@ test("two pointers down", () => {
         id: 1,
         position: { x: 0, y: 0 }
     }
-    const { state: state1, schedule } = update(generateUUID, state, {
+    const { state: state1 } = update(generateUUID, state, {
         kind: EventKind.POINTER_DOWN,
         pointer: pointer0
     })
@@ -57,18 +50,12 @@ test("two pointers down", () => {
         kind: EventKind.POINTER_DOWN,
         pointer: pointer1
     })
-    const expectedState = {
+    const expectedState: State = {
         ...emptyState(),
         pointers: [pointer0, pointer1],
         zooming: true
     }
     expect(state2).toEqual(expectedState)
-    expect(schedule).toEqual([
-        {
-            after: { milliseconds: 300 },
-            event: { kind: EventKind.DOUBLE_CLICK_TIMEOUT }
-        }
-    ])
 })
 
 test("pointer double click", () => {
@@ -82,42 +69,37 @@ test("pointer double click", () => {
         kind: EventKind.POINTER_DOWN,
         pointer
     })
-    const { state: state2 } = update(generateUUID, state1, {
-        kind: EventKind.POINTER_UP,
-        pointer
-    })
-    const { state: state3, dispatch } = update(generateUUID, state2, {
-        kind: EventKind.POINTER_DOWN,
-        pointer
-    })
-    const expectedState = {
-        ...emptyState(),
-        pointers: [pointer]
-    }
-    expect(state3).toEqual(expectedState)
-    expect(dispatch).toEqual([{ kind: EventKind.DOUBLE_CLICK, pointer }])
-})
-
-test("pointer double click timeout", () => {
-    const generateUUID = makeGenerateUUID()
-    const state = emptyState()
-    const pointer = {
-        id: 0,
-        position: { x: 0, y: 0 }
-    }
-    const { state: state1 } = update(generateUUID, state, {
-        kind: EventKind.POINTER_DOWN,
-        pointer
-    })
-    const { state: state2 } = update(generateUUID, state1, {
-        kind: EventKind.POINTER_UP,
-        pointer
+    const { state: state2, schedule } = update(generateUUID, state1, {
+        kind: EventKind.CLICKED_BACKGROUND,
     })
     const { state: state3 } = update(generateUUID, state2, {
-        kind: EventKind.DOUBLE_CLICK_TIMEOUT
+        kind: EventKind.POINTER_UP,
+        pointer
     })
-    const expectedState = emptyState()
-    expect(state3).toEqual(expectedState)
+    const { state: state4 } = update(generateUUID, state3, {
+        kind: EventKind.POINTER_DOWN,
+        pointer
+    })
+    const { state: state5 } = update(generateUUID, state4, {
+        kind: EventKind.CLICKED_BACKGROUND,
+    })
+    const expectedState: State = {
+        ...state,
+        pointers: [pointer],
+        finder: {
+            ...state.finder,
+            show: true
+        },
+        virtualKeyboard: {
+            ...state.virtualKeyboard,
+            show: true
+        },
+        inputTarget: { kind: InputTargetKind.FINDER }
+    }
+    expect(state5).toEqual(expectedState)
+    expect(schedule).toEqual([
+        { after: { milliseconds: 300 }, event: { kind: EventKind.OPEN_FINDER_TIMEOUT } }
+    ])
 })
 
 test("pointer down then up", () => {
@@ -131,15 +113,24 @@ test("pointer down then up", () => {
         kind: EventKind.POINTER_DOWN,
         pointer
     })
-    const { state: state2 } = update(generateUUID, state1, {
+    const { state: state2, schedule } = update(generateUUID, state1, {
+        kind: EventKind.CLICKED_BACKGROUND,
+    })
+    const { state: state3 } = update(generateUUID, state2, {
         kind: EventKind.POINTER_UP,
         pointer
     })
-    const expectedState = {
-        ...emptyState(),
-        potentialDoubleClick: true
+    const expectedState: State = {
+        ...state,
+        finder: {
+            ...state.finder,
+            openTimeout: true
+        }
     }
-    expect(state2).toEqual(expectedState)
+    expect(state3).toEqual(expectedState)
+    expect(schedule).toEqual([
+        { after: { milliseconds: 300 }, event: { kind: EventKind.OPEN_FINDER_TIMEOUT } }
+    ])
 })
 
 test("two pointers down then up", () => {
@@ -269,7 +260,6 @@ test("pointer move after pointer down", () => {
     const expectedState = {
         ...emptyState(),
         camera: translate(-50, -75),
-        potentialDoubleClick: true,
         dragging: true,
         pointers: [
             {
@@ -330,7 +320,7 @@ test("pointer move after clicking node pointer down", () => {
             position: { x: 50, y: 75 }
         }
     })
-    const expectedState = {
+    const expectedState: State = {
         ...state2,
         pointers: [
             {
@@ -341,7 +331,6 @@ test("pointer move after clicking node pointer down", () => {
         graph: changeNodePosition(state2.graph, node0, () => ({ x: 50, y: 75 })),
         nodeOrder: [node1, node0],
         dragging: true,
-        potentialDoubleClick: true,
         selected: {
             kind: SelectedKind.NODE,
             node: node0
@@ -395,14 +384,13 @@ test("pointer move after clicking node, pointer down, then pointer up", () => {
             position: { x: 50, y: 75 }
         }
     })
-    const expectedState = {
+    const expectedState: State = {
         ...state1,
         nodePlacementLocation: { x: 50, y: 75 },
         selected: {
             kind: SelectedKind.NODE,
             node: node0
         },
-        potentialDoubleClick: true
     }
     expect(state5).toEqual(expectedState)
 })
@@ -702,19 +690,26 @@ test("double click opens finder", () => {
         ...emptyState(),
         operations
     }
-    const { state: state1, render } = update(generateUUID, state0, {
-        kind: EventKind.DOUBLE_CLICK,
+    const { state: state1 } = update(generateUUID, state0, {
+        kind: EventKind.CLICKED_BACKGROUND,
+    })
+    const { state: state2 } = update(generateUUID, state1, {
+        kind: EventKind.POINTER_DOWN,
         pointer: {
             id: 0,
             position: { x: 50, y: 50 }
         }
+    })
+    const { state: state3, render } = update(generateUUID, state2, {
+        kind: EventKind.CLICKED_BACKGROUND,
     })
     const expectedState: State = {
         ...state0,
         finder: {
             show: true,
             search: '',
-            options: ['Add', 'Sub']
+            options: ['Add', 'Sub'],
+            openTimeout: false
         },
         nodePlacementLocation: { x: 50, y: 50 },
         virtualKeyboard: {
@@ -722,8 +717,14 @@ test("double click opens finder", () => {
             show: true,
         },
         inputTarget: { kind: InputTargetKind.FINDER },
+        pointers: [
+            {
+                id: 0,
+                position: { x: 50, y: 50 }
+            }
+        ]
     }
-    expect(state1).toEqual(expectedState)
+    expect(state3).toEqual(expectedState)
     expect(render).toEqual(true)
 })
 
@@ -759,12 +760,13 @@ test("f key down when finder is not shown opens finder", () => {
         kind: EventKind.KEYDOWN,
         key: 'f'
     })
-    const expectedState = {
+    const expectedState: State = {
         ...state0,
         finder: {
             show: true,
             search: '',
-            options: ["Add", "Sub"]
+            options: ["Add", "Sub"],
+            openTimeout: false
         },
         virtualKeyboard: {
             kind: VirtualKeyboardKind.ALPHABETIC,
@@ -837,13 +839,14 @@ test("key down when finder is shown appends to search", () => {
         kind: EventKind.KEYDOWN,
         key: 'd'
     })
-    const expectedState = {
+    const expectedState: State = {
         ...state0,
         finder: {
             show: true,
             search: 'add',
-            options: ['Add']
-        }
+            options: ['Add'],
+            openTimeout: false
+        },
     }
     expect(state3).toEqual(expectedState)
     expect(render).toEqual(true)
@@ -884,12 +887,13 @@ test("backspace key down when finder is shown deletes from search", () => {
         kind: EventKind.KEYDOWN,
         key: 'Backspace'
     })
-    const expectedState = {
+    const expectedState: State = {
         ...state0,
         finder: {
             show: true,
             search: 'ad',
-            options: ['Add']
+            options: ['Add'],
+            openTimeout: false
         }
     }
     expect(state4).toEqual(expectedState)
@@ -1215,12 +1219,13 @@ test("virtual key down when finder is shown appends to search", () => {
         kind: EventKind.KEYDOWN,
         key: 'd'
     })
-    const expectedState = {
+    const expectedState: State = {
         ...state0,
         finder: {
             show: true,
             search: 'add',
-            options: ['Add']
+            options: ['Add'],
+            openTimeout: false
         }
     }
     expect(state3).toEqual(expectedState)
@@ -1261,12 +1266,13 @@ test("del virtual key down when finder is shown deletes from search", () => {
         kind: EventKind.VIRTUAL_KEYDOWN,
         key: 'del'
     })
-    const expectedState = {
+    const expectedState: State = {
         ...state0,
         finder: {
             show: true,
             search: 'ad',
-            options: ['Add']
+            options: ['Add'],
+            openTimeout: false
         }
     }
     expect(state4).toEqual(expectedState)
@@ -1303,12 +1309,13 @@ test("space virtual key down when finder is shown adds space to search", () => {
         kind: EventKind.VIRTUAL_KEYDOWN,
         key: 'd'
     })
-    const expectedState = {
+    const expectedState: State = {
         ...state0,
         finder: {
             show: true,
             search: 'a d',
-            options: []
+            options: [],
+            openTimeout: false
         }
     }
     expect(state3).toEqual(expectedState)
@@ -2018,8 +2025,151 @@ test("clicking background when a number node is selected deselects it", () => {
     const { state: state2 } = update(generateUUID, state1, {
         kind: EventKind.CLICKED_BACKGROUND,
     })
+    const expectedState: State = {
+        ...state0,
+        finder: {
+            ...state0.finder,
+            openTimeout: true
+        }
+    }
+    expect(state2).toEqual(expectedState)
+})
+
+test("pressing Escape when a number node is selected deselects it", () => {
+    const generateUUID = makeGenerateUUID()
+    const operations: Operations = {
+        'Number': {
+            name: 'Number',
+            inputs: [],
+            body: 0,
+            outputs: ['out']
+        }
+    }
+    const { state: state0, node } = addNodeToGraph({
+        state: { ...emptyState(), operations },
+        operation: operations['Number'],
+        position: { x: 0, y: 0 },
+        generateUUID
+    })
+    const body = state0.graph.nodes[node].body!
+    const { state: state1 } = update(generateUUID, state0, {
+        kind: EventKind.CLICKED_NUMBER,
+        body
+    })
+    const { state: state2 } = update(generateUUID, state1, {
+        kind: EventKind.KEYDOWN,
+        key: 'Escape'
+    })
     expect(state2).toEqual(state0)
 })
+
+test("clicking input when a number node is selected deselects it and selects input", () => {
+    const generateUUID = makeGenerateUUID()
+    const operations: Operations = {
+        'Number': {
+            name: 'Number',
+            inputs: [],
+            body: 0,
+            outputs: ['out']
+        }
+    }
+    const { state: state0, node } = addNodeToGraph({
+        state: { ...emptyState(), operations },
+        operation: operations['Number'],
+        position: { x: 0, y: 0 },
+        generateUUID
+    })
+    const body = state0.graph.nodes[node].body!
+    const { state: state1 } = update(generateUUID, state0, {
+        kind: EventKind.CLICKED_NUMBER,
+        body
+    })
+    const input = state0.graph.nodes[node].inputs[0]
+    const { state: state2 } = update(generateUUID, state1, {
+        kind: EventKind.CLICKED_INPUT,
+        input
+    })
+    const expectedState: State = {
+        ...state0,
+        selected: {
+            kind: SelectedKind.INPUT,
+            input
+        }
+    }
+    expect(state2).toEqual(expectedState)
+})
+
+test("clicking output when a number node is selected deselects it and selects output", () => {
+    const generateUUID = makeGenerateUUID()
+    const operations: Operations = {
+        'Number': {
+            name: 'Number',
+            inputs: [],
+            body: 0,
+            outputs: ['out']
+        }
+    }
+    const { state: state0, node } = addNodeToGraph({
+        state: { ...emptyState(), operations },
+        operation: operations['Number'],
+        position: { x: 0, y: 0 },
+        generateUUID
+    })
+    const body = state0.graph.nodes[node].body!
+    const { state: state1 } = update(generateUUID, state0, {
+        kind: EventKind.CLICKED_NUMBER,
+        body
+    })
+    const output = state0.graph.nodes[node].outputs[0]
+    const { state: state2 } = update(generateUUID, state1, {
+        kind: EventKind.CLICKED_OUTPUT,
+        output
+    })
+    const expectedState: State = {
+        ...state0,
+        selected: {
+            kind: SelectedKind.OUTPUT,
+            output
+        }
+    }
+    expect(state2).toEqual(expectedState)
+})
+
+test("clicking node when a number node is selected deselects it and selects node", () => {
+    const generateUUID = makeGenerateUUID()
+    const operations: Operations = {
+        'Number': {
+            name: 'Number',
+            inputs: [],
+            body: 0,
+            outputs: ['out']
+        }
+    }
+    const { state: state0, node } = addNodeToGraph({
+        state: { ...emptyState(), operations },
+        operation: operations['Number'],
+        position: { x: 0, y: 0 },
+        generateUUID
+    })
+    const body = state0.graph.nodes[node].body!
+    const { state: state1 } = update(generateUUID, state0, {
+        kind: EventKind.CLICKED_NUMBER,
+        body
+    })
+    const { state: state2 } = update(generateUUID, state1, {
+        kind: EventKind.CLICKED_NODE,
+        node
+    })
+    const expectedState: State = {
+        ...state0,
+        selected: {
+            kind: SelectedKind.NODE,
+            node
+        }
+    }
+    expect(state2).toEqual(expectedState)
+})
+
 
 test("zooming", () => {
     const generateUUID = makeGenerateUUID()
@@ -2044,10 +2194,9 @@ test("zooming", () => {
         kind: EventKind.POINTER_DOWN,
         pointer: pointer0
     })
-    const expectedState0 = {
+    const expectedState0: State = {
         ...emptyState(),
         dragging: true,
-        potentialDoubleClick: true,
         pointers: [pointer0]
     }
     expect(state1).toEqual(expectedState0)
@@ -2055,7 +2204,7 @@ test("zooming", () => {
         kind: EventKind.POINTER_DOWN,
         pointer: pointer1
     })
-    const expectedState1 = {
+    const expectedState1: State = {
         ...emptyState(),
         zooming: true,
         pointers: [pointer0, pointer1]
@@ -2065,7 +2214,7 @@ test("zooming", () => {
         kind: EventKind.POINTER_MOVE,
         pointer: pointer2
     })
-    const expectedState2 = {
+    const expectedState2: State = {
         ...emptyState(),
         zooming: true,
         pointerDistance: Math.sqrt(Math.pow(20, 2) + Math.pow(20, 2)),
@@ -2077,7 +2226,7 @@ test("zooming", () => {
         kind: EventKind.POINTER_MOVE,
         pointer: pointer3
     })
-    const expectedState3 = {
+    const expectedState3: State = {
         ...emptyState(),
         zooming: true,
         pointerDistance: Math.sqrt(Math.pow(30, 2) + Math.pow(30, 2)),
@@ -2142,8 +2291,43 @@ test("clicking background when a node is selected deselects it", () => {
     const { state: state3 } = update(generateUUID, state2, {
         kind: EventKind.CLICKED_BACKGROUND,
     })
+    const expectedState: State = {
+        ...state1,
+        finder: {
+            ...state1.finder,
+            openTimeout: true
+        }
+    }
+    expect(state3).toEqual(expectedState)
+})
+
+test("pressing escape when a node is selected deselects it", () => {
+    const generateUUID = makeGenerateUUID()
+    const operations: Operations = {
+        'Add': {
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        },
+    }
+    let state0 = { ...emptyState(), operations }
+    const { state: state1, node } = addNodeToGraph({
+        state: state0,
+        operation: operations['Add'],
+        position: { x: 0, y: 0 },
+        generateUUID
+    })
+    const { state: state2 } = update(generateUUID, state1, {
+        kind: EventKind.CLICKED_NODE,
+        node
+    })
+    const { state: state3 } = update(generateUUID, state2, {
+        kind: EventKind.KEYDOWN,
+        key: 'Escape'
+    })
     expect(state3).toEqual(state1)
 })
+
 
 test("clicking background when a input is selected deselects it", () => {
     const generateUUID = makeGenerateUUID()
@@ -2169,8 +2353,44 @@ test("clicking background when a input is selected deselects it", () => {
     const { state: state3 } = update(generateUUID, state2, {
         kind: EventKind.CLICKED_BACKGROUND,
     })
+    const expectedState: State = {
+        ...state1,
+        finder: {
+            ...state1.finder,
+            openTimeout: true,
+        }
+    }
+    expect(state3).toEqual(expectedState)
+})
+
+test("pressing escape when a input is selected deselects it", () => {
+    const generateUUID = makeGenerateUUID()
+    const operations: Operations = {
+        'Add': {
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        },
+    }
+    let state0 = { ...emptyState(), operations }
+    const { state: state1, node } = addNodeToGraph({
+        state: state0,
+        operation: operations['Add'],
+        position: { x: 0, y: 0 },
+        generateUUID
+    })
+    const input = state1.graph.nodes[node].inputs[0]
+    const { state: state2 } = update(generateUUID, state1, {
+        kind: EventKind.CLICKED_INPUT,
+        input
+    })
+    const { state: state3 } = update(generateUUID, state2, {
+        kind: EventKind.KEYDOWN,
+        key: 'Escape'
+    })
     expect(state3).toEqual(state1)
 })
+
 
 test("clicking background when a output is selected deselects it", () => {
     const generateUUID = makeGenerateUUID()
@@ -2196,8 +2416,44 @@ test("clicking background when a output is selected deselects it", () => {
     const { state: state3 } = update(generateUUID, state2, {
         kind: EventKind.CLICKED_BACKGROUND,
     })
+    const expectedState: State = {
+        ...state1,
+        finder: {
+            ...state1.finder,
+            openTimeout: true,
+        }
+    }
+    expect(state3).toEqual(expectedState)
+})
+
+test("pressing escape when a output is selected deselects it", () => {
+    const generateUUID = makeGenerateUUID()
+    const operations: Operations = {
+        'Add': {
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        },
+    }
+    let state0 = { ...emptyState(), operations }
+    const { state: state1, node } = addNodeToGraph({
+        state: state0,
+        operation: operations['Add'],
+        position: { x: 0, y: 0 },
+        generateUUID
+    })
+    const output = state1.graph.nodes[node].outputs[0]
+    const { state: state2 } = update(generateUUID, state1, {
+        kind: EventKind.CLICKED_OUTPUT,
+        output
+    })
+    const { state: state3 } = update(generateUUID, state2, {
+        kind: EventKind.KEYDOWN,
+        key: 'Escape'
+    })
     expect(state3).toEqual(state1)
 })
+
 
 test("delete input edge", () => {
     const generateUUID = makeGenerateUUID()

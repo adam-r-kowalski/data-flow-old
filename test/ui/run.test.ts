@@ -1,4 +1,4 @@
-import { container, row, text, UI } from "../../src/ui"
+import { container, Pointer, row, text, UI } from "../../src/ui"
 import { mockDocument, mockWindow } from "../../src/ui/mock"
 import { Dispatch, run, Success } from "../../src/ui/run"
 import { ProgramError, ProgramKind } from "../../src/ui/webgl2"
@@ -41,7 +41,8 @@ test("run returns a dispatch function which can run your events", () => {
         window: mockWindow(),
         document: mockDocument(),
         requestAnimationFrame: mockRequestAnimationFrame,
-        setTimeout: mockSetTimeout
+        setTimeout: mockSetTimeout,
+        pointerDown: () => { }
     }))
     dispatch(AppEvent.INCREMENT)
     expect(state).toEqual({ value: 1 })
@@ -66,7 +67,8 @@ test("if update does not return render true then view gets called once", () => {
         window: mockWindow(),
         document: mockDocument(),
         requestAnimationFrame: mockRequestAnimationFrame,
-        setTimeout: mockSetTimeout
+        setTimeout: mockSetTimeout,
+        pointerDown: () => { }
     }))
     dispatch(true)
     expect(viewCallCount).toEqual(1)
@@ -91,7 +93,8 @@ test("if update returns render true then view gets called again", () => {
         window: mockWindow(),
         document: mockDocument(),
         requestAnimationFrame: mockRequestAnimationFrame,
-        setTimeout: mockSetTimeout
+        setTimeout: mockSetTimeout,
+        pointerDown: () => { }
     }))
     dispatch(true)
     expect(viewCallCount).toEqual(2)
@@ -124,7 +127,8 @@ test("if update returns scheduled events they get dispatched after some millisec
         setTimeout: (callback: () => void, milliseconds: number) => {
             timeouts.push(milliseconds)
             callback()
-        }
+        },
+        pointerDown: () => { }
     }))
     dispatch(true)
     expect(events).toEqual([true, false, false])
@@ -155,7 +159,8 @@ test("if update returns dispatch events they get dispatched immediately", () => 
         setTimeout: (callback: () => void, milliseconds: number) => {
             timeouts.push(milliseconds)
             callback()
-        }
+        },
+        pointerDown: () => { }
     }))
     dispatch(true)
     expect(events).toEqual([true, false, false])
@@ -176,6 +181,7 @@ test("pointer down events can lead to on click handlers firing", () => {
         return { state }
     }
     const document = mockDocument()
+    let pointers: Pointer[] = []
     run({
         state,
         view,
@@ -183,7 +189,8 @@ test("pointer down events can lead to on click handlers firing", () => {
         window: mockWindow(),
         document,
         requestAnimationFrame: mockRequestAnimationFrame,
-        setTimeout: mockSetTimeout
+        setTimeout: mockSetTimeout,
+        pointerDown: (_, pointer) => { pointers.push(pointer) }
     })
     document.fireEvent('pointerdown', {
         clientX: 0,
@@ -201,6 +208,20 @@ test("pointer down events can lead to on click handlers firing", () => {
         pointerId: 0
     })
     expect(events).toEqual([AppEvent.A, AppEvent.B])
+    expect(pointers).toEqual([
+        {
+            id: 0,
+            position: { x: 0, y: 0 }
+        },
+        {
+            id: 0,
+            position: { x: 51, y: 0 }
+        },
+        {
+            id: 0,
+            position: { x: 200, y: 200 }
+        },
+    ])
 })
 
 test("resize events trigger a rerender", () => {
@@ -221,7 +242,8 @@ test("resize events trigger a rerender", () => {
         window,
         document: mockDocument(),
         requestAnimationFrame: mockRequestAnimationFrame,
-        setTimeout: mockSetTimeout
+        setTimeout: mockSetTimeout,
+        pointerDown: () => { }
     })
     expect(viewCallCount).toEqual(1)
     window.fireEvent('resize')
@@ -242,7 +264,8 @@ test("simulate failure", () => {
         window,
         document: mockDocument(true),
         requestAnimationFrame: mockRequestAnimationFrame,
-        setTimeout: mockSetTimeout
+        setTimeout: mockSetTimeout,
+        pointerDown: () => { }
     }) as ProgramError
     expect(error).toEqual({
         kind: ProgramKind.ERROR,

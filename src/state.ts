@@ -16,6 +16,7 @@ export interface Finder {
     readonly search: string
     readonly show: boolean
     readonly options: Readonly<string[]>
+    readonly openTimeout: boolean
 }
 
 export enum VirtualKeyboardKind {
@@ -102,7 +103,6 @@ export interface State {
     readonly pointerDistance: number
     readonly pointerCenter: Position
     readonly selected: Selected
-    readonly potentialDoubleClick: boolean
     readonly nodePlacementLocation: Position
     readonly finder: Finder
     readonly virtualKeyboard: VirtualKeyboard
@@ -130,12 +130,12 @@ export const emptyState = (): State => ({
         selectedInput: { red: 175, green: 122, blue: 208, alpha: 255 },
         connection: { red: 255, green: 255, blue: 255, alpha: 255 },
     },
-    potentialDoubleClick: false,
     nodePlacementLocation: { x: 0, y: 0 },
     finder: {
         search: '',
         options: [],
-        show: false
+        show: false,
+        openTimeout: false
     },
     virtualKeyboard: {
         show: false,

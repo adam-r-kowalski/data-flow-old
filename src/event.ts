@@ -15,8 +15,7 @@ export enum EventKind {
     WHEEL,
     CLICKED_INPUT,
     CLICKED_OUTPUT,
-    DOUBLE_CLICK_TIMEOUT,
-    DOUBLE_CLICK,
+    OPEN_FINDER_TIMEOUT,
     KEYDOWN,
     VIRTUAL_KEYDOWN,
     CLICKED_FINDER_OPTION,
@@ -63,13 +62,8 @@ export interface ClickedOutput {
     readonly output: UUID
 }
 
-export interface DoubleClickTimeout {
-    readonly kind: EventKind.DOUBLE_CLICK_TIMEOUT
-}
-
-export interface DoubleClick {
-    readonly kind: EventKind.DOUBLE_CLICK
-    readonly pointer: Pointer
+export interface OpenFinderTimeout {
+    readonly kind: EventKind.OPEN_FINDER_TIMEOUT
 }
 
 export interface KeyDown {
@@ -120,8 +114,7 @@ export type AppEvent =
     | Wheel
     | ClickedInput
     | ClickedOutput
-    | DoubleClickTimeout
-    | DoubleClick
+    | OpenFinderTimeout
     | KeyDown
     | VirtualKeyDown
     | ClickedFinderOption
@@ -139,32 +132,19 @@ const pointerDown = (state: State, event: PointerDown): UpdateResult<State, AppE
         return {
             state: {
                 ...state,
-                potentialDoubleClick: false,
+                finder: { ...state.finder, openTimeout: false },
                 dragging: false,
                 zooming: pointers.length === 2,
                 pointers
             }
-        }
-    } else if (state.potentialDoubleClick) {
-        return {
-            state: {
-                ...state,
-                potentialDoubleClick: false,
-                pointers
-            },
-            dispatch: [{ kind: EventKind.DOUBLE_CLICK, pointer: event.pointer }]
         }
     } else {
         return {
             state: {
                 ...state,
                 dragging: true,
-                potentialDoubleClick: true,
                 pointers
-            },
-            schedule: [
-                { after: { milliseconds: 300 }, event: { kind: EventKind.DOUBLE_CLICK_TIMEOUT } }
-            ]
+            }
         }
     }
 }
@@ -265,6 +245,8 @@ const clickedNode = (state: State, event: ClickedNode): UpdateResult<State, AppE
                 kind: SelectedKind.NODE,
                 node: event.node,
             },
+            inputTarget: { kind: InputTargetKind.NONE },
+            virtualKeyboard: { kind: VirtualKeyboardKind.ALPHABETIC, show: false },
             nodeOrder
         },
         render: true
@@ -311,7 +293,9 @@ const clickedInput = (state: State, event: ClickedInput, generateUUID: GenerateU
         return {
             state: {
                 ...state,
-                selected: { kind: SelectedKind.INPUT, input: event.input }
+                selected: { kind: SelectedKind.INPUT, input: event.input },
+                virtualKeyboard: { kind: VirtualKeyboardKind.ALPHABETIC, show: false },
+                inputTarget: { kind: InputTargetKind.NONE }
             },
             render: true
         }
@@ -347,15 +331,20 @@ const clickedOutput = (state: State, event: ClickedOutput, generateUUID: Generat
         return {
             state: {
                 ...state,
-                selected: { kind: SelectedKind.OUTPUT, output: event.output }
+                selected: { kind: SelectedKind.OUTPUT, output: event.output },
+                virtualKeyboard: { kind: VirtualKeyboardKind.ALPHABETIC, show: false },
+                inputTarget: { kind: InputTargetKind.NONE }
             },
             render: true
         }
     }
 }
 
-const doubleClickTimeout = (state: State, _: DoubleClickTimeout): UpdateResult<State, AppEvent> => ({
-    state: { ...state, potentialDoubleClick: false }
+const openFinderTimeout = (state: State, _: OpenFinderTimeout): UpdateResult<State, AppEvent> => ({
+    state: {
+        ...state,
+        finder: { ...state.finder, openTimeout: false }
+    }
 })
 
 const updateFinderOptions = (state: State): State => {
@@ -370,37 +359,31 @@ export const openFinder = (state: State): State =>
         finder: {
             show: true,
             search: '',
-            options: []
+            options: [],
+            openTimeout: false
         },
         virtualKeyboard: {
             show: true,
             kind: VirtualKeyboardKind.ALPHABETIC
         },
         inputTarget: { kind: InputTargetKind.FINDER },
-        potentialDoubleClick: false
     })
 
-
-const doubleClick = (state: State, { pointer }: DoubleClick): UpdateResult<State, AppEvent> => ({
-    state: openFinder({
-        ...state,
-        nodePlacementLocation: pointer.position
-    }),
-    render: true
-})
 
 const closeFinder = (state: State): State => ({
     ...state,
     finder: {
         show: false,
         search: '',
-        options: []
+        options: [],
+        openTimeout: false
     },
     virtualKeyboard: {
         show: false,
         kind: VirtualKeyboardKind.ALPHABETIC
     },
-    inputTarget: { kind: InputTargetKind.NONE }
+    inputTarget: { kind: InputTargetKind.NONE },
+    selected: { kind: SelectedKind.NONE }
 })
 
 const insertOperationFromFinder = (state: State, name: string, generateUUID: GenerateUUID): UpdateResult<State, AppEvent> => {
@@ -512,6 +495,7 @@ const keyDown = (state: State, { key }: KeyDown, generateUUID: GenerateUUID): Up
                 case '0':
                     return updateBodyValue(state, state.inputTarget.body, value => parseFloat(value.toString() + key))
                 case 'Enter':
+                case 'Escape':
                     return {
                         state: {
                             ...state,
@@ -558,6 +542,18 @@ const keyDown = (state: State, { key }: KeyDown, generateUUID: GenerateUUID): Up
                             }
                         default:
                             return { state }
+                    }
+                case 'Escape':
+                    if (state.selected.kind === SelectedKind.NONE) {
+                        return { state }
+                    } else {
+                        return {
+                            state: {
+                                ...state,
+                                selected: { kind: SelectedKind.NONE },
+                            },
+                            render: true
+                        }
                     }
                 default:
                     return { state }
@@ -649,10 +645,43 @@ const clickedNumber = (state: State, { body }: ClickedNumber): UpdateResult<Stat
     render: true
 })
 
-const clickedBackground = (state: State): UpdateResult<State, AppEvent> => ({
-    state: closeFinder({ ...state, selected: { kind: SelectedKind.NONE } }),
-    render: true
-})
+const clickedBackground = (state: State): UpdateResult<State, AppEvent> => {
+    if (state.finder.show) {
+        return {
+            state: closeFinder(state),
+            render: true
+        }
+    } else if (state.finder.openTimeout) {
+        return {
+            state: openFinder({
+                ...state,
+                nodePlacementLocation: state.pointers[0].position,
+                dragging: false
+            }),
+            render: true
+        }
+    } else {
+        return {
+            state: {
+                ...state,
+                finder: {
+                    ...state.finder,
+                    openTimeout: true
+                },
+                inputTarget: { kind: InputTargetKind.NONE },
+                virtualKeyboard: {
+                    kind: VirtualKeyboardKind.ALPHABETIC,
+                    show: false
+                },
+                selected: { kind: SelectedKind.NONE }
+            },
+            schedule: [
+                { after: { milliseconds: 300 }, event: { kind: EventKind.OPEN_FINDER_TIMEOUT } }
+            ],
+            render: true
+        }
+    }
+}
 
 const deleteNode = (state: State, { node }: DeleteNode): UpdateResult<State, AppEvent> => ({
     state: removeNodeFromGraph(state, node),
@@ -686,8 +715,7 @@ export const update = (generateUUID: GenerateUUID, state: State, event: AppEvent
         case EventKind.WHEEL: return wheel(state, event)
         case EventKind.CLICKED_INPUT: return clickedInput(state, event, generateUUID)
         case EventKind.CLICKED_OUTPUT: return clickedOutput(state, event, generateUUID)
-        case EventKind.DOUBLE_CLICK_TIMEOUT: return doubleClickTimeout(state, event)
-        case EventKind.DOUBLE_CLICK: return doubleClick(state, event)
+        case EventKind.OPEN_FINDER_TIMEOUT: return openFinderTimeout(state, event)
         case EventKind.KEYDOWN: return keyDown(state, event, generateUUID)
         case EventKind.VIRTUAL_KEYDOWN: return virtualKeyDown(state, event, generateUUID)
         case EventKind.CLICKED_FINDER_OPTION: return clickedFinderOption(state, event, generateUUID)

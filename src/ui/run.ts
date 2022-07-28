@@ -39,6 +39,7 @@ interface Properties<State, AppEvent> {
     document: Document
     requestAnimationFrame: (callback: () => void) => void
     setTimeout: (callback: () => void, milliseconds: number) => void
+    pointerDown: (dispatch: Dispatch<AppEvent>, pointer: Pointer) => void
 }
 
 export interface Success<AppEvent> {
@@ -82,7 +83,9 @@ export const run = <State, AppEvent>(properties: Properties<State, AppEvent>): S
             renderer.dispatch = dispatch
             document.body.appendChild(renderer.canvas)
             document.addEventListener("pointerdown", p => {
-                renderer = pointerDown<AppEvent, WebGL2Renderer<AppEvent>>(renderer, transformPointer(p))
+                const transformed = transformPointer(p)
+                properties.pointerDown(dispatch, transformed)
+                renderer = pointerDown<AppEvent, WebGL2Renderer<AppEvent>>(renderer, transformed)
             })
             window.addEventListener("resize", () => {
                 renderer.size = { width: window.innerWidth, height: window.innerHeight }

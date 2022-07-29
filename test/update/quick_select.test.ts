@@ -54,3 +54,42 @@ test("pressing i with nothing focused launches quick select for inputs", () => {
     }
     expect(model2).toEqual(expectedModel)
 })
+
+test("pressing hotkey with input quick select will select the input and disable quick select", () => {
+    const generateUUID = makeGenerateUUID()
+    const operations: Operations = {
+        'Add': {
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        },
+    }
+    const model0: Model = {
+        ...emptyModel(),
+        operations
+    }
+    const { model: model1, node } = addNodeToGraph({
+        model: model0,
+        operation: operations['Add'],
+        position: { x: 0, y: 0 },
+        generateUUID: generateUUID
+    })
+    const inputs = model1.graph.nodes[node].inputs
+    const { model: model2 } = update(generateUUID, model1, {
+        kind: EventKind.KEYDOWN,
+        key: 'i'
+    })
+    const { model: model3 } = update(generateUUID, model2, {
+        kind: EventKind.KEYDOWN,
+        key: 'a'
+    })
+    const expectedModel: Model = {
+        ...model1,
+        focus: {
+            kind: FocusKind.INPUT,
+            input: inputs[0],
+            quickSelect: { kind: QuickSelectKind.NONE }
+        }
+    }
+    expect(model3).toEqual(expectedModel)
+})

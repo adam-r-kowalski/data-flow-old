@@ -64,10 +64,9 @@ test("inputUi not focused", () => {
         row({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             container({
                 id: 'uuid',
-                width: 14,
-                height: 14,
+                padding: { top: 2, right: 4, bottom: 2, left: 4 },
                 color: theme.input,
-            }),
+            }, text({ color: theme.background }, " ")),
             spacer(4),
             text('name')
         ])
@@ -95,10 +94,9 @@ test("inputUi focused", () => {
         row({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             container({
                 id: 'uuid',
-                width: 14,
-                height: 14,
+                padding: { top: 2, right: 4, bottom: 2, left: 4 },
                 color: theme.focusInput,
-            }),
+            }, text({ color: theme.background }, " ")),
             spacer(4),
             text('name')
         ])

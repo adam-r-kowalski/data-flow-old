@@ -38,7 +38,7 @@ export interface Container<AppEvent> {
 }
 
 interface Properties<AppEvent> {
-    readonly padding?: number
+    readonly padding?: number | Padding
     readonly width?: number
     readonly height?: number
     readonly x?: number
@@ -48,9 +48,16 @@ interface Properties<AppEvent> {
     readonly id?: string
 }
 
-const transformPadding = (padding?: number): Padding => {
-    if (padding) return { top: padding, right: padding, bottom: padding, left: padding }
-    return { top: 0, right: 0, bottom: 0, left: 0 }
+const transformPadding = (padding?: number | Padding): Padding => {
+    if (padding) {
+        if (typeof padding === 'number') {
+            return { top: padding, right: padding, bottom: padding, left: padding }
+        } else {
+            return padding
+        }
+    } else {
+        return { top: 0, right: 0, bottom: 0, left: 0 }
+    }
 }
 
 export const container = <AppEvent>({ padding, width, height, color, x, y, onClick, id }: Properties<AppEvent>, child?: UI<AppEvent>): Container<AppEvent> => {

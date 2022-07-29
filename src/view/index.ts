@@ -6,6 +6,7 @@ import { Focus, FocusFinder, FocusKind } from "../model/focus"
 import { text, stack, scene, row, container, column, Connection, UI } from '../ui'
 import { Body, Graph, Input, Output, UUID } from "../model/graph"
 import { contextMenu } from "./context_menu"
+import { QuickSelectKind } from "../model/quick_select"
 
 
 export const spacer = (size: number): UI<AppEvent> =>
@@ -40,10 +41,9 @@ export const inputUi = (theme: Theme, { name, uuid }: Input, focus: Focus): UI<A
         row({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             container({
                 id: uuid,
-                width: 14,
-                height: 14,
                 color: isFocused(focus, uuid) ? theme.focusInput : theme.input,
-            }),
+                padding: { top: 2, right: 4, bottom: 2, left: 4 }
+            }, text({ color: theme.background }, focus.quickSelect.kind === QuickSelectKind.INPUT ? focus.quickSelect.hotkeys[uuid] : ' ')),
             spacer(4),
             text(name)
         ])

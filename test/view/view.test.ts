@@ -24,6 +24,7 @@ import {
     virtualKeys,
 } from "../../src/view"
 import { contextMenu } from "../../src/view/context_menu"
+import { QuickSelectKind } from "../../src/model/quick_select"
 
 test("spacer", () => {
     expect(spacer(10)).toEqual(container({ width: 10, height: 10 }))
@@ -770,6 +771,7 @@ test("view with no nodes or edges", () => {
         camera: identity(),
         operations: {},
         openFinderFirstClick: false,
+        quickSelect: { kind: QuickSelectKind.NONE },
         theme
     }
     const actual = view(model)
@@ -800,6 +802,7 @@ test("view with no nodes or edges but finder shown", () => {
         openFinderFirstClick: false,
         camera: identity(),
         operations: {},
+        quickSelect: { kind: QuickSelectKind.NONE },
         theme
     }
     const actual = view(model)
@@ -856,6 +859,7 @@ test("view with three nodes and no edges", () => {
         openFinderFirstClick: false,
         camera: identity(),
         operations: {},
+        quickSelect: { kind: QuickSelectKind.NONE },
         theme
     }
     const actual = view(model)
@@ -916,6 +920,7 @@ test("view with three nodes and no edges", () => {
         openFinderFirstClick: false,
         camera: identity(),
         operations: {},
+        quickSelect: { kind: QuickSelectKind.NONE },
         theme
     }
     const actual = view(model)
@@ -1010,6 +1015,7 @@ test("view with three nodes and one edges", () => {
         openFinderFirstClick: false,
         camera: identity(),
         operations: {},
+        quickSelect: { kind: QuickSelectKind.NONE },
         theme
     }
     const actual = view(model)

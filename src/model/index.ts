@@ -3,6 +3,7 @@ import { Pointer } from "../ui"
 import { Graph, Operations, Position, UUID } from './graph'
 import { Focus } from './focus'
 import { Theme } from './theme'
+import { QuickSelect } from "./quick_select"
 
 export interface Model {
     readonly graph: Graph
@@ -11,7 +12,8 @@ export interface Model {
     readonly focus: Focus
     readonly openFinderFirstClick: boolean
     readonly nodePlacementLocation: Position
-    readonly camera: Readonly<Matrix3x3>
+    readonly camera: Matrix3x3
     readonly operations: Readonly<Operations>
+    readonly quickSelect: QuickSelect
     readonly theme: Theme
 }

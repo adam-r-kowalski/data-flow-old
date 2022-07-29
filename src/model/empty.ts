@@ -3,6 +3,7 @@ import { FocusKind } from "./focus"
 import { PointerActionKind } from "./pointer_action"
 import { identity } from "../linear_algebra/matrix3x3"
 import { emptyGraph } from './graph'
+import { QuickSelectKind } from "./quick_select"
 
 export const emptyModel = (): Model => ({
     graph: emptyGraph(),
@@ -14,6 +15,9 @@ export const emptyModel = (): Model => ({
         pointerAction: { kind: PointerActionKind.NONE }
     },
     openFinderFirstClick: false,
+    nodePlacementLocation: { x: 0, y: 0 },
+    operations: {},
+    quickSelect: { kind: QuickSelectKind.NONE },
     theme: {
         background: { red: 2, green: 22, blue: 39, alpha: 255 },
         node: { red: 41, green: 95, blue: 120, alpha: 255 },
@@ -22,6 +26,4 @@ export const emptyModel = (): Model => ({
         focusInput: { red: 175, green: 122, blue: 208, alpha: 255 },
         connection: { red: 255, green: 255, blue: 255, alpha: 255 },
     },
-    nodePlacementLocation: { x: 0, y: 0 },
-    operations: {}
 })

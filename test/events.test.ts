@@ -1,6 +1,6 @@
-import { addNodeToGraph, EventKind, openFinder, update } from "../src/event"
+import { addNodeToGraph, EventKind, openFinder, openNumericKeyboard, update } from "../src/event"
 import { Operations } from "../src/graph/model"
-import { changeNodePosition } from "../src/graph/update"
+import { addEdge, changeNodePosition } from "../src/graph/update"
 import { translate } from "../src/linear_algebra/matrix3x3"
 import { emptyState, State, FocusKind, PointerActionKind } from "../src/state"
 import { Pointer } from "../src/ui"
@@ -352,7 +352,6 @@ test("pointer move after clicking node pointer down drags node", () => {
     expect(render).toEqual(true)
 })
 
-/*
 test("pointer move after clicking node, pointer down, then pointer up", () => {
     const generateUUID = makeGenerateUUID()
     const operations: Operations = {
@@ -400,9 +399,10 @@ test("pointer move after clicking node, pointer down, then pointer up", () => {
     const expectedState: State = {
         ...state1,
         nodePlacementLocation: { x: 50, y: 75 },
-        selected: {
-            kind: SelectedKind.NODE,
-            node: node0
+        focus: {
+            kind: FocusKind.NODE,
+            node: node0,
+            drag: false
         },
     }
     expect(state5).toEqual(expectedState)
@@ -451,10 +451,10 @@ test("clicking input selects it", () => {
         kind: EventKind.CLICKED_INPUT,
         input
     })
-    const expectedState = {
+    const expectedState: State = {
         ...state1,
-        selected: {
-            kind: SelectedKind.INPUT,
+        focus: {
+            kind: FocusKind.INPUT,
             input
         }
     }
@@ -490,10 +490,10 @@ test("clicking new input selects it and deselects old input", () => {
         kind: EventKind.CLICKED_INPUT,
         input: input1
     })
-    const expectedState = {
+    const expectedState: State = {
         ...state1,
-        selected: {
-            kind: SelectedKind.INPUT,
+        focus: {
+            kind: FocusKind.INPUT,
             input: input1
         }
     }
@@ -543,7 +543,7 @@ test("clicking output after clicking input adds connection", () => {
         kind: EventKind.CLICKED_OUTPUT,
         output
     })
-    const expectedState = {
+    const expectedState: State = {
         ...state2,
         graph: addEdge({
             graph: state2.graph,
@@ -580,10 +580,10 @@ test("clicking output selects it", () => {
         kind: EventKind.CLICKED_OUTPUT,
         output
     })
-    const expectedState = {
+    const expectedState: State = {
         ...state1,
-        selected: {
-            kind: SelectedKind.OUTPUT,
+        focus: {
+            kind: FocusKind.OUTPUT,
             output
         }
     }
@@ -619,10 +619,10 @@ test("clicking new output selects it and deselects old output", () => {
         kind: EventKind.CLICKED_OUTPUT,
         output: output1
     })
-    const expectedState = {
+    const expectedState: State = {
         ...state1,
-        selected: {
-            kind: SelectedKind.OUTPUT,
+        focus: {
+            kind: FocusKind.OUTPUT,
             output: output1
         }
     }
@@ -672,7 +672,7 @@ test("clicking input after clicking output adds connection", () => {
         kind: EventKind.CLICKED_INPUT,
         input
     })
-    const expectedState = {
+    const expectedState: State = {
         ...state2,
         graph: addEdge({
             graph: state2.graph,
@@ -718,18 +718,12 @@ test("double click opens finder", () => {
     })
     const expectedState: State = {
         ...state0,
-        finder: {
-            show: true,
+        focus: {
+            kind: FocusKind.FINDER,
             search: '',
             options: ['Add', 'Sub'],
-            openTimeout: false
         },
         nodePlacementLocation: { x: 50, y: 50 },
-        virtualKeyboard: {
-            kind: VirtualKeyboardKind.ALPHABETIC,
-            show: true,
-        },
-        inputTarget: { kind: InputTargetKind.FINDER },
         pointers: [
             {
                 id: 0,
@@ -740,7 +734,6 @@ test("double click opens finder", () => {
     expect(state3).toEqual(expectedState)
     expect(render).toEqual(true)
 })
-
 
 test("key down when finder is not shown does nothing", () => {
     const state = emptyState()
@@ -775,17 +768,11 @@ test("f key down when finder is not shown opens finder", () => {
     })
     const expectedState: State = {
         ...state0,
-        finder: {
-            show: true,
+        focus: {
+            kind: FocusKind.FINDER,
             search: '',
             options: ["Add", "Sub"],
-            openTimeout: false
-        },
-        virtualKeyboard: {
-            kind: VirtualKeyboardKind.ALPHABETIC,
-            show: true,
-        },
-        inputTarget: { kind: InputTargetKind.FINDER }
+        }
     }
     expect(state1).toEqual(expectedState)
     expect(render).toEqual(true)
@@ -854,17 +841,15 @@ test("key down when finder is shown appends to search", () => {
     })
     const expectedState: State = {
         ...state0,
-        finder: {
-            show: true,
+        focus: {
+            kind: FocusKind.FINDER,
             search: 'add',
             options: ['Add'],
-            openTimeout: false
         },
     }
     expect(state3).toEqual(expectedState)
     expect(render).toEqual(true)
 })
-
 
 test("backspace key down when finder is shown deletes from search", () => {
     const generateUUID = makeGenerateUUID()
@@ -902,11 +887,10 @@ test("backspace key down when finder is shown deletes from search", () => {
     })
     const expectedState: State = {
         ...state0,
-        finder: {
-            show: true,
+        focus: {
+            kind: FocusKind.FINDER,
             search: 'ad',
             options: ['Add'],
-            openTimeout: false
         }
     }
     expect(state4).toEqual(expectedState)
@@ -1011,7 +995,6 @@ test("enter key down when finder is shown and finder has search eliminates all o
     })
     expect(state2).toEqual({ ...emptyState(), operations })
 })
-
 
 test("ret virtual key down when finder is shown and finder has search eliminates all options closes finder", () => {
     const generateUUID = makeGenerateUUID()
@@ -1234,11 +1217,10 @@ test("virtual key down when finder is shown appends to search", () => {
     })
     const expectedState: State = {
         ...state0,
-        finder: {
-            show: true,
+        focus: {
+            kind: FocusKind.FINDER,
             search: 'add',
             options: ['Add'],
-            openTimeout: false
         }
     }
     expect(state3).toEqual(expectedState)
@@ -1281,11 +1263,10 @@ test("del virtual key down when finder is shown deletes from search", () => {
     })
     const expectedState: State = {
         ...state0,
-        finder: {
-            show: true,
+        focus: {
+            kind: FocusKind.FINDER,
             search: 'ad',
             options: ['Add'],
-            openTimeout: false
         }
     }
     expect(state4).toEqual(expectedState)
@@ -1324,11 +1305,10 @@ test("space virtual key down when finder is shown adds space to search", () => {
     })
     const expectedState: State = {
         ...state0,
-        finder: {
-            show: true,
+        focus: {
+            kind: FocusKind.FINDER,
             search: 'a d',
             options: [],
-            openTimeout: false
         }
     }
     expect(state3).toEqual(expectedState)
@@ -1422,16 +1402,8 @@ test("pressing number on keyboard appends to number node", () => {
     const expectedState: State = {
         ...state0,
         operations,
-        virtualKeyboard: {
-            show: true,
-            kind: VirtualKeyboardKind.NUMERIC
-        },
-        inputTarget: {
-            kind: InputTargetKind.NUMBER,
-            body
-        },
-        selected: {
-            kind: SelectedKind.BODY,
+        focus: {
+            kind: FocusKind.BODY,
             body
         },
         graph: {
@@ -1482,16 +1454,8 @@ test("pressing backspace on keyboard deletes from number node", () => {
     const expectedState: State = {
         ...state0,
         operations,
-        virtualKeyboard: {
-            show: true,
-            kind: VirtualKeyboardKind.NUMERIC
-        },
-        inputTarget: {
-            kind: InputTargetKind.NUMBER,
-            body
-        },
-        selected: {
-            kind: SelectedKind.BODY,
+        focus: {
+            kind: FocusKind.BODY,
             body
         },
         graph: {
@@ -1538,16 +1502,8 @@ test("pressing backspace when number node value is 0 has no effect", () => {
     const expectedState: State = {
         ...state0,
         operations,
-        virtualKeyboard: {
-            show: true,
-            kind: VirtualKeyboardKind.NUMERIC
-        },
-        inputTarget: {
-            kind: InputTargetKind.NUMBER,
-            body
-        },
-        selected: {
-            kind: SelectedKind.BODY,
+        focus: {
+            kind: FocusKind.BODY,
             body
         },
         graph: {
@@ -1594,16 +1550,8 @@ test("pressing del on virtual keyboard when number node value is 0 has no effect
     const expectedState: State = {
         ...state0,
         operations,
-        virtualKeyboard: {
-            show: true,
-            kind: VirtualKeyboardKind.NUMERIC
-        },
-        inputTarget: {
-            kind: InputTargetKind.NUMBER,
-            body
-        },
-        selected: {
-            kind: SelectedKind.BODY,
+        focus: {
+            kind: FocusKind.BODY,
             body
         },
         graph: {
@@ -1650,16 +1598,8 @@ test("pressing number on virtual keyboard appends to number node", () => {
     const expectedState: State = {
         ...state0,
         operations,
-        virtualKeyboard: {
-            show: true,
-            kind: VirtualKeyboardKind.NUMERIC
-        },
-        inputTarget: {
-            kind: InputTargetKind.NUMBER,
-            body
-        },
-        selected: {
-            kind: SelectedKind.BODY,
+        focus: {
+            kind: FocusKind.BODY,
             body
         },
         graph: {
@@ -1710,17 +1650,9 @@ test("pressing del on virtual keyboard deletes from number node", () => {
     const expectedState: State = {
         ...state0,
         operations,
-        virtualKeyboard: {
-            show: true,
-            kind: VirtualKeyboardKind.NUMERIC
-        },
-        inputTarget: {
-            kind: InputTargetKind.NUMBER,
-            body
-        },
-        selected: {
-            kind: SelectedKind.BODY,
-            body
+        focus: {
+            kind: FocusKind.BODY,
+            body,
         },
         graph: {
             ...state0.graph,
@@ -1735,7 +1667,6 @@ test("pressing del on virtual keyboard deletes from number node", () => {
     }
     expect(state3).toEqual(expectedState)
 })
-
 
 test("pressing enter on keyboard while editing number node exits virtual keyboard", () => {
     const uuidState = { i: 0 }
@@ -1937,10 +1868,10 @@ test("pressing a key on virtual keyboard while no input target selected doesn't 
         state: {
             ...emptyState(),
             operations,
-            virtualKeyboard: {
-                show: true,
-                kind: VirtualKeyboardKind.NUMERIC
-            },
+            focus: {
+                kind: FocusKind.NONE,
+                pointerAction: { kind: PointerActionKind.NONE }
+            }
         },
         operation: operations['Number'],
         position: { x: 0, y: 0 },
@@ -2040,10 +1971,11 @@ test("clicking background when a number node is selected deselects it", () => {
     })
     const expectedState: State = {
         ...state0,
-        finder: {
-            ...state0.finder,
-            openTimeout: true
-        }
+        focus: {
+            kind: FocusKind.NONE,
+            pointerAction: { kind: PointerActionKind.PAN }
+        },
+        openFinderFirstClick: true
     }
     expect(state2).toEqual(expectedState)
 })
@@ -2104,8 +2036,8 @@ test("clicking input when a number node is selected deselects it and selects inp
     })
     const expectedState: State = {
         ...state0,
-        selected: {
-            kind: SelectedKind.INPUT,
+        focus: {
+            kind: FocusKind.INPUT,
             input
         }
     }
@@ -2140,8 +2072,8 @@ test("clicking output when a number node is selected deselects it and selects ou
     })
     const expectedState: State = {
         ...state0,
-        selected: {
-            kind: SelectedKind.OUTPUT,
+        focus: {
+            kind: FocusKind.OUTPUT,
             output
         }
     }
@@ -2175,14 +2107,14 @@ test("clicking node when a number node is selected deselects it and selects node
     })
     const expectedState: State = {
         ...state0,
-        selected: {
-            kind: SelectedKind.NODE,
-            node
+        focus: {
+            kind: FocusKind.NODE,
+            node,
+            drag: true
         }
     }
     expect(state2).toEqual(expectedState)
 })
-
 
 test("zooming", () => {
     const generateUUID = makeGenerateUUID()
@@ -2209,7 +2141,10 @@ test("zooming", () => {
     })
     const expectedState0: State = {
         ...emptyState(),
-        dragging: true,
+        focus: {
+            kind: FocusKind.NONE,
+            pointerAction: { kind: PointerActionKind.PAN }
+        },
         pointers: [pointer0]
     }
     expect(state1).toEqual(expectedState0)
@@ -2219,7 +2154,14 @@ test("zooming", () => {
     })
     const expectedState1: State = {
         ...emptyState(),
-        zooming: true,
+        focus: {
+            kind: FocusKind.NONE,
+            pointerAction: {
+                kind: PointerActionKind.ZOOM,
+                pointerCenter: { x: 0, y: 0 },
+                pointerDistance: 0
+            }
+        },
         pointers: [pointer0, pointer1]
     }
     expect(state2).toEqual(expectedState1)
@@ -2229,9 +2171,14 @@ test("zooming", () => {
     })
     const expectedState2: State = {
         ...emptyState(),
-        zooming: true,
-        pointerDistance: Math.sqrt(Math.pow(20, 2) + Math.pow(20, 2)),
-        pointerCenter: { x: 10, y: 10 },
+        focus: {
+            kind: FocusKind.NONE,
+            pointerAction: {
+                kind: PointerActionKind.ZOOM,
+                pointerCenter: { x: 10, y: 10 },
+                pointerDistance: Math.sqrt(Math.pow(20, 2) + Math.pow(20, 2)),
+            }
+        },
         pointers: [pointer0, pointer2]
     }
     expect(state3).toEqual(expectedState2)
@@ -2241,9 +2188,14 @@ test("zooming", () => {
     })
     const expectedState3: State = {
         ...emptyState(),
-        zooming: true,
-        pointerDistance: Math.sqrt(Math.pow(30, 2) + Math.pow(30, 2)),
-        pointerCenter: { x: 15, y: 15 },
+        focus: {
+            kind: FocusKind.NONE,
+            pointerAction: {
+                kind: PointerActionKind.ZOOM,
+                pointerCenter: { x: 15, y: 15 },
+                pointerDistance: Math.sqrt(Math.pow(30, 2) + Math.pow(30, 2)),
+            }
+        },
         pointers: [pointer0, pointer3],
         camera: [
             0.906625499506728, 0, -3.13250999013456,
@@ -2306,10 +2258,11 @@ test("clicking background when a node is selected deselects it", () => {
     })
     const expectedState: State = {
         ...state1,
-        finder: {
-            ...state1.finder,
-            openTimeout: true
-        }
+        focus: {
+            kind: FocusKind.NONE,
+            pointerAction: { kind: PointerActionKind.PAN }
+        },
+        openFinderFirstClick: true
     }
     expect(state3).toEqual(expectedState)
 })
@@ -2368,10 +2321,11 @@ test("clicking background when a input is selected deselects it", () => {
     })
     const expectedState: State = {
         ...state1,
-        finder: {
-            ...state1.finder,
-            openTimeout: true,
-        }
+        focus: {
+            kind: FocusKind.NONE,
+            pointerAction: { kind: PointerActionKind.PAN }
+        },
+        openFinderFirstClick: true
     }
     expect(state3).toEqual(expectedState)
 })
@@ -2431,10 +2385,11 @@ test("clicking background when a output is selected deselects it", () => {
     })
     const expectedState: State = {
         ...state1,
-        finder: {
-            ...state1.finder,
-            openTimeout: true,
-        }
+        focus: {
+            kind: FocusKind.NONE,
+            pointerAction: { kind: PointerActionKind.PAN }
+        },
+        openFinderFirstClick: true
     }
     expect(state3).toEqual(expectedState)
 })
@@ -2867,5 +2822,3 @@ test("connecting input to output if input already has edge replaces it", () => {
     }
     expect(state7).toEqual(expectedState)
 })
-
-*/

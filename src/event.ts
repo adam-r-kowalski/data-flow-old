@@ -206,80 +206,75 @@ export const changeNth = <T>(xs: Readonly<T[]>, i: number, x: T): T[] =>
 
 const pointerMove = (state: State, event: PointerMove): UpdateResult<State, AppEvent> => {
     const index = state.pointers.findIndex(p => p.id === event.pointer.id)
-    if (index === -1) {
-        return { state }
-    } else {
-        const pointer = state.pointers[index]
-        const pointers = changeNth(state.pointers, index, event.pointer)
-        switch (state.focus.kind) {
-            case FocusKind.NONE:
-                const previousPointerAction = state.focus.pointerAction
-                switch (previousPointerAction.kind) {
-                    case PointerActionKind.NONE:
-                        return {
-                            state: {
-                                ...state,
-                                nodePlacementLocation: event.pointer.position,
-                                pointers
-                            }
-                        }
-                    case PointerActionKind.PAN:
-                        const dx = event.pointer.position.x - pointer.position.x
-                        const dy = event.pointer.position.y - pointer.position.y
-                        const camera = multiplyMatrices(state.camera, translate(-dx, -dy))
-                        return {
-                            state: { ...state, pointers, camera },
-                            render: true
-                        }
-                    case PointerActionKind.ZOOM:
-                        const [p0, p1] = [pointers[0], pointers[1]]
-                        const { x: x1, y: y1 } = p0.position
-                        const { x: x2, y: y2 } = p1.position
-                        const x = (p0.position.x + p1.position.x) / 2
-                        const y = (p0.position.y + p1.position.y) / 2
-                        const pointerAction: PointerAction = {
-                            kind: PointerActionKind.ZOOM,
-                            pointerDistance: Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)),
-                            pointerCenter: { x, y },
-                        }
-                        const focus: Focus = {
-                            kind: FocusKind.NONE,
-                            pointerAction
-                        }
-                        if (previousPointerAction.pointerDistance > 0) {
-                            const move = translate(x, y)
-                            const zoom = Math.pow(2, (previousPointerAction.pointerDistance - pointerAction.pointerDistance) * 0.01)
-                            const moveBack = translate(-x, -y)
-                            const dx = x - pointerAction.pointerCenter.x
-                            const dy = y - pointerAction.pointerCenter.y
-                            const camera = multiplyMatrices(state.camera, move, scale(zoom, zoom), moveBack, translate(-dx, -dy))
-                            return {
-                                state: { ...state, focus, pointers, camera },
-                                render: true
-                            }
-                        } else {
-                            return { state: { ...state, focus, pointers } }
-                        }
-                }
-            case FocusKind.NODE:
-                if (state.focus.drag) {
+    const pointer = state.pointers[index]
+    const pointers = index === -1 ? state.pointers : changeNth(state.pointers, index, event.pointer)
+    const nodePlacementLocation = event.pointer.position
+    switch (state.focus.kind) {
+        case FocusKind.NONE:
+            const previousPointerAction = state.focus.pointerAction
+            switch (previousPointerAction.kind) {
+                case PointerActionKind.NONE:
+                    return { state: { ...state, nodePlacementLocation, pointers } }
+                case PointerActionKind.PAN:
                     const dx = event.pointer.position.x - pointer.position.x
                     const dy = event.pointer.position.y - pointer.position.y
-                    const scaling = length(multiplyMatrixVector(state.camera, [0, 1, 0]))
-                    const graph = changeNodePosition(state.graph, state.focus.node, p => ({
-                        x: p.x + dx * scaling,
-                        y: p.y + dy * scaling,
-                    }))
+                    const camera = multiplyMatrices(state.camera, translate(-dx, -dy))
                     return {
-                        state: { ...state, pointers, graph },
+                        state: { ...state, pointers, camera },
                         render: true
                     }
-                } else {
-                    return { state: { ...state, pointers } }
+                case PointerActionKind.ZOOM:
+                    const [p0, p1] = [pointers[0], pointers[1]]
+                    const { x: x1, y: y1 } = p0.position
+                    const { x: x2, y: y2 } = p1.position
+                    const x = (p0.position.x + p1.position.x) / 2
+                    const y = (p0.position.y + p1.position.y) / 2
+                    const pointerAction: PointerAction = {
+                        kind: PointerActionKind.ZOOM,
+                        pointerDistance: Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)),
+                        pointerCenter: { x, y },
+                    }
+                    const focus: Focus = {
+                        kind: FocusKind.NONE,
+                        pointerAction
+                    }
+                    if (previousPointerAction.pointerDistance > 0) {
+                        const move = translate(x, y)
+                        const zoom = Math.pow(2, (previousPointerAction.pointerDistance - pointerAction.pointerDistance) * 0.01)
+                        const moveBack = translate(-x, -y)
+                        const dx = x - previousPointerAction.pointerCenter.x
+                        const dy = y - previousPointerAction.pointerCenter.y
+                        const camera = multiplyMatrices(state.camera, move, scale(zoom, zoom), moveBack, translate(-dx, -dy))
+                        return {
+                            state: { ...state, focus, pointers, camera },
+                            render: true
+                        }
+                    } else {
+                        return { state: { ...state, focus, pointers } }
+                    }
+            }
+        case FocusKind.NODE:
+            if (state.focus.drag) {
+                const dx = event.pointer.position.x - pointer.position.x
+                const dy = event.pointer.position.y - pointer.position.y
+                const scaling = length(multiplyMatrixVector(state.camera, [0, 1, 0]))
+                const graph = changeNodePosition(state.graph, state.focus.node, p => ({
+                    x: p.x + dx * scaling,
+                    y: p.y + dy * scaling,
+                }))
+                return {
+                    state: { ...state, pointers, graph },
+                    render: true
                 }
-            default:
-                return { state: { ...state, pointers } }
-        }
+            } else {
+                return { state: { ...state, pointers, nodePlacementLocation } }
+            }
+        case FocusKind.BODY:
+        case FocusKind.INPUT:
+        case FocusKind.OUTPUT:
+            return { state: { ...state, pointers, nodePlacementLocation } }
+        case FocusKind.FINDER:
+            return { state: { ...state, pointers } }
     }
 }
 

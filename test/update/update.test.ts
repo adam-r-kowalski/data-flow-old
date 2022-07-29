@@ -1,12 +1,13 @@
-import { addNodeToGraph, EventKind, openFinder, openNumericKeyboard, update } from "../src/update"
-import { Operations } from "../src/model/graph"
-import { addEdge, changeNodePosition } from "../src/update/graph"
-import { translate } from "../src/linear_algebra/matrix3x3"
-import { Model } from "../src/model"
-import { FocusKind } from "../src/model/focus"
-import { PointerActionKind } from "../src/model/pointer_action"
-import { Pointer } from "../src/ui"
-import { emptyModel } from "../src/model/empty"
+import { addNodeToGraph, EventKind, openFinder, openNumericKeyboard, update } from "../../src/update"
+import { Operations } from "../../src/model/graph"
+import { addEdge, changeNodePosition } from "../../src/update/graph"
+import { translate } from "../../src/linear_algebra/matrix3x3"
+import { Model } from "../../src/model"
+import { FocusKind } from "../../src/model/focus"
+import { PointerActionKind } from "../../src/model/pointer_action"
+import { Pointer } from "../../src/ui"
+import { emptyModel } from "../../src/model/empty"
+import { QuickSelectKind } from "../../src/model/quick_select"
 
 const makeGenerateUUID = (model: { i: number } = { i: 0 }) => {
     return () => {
@@ -30,7 +31,8 @@ test("pointer down starts panning camera", () => {
         ...emptyModel(),
         focus: {
             kind: FocusKind.NONE,
-            pointerAction: { kind: PointerActionKind.PAN }
+            pointerAction: { kind: PointerActionKind.PAN },
+            quickSelect: { kind: QuickSelectKind.NONE }
         },
         pointers: [pointer],
     }
@@ -65,7 +67,8 @@ test("two pointers down starts zooming", () => {
                 kind: PointerActionKind.ZOOM,
                 pointerCenter: { x: 0, y: 0 },
                 pointerDistance: 0
-            }
+            },
+            quickSelect: { kind: QuickSelectKind.NONE }
         }
     }
     expect(model2).toEqual(expectedModel)
@@ -102,7 +105,8 @@ test("double clicking background opens finder", () => {
         focus: {
             kind: FocusKind.FINDER,
             search: '',
-            options: []
+            options: [],
+            quickSelect: { kind: QuickSelectKind.NONE }
         }
     }
     expect(model5).toEqual(expectedModel)
@@ -162,11 +166,12 @@ test("two pointers down then up puts you in pan mode", () => {
         kind: EventKind.POINTER_UP,
         pointer: pointer0
     })
-    const expectedModel = {
+    const expectedModel: Model = {
         ...emptyModel(),
         focus: {
             kind: FocusKind.NONE,
-            pointerAction: { kind: PointerActionKind.PAN }
+            pointerAction: { kind: PointerActionKind.PAN },
+            quickSelect: { kind: QuickSelectKind.NONE }
         },
         pointers: [pointer1]
     }
@@ -230,7 +235,8 @@ test("clicking node selects it and puts it on top of of the node order", () => {
         focus: {
             kind: FocusKind.NODE,
             node: node0,
-            drag: true
+            drag: true,
+            quickSelect: { kind: QuickSelectKind.NONE }
         },
         nodeOrder: [node1, node0],
     }
@@ -274,7 +280,8 @@ test("pointer move after pointer down pans camera", () => {
         camera: translate(-50, -75),
         focus: {
             kind: FocusKind.NONE,
-            pointerAction: { kind: PointerActionKind.PAN }
+            pointerAction: { kind: PointerActionKind.PAN },
+            quickSelect: { kind: QuickSelectKind.NONE }
         },
         pointers: [
             {
@@ -348,7 +355,8 @@ test("pointer move after clicking node pointer down drags node", () => {
         focus: {
             kind: FocusKind.NODE,
             node: node0,
-            drag: true
+            drag: true,
+            quickSelect: { kind: QuickSelectKind.NONE }
         }
     }
     expect(model5).toEqual(expectedModel)
@@ -405,7 +413,8 @@ test("pointer move after clicking node, pointer down, then pointer up", () => {
         focus: {
             kind: FocusKind.NODE,
             node: node0,
-            drag: false
+            drag: false,
+            quickSelect: { kind: QuickSelectKind.NONE }
         },
     }
     expect(model5).toEqual(expectedModel)
@@ -458,7 +467,8 @@ test("clicking input selects it", () => {
         ...model1,
         focus: {
             kind: FocusKind.INPUT,
-            input
+            input,
+            quickSelect: { kind: QuickSelectKind.NONE }
         }
     }
     expect(model2).toEqual(expectedModel)
@@ -497,7 +507,8 @@ test("clicking new input selects it and deselects old input", () => {
         ...model1,
         focus: {
             kind: FocusKind.INPUT,
-            input: input1
+            input: input1,
+            quickSelect: { kind: QuickSelectKind.NONE }
         }
     }
     expect(model3).toEqual(expectedModel)
@@ -587,7 +598,8 @@ test("clicking output selects it", () => {
         ...model1,
         focus: {
             kind: FocusKind.OUTPUT,
-            output
+            output,
+            quickSelect: { kind: QuickSelectKind.NONE }
         }
     }
     expect(model2).toEqual(expectedModel)
@@ -626,7 +638,8 @@ test("clicking new output selects it and deselects old output", () => {
         ...model1,
         focus: {
             kind: FocusKind.OUTPUT,
-            output: output1
+            output: output1,
+            quickSelect: { kind: QuickSelectKind.NONE }
         }
     }
     expect(model3).toEqual(expectedModel)
@@ -725,6 +738,7 @@ test("double click opens finder", () => {
             kind: FocusKind.FINDER,
             search: '',
             options: ['Add', 'Sub'],
+            quickSelect: { kind: QuickSelectKind.NONE }
         },
         nodePlacementLocation: { x: 50, y: 50 },
         pointers: [
@@ -775,6 +789,7 @@ test("f key down when finder is not shown opens finder", () => {
             kind: FocusKind.FINDER,
             search: '',
             options: ["Add", "Sub"],
+            quickSelect: { kind: QuickSelectKind.NONE }
         }
     }
     expect(model1).toEqual(expectedModel)
@@ -848,6 +863,7 @@ test("key down when finder is shown appends to search", () => {
             kind: FocusKind.FINDER,
             search: 'add',
             options: ['Add'],
+            quickSelect: { kind: QuickSelectKind.NONE }
         },
     }
     expect(model3).toEqual(expectedModel)
@@ -894,6 +910,7 @@ test("backspace key down when finder is shown deletes from search", () => {
             kind: FocusKind.FINDER,
             search: 'ad',
             options: ['Add'],
+            quickSelect: { kind: QuickSelectKind.NONE }
         }
     }
     expect(model4).toEqual(expectedModel)
@@ -1224,6 +1241,7 @@ test("virtual key down when finder is shown appends to search", () => {
             kind: FocusKind.FINDER,
             search: 'add',
             options: ['Add'],
+            quickSelect: { kind: QuickSelectKind.NONE }
         }
     }
     expect(model3).toEqual(expectedModel)
@@ -1270,6 +1288,7 @@ test("del virtual key down when finder is shown deletes from search", () => {
             kind: FocusKind.FINDER,
             search: 'ad',
             options: ['Add'],
+            quickSelect: { kind: QuickSelectKind.NONE }
         }
     }
     expect(model4).toEqual(expectedModel)
@@ -1312,6 +1331,7 @@ test("space virtual key down when finder is shown adds space to search", () => {
             kind: FocusKind.FINDER,
             search: 'a d',
             options: [],
+            quickSelect: { kind: QuickSelectKind.NONE }
         }
     }
     expect(model3).toEqual(expectedModel)
@@ -1407,7 +1427,8 @@ test("pressing number on keyboard appends to number node", () => {
         operations,
         focus: {
             kind: FocusKind.BODY,
-            body
+            body,
+            quickSelect: { kind: QuickSelectKind.NONE }
         },
         graph: {
             ...model0.graph,
@@ -1459,7 +1480,8 @@ test("pressing backspace on keyboard deletes from number node", () => {
         operations,
         focus: {
             kind: FocusKind.BODY,
-            body
+            body,
+            quickSelect: { kind: QuickSelectKind.NONE }
         },
         graph: {
             ...model0.graph,
@@ -1507,7 +1529,8 @@ test("pressing backspace when number node value is 0 has no effect", () => {
         operations,
         focus: {
             kind: FocusKind.BODY,
-            body
+            body,
+            quickSelect: { kind: QuickSelectKind.NONE }
         },
         graph: {
             ...model0.graph,
@@ -1555,7 +1578,8 @@ test("pressing del on virtual keyboard when number node value is 0 has no effect
         operations,
         focus: {
             kind: FocusKind.BODY,
-            body
+            body,
+            quickSelect: { kind: QuickSelectKind.NONE }
         },
         graph: {
             ...model0.graph,
@@ -1603,7 +1627,8 @@ test("pressing number on virtual keyboard appends to number node", () => {
         operations,
         focus: {
             kind: FocusKind.BODY,
-            body
+            body,
+            quickSelect: { kind: QuickSelectKind.NONE }
         },
         graph: {
             ...model0.graph,
@@ -1656,6 +1681,7 @@ test("pressing del on virtual keyboard deletes from number node", () => {
         focus: {
             kind: FocusKind.BODY,
             body,
+            quickSelect: { kind: QuickSelectKind.NONE }
         },
         graph: {
             ...model0.graph,
@@ -1873,7 +1899,8 @@ test("pressing a key on virtual keyboard while no input target selected doesn't 
             operations,
             focus: {
                 kind: FocusKind.NONE,
-                pointerAction: { kind: PointerActionKind.NONE }
+                pointerAction: { kind: PointerActionKind.NONE },
+                quickSelect: { kind: QuickSelectKind.NONE }
             }
         },
         operation: operations['Number'],
@@ -1976,7 +2003,8 @@ test("clicking background when a number node is selected deselects it", () => {
         ...model0,
         focus: {
             kind: FocusKind.NONE,
-            pointerAction: { kind: PointerActionKind.PAN }
+            pointerAction: { kind: PointerActionKind.PAN },
+            quickSelect: { kind: QuickSelectKind.NONE }
         },
         openFinderFirstClick: true
     }
@@ -2041,7 +2069,8 @@ test("clicking input when a number node is selected deselects it and selects inp
         ...model0,
         focus: {
             kind: FocusKind.INPUT,
-            input
+            input,
+            quickSelect: { kind: QuickSelectKind.NONE }
         }
     }
     expect(model2).toEqual(expectedModel)
@@ -2077,7 +2106,8 @@ test("clicking output when a number node is selected deselects it and selects ou
         ...model0,
         focus: {
             kind: FocusKind.OUTPUT,
-            output
+            output,
+            quickSelect: { kind: QuickSelectKind.NONE }
         }
     }
     expect(model2).toEqual(expectedModel)
@@ -2113,7 +2143,8 @@ test("clicking node when a number node is selected deselects it and selects node
         focus: {
             kind: FocusKind.NODE,
             node,
-            drag: true
+            drag: true,
+            quickSelect: { kind: QuickSelectKind.NONE }
         }
     }
     expect(model2).toEqual(expectedModel)
@@ -2146,7 +2177,8 @@ test("zooming", () => {
         ...emptyModel(),
         focus: {
             kind: FocusKind.NONE,
-            pointerAction: { kind: PointerActionKind.PAN }
+            pointerAction: { kind: PointerActionKind.PAN },
+            quickSelect: { kind: QuickSelectKind.NONE }
         },
         pointers: [pointer0]
     }
@@ -2162,8 +2194,9 @@ test("zooming", () => {
             pointerAction: {
                 kind: PointerActionKind.ZOOM,
                 pointerCenter: { x: 0, y: 0 },
-                pointerDistance: 0
-            }
+                pointerDistance: 0,
+            },
+            quickSelect: { kind: QuickSelectKind.NONE }
         },
         pointers: [pointer0, pointer1]
     }
@@ -2180,7 +2213,8 @@ test("zooming", () => {
                 kind: PointerActionKind.ZOOM,
                 pointerCenter: { x: 10, y: 10 },
                 pointerDistance: Math.sqrt(Math.pow(20, 2) + Math.pow(20, 2)),
-            }
+            },
+            quickSelect: { kind: QuickSelectKind.NONE }
         },
         pointers: [pointer0, pointer2]
     }
@@ -2197,7 +2231,8 @@ test("zooming", () => {
                 kind: PointerActionKind.ZOOM,
                 pointerCenter: { x: 15, y: 15 },
                 pointerDistance: Math.sqrt(Math.pow(30, 2) + Math.pow(30, 2)),
-            }
+            },
+            quickSelect: { kind: QuickSelectKind.NONE }
         },
         pointers: [pointer0, pointer3],
         camera: [
@@ -2263,7 +2298,8 @@ test("clicking background when a node is selected deselects it", () => {
         ...model1,
         focus: {
             kind: FocusKind.NONE,
-            pointerAction: { kind: PointerActionKind.PAN }
+            pointerAction: { kind: PointerActionKind.PAN },
+            quickSelect: { kind: QuickSelectKind.NONE }
         },
         openFinderFirstClick: true
     }
@@ -2326,7 +2362,8 @@ test("clicking background when a input is selected deselects it", () => {
         ...model1,
         focus: {
             kind: FocusKind.NONE,
-            pointerAction: { kind: PointerActionKind.PAN }
+            pointerAction: { kind: PointerActionKind.PAN },
+            quickSelect: { kind: QuickSelectKind.NONE }
         },
         openFinderFirstClick: true
     }
@@ -2390,7 +2427,8 @@ test("clicking background when a output is selected deselects it", () => {
         ...model1,
         focus: {
             kind: FocusKind.NONE,
-            pointerAction: { kind: PointerActionKind.PAN }
+            pointerAction: { kind: PointerActionKind.PAN },
+            quickSelect: { kind: QuickSelectKind.NONE }
         },
         openFinderFirstClick: true
     }

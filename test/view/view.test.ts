@@ -24,6 +24,7 @@ import {
     virtualKeys,
 } from "../../src/view"
 import { contextMenu } from "../../src/view/context_menu"
+import { QuickSelectKind } from "../../src/model/quick_select"
 
 test("spacer", () => {
     expect(spacer(10)).toEqual(container({ width: 10, height: 10 }))
@@ -48,7 +49,11 @@ test("inputUi not focused", () => {
         node: 'node',
         name: 'name',
     }
-    const focus: Focus = { kind: FocusKind.NONE, pointerAction: { kind: PointerActionKind.NONE } }
+    const focus: Focus = {
+        kind: FocusKind.NONE,
+        pointerAction: { kind: PointerActionKind.NONE },
+        quickSelect: { kind: QuickSelectKind.NONE }
+    }
     const actual = inputUi(theme, input, focus)
     const expected = container<AppEvent>({
         onClick: {
@@ -59,10 +64,9 @@ test("inputUi not focused", () => {
         row({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             container({
                 id: 'uuid',
-                width: 14,
-                height: 14,
+                padding: { top: 2, right: 4, bottom: 2, left: 4 },
                 color: theme.input,
-            }),
+            }, text({ color: theme.background }, " ")),
             spacer(4),
             text('name')
         ])
@@ -76,7 +80,11 @@ test("inputUi focused", () => {
         node: 'node',
         name: 'name'
     }
-    const actual = inputUi(theme, input, { kind: FocusKind.INPUT, input: 'uuid' })
+    const actual = inputUi(theme, input, {
+        kind: FocusKind.INPUT,
+        input: 'uuid',
+        quickSelect: { kind: QuickSelectKind.NONE }
+    })
     const expected = container<AppEvent>({
         onClick: {
             kind: EventKind.CLICKED_INPUT,
@@ -86,10 +94,9 @@ test("inputUi focused", () => {
         row({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             container({
                 id: 'uuid',
-                width: 14,
-                height: 14,
+                padding: { top: 2, right: 4, bottom: 2, left: 4 },
                 color: theme.focusInput,
-            }),
+            }, text({ color: theme.background }, " ")),
             spacer(4),
             text('name')
         ])
@@ -115,7 +122,11 @@ test("inputsUi", () => {
             name: "third",
         }
     ]
-    const focus: Focus = { kind: FocusKind.INPUT, input: 'third' }
+    const focus: Focus = {
+        kind: FocusKind.INPUT,
+        input: 'third',
+        quickSelect: { kind: QuickSelectKind.NONE }
+    }
     const actual = inputsUi(theme, inputs, focus)
     const expected = column([
         inputUi(theme, inputs[0], focus),
@@ -134,7 +145,11 @@ test("outputUi not focused", () => {
         name: 'name',
         edges: []
     }
-    const focus: Focus = { kind: FocusKind.NONE, pointerAction: { kind: PointerActionKind.NONE } }
+    const focus: Focus = {
+        kind: FocusKind.NONE,
+        pointerAction: { kind: PointerActionKind.NONE },
+        quickSelect: { kind: QuickSelectKind.NONE }
+    }
     const actual = outputUi(theme, output, focus)
     const expected = container<AppEvent>({
         onClick: {
@@ -163,7 +178,11 @@ test("outputUi focused", () => {
         name: 'name',
         edges: []
     }
-    const actual = outputUi(theme, output, { kind: FocusKind.OUTPUT, output: 'uuid' })
+    const actual = outputUi(theme, output, {
+        kind: FocusKind.OUTPUT,
+        output: 'uuid',
+        quickSelect: { kind: QuickSelectKind.NONE }
+    })
     const expected = container<AppEvent>({
         onClick: {
             kind: EventKind.CLICKED_OUTPUT,
@@ -205,7 +224,11 @@ test("outputsUi", () => {
             edges: []
         }
     ]
-    const focus: Focus = { kind: FocusKind.OUTPUT, output: 'third' }
+    const focus: Focus = {
+        kind: FocusKind.OUTPUT,
+        output: 'third',
+        quickSelect: { kind: QuickSelectKind.NONE }
+    }
     const actual = outputsUi(theme, outputs, focus)
     const expected = column([
         outputUi(theme, outputs[0], focus),
@@ -223,7 +246,11 @@ test("numberUi not focused", () => {
         node: 'node',
         value: 0,
     }
-    const focus: Focus = { kind: FocusKind.NONE, pointerAction: { kind: PointerActionKind.NONE } }
+    const focus: Focus = {
+        kind: FocusKind.NONE,
+        pointerAction: { kind: PointerActionKind.NONE },
+        quickSelect: { kind: QuickSelectKind.NONE }
+    }
     const actual = numberUi(theme, body, focus)
     const expected = container({
         color: theme.background,
@@ -243,7 +270,11 @@ test("numberUi editing", () => {
         node: 'node',
         value: 0,
     }
-    const actual = numberUi(theme, body, { kind: FocusKind.BODY, body: 'body uuid' })
+    const actual = numberUi(theme, body, {
+        kind: FocusKind.BODY,
+        body: 'body uuid',
+        quickSelect: { kind: QuickSelectKind.NONE }
+    })
     const expected = container({
         color: theme.focusInput,
         padding: 5,
@@ -268,7 +299,11 @@ test("nodeUi no inputs body or outputs", () => {
         ...emptyGraph(),
         nodes: { [node.uuid]: node }
     }
-    const focus: Focus = { kind: FocusKind.NONE, pointerAction: { kind: PointerActionKind.NONE } }
+    const focus: Focus = {
+        kind: FocusKind.NONE,
+        pointerAction: { kind: PointerActionKind.NONE },
+        quickSelect: { kind: QuickSelectKind.NONE }
+    }
     const actual = nodeUi(theme, node.uuid, graph, focus)
     const expected = container<AppEvent>(
         {
@@ -308,7 +343,11 @@ test("nodeUi 1 input, no body and no outputs", () => {
         nodes: { [node.uuid]: node },
         inputs: { [input.uuid]: input }
     }
-    const focus: Focus = { kind: FocusKind.NONE, pointerAction: { kind: PointerActionKind.NONE } }
+    const focus: Focus = {
+        kind: FocusKind.NONE,
+        pointerAction: { kind: PointerActionKind.NONE },
+        quickSelect: { kind: QuickSelectKind.NONE }
+    }
     const actual = nodeUi(theme, node.uuid, graph, focus)
     const expected = container<AppEvent>(
         {
@@ -349,7 +388,11 @@ test("nodeUi 1 output, no body and no inputs", () => {
         nodes: { [node.uuid]: node },
         outputs: { [output.uuid]: output }
     }
-    const focus: Focus = { kind: FocusKind.NONE, pointerAction: { kind: PointerActionKind.NONE } }
+    const focus: Focus = {
+        kind: FocusKind.NONE,
+        pointerAction: { kind: PointerActionKind.NONE },
+        quickSelect: { kind: QuickSelectKind.NONE }
+    }
     const actual = nodeUi(theme, node.uuid, graph, focus)
     const expected = container<AppEvent>(
         {
@@ -390,7 +433,11 @@ test("nodeUi no inputs or outputs but body defined", () => {
         nodes: { [node.uuid]: node },
         bodys: { [body.uuid]: body }
     }
-    const focus: Focus = { kind: FocusKind.NONE, pointerAction: { kind: PointerActionKind.NONE } }
+    const focus: Focus = {
+        kind: FocusKind.NONE,
+        pointerAction: { kind: PointerActionKind.NONE },
+        quickSelect: { kind: QuickSelectKind.NONE }
+    }
     const actual = nodeUi(theme, node.uuid, graph, focus)
     const expected = container<AppEvent>(
         {
@@ -437,7 +484,11 @@ test("nodeUi 1 input and 1 output but no body", () => {
         inputs: { [input.uuid]: input },
         outputs: { [output.uuid]: output }
     }
-    const focus: Focus = { kind: FocusKind.NONE, pointerAction: { kind: PointerActionKind.NONE } }
+    const focus: Focus = {
+        kind: FocusKind.NONE,
+        pointerAction: { kind: PointerActionKind.NONE },
+        quickSelect: { kind: QuickSelectKind.NONE }
+    }
     const actual = nodeUi(theme, node.uuid, graph, focus)
     const expected = container<AppEvent>(
         {
@@ -488,7 +539,11 @@ test("nodeUi 1 input body but no outputs", () => {
         inputs: { [input.uuid]: input },
         bodys: { [body.uuid]: body }
     }
-    const focus: Focus = { kind: FocusKind.NONE, pointerAction: { kind: PointerActionKind.NONE } }
+    const focus: Focus = {
+        kind: FocusKind.NONE,
+        pointerAction: { kind: PointerActionKind.NONE },
+        quickSelect: { kind: QuickSelectKind.NONE }
+    }
     const actual = nodeUi(theme, node.uuid, graph, focus)
     const expected = container<AppEvent>(
         {
@@ -540,7 +595,11 @@ test("nodeUi 1 output body but no inputs", () => {
         outputs: { [output.uuid]: output },
         bodys: { [body.uuid]: body }
     }
-    const focus: Focus = { kind: FocusKind.NONE, pointerAction: { kind: PointerActionKind.NONE } }
+    const focus: Focus = {
+        kind: FocusKind.NONE,
+        pointerAction: { kind: PointerActionKind.NONE },
+        quickSelect: { kind: QuickSelectKind.NONE }
+    }
     const actual = nodeUi(theme, node.uuid, graph, focus)
     const expected = container<AppEvent>(
         {
@@ -599,7 +658,11 @@ test("nodeUi 1 input body and 1 output", () => {
         outputs: { [output.uuid]: output },
         bodys: { [body.uuid]: body }
     }
-    const focus: Focus = { kind: FocusKind.NONE, pointerAction: { kind: PointerActionKind.NONE } }
+    const focus: Focus = {
+        kind: FocusKind.NONE,
+        pointerAction: { kind: PointerActionKind.NONE },
+        quickSelect: { kind: QuickSelectKind.NONE }
+    }
     const actual = nodeUi(theme, node.uuid, graph, focus)
     const expected = container<AppEvent>(
         {
@@ -628,7 +691,12 @@ test("nodeUi 1 input body and 1 output", () => {
 })
 
 test("finder", () => {
-    const actual = finder({ kind: FocusKind.FINDER, search: "text", options: ["foo", "bar"] }, theme)
+    const actual = finder({
+        kind: FocusKind.FINDER,
+        search: "text",
+        options: ["foo", "bar"],
+        quickSelect: { kind: QuickSelectKind.NONE }
+    }, theme)
     const expected = column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
         container({ height: 10 }),
         container({ color: theme.node, padding: 4 },
@@ -765,7 +833,8 @@ test("view with no nodes or edges", () => {
         nodePlacementLocation: { x: 0, y: 0 },
         focus: {
             kind: FocusKind.NONE,
-            pointerAction: { kind: PointerActionKind.NONE }
+            pointerAction: { kind: PointerActionKind.NONE },
+            quickSelect: { kind: QuickSelectKind.NONE }
         },
         camera: identity(),
         operations: {},
@@ -796,6 +865,7 @@ test("view with no nodes or edges but finder shown", () => {
             kind: FocusKind.FINDER,
             search: "",
             options: [],
+            quickSelect: { kind: QuickSelectKind.NONE }
         },
         openFinderFirstClick: false,
         camera: identity(),
@@ -851,7 +921,8 @@ test("view with three nodes and no edges", () => {
         },
         focus: {
             kind: FocusKind.NONE,
-            pointerAction: { kind: PointerActionKind.NONE }
+            pointerAction: { kind: PointerActionKind.NONE },
+            quickSelect: { kind: QuickSelectKind.NONE },
         },
         openFinderFirstClick: false,
         camera: identity(),
@@ -911,7 +982,8 @@ test("view with three nodes and no edges", () => {
         focus: {
             kind: FocusKind.NODE,
             node: 'first',
-            drag: false
+            drag: false,
+            quickSelect: { kind: QuickSelectKind.NONE },
         },
         openFinderFirstClick: false,
         camera: identity(),
@@ -1005,7 +1077,8 @@ test("view with three nodes and one edges", () => {
         },
         focus: {
             kind: FocusKind.NONE,
-            pointerAction: { kind: PointerActionKind.NONE }
+            pointerAction: { kind: PointerActionKind.NONE },
+            quickSelect: { kind: QuickSelectKind.NONE },
         },
         openFinderFirstClick: false,
         camera: identity(),

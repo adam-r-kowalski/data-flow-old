@@ -1,4 +1,3 @@
-
 import { fuzzyFind } from "../fuzzy_find"
 import { multiplyMatrices, multiplyMatrixVector, scale, translate } from "../linear_algebra/matrix3x3"
 import { length } from "../linear_algebra/vector3"
@@ -9,6 +8,9 @@ import { PointerAction, PointerActionKind } from '../model/pointer_action'
 import { GenerateUUID, Operation, Operations, Position, UUID } from '../model/graph'
 import { Pointer } from "../ui"
 import { addEdge, addNode, changeBodyValue, changeNodePosition, removeInputEdge, removeNode, removeOutputEdges } from "./graph"
+import { maybeTriggerQuickSelect, quickSelectInput } from "./quick_select"
+import { QuickSelectKind } from "../model/quick_select"
+import { clearFocus, selectInput } from "./focus"
 
 export enum EventKind {
     POINTER_MOVE,
@@ -108,7 +110,6 @@ export interface DeleteOutputEdges {
     readonly output: UUID
 }
 
-
 export type AppEvent =
     | PointerMove
     | PointerDown
@@ -146,7 +147,8 @@ const pointerDown = (model: Model, event: PointerDown): UpdateResult<Model, AppE
                 openFinderFirstClick: false,
                 focus: {
                     kind: FocusKind.NONE,
-                    pointerAction
+                    pointerAction,
+                    quickSelect: { kind: QuickSelectKind.NONE }
                 },
                 pointers
             }
@@ -157,7 +159,8 @@ const pointerDown = (model: Model, event: PointerDown): UpdateResult<Model, AppE
                 ...model,
                 focus: {
                     kind: FocusKind.NONE,
-                    pointerAction: { kind: PointerActionKind.PAN }
+                    pointerAction: { kind: PointerActionKind.PAN },
+                    quickSelect: { kind: QuickSelectKind.NONE }
                 },
                 pointers
             }
@@ -176,7 +179,8 @@ const pointerUp = (model: Model, event: PointerUp): UpdateResult<Model, AppEvent
                         pointers,
                         focus: {
                             kind: FocusKind.NONE,
-                            pointerAction: { kind: PointerActionKind.PAN }
+                            pointerAction: { kind: PointerActionKind.PAN },
+                            quickSelect: { kind: QuickSelectKind.NONE }
                         },
                     }
                 }
@@ -186,7 +190,8 @@ const pointerUp = (model: Model, event: PointerUp): UpdateResult<Model, AppEvent
                         pointers,
                         focus: {
                             kind: FocusKind.NONE,
-                            pointerAction: { kind: PointerActionKind.NONE }
+                            pointerAction: { kind: PointerActionKind.NONE },
+                            quickSelect: { kind: QuickSelectKind.NONE }
                         },
                     }
                 }
@@ -239,7 +244,8 @@ const pointerMove = (model: Model, event: PointerMove): UpdateResult<Model, AppE
                     }
                     const focus: Focus = {
                         kind: FocusKind.NONE,
-                        pointerAction
+                        pointerAction,
+                        quickSelect: { kind: QuickSelectKind.NONE }
                     }
                     if (previousPointerAction.pointerDistance > 0) {
                         const move = translate(x, y)
@@ -290,7 +296,8 @@ const clickedNode = (model: Model, event: ClickedNode): UpdateResult<Model, AppE
             focus: {
                 kind: FocusKind.NODE,
                 node: event.node,
-                drag: true
+                drag: true,
+                quickSelect: { kind: QuickSelectKind.NONE }
             },
             nodeOrder
         },
@@ -309,45 +316,8 @@ const wheel = (model: Model, event: Wheel): UpdateResult<Model, AppEvent> => {
     }
 }
 
-const clearFocus = (model: Model): Model => ({
-    ...model,
-    focus: {
-        kind: FocusKind.NONE,
-        pointerAction: { kind: PointerActionKind.NONE }
-    }
-})
-
-const clickedInput = (model: Model, event: ClickedInput, generateUUID: GenerateUUID): UpdateResult<Model, AppEvent> => {
-    if (model.focus.kind === FocusKind.OUTPUT) {
-        const input = model.graph.inputs[event.input]
-        const output = model.graph.outputs[model.focus.output]
-        if (input.node === output.node) {
-            return { model }
-        } else {
-            const graph0 = input.edge !== undefined ?
-                removeInputEdge(model.graph, input.uuid) :
-                model.graph
-            const { graph: graph1 } = addEdge({
-                graph: graph0,
-                input: event.input,
-                output: model.focus.output,
-                generateUUID
-            })
-            return {
-                model: clearFocus({ ...model, graph: graph1 }),
-                render: true
-            }
-        }
-    } else {
-        return {
-            model: {
-                ...model,
-                focus: { kind: FocusKind.INPUT, input: event.input }
-            },
-            render: true
-        }
-    }
-}
+const clickedInput = (model: Model, event: ClickedInput, generateUUID: GenerateUUID): UpdateResult<Model, AppEvent> =>
+    selectInput(model, event.input, generateUUID)
 
 const clickedOutput = (model: Model, event: ClickedOutput, generateUUID: GenerateUUID): UpdateResult<Model, AppEvent> => {
     if (model.focus.kind === FocusKind.INPUT) {
@@ -374,7 +344,11 @@ const clickedOutput = (model: Model, event: ClickedOutput, generateUUID: Generat
         return {
             model: {
                 ...model,
-                focus: { kind: FocusKind.OUTPUT, output: event.output },
+                focus: {
+                    kind: FocusKind.OUTPUT,
+                    output: event.output,
+                    quickSelect: { kind: QuickSelectKind.NONE }
+                },
             },
             render: true
         }
@@ -398,6 +372,7 @@ export const openFinder = (model: Model): Model => ({
         kind: FocusKind.FINDER,
         search: '',
         options: Object.keys(model.operations),
+        quickSelect: { kind: QuickSelectKind.NONE }
     },
     openFinderFirstClick: false
 })
@@ -424,7 +399,8 @@ const updateFinderSearch = (model: Model, focus: FocusFinder, transform: (search
             focus: {
                 kind: FocusKind.FINDER,
                 options: finderOptions(model.operations, search),
-                search
+                search,
+                quickSelect: { kind: QuickSelectKind.NONE }
             }
         },
         render: true
@@ -473,110 +449,112 @@ export const removeNodeFromGraph = (model: Model, node: UUID): Model => clearFoc
 })
 
 const keyDown = (model: Model, { key }: KeyDown, generateUUID: GenerateUUID): UpdateResult<Model, AppEvent> => {
-    switch (model.focus.kind) {
-        case FocusKind.FINDER:
-            switch (key) {
-                case 'Backspace':
-                    return updateFinderSearch(model, model.focus, search => search.slice(0, -1))
-                case 'Shift':
-                case 'Alt':
-                case 'Control':
-                case 'Meta':
-                case 'Tab':
-                    return { model }
-                case 'Enter':
-                    if (model.focus.options.length > 0) {
-                        const name = model.focus.options[0]
-                        return insertOperationFromFinder(model, name, generateUUID)
-                    } else {
-                        return { model: clearFocus(model), render: true }
+    switch (model.focus.quickSelect.kind) {
+        case QuickSelectKind.INPUT:
+            return quickSelectInput(model, model.focus.quickSelect, key, generateUUID)
+        case QuickSelectKind.NONE:
+            switch (model.focus.kind) {
+                case FocusKind.FINDER:
+                    switch (key) {
+                        case 'Backspace':
+                            return updateFinderSearch(model, model.focus, search => search.slice(0, -1))
+                        case 'Shift':
+                        case 'Alt':
+                        case 'Control':
+                        case 'Meta':
+                        case 'Tab':
+                            return { model }
+                        case 'Enter':
+                            if (model.focus.options.length > 0) {
+                                const name = model.focus.options[0]
+                                return insertOperationFromFinder(model, name, generateUUID)
+                            } else {
+                                return { model: clearFocus(model), render: true }
+                            }
+                        case 'Escape':
+                            return { model: clearFocus(model), render: true }
+                        default:
+                            return updateFinderSearch(model, model.focus, search => search + key)
                     }
-                case 'Escape':
-                    return { model: clearFocus(model), render: true }
-                default:
-                    return updateFinderSearch(model, model.focus, search => search + key)
-            }
-        case FocusKind.BODY:
-            switch (key) {
-                case 'Backspace':
-                    return updateBodyValue(model, model.focus.body, value => {
-                        let newValue = value.toString().slice(0, -1)
-                        return newValue === '' ? 0 : parseFloat(newValue)
-                    })
-                case '1':
-                case '2':
-                case '3':
-                case '4':
-                case '5':
-                case '6':
-                case '7':
-                case '8':
-                case '9':
-                case '0':
-                    return updateBodyValue(model, model.focus.body, value => parseFloat(value.toString() + key))
-                case 'Enter':
-                case 'Escape':
-                    return {
-                        model: clearFocus(model),
-                        render: true
+                case FocusKind.BODY:
+                    switch (key) {
+                        case 'Backspace':
+                            return updateBodyValue(model, model.focus.body, value => {
+                                let newValue = value.toString().slice(0, -1)
+                                return newValue === '' ? 0 : parseFloat(newValue)
+                            })
+                        case '1':
+                        case '2':
+                        case '3':
+                        case '4':
+                        case '5':
+                        case '6':
+                        case '7':
+                        case '8':
+                        case '9':
+                        case '0':
+                            return updateBodyValue(model, model.focus.body, value => parseFloat(value.toString() + key))
+                        case 'Enter':
+                        case 'Escape':
+                            return {
+                                model: clearFocus(model),
+                                render: true
+                            }
+                        default:
+                            return maybeTriggerQuickSelect(model, model.focus, key)
                     }
-                default:
-                    return { model }
-            }
-        case FocusKind.NODE:
-            switch (key) {
-                case 'f':
-                    return { model: openFinder(model), render: true }
-                case 'd':
-                    return {
-                        model: removeNodeFromGraph(model, model.focus.node),
-                        render: true
+                case FocusKind.NODE:
+                    switch (key) {
+                        case 'f':
+                            return { model: openFinder(model), render: true }
+                        case 'd':
+                            return {
+                                model: removeNodeFromGraph(model, model.focus.node),
+                                render: true
+                            }
+                        case 'Escape':
+                            return { model: clearFocus(model), render: true }
+                        default:
+                            return maybeTriggerQuickSelect(model, model.focus, key)
                     }
-                case 'Escape':
-                    return { model: clearFocus(model), render: true }
-                default:
-                    return { model }
-            }
-        case FocusKind.INPUT:
-            switch (key) {
-                case 'f':
-                    return { model: openFinder(model), render: true }
-                case 'd':
-                    return {
-                        model: clearFocus({
-                            ...model,
-                            graph: removeInputEdge(model.graph, model.focus.input),
-                        }),
-                        render: true
+                case FocusKind.INPUT:
+                    switch (key) {
+                        case 'f':
+                            return { model: openFinder(model), render: true }
+                        case 'd':
+                            return {
+                                model: clearFocus({
+                                    ...model,
+                                    graph: removeInputEdge(model.graph, model.focus.input),
+                                }),
+                                render: true
+                            }
+                        case 'Escape':
+                            return { model: clearFocus(model), render: true }
+                        default:
+                            return maybeTriggerQuickSelect(model, model.focus, key)
                     }
-                case 'Escape':
-                    return { model: clearFocus(model), render: true }
-                default:
-                    return { model }
-            }
-        case FocusKind.OUTPUT:
-            switch (key) {
-                case 'f':
-                    return { model: openFinder(model), render: true }
-                case 'd':
-                    return {
-                        model: clearFocus({
-                            ...model,
-                            graph: removeOutputEdges(model.graph, model.focus.output),
-                        }),
-                        render: true
+                case FocusKind.OUTPUT:
+                    switch (key) {
+                        case 'f':
+                            return { model: openFinder(model), render: true }
+                        case 'd':
+                            return {
+                                model: clearFocus({
+                                    ...model,
+                                    graph: removeOutputEdges(model.graph, model.focus.output),
+                                }),
+                                render: true
+                            }
+                        case 'Escape':
+                            return { model: clearFocus(model), render: true }
+                        default:
+                            return maybeTriggerQuickSelect(model, model.focus, key)
                     }
-                case 'Escape':
-                    return { model: clearFocus(model), render: true }
-                default:
-                    return { model }
-            }
-        case FocusKind.NONE:
-            switch (key) {
-                case 'f':
-                    return { model: openFinder(model), render: true }
-                default:
-                    return { model }
+                case FocusKind.NONE:
+                    return key == 'f' ?
+                        { model: openFinder(model), render: true } :
+                        maybeTriggerQuickSelect(model, model.focus, key)
             }
     }
 }
@@ -640,7 +618,8 @@ export const openNumericKeyboard = (model: Model, body: UUID): Model => ({
     ...model,
     focus: {
         kind: FocusKind.BODY,
-        body
+        body,
+        quickSelect: { kind: QuickSelectKind.NONE }
     }
 })
 
@@ -670,7 +649,8 @@ const clickedBackground = (model: Model): UpdateResult<Model, AppEvent> => {
                 openFinderFirstClick: true,
                 focus: {
                     kind: FocusKind.NONE,
-                    pointerAction: { kind: PointerActionKind.PAN }
+                    pointerAction: { kind: PointerActionKind.PAN },
+                    quickSelect: { kind: QuickSelectKind.NONE }
                 }
             },
             schedule: [

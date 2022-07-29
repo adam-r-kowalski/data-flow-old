@@ -1,4 +1,3 @@
-
 import { fuzzyFind } from "../fuzzy_find"
 import { multiplyMatrices, multiplyMatrixVector, scale, translate } from "../linear_algebra/matrix3x3"
 import { length } from "../linear_algebra/vector3"
@@ -9,6 +8,7 @@ import { PointerAction, PointerActionKind } from '../model/pointer_action'
 import { GenerateUUID, Operation, Operations, Position, UUID } from '../model/graph'
 import { Pointer } from "../ui"
 import { addEdge, addNode, changeBodyValue, changeNodePosition, removeInputEdge, removeNode, removeOutputEdges } from "./graph"
+import { quickSelect } from "./quick_select"
 
 export enum EventKind {
     POINTER_MOVE,
@@ -572,12 +572,9 @@ const keyDown = (model: Model, { key }: KeyDown, generateUUID: GenerateUUID): Up
                     return { model }
             }
         case FocusKind.NONE:
-            switch (key) {
-                case 'f':
-                    return { model: openFinder(model), render: true }
-                default:
-                    return { model }
-            }
+            return key == 'f' ?
+                { model: openFinder(model), render: true } :
+                quickSelect(model, key)
     }
 }
 

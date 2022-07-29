@@ -3,7 +3,9 @@ import { fuzzyFind } from "../fuzzy_find"
 import { multiplyMatrices, multiplyMatrixVector, scale, translate } from "../linear_algebra/matrix3x3"
 import { length } from "../linear_algebra/vector3"
 import { UpdateResult } from "../ui/run"
-import { Focus, FocusFinder, FocusKind, PointerAction, PointerActionKind, Model } from "../model"
+import { Model } from "../model"
+import { Focus, FocusFinder, FocusKind } from '../model/focus'
+import { PointerAction, PointerActionKind } from '../model/pointer_action'
 import { GenerateUUID, Operation, Operations, Position, UUID } from '../model/graph'
 import { Pointer } from "../ui"
 import { addEdge, addNode, changeBodyValue, changeNodePosition, removeInputEdge, removeNode, removeOutputEdges } from "./graph"

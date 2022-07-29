@@ -1,7 +1,10 @@
 import { AppEvent, EventKind } from "../../src/update"
 import { Body, emptyGraph, Graph, Input, Node, Output } from "../../src/model/graph"
 import { identity } from "../../src/linear_algebra/matrix3x3"
-import { Focus, FocusFinder, FocusKind, PointerActionKind, Model, Theme } from "../../src/model"
+import { Model } from "../../src/model"
+import { Theme } from "../../src/model/theme"
+import { Focus, FocusFinder, FocusKind } from "../../src/model/focus"
+import { PointerActionKind } from "../../src/model/pointer_action"
 import { column, container, row, scene, stack, text } from "../../src/ui"
 import { CrossAxisAlignment, MainAxisAlignment } from "../../src/ui/alignment"
 import {

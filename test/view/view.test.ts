@@ -1,5 +1,5 @@
 import { AppEvent, EventKind } from "../../src/update"
-import { Body, emptyGraph, Graph, Input, Node, Output } from "../../src/graph/model"
+import { Body, emptyGraph, Graph, Input, Node, Output } from "../../src/model/graph"
 import { identity } from "../../src/linear_algebra/matrix3x3"
 import { Focus, FocusFinder, FocusKind, PointerActionKind, Model, Theme } from "../../src/model"
 import { column, container, row, scene, stack, text } from "../../src/ui"

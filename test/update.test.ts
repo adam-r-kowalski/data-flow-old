@@ -1,6 +1,6 @@
 import { addNodeToGraph, EventKind, openFinder, openNumericKeyboard, update } from "../src/update"
-import { Operations } from "../src/graph/model"
-import { addEdge, changeNodePosition } from "../src/graph/update"
+import { Operations } from "../src/model/graph"
+import { addEdge, changeNodePosition } from "../src/update/graph"
 import { translate } from "../src/linear_algebra/matrix3x3"
 import { emptyModel, Model, FocusKind, PointerActionKind } from "../src/model"
 import { Pointer } from "../src/ui"

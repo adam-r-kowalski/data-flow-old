@@ -4,9 +4,9 @@ import { multiplyMatrices, multiplyMatrixVector, scale, translate } from "../lin
 import { length } from "../linear_algebra/vector3"
 import { UpdateResult } from "../ui/run"
 import { Focus, FocusFinder, FocusKind, PointerAction, PointerActionKind, Model } from "../model"
-import { GenerateUUID, Operation, Operations, Position, UUID } from '../graph/model'
+import { GenerateUUID, Operation, Operations, Position, UUID } from '../model/graph'
 import { Pointer } from "../ui"
-import { addEdge, addNode, changeBodyValue, changeNodePosition, removeInputEdge, removeNode, removeOutputEdges } from "../graph/update"
+import { addEdge, addNode, changeBodyValue, changeNodePosition, removeInputEdge, removeNode, removeOutputEdges } from "./graph"
 
 export enum EventKind {
     POINTER_MOVE,

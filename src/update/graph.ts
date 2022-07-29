@@ -1,4 +1,4 @@
-import { Body, Edge, GenerateUUID, Graph, Inputs, Node, Operation, Outputs, Position, UUID } from "./model"
+import { Body, Edge, GenerateUUID, Graph, Inputs, Node, Operation, Outputs, Position, UUID } from "../model/graph"
 
 interface AddNodeInputs {
     graph: Graph

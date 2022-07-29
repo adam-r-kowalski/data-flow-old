@@ -1,7 +1,7 @@
 import { identity, Matrix3x3 } from "../linear_algebra/matrix3x3"
 import { Pointer, Color } from "../ui"
-import { Graph, Operations, Position, UUID, emptyGraph, GenerateUUID } from '../graph/model'
-import { addEdge, addNode, changeBodyValue } from "../graph/update"
+import { Graph, Operations, Position, UUID, emptyGraph, GenerateUUID } from './graph'
+import { addEdge, addNode, changeBodyValue } from "../update/graph"
 
 export interface Theme {
     readonly background: Color

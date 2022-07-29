@@ -501,16 +501,7 @@ const keyDown = (model: Model, { key }: KeyDown, generateUUID: GenerateUUID): Up
                                 render: true
                             }
                         default:
-                            return {
-                                model: {
-                                    ...model,
-                                    focus: {
-                                        ...model.focus,
-                                        quickSelect: maybeTriggerQuickSelect(model, key),
-                                    }
-                                },
-                                render: true
-                            }
+                            return maybeTriggerQuickSelect(model, model.focus, key)
                     }
                 case FocusKind.NODE:
                     switch (key) {
@@ -524,16 +515,7 @@ const keyDown = (model: Model, { key }: KeyDown, generateUUID: GenerateUUID): Up
                         case 'Escape':
                             return { model: clearFocus(model), render: true }
                         default:
-                            return {
-                                model: {
-                                    ...model,
-                                    focus: {
-                                        ...model.focus,
-                                        quickSelect: maybeTriggerQuickSelect(model, key),
-                                    }
-                                },
-                                render: true
-                            }
+                            return maybeTriggerQuickSelect(model, model.focus, key)
                     }
                 case FocusKind.INPUT:
                     switch (key) {
@@ -550,16 +532,7 @@ const keyDown = (model: Model, { key }: KeyDown, generateUUID: GenerateUUID): Up
                         case 'Escape':
                             return { model: clearFocus(model), render: true }
                         default:
-                            return {
-                                model: {
-                                    ...model,
-                                    focus: {
-                                        ...model.focus,
-                                        quickSelect: maybeTriggerQuickSelect(model, key),
-                                    }
-                                },
-                                render: true
-                            }
+                            return maybeTriggerQuickSelect(model, model.focus, key)
                     }
                 case FocusKind.OUTPUT:
                     switch (key) {
@@ -576,31 +549,12 @@ const keyDown = (model: Model, { key }: KeyDown, generateUUID: GenerateUUID): Up
                         case 'Escape':
                             return { model: clearFocus(model), render: true }
                         default:
-                            return {
-                                model: {
-                                    ...model,
-                                    focus: {
-                                        ...model.focus,
-                                        quickSelect: maybeTriggerQuickSelect(model, key),
-                                    }
-                                },
-                                render: true
-                            }
-
+                            return maybeTriggerQuickSelect(model, model.focus, key)
                     }
                 case FocusKind.NONE:
                     return key == 'f' ?
                         { model: openFinder(model), render: true } :
-                        {
-                            model: {
-                                ...model,
-                                focus: {
-                                    ...model.focus,
-                                    quickSelect: maybeTriggerQuickSelect(model, key),
-                                }
-                            },
-                            render: true
-                        }
+                        maybeTriggerQuickSelect(model, model.focus, key)
             }
     }
 }

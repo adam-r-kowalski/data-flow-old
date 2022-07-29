@@ -34,9 +34,9 @@ test("intersperse", () => {
 const theme: Theme = {
     background: { red: 2, green: 22, blue: 39, alpha: 255 },
     node: { red: 41, green: 95, blue: 120, alpha: 255 },
-    selectedNode: { red: 23, green: 54, blue: 69, alpha: 255 },
+    focusNode: { red: 23, green: 54, blue: 69, alpha: 255 },
     input: { red: 188, green: 240, blue: 192, alpha: 255 },
-    selectedInput: { red: 175, green: 122, blue: 208, alpha: 255 },
+    focusInput: { red: 175, green: 122, blue: 208, alpha: 255 },
     connection: { red: 255, green: 255, blue: 255, alpha: 255 },
 }
 
@@ -85,7 +85,7 @@ test("inputUi selected", () => {
                 id: 'uuid',
                 width: 14,
                 height: 14,
-                color: theme.selectedInput,
+                color: theme.focusInput,
             }),
             spacer(4),
             text('name')
@@ -173,7 +173,7 @@ test("outputUi selected", () => {
                 id: 'uuid',
                 width: 14,
                 height: 14,
-                color: theme.selectedInput,
+                color: theme.focusInput,
             }),
         ])
     )
@@ -240,7 +240,7 @@ test("numberUi editing", () => {
     }
     const actual = numberUi(theme, body, { kind: SelectedKind.BODY, body: 'body uuid' })
     const expected = container({
-        color: theme.selectedInput,
+        color: theme.focusInput,
         padding: 5,
         onClick: {
             kind: EventKind.CLICKED_NUMBER,

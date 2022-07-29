@@ -1,9 +1,9 @@
 import { CrossAxisAlignment, MainAxisAlignment } from "../alignment"
 import { AppEvent, EventKind } from "../../event"
-import { Finder, Selected, SelectedKind, State, Theme, VirtualKeyboardKind } from "../../state"
+import { Focus, FocusFinder, FocusKind, State, Theme } from "../../state"
 import { text, stack, scene, row, container, column, Connection, UI } from '..'
 import { Body, Graph, Input, Output, UUID } from "../../graph/model"
-import { contextMenu, ContextMenuItem } from "./context_menu"
+import { contextMenu } from "./context_menu"
 
 
 export const spacer = (size: number): UI<AppEvent> =>
@@ -18,17 +18,17 @@ export const intersperse = <T>(array: T[], seperator: T): T[] => {
     return result
 }
 
-export const isSelected = (selected: Selected, uuid: UUID): boolean => {
-    switch (selected.kind) {
-        case SelectedKind.BODY: return selected.body === uuid
-        case SelectedKind.INPUT: return selected.input === uuid
-        case SelectedKind.NODE: return selected.node === uuid
-        case SelectedKind.NONE: return false
-        case SelectedKind.OUTPUT: return selected.output === uuid
+export const isFocused = (focus: Focus, uuid: UUID): boolean => {
+    switch (focus.kind) {
+        case FocusKind.BODY: return focus.body === uuid
+        case FocusKind.INPUT: return focus.input === uuid
+        case FocusKind.NODE: return focus.node === uuid
+        case FocusKind.OUTPUT: return focus.output === uuid
+        default: return false
     }
 }
 
-export const inputUi = (theme: Theme, { name, uuid }: Input, selected: Selected): UI<AppEvent> =>
+export const inputUi = (theme: Theme, { name, uuid }: Input, focus: Focus): UI<AppEvent> =>
     container({
         onClick: {
             kind: EventKind.CLICKED_INPUT,
@@ -40,7 +40,7 @@ export const inputUi = (theme: Theme, { name, uuid }: Input, selected: Selected)
                 id: uuid,
                 width: 14,
                 height: 14,
-                color: isSelected(selected, uuid) ? theme.selectedInput : theme.input,
+                color: isFocused(focus, uuid) ? theme.focusInput : theme.input,
             }),
             spacer(4),
             text(name)
@@ -48,16 +48,16 @@ export const inputUi = (theme: Theme, { name, uuid }: Input, selected: Selected)
     )
 
 
-export const inputsUi = (theme: Theme, inputs: Input[], selected: Selected) =>
+export const inputsUi = (theme: Theme, inputs: Input[], focus: Focus) =>
     column(
         intersperse(
-            inputs.map(input => inputUi(theme, input, selected)),
+            inputs.map(input => inputUi(theme, input, focus)),
             spacer(4)
         )
     )
 
 
-export const outputUi = (theme: Theme, { name, uuid }: Output, selected: Selected): UI<AppEvent> =>
+export const outputUi = (theme: Theme, { name, uuid }: Output, focus: Focus): UI<AppEvent> =>
     container({
         onClick: {
             kind: EventKind.CLICKED_OUTPUT,
@@ -71,24 +71,24 @@ export const outputUi = (theme: Theme, { name, uuid }: Output, selected: Selecte
                 id: uuid,
                 width: 14,
                 height: 14,
-                color: isSelected(selected, uuid) ? theme.selectedInput : theme.input,
+                color: isFocused(focus, uuid) ? theme.focusInput : theme.input,
             }),
         ])
     )
 
 
-export const outputsUi = (theme: Theme, outputs: Output[], selected: Selected) =>
+export const outputsUi = (theme: Theme, outputs: Output[], focus: Focus) =>
     column(
         intersperse(
-            outputs.map(output => outputUi(theme, output, selected)),
+            outputs.map(output => outputUi(theme, output, focus)),
             spacer(4)
         )
     )
 
 
-export const numberUi = (theme: Theme, body: Body, selected: Selected): UI<AppEvent> =>
+export const numberUi = (theme: Theme, body: Body, focus: Focus): UI<AppEvent> =>
     container({
-        color: isSelected(selected, body.uuid) ? theme.selectedInput : theme.background,
+        color: isFocused(focus, body.uuid) ? theme.focusInput : theme.background,
         padding: 5,
         onClick: {
             kind: EventKind.CLICKED_NUMBER,
@@ -98,24 +98,24 @@ export const numberUi = (theme: Theme, body: Body, selected: Selected): UI<AppEv
         text(body.value.toString()))
 
 
-export const nodeUi = (theme: Theme, nodeUUID: UUID, graph: Graph, selected: Selected): UI<AppEvent> => {
+export const nodeUi = (theme: Theme, nodeUUID: UUID, graph: Graph, focus: Focus): UI<AppEvent> => {
     const node = graph.nodes[nodeUUID]
     const rowEntries: UI<AppEvent>[] = []
     if (node.inputs.length) {
-        rowEntries.push(inputsUi(theme, node.inputs.map(i => graph.inputs[i]), selected))
+        rowEntries.push(inputsUi(theme, node.inputs.map(i => graph.inputs[i]), focus))
     }
     if (node.inputs.length && node.outputs.length) {
         rowEntries.push(spacer(15))
     }
     if (node.body) {
-        rowEntries.push(numberUi(theme, graph.bodys[node.body], selected), spacer(15))
+        rowEntries.push(numberUi(theme, graph.bodys[node.body], focus), spacer(15))
     }
     if (node.outputs.length) {
-        rowEntries.push(outputsUi(theme, node.outputs.map(o => graph.outputs[o]), selected))
+        rowEntries.push(outputsUi(theme, node.outputs.map(o => graph.outputs[o]), focus))
     }
     return container(
         {
-            color: isSelected(selected, node.uuid) ? theme.selectedNode : theme.node,
+            color: isFocused(focus, node.uuid) ? theme.focusNode : theme.node,
             padding: 4,
             x: node.position.x,
             y: node.position.y,
@@ -133,7 +133,7 @@ export const nodeUi = (theme: Theme, nodeUUID: UUID, graph: Graph, selected: Sel
 }
 
 
-export const finder = ({ search, options }: Finder, theme: Theme): UI<AppEvent> =>
+export const finder = ({ search, options }: FocusFinder, theme: Theme): UI<AppEvent> =>
     column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
         container({ height: 10 }),
         container({ color: theme.node, padding: 4 },
@@ -214,52 +214,6 @@ export const numericVirtualKeyboard = (theme: Theme) =>
     ])
 
 
-export const virtualKeyboard = (theme: Theme, kind: VirtualKeyboardKind) => {
-    switch (kind) {
-        case VirtualKeyboardKind.ALPHABETIC: return alphabeticVirtualKeyboard(theme)
-        case VirtualKeyboardKind.NUMERIC: return numericVirtualKeyboard(theme)
-    }
-}
-
-export const selectedMenuItem = (theme: Theme, graph: Graph, selected: Selected): ContextMenuItem<AppEvent> | null => {
-    switch (selected.kind) {
-        case SelectedKind.NODE:
-            return {
-                name: 'Delete Node',
-                shortcut: 'd',
-                onClick: {
-                    kind: EventKind.DELETE_NODE,
-                    node: selected.node
-                }
-            }
-        case SelectedKind.INPUT:
-            if (graph.inputs[selected.input].edge) {
-                return {
-                    name: 'Delete Edge',
-                    shortcut: 'd',
-                    onClick: {
-                        kind: EventKind.DELETE_INPUT_EDGE,
-                        input: selected.input
-                    }
-                }
-            }
-            return null
-        case SelectedKind.OUTPUT:
-            if (graph.outputs[selected.output].edges.length > 0) {
-                return {
-                    name: 'Delete Edge',
-                    shortcut: 'd',
-                    onClick: {
-                        kind: EventKind.DELETE_OUTPUT_EDGES,
-                        output: selected.output
-                    }
-                }
-            }
-            return null
-        default: return null
-    }
-}
-
 export const view = (state: State): UI<AppEvent> => {
     const nodes = state.nodeOrder
         .map(node =>
@@ -267,7 +221,7 @@ export const view = (state: State): UI<AppEvent> => {
                 state.theme,
                 node,
                 state.graph,
-                state.selected
+                state.focus
             )
         )
     const connections: Connection[] = Object.values(state.graph.edges).map(({ input, output }) => ({
@@ -279,9 +233,61 @@ export const view = (state: State): UI<AppEvent> => {
         container({ color: state.theme.background, onClick: { kind: EventKind.CLICKED_BACKGROUND } }),
         scene({ camera: state.camera, children: nodes, connections }),
     ]
-    if (state.finder.show) stacked.push(finder(state.finder, state.theme))
-    if (state.virtualKeyboard.show) stacked.push(virtualKeyboard(state.theme, state.virtualKeyboard.kind))
-    const menuItem = selectedMenuItem(state.theme, state.graph, state.selected)
-    if (menuItem) stacked.push(contextMenu({ items: [menuItem], backgroundColor: state.theme.node }))
+    switch (state.focus.kind) {
+        case FocusKind.FINDER:
+            stacked.push(
+                finder(state.focus, state.theme),
+                alphabeticVirtualKeyboard(state.theme)
+            )
+            break
+        case FocusKind.BODY:
+            stacked.push(numericVirtualKeyboard(state.theme))
+            break
+        case FocusKind.NODE:
+            stacked.push(contextMenu({
+                items: [{
+                    name: 'Delete Node',
+                    shortcut: 'd',
+                    onClick: {
+                        kind: EventKind.DELETE_NODE,
+                        node: state.focus.node
+                    }
+                }],
+                backgroundColor: state.theme.node
+            }))
+            break
+        case FocusKind.INPUT:
+            if (state.graph.inputs[state.focus.input].edge) {
+                stacked.push(contextMenu({
+                    items: [{
+                        name: 'Delete Edge',
+                        shortcut: 'd',
+                        onClick: {
+                            kind: EventKind.DELETE_INPUT_EDGE,
+                            input: state.focus.input
+                        }
+                    }],
+                    backgroundColor: state.theme.node
+                }))
+            }
+            break
+        case FocusKind.OUTPUT:
+            if (state.graph.outputs[state.focus.output].edges.length > 0) {
+                stacked.push(contextMenu({
+                    items: [
+                        {
+                            name: 'Delete Edge',
+                            shortcut: 'd',
+                            onClick: {
+                                kind: EventKind.DELETE_OUTPUT_EDGES,
+                                output: state.focus.output
+                            }
+                        }
+                    ],
+                    backgroundColor: state.theme.node
+                }))
+            }
+            break
+    }
     return stack(stacked)
 }

@@ -6,107 +6,90 @@ import { addEdge, addNode, changeBodyValue } from "./graph/update"
 export interface Theme {
     readonly background: Color
     readonly node: Color
-    readonly selectedNode: Color
+    readonly focusNode: Color
     readonly input: Color
-    readonly selectedInput: Color
+    readonly focusInput: Color
     readonly connection: Color
 }
 
-export interface Finder {
-    readonly search: string
-    readonly show: boolean
-    readonly options: Readonly<string[]>
-    readonly openTimeout: boolean
-}
-
-export enum VirtualKeyboardKind {
-    ALPHABETIC,
-    NUMERIC
-}
-
-export interface VirtualKeyboard {
-    readonly show: boolean
-    readonly kind: VirtualKeyboardKind
-}
-
-export enum InputTargetKind {
-    FINDER,
-    NUMBER,
-    NONE
-}
-
-export interface FinderInputTarget {
-    readonly kind: InputTargetKind.FINDER
-}
-
-export interface NumberInputTarget {
-    readonly kind: InputTargetKind.NUMBER,
-    readonly body: UUID
-}
-
-export interface NoInputTarget {
-    readonly kind: InputTargetKind.NONE,
-}
-
-export type InputTarget =
-    | FinderInputTarget
-    | NumberInputTarget
-    | NoInputTarget
-
-
-export enum SelectedKind {
+export enum FocusKind {
     NODE,
     INPUT,
     OUTPUT,
     BODY,
+    FINDER,
     NONE
 }
 
-export interface SelectedNode {
-    kind: SelectedKind.NODE
-    node: UUID
+export interface FocusNode {
+    readonly kind: FocusKind.NODE
+    readonly node: UUID
+    readonly drag: boolean
 }
 
 
-export interface SelectedInput {
-    kind: SelectedKind.INPUT
-    input: UUID
+export interface FocusInput {
+    readonly kind: FocusKind.INPUT
+    readonly input: UUID
 }
 
-export interface SelectedOutput {
-    kind: SelectedKind.OUTPUT
-    output: UUID
+export interface FocusOutput {
+    readonly kind: FocusKind.OUTPUT
+    readonly output: UUID
 }
 
-export interface SelectedBody {
-    kind: SelectedKind.BODY
-    body: UUID
+export interface FocusBody {
+    readonly kind: FocusKind.BODY
+    readonly body: UUID
 }
 
-export interface SelectedNone {
-    kind: SelectedKind.NONE
+export interface FocusFinder {
+    readonly kind: FocusKind.FINDER,
+    readonly search: string
+    readonly options: Readonly<string[]>
 }
 
-export type Selected =
-    | SelectedNode
-    | SelectedInput
-    | SelectedOutput
-    | SelectedBody
-    | SelectedNone
+export enum PointerActionKind { PAN, ZOOM, NONE }
+
+export interface PointerActionPan {
+    readonly kind: PointerActionKind.PAN
+}
+
+export interface PointerActionZoom {
+    readonly kind: PointerActionKind.ZOOM
+    readonly pointerDistance: number
+    readonly pointerCenter: Position
+}
+
+export interface PointerActionNone {
+    readonly kind: PointerActionKind.NONE
+}
+
+export type PointerAction =
+    | PointerActionPan
+    | PointerActionZoom
+    | PointerActionNone
+
+export interface FocusNone {
+    readonly kind: FocusKind.NONE
+    readonly pointerAction: PointerAction
+}
+
+export type Focus =
+    | FocusNode
+    | FocusInput
+    | FocusOutput
+    | FocusBody
+    | FocusFinder
+    | FocusNone
 
 export interface State {
     readonly graph: Graph
     readonly nodeOrder: Readonly<UUID[]>
-    readonly zooming: boolean
-    readonly dragging: boolean
     readonly pointers: Readonly<Pointer[]>
-    readonly pointerDistance: number
-    readonly pointerCenter: Position
-    readonly selected: Selected
+    readonly focus: Focus
+    readonly openFinderFirstClick: boolean
     readonly nodePlacementLocation: Position
-    readonly finder: Finder
-    readonly virtualKeyboard: VirtualKeyboard
-    readonly inputTarget: InputTarget
     readonly camera: Readonly<Matrix3x3>
     readonly operations: Readonly<Operations>
     readonly theme: Theme
@@ -115,33 +98,22 @@ export interface State {
 export const emptyState = (): State => ({
     graph: emptyGraph(),
     nodeOrder: [],
-    zooming: false,
-    dragging: false,
     pointers: [],
-    pointerDistance: 0,
-    pointerCenter: { x: 0, y: 0 },
     camera: identity(),
-    selected: { kind: SelectedKind.NONE },
+    focus: {
+        kind: FocusKind.NONE,
+        pointerAction: { kind: PointerActionKind.NONE }
+    },
+    openFinderFirstClick: false,
     theme: {
         background: { red: 2, green: 22, blue: 39, alpha: 255 },
         node: { red: 41, green: 95, blue: 120, alpha: 255 },
-        selectedNode: { red: 23, green: 54, blue: 69, alpha: 255 },
+        focusNode: { red: 23, green: 54, blue: 69, alpha: 255 },
         input: { red: 188, green: 240, blue: 192, alpha: 255 },
-        selectedInput: { red: 175, green: 122, blue: 208, alpha: 255 },
+        focusInput: { red: 175, green: 122, blue: 208, alpha: 255 },
         connection: { red: 255, green: 255, blue: 255, alpha: 255 },
     },
     nodePlacementLocation: { x: 0, y: 0 },
-    finder: {
-        search: '',
-        options: [],
-        show: false,
-        openTimeout: false
-    },
-    virtualKeyboard: {
-        show: false,
-        kind: VirtualKeyboardKind.ALPHABETIC
-    },
-    inputTarget: { kind: InputTargetKind.NONE },
     operations: {}
 })
 

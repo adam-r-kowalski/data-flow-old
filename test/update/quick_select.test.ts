@@ -1,6 +1,8 @@
 import { Model } from "../../src/model"
 import { emptyModel } from "../../src/model/empty"
+import { FocusKind } from "../../src/model/focus"
 import { Operations } from "../../src/model/graph"
+import { PointerActionKind } from "../../src/model/pointer_action"
 import { QuickSelectKind } from "../../src/model/quick_select"
 import { addNodeToGraph, EventKind, update } from "../../src/update"
 
@@ -38,11 +40,15 @@ test("pressing i with nothing focused launches quick select for inputs", () => {
     })
     const expectedModel: Model = {
         ...model1,
-        quickSelect: {
-            kind: QuickSelectKind.INPUT,
-            hotkeys: {
-                [inputs[0]]: 'a',
-                [inputs[1]]: 'b'
+        focus: {
+            kind: FocusKind.NONE,
+            pointerAction: { kind: PointerActionKind.NONE },
+            quickSelect: {
+                kind: QuickSelectKind.INPUT,
+                hotkeys: {
+                    [inputs[0]]: 'a',
+                    [inputs[1]]: 'b'
+                }
             }
         }
     }

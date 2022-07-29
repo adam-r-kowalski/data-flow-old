@@ -1,10 +1,8 @@
-import { AppEvent } from ".";
 import { Model } from "../model";
 import { UUID } from "../model/graph";
-import { QuickSelectKind } from "../model/quick_select";
-import { UpdateResult } from "../ui/run";
+import { QuickSelect, QuickSelectKind } from "../model/quick_select";
 
-export const quickSelect = (model: Model, key: string): UpdateResult<Model, AppEvent> => {
+export const maybeTriggerQuickSelect = (model: Model, key: string): QuickSelect => {
     switch (key) {
         case 'i':
             const hotkeys: { [input: UUID]: string } = {}
@@ -12,16 +10,10 @@ export const quickSelect = (model: Model, key: string): UpdateResult<Model, AppE
                 hotkeys[input] = String.fromCharCode(97 + i)
             })
             return {
-                model: {
-                    ...model,
-                    quickSelect: {
-                        kind: QuickSelectKind.INPUT,
-                        hotkeys
-                    }
-                },
-                render: true
+                kind: QuickSelectKind.INPUT,
+                hotkeys
             }
         default:
-            return { model }
+            return { kind: QuickSelectKind.NONE }
     }
 }

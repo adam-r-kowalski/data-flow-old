@@ -8,7 +8,8 @@ import { PointerAction, PointerActionKind } from '../model/pointer_action'
 import { GenerateUUID, Operation, Operations, Position, UUID } from '../model/graph'
 import { Pointer } from "../ui"
 import { addEdge, addNode, changeBodyValue, changeNodePosition, removeInputEdge, removeNode, removeOutputEdges } from "./graph"
-import { quickSelect } from "./quick_select"
+import { maybeTriggerQuickSelect } from "./quick_select"
+import { QuickSelectKind } from "../model/quick_select"
 
 export enum EventKind {
     POINTER_MOVE,
@@ -146,7 +147,8 @@ const pointerDown = (model: Model, event: PointerDown): UpdateResult<Model, AppE
                 openFinderFirstClick: false,
                 focus: {
                     kind: FocusKind.NONE,
-                    pointerAction
+                    pointerAction,
+                    quickSelect: { kind: QuickSelectKind.NONE }
                 },
                 pointers
             }
@@ -157,7 +159,8 @@ const pointerDown = (model: Model, event: PointerDown): UpdateResult<Model, AppE
                 ...model,
                 focus: {
                     kind: FocusKind.NONE,
-                    pointerAction: { kind: PointerActionKind.PAN }
+                    pointerAction: { kind: PointerActionKind.PAN },
+                    quickSelect: { kind: QuickSelectKind.NONE }
                 },
                 pointers
             }
@@ -176,7 +179,8 @@ const pointerUp = (model: Model, event: PointerUp): UpdateResult<Model, AppEvent
                         pointers,
                         focus: {
                             kind: FocusKind.NONE,
-                            pointerAction: { kind: PointerActionKind.PAN }
+                            pointerAction: { kind: PointerActionKind.PAN },
+                            quickSelect: { kind: QuickSelectKind.NONE }
                         },
                     }
                 }
@@ -186,7 +190,8 @@ const pointerUp = (model: Model, event: PointerUp): UpdateResult<Model, AppEvent
                         pointers,
                         focus: {
                             kind: FocusKind.NONE,
-                            pointerAction: { kind: PointerActionKind.NONE }
+                            pointerAction: { kind: PointerActionKind.NONE },
+                            quickSelect: { kind: QuickSelectKind.NONE }
                         },
                     }
                 }
@@ -239,7 +244,8 @@ const pointerMove = (model: Model, event: PointerMove): UpdateResult<Model, AppE
                     }
                     const focus: Focus = {
                         kind: FocusKind.NONE,
-                        pointerAction
+                        pointerAction,
+                        quickSelect: { kind: QuickSelectKind.NONE }
                     }
                     if (previousPointerAction.pointerDistance > 0) {
                         const move = translate(x, y)
@@ -290,7 +296,8 @@ const clickedNode = (model: Model, event: ClickedNode): UpdateResult<Model, AppE
             focus: {
                 kind: FocusKind.NODE,
                 node: event.node,
-                drag: true
+                drag: true,
+                quickSelect: { kind: QuickSelectKind.NONE }
             },
             nodeOrder
         },
@@ -313,7 +320,8 @@ const clearFocus = (model: Model): Model => ({
     ...model,
     focus: {
         kind: FocusKind.NONE,
-        pointerAction: { kind: PointerActionKind.NONE }
+        pointerAction: { kind: PointerActionKind.NONE },
+        quickSelect: { kind: QuickSelectKind.NONE }
     }
 })
 
@@ -342,7 +350,11 @@ const clickedInput = (model: Model, event: ClickedInput, generateUUID: GenerateU
         return {
             model: {
                 ...model,
-                focus: { kind: FocusKind.INPUT, input: event.input }
+                focus: {
+                    kind: FocusKind.INPUT,
+                    input: event.input,
+                    quickSelect: { kind: QuickSelectKind.NONE }
+                }
             },
             render: true
         }
@@ -374,7 +386,11 @@ const clickedOutput = (model: Model, event: ClickedOutput, generateUUID: Generat
         return {
             model: {
                 ...model,
-                focus: { kind: FocusKind.OUTPUT, output: event.output },
+                focus: {
+                    kind: FocusKind.OUTPUT,
+                    output: event.output,
+                    quickSelect: { kind: QuickSelectKind.NONE }
+                },
             },
             render: true
         }
@@ -398,6 +414,7 @@ export const openFinder = (model: Model): Model => ({
         kind: FocusKind.FINDER,
         search: '',
         options: Object.keys(model.operations),
+        quickSelect: { kind: QuickSelectKind.NONE }
     },
     openFinderFirstClick: false
 })
@@ -424,7 +441,8 @@ const updateFinderSearch = (model: Model, focus: FocusFinder, transform: (search
             focus: {
                 kind: FocusKind.FINDER,
                 options: finderOptions(model.operations, search),
-                search
+                search,
+                quickSelect: { kind: QuickSelectKind.NONE }
             }
         },
         render: true
@@ -574,7 +592,16 @@ const keyDown = (model: Model, { key }: KeyDown, generateUUID: GenerateUUID): Up
         case FocusKind.NONE:
             return key == 'f' ?
                 { model: openFinder(model), render: true } :
-                quickSelect(model, key)
+                {
+                    model: {
+                        ...model,
+                        focus: {
+                            ...model.focus,
+                            quickSelect: maybeTriggerQuickSelect(model, key),
+                        }
+                    },
+                    render: true
+                }
     }
 }
 
@@ -637,7 +664,8 @@ export const openNumericKeyboard = (model: Model, body: UUID): Model => ({
     ...model,
     focus: {
         kind: FocusKind.BODY,
-        body
+        body,
+        quickSelect: { kind: QuickSelectKind.NONE }
     }
 })
 
@@ -667,7 +695,8 @@ const clickedBackground = (model: Model): UpdateResult<Model, AppEvent> => {
                 openFinderFirstClick: true,
                 focus: {
                     kind: FocusKind.NONE,
-                    pointerAction: { kind: PointerActionKind.PAN }
+                    pointerAction: { kind: PointerActionKind.PAN },
+                    quickSelect: { kind: QuickSelectKind.NONE }
                 }
             },
             schedule: [

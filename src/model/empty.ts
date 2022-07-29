@@ -12,12 +12,12 @@ export const emptyModel = (): Model => ({
     camera: identity(),
     focus: {
         kind: FocusKind.NONE,
-        pointerAction: { kind: PointerActionKind.NONE }
+        pointerAction: { kind: PointerActionKind.NONE },
+        quickSelect: { kind: QuickSelectKind.NONE }
     },
     openFinderFirstClick: false,
     nodePlacementLocation: { x: 0, y: 0 },
     operations: {},
-    quickSelect: { kind: QuickSelectKind.NONE },
     theme: {
         background: { red: 2, green: 22, blue: 39, alpha: 255 },
         node: { red: 41, green: 95, blue: 120, alpha: 255 },

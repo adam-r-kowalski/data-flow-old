@@ -1,6 +1,8 @@
 import { CrossAxisAlignment, MainAxisAlignment } from "../ui/alignment"
 import { AppEvent, EventKind } from "../update"
-import { Focus, FocusFinder, FocusKind, Model, Theme } from "../model"
+import { Model } from "../model"
+import { Theme } from '../model/theme'
+import { Focus, FocusFinder, FocusKind } from "../model/focus"
 import { text, stack, scene, row, container, column, Connection, UI } from '../ui'
 import { Body, Graph, Input, Output, UUID } from "../model/graph"
 import { contextMenu } from "./context_menu"

@@ -1,7 +1,8 @@
 import { AppEvent, EventKind, update } from "./update"
 import { run, transformPointer } from "./ui/run"
 import { view } from './view'
-import { demoModel, Model } from "./model"
+import { Model } from "./model"
+import { demoModel } from "./model/demo"
 import { Document } from './ui/dom'
 import { ProgramKind } from "./ui/webgl2"
 

@@ -2,8 +2,11 @@ import { addNodeToGraph, EventKind, openFinder, openNumericKeyboard, update } fr
 import { Operations } from "../src/model/graph"
 import { addEdge, changeNodePosition } from "../src/update/graph"
 import { translate } from "../src/linear_algebra/matrix3x3"
-import { emptyModel, Model, FocusKind, PointerActionKind } from "../src/model"
+import { Model } from "../src/model"
+import { FocusKind } from "../src/model/focus"
+import { PointerActionKind } from "../src/model/pointer_action"
 import { Pointer } from "../src/ui"
+import { emptyModel } from "../src/model/empty"
 
 const makeGenerateUUID = (model: { i: number } = { i: 0 }) => {
     return () => {

@@ -1,7 +1,7 @@
 import { AppEvent, EventKind } from "../../../src/event"
 import { Body, emptyGraph, Graph, Input, Node, Output } from "../../../src/graph/model"
 import { identity } from "../../../src/linear_algebra/matrix3x3"
-import { InputTargetKind, Selected, SelectedKind, State, Theme, VirtualKeyboardKind } from "../../../src/state"
+import { Focus, FocusFinder, FocusKind, PointerActionKind, State, Theme } from "../../../src/state"
 import { column, container, row, scene, stack, text } from "../../../src/ui"
 import { CrossAxisAlignment, MainAxisAlignment } from "../../../src/ui/alignment"
 import {
@@ -18,7 +18,6 @@ import {
     spacer,
     view,
     virtualKey,
-    virtualKeyboard,
     virtualKeys,
 } from "../../../src/ui/view"
 import { contextMenu } from "../../../src/ui/view/context_menu"
@@ -34,19 +33,20 @@ test("intersperse", () => {
 const theme: Theme = {
     background: { red: 2, green: 22, blue: 39, alpha: 255 },
     node: { red: 41, green: 95, blue: 120, alpha: 255 },
-    selectedNode: { red: 23, green: 54, blue: 69, alpha: 255 },
+    focusNode: { red: 23, green: 54, blue: 69, alpha: 255 },
     input: { red: 188, green: 240, blue: 192, alpha: 255 },
-    selectedInput: { red: 175, green: 122, blue: 208, alpha: 255 },
+    focusInput: { red: 175, green: 122, blue: 208, alpha: 255 },
     connection: { red: 255, green: 255, blue: 255, alpha: 255 },
 }
 
-test("inputUi not selected", () => {
+test("inputUi not focused", () => {
     const input: Input = {
         uuid: 'uuid',
         node: 'node',
         name: 'name',
     }
-    const actual = inputUi(theme, input, { kind: SelectedKind.NONE })
+    const focus: Focus = { kind: FocusKind.NONE, pointerAction: { kind: PointerActionKind.NONE } }
+    const actual = inputUi(theme, input, focus)
     const expected = container<AppEvent>({
         onClick: {
             kind: EventKind.CLICKED_INPUT,
@@ -67,13 +67,13 @@ test("inputUi not selected", () => {
     expect(actual).toEqual(expected)
 })
 
-test("inputUi selected", () => {
+test("inputUi focused", () => {
     const input: Input = {
         uuid: 'uuid',
         node: 'node',
         name: 'name'
     }
-    const actual = inputUi(theme, input, { kind: SelectedKind.INPUT, input: 'uuid' })
+    const actual = inputUi(theme, input, { kind: FocusKind.INPUT, input: 'uuid' })
     const expected = container<AppEvent>({
         onClick: {
             kind: EventKind.CLICKED_INPUT,
@@ -85,7 +85,7 @@ test("inputUi selected", () => {
                 id: 'uuid',
                 width: 14,
                 height: 14,
-                color: theme.selectedInput,
+                color: theme.focusInput,
             }),
             spacer(4),
             text('name')
@@ -112,26 +112,27 @@ test("inputsUi", () => {
             name: "third",
         }
     ]
-    const selected: Selected = { kind: SelectedKind.INPUT, input: 'third' }
-    const actual = inputsUi(theme, inputs, selected)
+    const focus: Focus = { kind: FocusKind.INPUT, input: 'third' }
+    const actual = inputsUi(theme, inputs, focus)
     const expected = column([
-        inputUi(theme, inputs[0], selected),
+        inputUi(theme, inputs[0], focus),
         spacer(4),
-        inputUi(theme, inputs[1], selected),
+        inputUi(theme, inputs[1], focus),
         spacer(4),
-        inputUi(theme, inputs[2], selected),
+        inputUi(theme, inputs[2], focus),
     ])
     expect(actual).toEqual(expected)
 })
 
-test("outputUi not selected", () => {
+test("outputUi not focused", () => {
     const output: Output = {
         uuid: 'uuid',
         node: 'node',
         name: 'name',
         edges: []
     }
-    const actual = outputUi(theme, output, { kind: SelectedKind.NONE })
+    const focus: Focus = { kind: FocusKind.NONE, pointerAction: { kind: PointerActionKind.NONE } }
+    const actual = outputUi(theme, output, focus)
     const expected = container<AppEvent>({
         onClick: {
             kind: EventKind.CLICKED_OUTPUT,
@@ -152,14 +153,14 @@ test("outputUi not selected", () => {
     expect(actual).toEqual(expected)
 })
 
-test("outputUi selected", () => {
+test("outputUi focused", () => {
     const output: Output = {
         uuid: "uuid",
         node: 'node',
         name: 'name',
         edges: []
     }
-    const actual = outputUi(theme, output, { kind: SelectedKind.OUTPUT, output: 'uuid' })
+    const actual = outputUi(theme, output, { kind: FocusKind.OUTPUT, output: 'uuid' })
     const expected = container<AppEvent>({
         onClick: {
             kind: EventKind.CLICKED_OUTPUT,
@@ -173,7 +174,7 @@ test("outputUi selected", () => {
                 id: 'uuid',
                 width: 14,
                 height: 14,
-                color: theme.selectedInput,
+                color: theme.focusInput,
             }),
         ])
     )
@@ -201,25 +202,26 @@ test("outputsUi", () => {
             edges: []
         }
     ]
-    const selected: Selected = { kind: SelectedKind.OUTPUT, output: 'third' }
-    const actual = outputsUi(theme, outputs, selected)
+    const focus: Focus = { kind: FocusKind.OUTPUT, output: 'third' }
+    const actual = outputsUi(theme, outputs, focus)
     const expected = column([
-        outputUi(theme, outputs[0], selected),
+        outputUi(theme, outputs[0], focus),
         spacer(4),
-        outputUi(theme, outputs[1], selected),
+        outputUi(theme, outputs[1], focus),
         spacer(4),
-        outputUi(theme, outputs[2], selected),
+        outputUi(theme, outputs[2], focus),
     ])
     expect(actual).toEqual(expected)
 })
 
-test("numberUi not selected", () => {
+test("numberUi not focused", () => {
     const body: Body = {
         uuid: 'body uuid',
         node: 'node',
         value: 0,
     }
-    const actual = numberUi(theme, body, { kind: SelectedKind.NONE })
+    const focus: Focus = { kind: FocusKind.NONE, pointerAction: { kind: PointerActionKind.NONE } }
+    const actual = numberUi(theme, body, focus)
     const expected = container({
         color: theme.background,
         padding: 5,
@@ -238,9 +240,9 @@ test("numberUi editing", () => {
         node: 'node',
         value: 0,
     }
-    const actual = numberUi(theme, body, { kind: SelectedKind.BODY, body: 'body uuid' })
+    const actual = numberUi(theme, body, { kind: FocusKind.BODY, body: 'body uuid' })
     const expected = container({
-        color: theme.selectedInput,
+        color: theme.focusInput,
         padding: 5,
         onClick: {
             kind: EventKind.CLICKED_NUMBER,
@@ -263,7 +265,8 @@ test("nodeUi no inputs body or outputs", () => {
         ...emptyGraph(),
         nodes: { [node.uuid]: node }
     }
-    const actual = nodeUi(theme, node.uuid, graph, { kind: SelectedKind.NONE })
+    const focus: Focus = { kind: FocusKind.NONE, pointerAction: { kind: PointerActionKind.NONE } }
+    const actual = nodeUi(theme, node.uuid, graph, focus)
     const expected = container<AppEvent>(
         {
             color: theme.node,
@@ -302,8 +305,8 @@ test("nodeUi 1 input, no body and no outputs", () => {
         nodes: { [node.uuid]: node },
         inputs: { [input.uuid]: input }
     }
-    const selected: Selected = { kind: SelectedKind.NONE }
-    const actual = nodeUi(theme, node.uuid, graph, selected)
+    const focus: Focus = { kind: FocusKind.NONE, pointerAction: { kind: PointerActionKind.NONE } }
+    const actual = nodeUi(theme, node.uuid, graph, focus)
     const expected = container<AppEvent>(
         {
             color: theme.node,
@@ -318,7 +321,7 @@ test("nodeUi 1 input, no body and no outputs", () => {
         column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             text("node"),
             spacer(4),
-            row([inputsUi(theme, node.inputs.map(i => graph.inputs[i]), selected)])
+            row([inputsUi(theme, node.inputs.map(i => graph.inputs[i]), focus)])
         ])
     )
     expect(actual).toEqual(expected)
@@ -343,8 +346,8 @@ test("nodeUi 1 output, no body and no inputs", () => {
         nodes: { [node.uuid]: node },
         outputs: { [output.uuid]: output }
     }
-    const selected: Selected = { kind: SelectedKind.NONE }
-    const actual = nodeUi(theme, node.uuid, graph, selected)
+    const focus: Focus = { kind: FocusKind.NONE, pointerAction: { kind: PointerActionKind.NONE } }
+    const actual = nodeUi(theme, node.uuid, graph, focus)
     const expected = container<AppEvent>(
         {
             color: theme.node,
@@ -359,7 +362,7 @@ test("nodeUi 1 output, no body and no inputs", () => {
         column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             text("node"),
             spacer(4),
-            row([outputsUi(theme, node.outputs.map(o => graph.outputs[o]), selected)])
+            row([outputsUi(theme, node.outputs.map(o => graph.outputs[o]), focus)])
         ])
     )
     expect(actual).toEqual(expected)
@@ -384,8 +387,8 @@ test("nodeUi no inputs or outputs but body defined", () => {
         nodes: { [node.uuid]: node },
         bodys: { [body.uuid]: body }
     }
-    const selected: Selected = { kind: SelectedKind.NONE }
-    const actual = nodeUi(theme, node.uuid, graph, selected)
+    const focus: Focus = { kind: FocusKind.NONE, pointerAction: { kind: PointerActionKind.NONE } }
+    const actual = nodeUi(theme, node.uuid, graph, focus)
     const expected = container<AppEvent>(
         {
             color: theme.node,
@@ -400,7 +403,7 @@ test("nodeUi no inputs or outputs but body defined", () => {
         column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             text("node"),
             spacer(4),
-            row([numberUi(theme, body, selected), spacer(15)])
+            row([numberUi(theme, body, focus), spacer(15)])
         ])
     )
     expect(actual).toEqual(expected)
@@ -431,8 +434,8 @@ test("nodeUi 1 input and 1 output but no body", () => {
         inputs: { [input.uuid]: input },
         outputs: { [output.uuid]: output }
     }
-    const selected: Selected = { kind: SelectedKind.NONE }
-    const actual = nodeUi(theme, node.uuid, graph, selected)
+    const focus: Focus = { kind: FocusKind.NONE, pointerAction: { kind: PointerActionKind.NONE } }
+    const actual = nodeUi(theme, node.uuid, graph, focus)
     const expected = container<AppEvent>(
         {
             color: theme.node,
@@ -448,9 +451,9 @@ test("nodeUi 1 input and 1 output but no body", () => {
             text("node"),
             spacer(4),
             row([
-                inputsUi(theme, node.inputs.map(i => graph.inputs[i]), selected),
+                inputsUi(theme, node.inputs.map(i => graph.inputs[i]), focus),
                 spacer(15),
-                outputsUi(theme, node.outputs.map(o => graph.outputs[o]), selected)
+                outputsUi(theme, node.outputs.map(o => graph.outputs[o]), focus)
             ])
         ])
     )
@@ -482,8 +485,8 @@ test("nodeUi 1 input body but no outputs", () => {
         inputs: { [input.uuid]: input },
         bodys: { [body.uuid]: body }
     }
-    const selected: Selected = { kind: SelectedKind.NONE }
-    const actual = nodeUi(theme, node.uuid, graph, selected)
+    const focus: Focus = { kind: FocusKind.NONE, pointerAction: { kind: PointerActionKind.NONE } }
+    const actual = nodeUi(theme, node.uuid, graph, focus)
     const expected = container<AppEvent>(
         {
             color: theme.node,
@@ -499,8 +502,8 @@ test("nodeUi 1 input body but no outputs", () => {
             text("node"),
             spacer(4),
             row([
-                inputsUi(theme, node.inputs.map(i => graph.inputs[i]), selected),
-                numberUi(theme, body, selected),
+                inputsUi(theme, node.inputs.map(i => graph.inputs[i]), focus),
+                numberUi(theme, body, focus),
                 spacer(15),
             ])
         ])
@@ -534,8 +537,8 @@ test("nodeUi 1 output body but no inputs", () => {
         outputs: { [output.uuid]: output },
         bodys: { [body.uuid]: body }
     }
-    const selected: Selected = { kind: SelectedKind.NONE }
-    const actual = nodeUi(theme, node.uuid, graph, selected)
+    const focus: Focus = { kind: FocusKind.NONE, pointerAction: { kind: PointerActionKind.NONE } }
+    const actual = nodeUi(theme, node.uuid, graph, focus)
     const expected = container<AppEvent>(
         {
             color: theme.node,
@@ -551,9 +554,9 @@ test("nodeUi 1 output body but no inputs", () => {
             text("node"),
             spacer(4),
             row([
-                numberUi(theme, body, selected),
+                numberUi(theme, body, focus),
                 spacer(15),
-                outputsUi(theme, node.outputs.map(o => graph.outputs[o]), selected),
+                outputsUi(theme, node.outputs.map(o => graph.outputs[o]), focus),
             ])
         ])
     )
@@ -593,8 +596,8 @@ test("nodeUi 1 input body and 1 output", () => {
         outputs: { [output.uuid]: output },
         bodys: { [body.uuid]: body }
     }
-    const selected: Selected = { kind: SelectedKind.NONE }
-    const actual = nodeUi(theme, node.uuid, graph, selected)
+    const focus: Focus = { kind: FocusKind.NONE, pointerAction: { kind: PointerActionKind.NONE } }
+    const actual = nodeUi(theme, node.uuid, graph, focus)
     const expected = container<AppEvent>(
         {
             color: theme.node,
@@ -610,11 +613,11 @@ test("nodeUi 1 input body and 1 output", () => {
             text("node"),
             spacer(4),
             row([
-                inputsUi(theme, node.inputs.map(i => graph.inputs[i]), selected),
+                inputsUi(theme, node.inputs.map(i => graph.inputs[i]), focus),
                 spacer(15),
-                numberUi(theme, body, selected),
+                numberUi(theme, body, focus),
                 spacer(15),
-                outputsUi(theme, node.outputs.map(o => graph.outputs[o]), selected),
+                outputsUi(theme, node.outputs.map(o => graph.outputs[o]), focus),
             ])
         ])
     )
@@ -622,7 +625,7 @@ test("nodeUi 1 input body and 1 output", () => {
 })
 
 test("finder", () => {
-    const actual = finder({ search: "text", options: ["foo", "bar"], show: true, openTimeout: false }, theme)
+    const actual = finder({ kind: FocusKind.FINDER, search: "text", options: ["foo", "bar"] }, theme)
     const expected = column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
         container({ height: 10 }),
         container({ color: theme.node, padding: 4 },
@@ -745,19 +748,6 @@ test("numeric virtual keyboard", () => {
     expect(actual).toEqual(expected)
 })
 
-test("virtual keyboard numeric", () => {
-    const actual = virtualKeyboard(theme, VirtualKeyboardKind.NUMERIC)
-    const expected = numericVirtualKeyboard(theme)
-    expect(actual).toEqual(expected)
-})
-
-
-test("virtual keyboard alphabetic", () => {
-    const actual = virtualKeyboard(theme, VirtualKeyboardKind.ALPHABETIC)
-    const expected = alphabeticVirtualKeyboard(theme)
-    expect(actual).toEqual(expected)
-})
-
 test("view with no nodes or edges", () => {
     const state: State = {
         graph: {
@@ -768,26 +758,15 @@ test("view with no nodes or edges", () => {
             bodys: {}
         },
         nodeOrder: [],
-        zooming: false,
-        dragging: false,
         pointers: [],
-        pointerDistance: 0,
-        pointerCenter: { x: 0, y: 0 },
         nodePlacementLocation: { x: 0, y: 0 },
-        finder: {
-            search: "",
-            options: [],
-            show: false,
-            openTimeout: false
+        focus: {
+            kind: FocusKind.NONE,
+            pointerAction: { kind: PointerActionKind.NONE }
         },
-        virtualKeyboard: {
-            show: false,
-            kind: VirtualKeyboardKind.ALPHABETIC
-        },
-        inputTarget: { kind: InputTargetKind.NONE },
-        selected: { kind: SelectedKind.NONE },
         camera: identity(),
         operations: {},
+        openFinderFirstClick: false,
         theme
     }
     const actual = view(state)
@@ -808,24 +787,14 @@ test("view with no nodes or edges but finder shown", () => {
             bodys: {}
         },
         nodeOrder: [],
-        zooming: false,
-        dragging: false,
         pointers: [],
-        pointerDistance: 0,
-        pointerCenter: { x: 0, y: 0 },
         nodePlacementLocation: { x: 0, y: 0 },
-        finder: {
+        focus: {
+            kind: FocusKind.FINDER,
             search: "",
             options: [],
-            show: true,
-            openTimeout: false
         },
-        virtualKeyboard: {
-            show: false,
-            kind: VirtualKeyboardKind.ALPHABETIC
-        },
-        inputTarget: { kind: InputTargetKind.NONE },
-        selected: { kind: SelectedKind.NONE },
+        openFinderFirstClick: false,
         camera: identity(),
         operations: {},
         theme
@@ -834,94 +803,8 @@ test("view with no nodes or edges but finder shown", () => {
     const expected = stack([
         container({ color: state.theme.background, onClick: { kind: EventKind.CLICKED_BACKGROUND } }),
         scene({ camera: state.camera, children: [], connections: [] }),
-        finder(state.finder, state.theme)
-    ])
-    expect(actual).toEqual(expected)
-})
-
-test("view with no nodes or edges but virtual keyboard shown", () => {
-    const state: State = {
-        graph: {
-            nodes: {},
-            edges: {},
-            inputs: {},
-            outputs: {},
-            bodys: {}
-        },
-        nodeOrder: [],
-        zooming: false,
-        dragging: false,
-        pointers: [],
-        pointerDistance: 0,
-        pointerCenter: { x: 0, y: 0 },
-        nodePlacementLocation: { x: 0, y: 0 },
-        finder: {
-            search: "",
-            options: [],
-            show: false,
-            openTimeout: false
-        },
-        virtualKeyboard: {
-            show: true,
-            kind: VirtualKeyboardKind.ALPHABETIC
-        },
-        inputTarget: { kind: InputTargetKind.NONE },
-        selected: { kind: SelectedKind.NONE },
-        camera: identity(),
-        operations: {},
-        theme
-    }
-    const actual = view(state)
-    const expected = stack([
-        container({ color: state.theme.background, onClick: { kind: EventKind.CLICKED_BACKGROUND } }),
-        scene({ camera: state.camera, children: [], connections: [] }),
-        virtualKeyboard(state.theme, state.virtualKeyboard.kind)
-    ])
-    expect(actual).toEqual(expected)
-})
-
-
-test("view with no nodes or edges but finder and virtual keyboard shown", () => {
-    const state: State = {
-        graph: {
-            nodes: {},
-            edges: {},
-            inputs: {},
-            outputs: {},
-            bodys: {}
-        },
-        nodeOrder: [],
-        zooming: false,
-        dragging: false,
-        pointers: [],
-        pointerDistance: 0,
-        pointerCenter: { x: 0, y: 0 },
-        nodePlacementLocation: {
-            x: 0,
-            y: 0,
-        },
-        finder: {
-            search: "",
-            options: [],
-            show: true,
-            openTimeout: false,
-        },
-        virtualKeyboard: {
-            show: true,
-            kind: VirtualKeyboardKind.ALPHABETIC
-        },
-        inputTarget: { kind: InputTargetKind.NONE },
-        selected: { kind: SelectedKind.NONE },
-        camera: identity(),
-        operations: {},
-        theme
-    }
-    const actual = view(state)
-    const expected = stack([
-        container({ color: state.theme.background, onClick: { kind: EventKind.CLICKED_BACKGROUND } }),
-        scene({ camera: state.camera, children: [], connections: [] }),
-        finder(state.finder, state.theme),
-        virtualKeyboard(state.theme, state.virtualKeyboard.kind)
+        finder(state.focus as FocusFinder, state.theme),
+        alphabeticVirtualKeyboard(state.theme)
     ])
     expect(actual).toEqual(expected)
 })
@@ -958,27 +841,16 @@ test("view with three nodes and no edges", () => {
             bodys: {}
         },
         nodeOrder: ["first", "second", "third"],
-        zooming: false,
-        dragging: false,
         pointers: [],
-        pointerDistance: 0,
-        pointerCenter: { x: 0, y: 0 },
         nodePlacementLocation: {
             x: 0,
             y: 0,
         },
-        finder: {
-            search: "",
-            options: [],
-            show: false,
-            openTimeout: false,
+        focus: {
+            kind: FocusKind.NONE,
+            pointerAction: { kind: PointerActionKind.NONE }
         },
-        virtualKeyboard: {
-            show: false,
-            kind: VirtualKeyboardKind.ALPHABETIC
-        },
-        inputTarget: { kind: InputTargetKind.NONE },
-        selected: { kind: SelectedKind.NONE },
+        openFinderFirstClick: false,
         camera: identity(),
         operations: {},
         theme
@@ -989,9 +861,9 @@ test("view with three nodes and no edges", () => {
         scene({
             camera: state.camera,
             children: [
-                nodeUi(state.theme, "first", state.graph, state.selected),
-                nodeUi(state.theme, "second", state.graph, state.selected),
-                nodeUi(state.theme, "third", state.graph, state.selected),
+                nodeUi(state.theme, "first", state.graph, state.focus),
+                nodeUi(state.theme, "second", state.graph, state.focus),
+                nodeUi(state.theme, "third", state.graph, state.focus),
             ],
             connections: []
         }),
@@ -1031,27 +903,14 @@ test("view with three nodes and no edges", () => {
             bodys: {}
         },
         nodeOrder: ["first", "second", "third"],
-        zooming: false,
-        dragging: false,
         pointers: [],
-        pointerDistance: 0,
-        pointerCenter: { x: 0, y: 0 },
         nodePlacementLocation: { x: 0, y: 0, },
-        finder: {
-            search: "",
-            options: [],
-            show: false,
-            openTimeout: false,
+        focus: {
+            kind: FocusKind.NODE,
+            node: 'first',
+            drag: false
         },
-        virtualKeyboard: {
-            show: false,
-            kind: VirtualKeyboardKind.ALPHABETIC
-        },
-        inputTarget: { kind: InputTargetKind.NONE },
-        selected: {
-            kind: SelectedKind.NODE,
-            node: 'first'
-        },
+        openFinderFirstClick: false,
         camera: identity(),
         operations: {},
         theme
@@ -1062,9 +921,9 @@ test("view with three nodes and no edges", () => {
         scene({
             camera: state.camera,
             children: [
-                nodeUi(state.theme, "first", state.graph, state.selected),
-                nodeUi(state.theme, "second", state.graph, state.selected),
-                nodeUi(state.theme, "third", state.graph, state.selected),
+                nodeUi(state.theme, "first", state.graph, state.focus),
+                nodeUi(state.theme, "second", state.graph, state.focus),
+                nodeUi(state.theme, "third", state.graph, state.focus),
             ],
             connections: []
         }),
@@ -1136,27 +995,16 @@ test("view with three nodes and one edges", () => {
             bodys: {}
         },
         nodeOrder: ["first", "second", "third"],
-        zooming: false,
-        dragging: false,
         pointers: [],
-        pointerDistance: 0,
-        pointerCenter: { x: 0, y: 0 },
         nodePlacementLocation: {
             x: 0,
             y: 0,
         },
-        finder: {
-            search: "",
-            options: [],
-            show: false,
-            openTimeout: false,
+        focus: {
+            kind: FocusKind.NONE,
+            pointerAction: { kind: PointerActionKind.NONE }
         },
-        virtualKeyboard: {
-            show: false,
-            kind: VirtualKeyboardKind.ALPHABETIC
-        },
-        inputTarget: { kind: InputTargetKind.NONE },
-        selected: { kind: SelectedKind.NONE },
+        openFinderFirstClick: false,
         camera: identity(),
         operations: {},
         theme
@@ -1167,9 +1015,9 @@ test("view with three nodes and one edges", () => {
         scene({
             camera: state.camera,
             children: [
-                nodeUi(state.theme, "first", state.graph, state.selected),
-                nodeUi(state.theme, "second", state.graph, state.selected),
-                nodeUi(state.theme, "third", state.graph, state.selected),
+                nodeUi(state.theme, "first", state.graph, state.focus),
+                nodeUi(state.theme, "second", state.graph, state.focus),
+                nodeUi(state.theme, "third", state.graph, state.focus),
             ],
             connections: [
                 {

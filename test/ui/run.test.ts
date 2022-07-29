@@ -18,24 +18,24 @@ const extractDispatch = <AppEvent>(successOrError: Success<AppEvent> | ProgramEr
 
 test("run returns a dispatch function which can run your events", () => {
     enum AppEvent { INCREMENT, DECREMENT }
-    interface State {
+    interface Model {
         value: number
     }
-    const state = { value: 0 }
-    const view = (state: State) => text<AppEvent>(state.value.toString())
-    const update = (state: State, event: AppEvent) => {
+    const model = { value: 0 }
+    const view = (model: Model) => text<AppEvent>(model.value.toString())
+    const update = (model: Model, event: AppEvent) => {
         switch (event) {
             case AppEvent.INCREMENT:
-                state.value++
+                model.value++
                 break
             case AppEvent.DECREMENT:
-                state.value--
+                model.value--
                 break
         }
-        return { state }
+        return { model }
     }
     const dispatch = extractDispatch(run({
-        state,
+        model,
         view,
         update,
         window: mockWindow(),
@@ -45,23 +45,23 @@ test("run returns a dispatch function which can run your events", () => {
         pointerDown: () => { }
     }))
     dispatch(AppEvent.INCREMENT)
-    expect(state).toEqual({ value: 1 })
+    expect(model).toEqual({ value: 1 })
 })
 
 test("if update does not return render true then view gets called once", () => {
-    type State = number
+    type Model = number
     type AppEvent = boolean
-    const state = 0
+    const model = 0
     let viewCallCount = 0
-    const view = (state: State) => {
+    const view = (model: Model) => {
         ++viewCallCount
-        return text<AppEvent>(state.toString())
+        return text<AppEvent>(model.toString())
     }
-    const update = (state: State, event: AppEvent) => {
-        return { state }
+    const update = (model: Model, event: AppEvent) => {
+        return { model }
     }
     const dispatch = extractDispatch(run({
-        state,
+        model,
         view,
         update,
         window: mockWindow(),
@@ -75,19 +75,19 @@ test("if update does not return render true then view gets called once", () => {
 })
 
 test("if update returns render true then view gets called again", () => {
-    type State = number
+    type Model = number
     type AppEvent = boolean
-    const state = 0
+    const model = 0
     let viewCallCount = 0
-    const view = (state: State) => {
+    const view = (model: Model) => {
         ++viewCallCount
-        return text<AppEvent>(state.toString())
+        return text<AppEvent>(model.toString())
     }
-    const update = (state: State, event: AppEvent) => {
-        return { state, render: true }
+    const update = (model: Model, event: AppEvent) => {
+        return { model, render: true }
     }
     const dispatch = extractDispatch(run({
-        state,
+        model,
         view,
         update,
         window: mockWindow(),
@@ -101,24 +101,24 @@ test("if update returns render true then view gets called again", () => {
 })
 
 test("if update returns scheduled events they get dispatched after some milliseconds", () => {
-    type State = number
+    type Model = number
     type AppEvent = boolean
-    const state = 0
-    const view = (state: State) => text<AppEvent>(state.toString())
+    const model = 0
+    const view = (model: Model) => text<AppEvent>(model.toString())
     const events: AppEvent[] = []
-    const update = (state: State, event: AppEvent) => {
+    const update = (model: Model, event: AppEvent) => {
         events.push(event)
         return event ? {
-            state,
+            model,
             schedule: [
                 { after: { milliseconds: 100 }, event: false },
                 { after: { milliseconds: 200 }, event: false },
             ]
-        } : { state }
+        } : { model }
     }
     const timeouts: number[] = []
     const dispatch = extractDispatch(run({
-        state,
+        model,
         view,
         update,
         window: mockWindow(),
@@ -136,21 +136,21 @@ test("if update returns scheduled events they get dispatched after some millisec
 })
 
 test("if update returns dispatch events they get dispatched immediately", () => {
-    type State = number
+    type Model = number
     type AppEvent = boolean
-    const state = 0
-    const view = (state: State) => text<AppEvent>(state.toString())
+    const model = 0
+    const view = (model: Model) => text<AppEvent>(model.toString())
     const events: AppEvent[] = []
-    const update = (state: State, event: AppEvent) => {
+    const update = (model: Model, event: AppEvent) => {
         events.push(event)
         return event ? {
-            state,
+            model,
             dispatch: [false, false]
-        } : { state }
+        } : { model }
     }
     const timeouts: number[] = []
     const dispatch = extractDispatch(run({
-        state,
+        model,
         view,
         update,
         window: mockWindow(),
@@ -168,22 +168,22 @@ test("if update returns dispatch events they get dispatched immediately", () => 
 })
 
 test("pointer down events can lead to on click handlers firing", () => {
-    type State = number
+    type Model = number
     enum AppEvent { A, B }
-    const state: State = 0
-    const view = (state: State) => row([
+    const model: Model = 0
+    const view = (model: Model) => row([
         container({ onClick: AppEvent.A, width: 50, height: 50 }),
         container({ onClick: AppEvent.B, width: 50, height: 50 }),
     ])
     const events: AppEvent[] = []
-    const update = (state: State, event: AppEvent) => {
+    const update = (model: Model, event: AppEvent) => {
         events.push(event)
-        return { state }
+        return { model }
     }
     const document = mockDocument()
     let pointers: Pointer[] = []
     run({
-        state,
+        model,
         view,
         update,
         window: mockWindow(),
@@ -225,18 +225,18 @@ test("pointer down events can lead to on click handlers firing", () => {
 })
 
 test("resize events trigger a rerender", () => {
-    type State = number
+    type Model = number
     type AppEvent = boolean
-    const state: State = 0
+    const model: Model = 0
     let viewCallCount = 0
-    const view = (state: State): UI<AppEvent> => {
+    const view = (model: Model): UI<AppEvent> => {
         ++viewCallCount
-        return text(state.toString())
+        return text(model.toString())
     }
-    const update = (state: State, event: AppEvent) => ({ state })
+    const update = (model: Model, event: AppEvent) => ({ model })
     const window = mockWindow()
     run({
-        state,
+        model,
         view,
         update,
         window,
@@ -251,14 +251,14 @@ test("resize events trigger a rerender", () => {
 })
 
 test("simulate failure", () => {
-    type State = number
+    type Model = number
     type AppEvent = boolean
-    const state: State = 0
-    const view = (state: State): UI<AppEvent> => text(state.toString())
-    const update = (state: State, event: AppEvent) => ({ state })
+    const model: Model = 0
+    const view = (model: Model): UI<AppEvent> => text(model.toString())
+    const update = (model: Model, event: AppEvent) => ({ model })
     const window = mockWindow()
     const error = run({
-        state,
+        model,
         view,
         update,
         window,

@@ -1,8 +1,8 @@
-import { CrossAxisAlignment, MainAxisAlignment } from "../alignment"
-import { AppEvent, EventKind } from "../../event"
-import { Focus, FocusFinder, FocusKind, State, Theme } from "../../state"
-import { text, stack, scene, row, container, column, Connection, UI } from '..'
-import { Body, Graph, Input, Output, UUID } from "../../graph/model"
+import { CrossAxisAlignment, MainAxisAlignment } from "../ui/alignment"
+import { AppEvent, EventKind } from "../update"
+import { Focus, FocusFinder, FocusKind, Model, Theme } from "../model"
+import { text, stack, scene, row, container, column, Connection, UI } from '../ui'
+import { Body, Graph, Input, Output, UUID } from "../model/graph"
 import { contextMenu } from "./context_menu"
 
 
@@ -214,34 +214,34 @@ export const numericVirtualKeyboard = (theme: Theme) =>
     ])
 
 
-export const view = (state: State): UI<AppEvent> => {
-    const nodes = state.nodeOrder
+export const view = (model: Model): UI<AppEvent> => {
+    const nodes = model.nodeOrder
         .map(node =>
             nodeUi(
-                state.theme,
+                model.theme,
                 node,
-                state.graph,
-                state.focus
+                model.graph,
+                model.focus
             )
         )
-    const connections: Connection[] = Object.values(state.graph.edges).map(({ input, output }) => ({
+    const connections: Connection[] = Object.values(model.graph.edges).map(({ input, output }) => ({
         from: output,
         to: input,
-        color: state.theme.connection
+        color: model.theme.connection
     }))
     const stacked: UI<AppEvent>[] = [
-        container({ color: state.theme.background, onClick: { kind: EventKind.CLICKED_BACKGROUND } }),
-        scene({ camera: state.camera, children: nodes, connections }),
+        container({ color: model.theme.background, onClick: { kind: EventKind.CLICKED_BACKGROUND } }),
+        scene({ camera: model.camera, children: nodes, connections }),
     ]
-    switch (state.focus.kind) {
+    switch (model.focus.kind) {
         case FocusKind.FINDER:
             stacked.push(
-                finder(state.focus, state.theme),
-                alphabeticVirtualKeyboard(state.theme)
+                finder(model.focus, model.theme),
+                alphabeticVirtualKeyboard(model.theme)
             )
             break
         case FocusKind.BODY:
-            stacked.push(numericVirtualKeyboard(state.theme))
+            stacked.push(numericVirtualKeyboard(model.theme))
             break
         case FocusKind.NODE:
             stacked.push(contextMenu({
@@ -250,29 +250,29 @@ export const view = (state: State): UI<AppEvent> => {
                     shortcut: 'd',
                     onClick: {
                         kind: EventKind.DELETE_NODE,
-                        node: state.focus.node
+                        node: model.focus.node
                     }
                 }],
-                backgroundColor: state.theme.node
+                backgroundColor: model.theme.node
             }))
             break
         case FocusKind.INPUT:
-            if (state.graph.inputs[state.focus.input].edge) {
+            if (model.graph.inputs[model.focus.input].edge) {
                 stacked.push(contextMenu({
                     items: [{
                         name: 'Delete Edge',
                         shortcut: 'd',
                         onClick: {
                             kind: EventKind.DELETE_INPUT_EDGE,
-                            input: state.focus.input
+                            input: model.focus.input
                         }
                     }],
-                    backgroundColor: state.theme.node
+                    backgroundColor: model.theme.node
                 }))
             }
             break
         case FocusKind.OUTPUT:
-            if (state.graph.outputs[state.focus.output].edges.length > 0) {
+            if (model.graph.outputs[model.focus.output].edges.length > 0) {
                 stacked.push(contextMenu({
                     items: [
                         {
@@ -280,11 +280,11 @@ export const view = (state: State): UI<AppEvent> => {
                             shortcut: 'd',
                             onClick: {
                                 kind: EventKind.DELETE_OUTPUT_EDGES,
-                                output: state.focus.output
+                                output: model.focus.output
                             }
                         }
                     ],
-                    backgroundColor: state.theme.node
+                    backgroundColor: model.theme.node
                 }))
             }
             break

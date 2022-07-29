@@ -9,7 +9,7 @@ import { CameraStack } from './camera_stack'
 import { Matrix3x3 } from '../linear_algebra/matrix3x3'
 import { Batch } from './batch_geometry'
 import { ClickHandlers } from './gather_on_click_handlers'
-import { Position } from '../graph/model'
+import { Position } from '../model/graph'
 
 export { center } from './center'
 export { column } from './column'

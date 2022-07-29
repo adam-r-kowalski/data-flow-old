@@ -1,9 +1,9 @@
-import { AppEvent, EventKind } from "../../../src/event"
-import { Body, emptyGraph, Graph, Input, Node, Output } from "../../../src/graph/model"
-import { identity } from "../../../src/linear_algebra/matrix3x3"
-import { Focus, FocusFinder, FocusKind, PointerActionKind, State, Theme } from "../../../src/state"
-import { column, container, row, scene, stack, text } from "../../../src/ui"
-import { CrossAxisAlignment, MainAxisAlignment } from "../../../src/ui/alignment"
+import { AppEvent, EventKind } from "../../src/update"
+import { Body, emptyGraph, Graph, Input, Node, Output } from "../../src/model/graph"
+import { identity } from "../../src/linear_algebra/matrix3x3"
+import { Focus, FocusFinder, FocusKind, PointerActionKind, Model, Theme } from "../../src/model"
+import { column, container, row, scene, stack, text } from "../../src/ui"
+import { CrossAxisAlignment, MainAxisAlignment } from "../../src/ui/alignment"
 import {
     alphabeticVirtualKeyboard,
     finder,
@@ -19,8 +19,8 @@ import {
     view,
     virtualKey,
     virtualKeys,
-} from "../../../src/ui/view"
-import { contextMenu } from "../../../src/ui/view/context_menu"
+} from "../../src/view"
+import { contextMenu } from "../../src/view/context_menu"
 
 test("spacer", () => {
     expect(spacer(10)).toEqual(container({ width: 10, height: 10 }))
@@ -749,7 +749,7 @@ test("numeric virtual keyboard", () => {
 })
 
 test("view with no nodes or edges", () => {
-    const state: State = {
+    const model: Model = {
         graph: {
             nodes: {},
             edges: {},
@@ -769,16 +769,16 @@ test("view with no nodes or edges", () => {
         openFinderFirstClick: false,
         theme
     }
-    const actual = view(state)
+    const actual = view(model)
     const expected = stack([
-        container({ color: state.theme.background, onClick: { kind: EventKind.CLICKED_BACKGROUND } }),
-        scene({ camera: state.camera, children: [], connections: [] }),
+        container({ color: model.theme.background, onClick: { kind: EventKind.CLICKED_BACKGROUND } }),
+        scene({ camera: model.camera, children: [], connections: [] }),
     ])
     expect(actual).toEqual(expected)
 })
 
 test("view with no nodes or edges but finder shown", () => {
-    const state: State = {
+    const model: Model = {
         graph: {
             nodes: {},
             edges: {},
@@ -799,18 +799,18 @@ test("view with no nodes or edges but finder shown", () => {
         operations: {},
         theme
     }
-    const actual = view(state)
+    const actual = view(model)
     const expected = stack([
-        container({ color: state.theme.background, onClick: { kind: EventKind.CLICKED_BACKGROUND } }),
-        scene({ camera: state.camera, children: [], connections: [] }),
-        finder(state.focus as FocusFinder, state.theme),
-        alphabeticVirtualKeyboard(state.theme)
+        container({ color: model.theme.background, onClick: { kind: EventKind.CLICKED_BACKGROUND } }),
+        scene({ camera: model.camera, children: [], connections: [] }),
+        finder(model.focus as FocusFinder, model.theme),
+        alphabeticVirtualKeyboard(model.theme)
     ])
     expect(actual).toEqual(expected)
 })
 
 test("view with three nodes and no edges", () => {
-    const state: State = {
+    const model: Model = {
         graph: {
             nodes: {
                 "first": {
@@ -855,15 +855,15 @@ test("view with three nodes and no edges", () => {
         operations: {},
         theme
     }
-    const actual = view(state)
+    const actual = view(model)
     const expected = stack([
-        container({ color: state.theme.background, onClick: { kind: EventKind.CLICKED_BACKGROUND } }),
+        container({ color: model.theme.background, onClick: { kind: EventKind.CLICKED_BACKGROUND } }),
         scene({
-            camera: state.camera,
+            camera: model.camera,
             children: [
-                nodeUi(state.theme, "first", state.graph, state.focus),
-                nodeUi(state.theme, "second", state.graph, state.focus),
-                nodeUi(state.theme, "third", state.graph, state.focus),
+                nodeUi(model.theme, "first", model.graph, model.focus),
+                nodeUi(model.theme, "second", model.graph, model.focus),
+                nodeUi(model.theme, "third", model.graph, model.focus),
             ],
             connections: []
         }),
@@ -872,7 +872,7 @@ test("view with three nodes and no edges", () => {
 })
 
 test("view with three nodes and no edges", () => {
-    const state: State = {
+    const model: Model = {
         graph: {
             nodes: {
                 "first": {
@@ -915,15 +915,15 @@ test("view with three nodes and no edges", () => {
         operations: {},
         theme
     }
-    const actual = view(state)
+    const actual = view(model)
     const expected = stack([
-        container({ color: state.theme.background, onClick: { kind: EventKind.CLICKED_BACKGROUND } }),
+        container({ color: model.theme.background, onClick: { kind: EventKind.CLICKED_BACKGROUND } }),
         scene({
-            camera: state.camera,
+            camera: model.camera,
             children: [
-                nodeUi(state.theme, "first", state.graph, state.focus),
-                nodeUi(state.theme, "second", state.graph, state.focus),
-                nodeUi(state.theme, "third", state.graph, state.focus),
+                nodeUi(model.theme, "first", model.graph, model.focus),
+                nodeUi(model.theme, "second", model.graph, model.focus),
+                nodeUi(model.theme, "third", model.graph, model.focus),
             ],
             connections: []
         }),
@@ -936,7 +936,7 @@ test("view with three nodes and no edges", () => {
                     node: 'first'
                 }
             }],
-            backgroundColor: state.theme.node
+            backgroundColor: model.theme.node
         })
     ])
     expect(actual).toEqual(expected)
@@ -944,7 +944,7 @@ test("view with three nodes and no edges", () => {
 
 
 test("view with three nodes and one edges", () => {
-    const state: State = {
+    const model: Model = {
         graph: {
             nodes: {
                 "first": {
@@ -1009,15 +1009,15 @@ test("view with three nodes and one edges", () => {
         operations: {},
         theme
     }
-    const actual = view(state)
+    const actual = view(model)
     const expected = stack([
-        container({ color: state.theme.background, onClick: { kind: EventKind.CLICKED_BACKGROUND } }),
+        container({ color: model.theme.background, onClick: { kind: EventKind.CLICKED_BACKGROUND } }),
         scene({
-            camera: state.camera,
+            camera: model.camera,
             children: [
-                nodeUi(state.theme, "first", state.graph, state.focus),
-                nodeUi(state.theme, "second", state.graph, state.focus),
-                nodeUi(state.theme, "third", state.graph, state.focus),
+                nodeUi(model.theme, "first", model.graph, model.focus),
+                nodeUi(model.theme, "second", model.graph, model.focus),
+                nodeUi(model.theme, "third", model.graph, model.focus),
             ],
             connections: [
                 {

@@ -1,7 +1,7 @@
-import { identity, Matrix3x3 } from "./linear_algebra/matrix3x3"
-import { Pointer, Color } from "./ui"
-import { Graph, Operations, Position, UUID, emptyGraph, GenerateUUID } from './graph/model'
-import { addEdge, addNode, changeBodyValue } from "./graph/update"
+import { identity, Matrix3x3 } from "../linear_algebra/matrix3x3"
+import { Pointer, Color } from "../ui"
+import { Graph, Operations, Position, UUID, emptyGraph, GenerateUUID } from './graph'
+import { addEdge, addNode, changeBodyValue } from "../update/graph"
 
 export interface Theme {
     readonly background: Color
@@ -83,7 +83,7 @@ export type Focus =
     | FocusFinder
     | FocusNone
 
-export interface State {
+export interface Model {
     readonly graph: Graph
     readonly nodeOrder: Readonly<UUID[]>
     readonly pointers: Readonly<Pointer[]>
@@ -95,7 +95,7 @@ export interface State {
     readonly theme: Theme
 }
 
-export const emptyState = (): State => ({
+export const emptyModel = (): Model => ({
     graph: emptyGraph(),
     nodeOrder: [],
     pointers: [],
@@ -117,9 +117,9 @@ export const emptyState = (): State => ({
     operations: {}
 })
 
-export const demoState = (generateUUID: GenerateUUID): State => {
-    const state = {
-        ...emptyState(),
+export const demoModel = (generateUUID: GenerateUUID): Model => {
+    const model = {
+        ...emptyModel(),
         operations: {
             "Number": {
                 name: "Number",
@@ -165,22 +165,22 @@ export const demoState = (generateUUID: GenerateUUID): State => {
         }
     }
     const { graph: graph0, node: number0 } = addNode({
-        graph: state.graph,
-        operation: state.operations["Number"],
+        graph: model.graph,
+        operation: model.operations["Number"],
         position: { x: 25, y: 20 },
         generateUUID
     })
     const graph1 = changeBodyValue(graph0, graph0.nodes[number0].body!, () => 10)
     const { graph: graph2, node: number1 } = addNode({
         graph: graph1,
-        operation: state.operations["Number"],
+        operation: model.operations["Number"],
         position: { x: 55, y: 105 },
         generateUUID
     })
     const graph3 = changeBodyValue(graph2, graph2.nodes[number1].body!, () => 25)
     const { graph: graph4, node: add } = addNode({
         graph: graph3,
-        operation: state.operations["Add"],
+        operation: model.operations["Add"],
         position: { x: 175, y: 55 },
         generateUUID
     })
@@ -198,14 +198,14 @@ export const demoState = (generateUUID: GenerateUUID): State => {
     })
     const { graph: graph7, node: number2 } = addNode({
         graph: graph6,
-        operation: state.operations["Number"],
+        operation: model.operations["Number"],
         position: { x: 225, y: 145 },
         generateUUID
     })
     const graph8 = changeBodyValue(graph7, graph7.nodes[number2].body!, () => 5)
     const { graph: graph9, node: div } = addNode({
         graph: graph8,
-        operation: state.operations["Divide"],
+        operation: model.operations["Divide"],
         position: { x: 355, y: 75 },
         generateUUID
     })
@@ -223,7 +223,7 @@ export const demoState = (generateUUID: GenerateUUID): State => {
     })
     const { graph: graph12, node: print } = addNode({
         graph: graph11,
-        operation: state.operations["Print"],
+        operation: model.operations["Print"],
         position: { x: 535, y: 85 },
         generateUUID
     })
@@ -234,7 +234,7 @@ export const demoState = (generateUUID: GenerateUUID): State => {
         generateUUID
     })
     return {
-        ...state,
+        ...model,
         graph: graph13,
         nodeOrder: [number0, number1, add, number2, div, print]
     }

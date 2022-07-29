@@ -10,24 +10,24 @@ const green = { red: 0, green: 255, blue: 0, alpha: 255 }
 
 enum AppEvent { INCREMENT_A, INCREMENT_B }
 
-interface State {
+interface Model {
     a: number
     b: number
 }
 
-const initialState = (): State => ({
+const initialModel = (): Model => ({
     a: 0,
     b: 0
 })
 
-const update = (state: State, event: AppEvent): State => {
+const update = (model: Model, event: AppEvent): Model => {
     switch (event) {
         case AppEvent.INCREMENT_A:
-            state.a++
-            return state
+            model.a++
+            return model
         case AppEvent.INCREMENT_B:
-            state.b++
-            return state
+            model.b++
+            return model
     }
 }
 
@@ -40,8 +40,8 @@ const mockRenderer = <AppEvent>(dispatch: (event: AppEvent) => void) => webGL2Re
 }) as WebGL2Renderer<AppEvent>
 
 test("click first container", () => {
-    let state = initialState()
-    const dispatch = (event: AppEvent) => { state = update(state, event) }
+    let model = initialModel()
+    const dispatch = (event: AppEvent) => { model = update(model, event) }
     let renderer = mockRenderer(dispatch)
     const ui = scene({
         camera: identity(),
@@ -69,12 +69,12 @@ test("click first container", () => {
         position: { x: 125, y: 225 },
         id: 0
     })
-    expect(state).toEqual({ a: 1, b: 0 })
+    expect(model).toEqual({ a: 1, b: 0 })
 })
 
 test("click second container", () => {
-    let state = initialState()
-    const dispatch = (event: AppEvent) => { state = update(state, event) }
+    let model = initialModel()
+    const dispatch = (event: AppEvent) => { model = update(model, event) }
     let renderer = mockRenderer(dispatch)
     const ui = scene({
         camera: identity(),
@@ -102,12 +102,12 @@ test("click second container", () => {
         position: { x: 325, y: 275 },
         id: 0
     })
-    expect(state).toEqual({ a: 0, b: 1 })
+    expect(model).toEqual({ a: 0, b: 1 })
 })
 
 test("click translated container", () => {
-    let state = initialState()
-    const dispatch = (event: AppEvent) => { state = update(state, event) }
+    let model = initialModel()
+    const dispatch = (event: AppEvent) => { model = update(model, event) }
     let renderer = mockRenderer(dispatch)
     const ui = scene({
         camera: translate(100, 0),
@@ -135,12 +135,12 @@ test("click translated container", () => {
         position: { x: 25, y: 225 },
         id: 0
     })
-    expect(state).toEqual({ a: 1, b: 0 })
+    expect(model).toEqual({ a: 1, b: 0 })
 })
 
 test("renderer starts with identity camera", () => {
-    let state = 0
-    const dispatch = (_: boolean) => { return { state } }
+    let model = 0
+    const dispatch = (_: boolean) => { return { model } }
     const renderer = mockRenderer(dispatch)
     const view = container<boolean>({ width: 50, height: 50, color: red })
     render(renderer, view)

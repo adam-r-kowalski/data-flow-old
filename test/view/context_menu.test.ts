@@ -1,6 +1,6 @@
-import { column, container, row, text } from "../../../src/ui"
-import { MainAxisAlignment } from "../../../src/ui/alignment"
-import { contextMenu } from "../../../src/ui/view/context_menu"
+import { column, container, row, text } from "../../src/ui"
+import { MainAxisAlignment } from "../../src/ui/alignment"
+import { contextMenu } from "../../src/view/context_menu"
 
 test("context menu", () => {
     enum AppEvent { A, B }

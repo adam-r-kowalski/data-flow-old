@@ -1,16 +1,16 @@
-import { AppEvent, EventKind, update } from "./event"
+import { AppEvent, EventKind, update } from "./update"
 import { run, transformPointer } from "./ui/run"
-import { view } from './ui/view'
-import { demoState, State } from "./state"
+import { view } from './view'
+import { demoModel, Model } from "./model"
 import { Document } from './ui/dom'
 import { ProgramKind } from "./ui/webgl2"
 
 const generateUUID = () => crypto.randomUUID()
 
 const success_or_error = run({
-    state: demoState(generateUUID),
+    model: demoModel(generateUUID),
     view,
-    update: (state: State, event: AppEvent) => update(generateUUID, state, event),
+    update: (model: Model, event: AppEvent) => update(generateUUID, model, event),
     window,
     document: document as Document,
     requestAnimationFrame,

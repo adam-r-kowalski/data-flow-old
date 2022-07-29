@@ -11,7 +11,7 @@ export const transformPointer = (p: PointerEvent): Pointer => ({
 
 export type Dispatch<AppEvent> = (event: AppEvent) => void
 
-type View<State, AppEvent> = (state: State) => UI<AppEvent>
+type View<Model, AppEvent> = (model: Model) => UI<AppEvent>
 
 interface Milliseconds {
     milliseconds: number
@@ -22,19 +22,19 @@ interface Scheduled<AppEvent> {
     event: AppEvent
 }
 
-export interface UpdateResult<State, AppEvent> {
-    state: State
+export interface UpdateResult<Model, AppEvent> {
+    model: Model
     render?: boolean
     schedule?: Scheduled<AppEvent>[]
     dispatch?: AppEvent[]
 }
 
-type Update<State, AppEvent> = (state: State, event: AppEvent) => UpdateResult<State, AppEvent>
+type Update<Model, AppEvent> = (model: Model, event: AppEvent) => UpdateResult<Model, AppEvent>
 
-interface Properties<State, AppEvent> {
-    state: State
-    view: View<State, AppEvent>
-    update: Update<State, AppEvent>
+interface Properties<Model, AppEvent> {
+    model: Model
+    view: View<Model, AppEvent>
+    update: Update<Model, AppEvent>
     window: Window
     document: Document
     requestAnimationFrame: (callback: () => void) => void
@@ -47,8 +47,8 @@ export interface Success<AppEvent> {
     dispatch: Dispatch<AppEvent>
 }
 
-export const run = <State, AppEvent>(properties: Properties<State, AppEvent>): Success<AppEvent> | ProgramError => {
-    let { state, view, update, window, document, requestAnimationFrame, setTimeout } = properties
+export const run = <Model, AppEvent>(properties: Properties<Model, AppEvent>): Success<AppEvent> | ProgramError => {
+    let { model, view, update, window, document, requestAnimationFrame, setTimeout } = properties
     const renderer_or_error = webGL2Renderer<AppEvent>({
         width: window.innerWidth,
         height: window.innerHeight,
@@ -65,14 +65,14 @@ export const run = <State, AppEvent>(properties: Properties<State, AppEvent>): S
                 if (!renderQueued) {
                     renderQueued = true
                     requestAnimationFrame(() => {
-                        renderer = render(renderer, view(state))
+                        renderer = render(renderer, view(model))
                         renderQueued = false
                     })
                 }
             }
             const dispatch = (event: AppEvent) => {
-                const { state: newState, render, schedule, dispatch: dispatchEvents } = update(state, event)
-                state = newState
+                const { model: newModel, render, schedule, dispatch: dispatchEvents } = update(model, event)
+                model = newModel
                 if (render) scheduleRender()
                 for (const { after, event } of schedule ?? []) {
                     const { milliseconds } = after

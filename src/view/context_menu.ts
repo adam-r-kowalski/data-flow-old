@@ -1,5 +1,5 @@
-import { UI, row, column, container, Color, text } from ".."
-import { MainAxisAlignment } from "../alignment"
+import { UI, row, column, container, Color, text } from "../ui"
+import { MainAxisAlignment } from "../ui/alignment"
 
 export interface ContextMenuItem<AppEvent> {
     name: string

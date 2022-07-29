@@ -401,6 +401,7 @@ export const openFinder = (state: State): State => ({
         search: '',
         options: Object.keys(state.operations),
     },
+    openFinderFirstClick: false
 })
 
 

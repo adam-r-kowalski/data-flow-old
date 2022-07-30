@@ -7,10 +7,10 @@ import { Focus, FocusFinder, FocusKind } from '../model/focus'
 import { PointerAction, PointerActionKind } from '../model/pointer_action'
 import { GenerateUUID, Operation, Operations, Position, UUID } from '../model/graph'
 import { Pointer } from "../ui"
-import { addEdge, addNode, changeBodyValue, changeNodePosition, removeInputEdge, removeNode, removeOutputEdges } from "./graph"
-import { maybeTriggerQuickSelect, quickSelectInput } from "./quick_select"
+import { addNode, changeBodyValue, changeNodePosition, removeInputEdge, removeNode, removeOutputEdges } from "./graph"
+import { maybeTriggerQuickSelect, quickSelectInput, quickSelectOutput } from "./quick_select"
 import { QuickSelectKind } from "../model/quick_select"
-import { clearFocus, selectInput } from "./focus"
+import { clearFocus, selectInput, selectOutput } from "./focus"
 
 export enum EventKind {
     POINTER_MOVE,
@@ -319,41 +319,8 @@ const wheel = (model: Model, event: Wheel): UpdateResult<Model, AppEvent> => {
 const clickedInput = (model: Model, event: ClickedInput, generateUUID: GenerateUUID): UpdateResult<Model, AppEvent> =>
     selectInput(model, event.input, generateUUID)
 
-const clickedOutput = (model: Model, event: ClickedOutput, generateUUID: GenerateUUID): UpdateResult<Model, AppEvent> => {
-    if (model.focus.kind === FocusKind.INPUT) {
-        const input = model.graph.inputs[model.focus.input]
-        const output = model.graph.outputs[event.output]
-        if (output.node === input.node) {
-            return { model }
-        } else {
-            const graph0 = input.edge !== undefined ?
-                removeInputEdge(model.graph, input.uuid) :
-                model.graph
-            const { graph: graph1 } = addEdge({
-                graph: graph0,
-                input: model.focus.input,
-                output: event.output,
-                generateUUID
-            })
-            return {
-                model: clearFocus({ ...model, graph: graph1 }),
-                render: true
-            }
-        }
-    } else {
-        return {
-            model: {
-                ...model,
-                focus: {
-                    kind: FocusKind.OUTPUT,
-                    output: event.output,
-                    quickSelect: { kind: QuickSelectKind.NONE }
-                },
-            },
-            render: true
-        }
-    }
-}
+const clickedOutput = (model: Model, event: ClickedOutput, generateUUID: GenerateUUID): UpdateResult<Model, AppEvent> =>
+    selectOutput(model, event.output, generateUUID)
 
 const openFinderTimeout = (model: Model, _: OpenFinderTimeout): UpdateResult<Model, AppEvent> => ({
     model: {
@@ -452,6 +419,8 @@ const keyDown = (model: Model, { key }: KeyDown, generateUUID: GenerateUUID): Up
     switch (model.focus.quickSelect.kind) {
         case QuickSelectKind.INPUT:
             return quickSelectInput(model, model.focus.quickSelect, key, generateUUID)
+        case QuickSelectKind.OUTPUT:
+            return quickSelectOutput(model, model.focus.quickSelect, key, generateUUID)
         case QuickSelectKind.NONE:
             switch (model.focus.kind) {
                 case FocusKind.FINDER:

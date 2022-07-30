@@ -289,3 +289,276 @@ test("pressing hotkey with input quick select will select the input and disable 
     }
     expect(model3).toEqual(expectedModel)
 })
+
+
+test("pressing o with nothing focused launches quick select for outputs", () => {
+    const generateUUID = makeGenerateUUID()
+    const operations: Operations = {
+        'Add': {
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        },
+    }
+    const model0: Model = {
+        ...emptyModel(),
+        operations
+    }
+    const { model: model1, node } = addNodeToGraph({
+        model: model0,
+        operation: operations['Add'],
+        position: { x: 0, y: 0 },
+        generateUUID: generateUUID
+    })
+    const output = model1.graph.nodes[node].outputs[0]
+    const { model: model2 } = update(generateUUID, model1, {
+        kind: EventKind.KEYDOWN,
+        key: 'o'
+    })
+    const expectedModel: Model = {
+        ...model1,
+        focus: {
+            kind: FocusKind.NONE,
+            pointerAction: { kind: PointerActionKind.NONE },
+            quickSelect: {
+                kind: QuickSelectKind.OUTPUT,
+                hotkeys: {
+                    [output]: 'a',
+                }
+            }
+        }
+    }
+    expect(model2).toEqual(expectedModel)
+})
+
+test("pressing o with output focused launches quick select for outputs", () => {
+    const generateUUID = makeGenerateUUID()
+    const operations: Operations = {
+        'Add': {
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        },
+    }
+    const model0: Model = {
+        ...emptyModel(),
+        operations
+    }
+    const { model: model1, node } = addNodeToGraph({
+        model: model0,
+        operation: operations['Add'],
+        position: { x: 0, y: 0 },
+        generateUUID: generateUUID
+    })
+    const output = model1.graph.nodes[node].outputs[0]
+    const { model: model2 } = update(generateUUID, model1, {
+        kind: EventKind.CLICKED_OUTPUT,
+        output
+    })
+    const { model: model3 } = update(generateUUID, model2, {
+        kind: EventKind.KEYDOWN,
+        key: 'o'
+    })
+    const expectedModel: Model = {
+        ...model1,
+        focus: {
+            kind: FocusKind.OUTPUT,
+            output,
+            quickSelect: {
+                kind: QuickSelectKind.OUTPUT,
+                hotkeys: {
+                    [output]: 'a',
+                }
+            }
+        }
+    }
+    expect(model3).toEqual(expectedModel)
+})
+
+test("pressing o with input focused launches quick select for outputs", () => {
+    const generateUUID = makeGenerateUUID()
+    const operations: Operations = {
+        'Add': {
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        },
+    }
+    const model0: Model = {
+        ...emptyModel(),
+        operations
+    }
+    const { model: model1, node } = addNodeToGraph({
+        model: model0,
+        operation: operations['Add'],
+        position: { x: 0, y: 0 },
+        generateUUID: generateUUID
+    })
+    const inputs = model1.graph.nodes[node].inputs
+    const { model: model2 } = update(generateUUID, model1, {
+        kind: EventKind.CLICKED_INPUT,
+        input: inputs[0]
+    })
+    const { model: model3 } = update(generateUUID, model2, {
+        kind: EventKind.KEYDOWN,
+        key: 'o'
+    })
+    const output = model3.graph.nodes[node].outputs[0]
+    const expectedModel: Model = {
+        ...model1,
+        focus: {
+            kind: FocusKind.INPUT,
+            input: inputs[0],
+            quickSelect: {
+                kind: QuickSelectKind.OUTPUT,
+                hotkeys: {
+                    [output]: 'a',
+                }
+            }
+        }
+    }
+    expect(model3).toEqual(expectedModel)
+})
+
+test("pressing o with body focused launches quick select for outputs", () => {
+    const generateUUID = makeGenerateUUID()
+    const operations: Operations = {
+        'Number': {
+            name: 'Number',
+            inputs: [],
+            body: 0,
+            outputs: ['out']
+        },
+        'Add': {
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        },
+    }
+    const model0: Model = {
+        ...emptyModel(),
+        operations
+    }
+    const { model: model1, node: node0 } = addNodeToGraph({
+        model: model0,
+        operation: operations['Number'],
+        position: { x: 0, y: 0 },
+        generateUUID: generateUUID
+    })
+    const { model: model2, node: node1 } = addNodeToGraph({
+        model: model1,
+        operation: operations['Add'],
+        position: { x: 0, y: 0 },
+        generateUUID: generateUUID
+    })
+    const body = model2.graph.nodes[node0].body!
+    const { model: model3 } = update(generateUUID, model2, {
+        kind: EventKind.CLICKED_NUMBER,
+        body
+    })
+    const { model: model4 } = update(generateUUID, model3, {
+        kind: EventKind.KEYDOWN,
+        key: 'o'
+    })
+    const output0 = model4.graph.nodes[node0].outputs[0]
+    const output1 = model4.graph.nodes[node1].outputs[0]
+    const expectedModel: Model = {
+        ...model2,
+        focus: {
+            kind: FocusKind.BODY,
+            body,
+            quickSelect: {
+                kind: QuickSelectKind.OUTPUT,
+                hotkeys: {
+                    [output0]: 'a',
+                    [output1]: 'b',
+                }
+            }
+        }
+    }
+    expect(model4).toEqual(expectedModel)
+})
+
+test("pressing o with node focused launches quick select for outputs", () => {
+    const generateUUID = makeGenerateUUID()
+    const operations: Operations = {
+        'Number': {
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        },
+    }
+    const model0: Model = {
+        ...emptyModel(),
+        operations
+    }
+    const { model: model1, node } = addNodeToGraph({
+        model: model0,
+        operation: operations['Number'],
+        position: { x: 0, y: 0 },
+        generateUUID: generateUUID
+    })
+    const { model: model2 } = update(generateUUID, model1, {
+        kind: EventKind.CLICKED_NODE,
+        node
+    })
+    const { model: model3 } = update(generateUUID, model2, {
+        kind: EventKind.KEYDOWN,
+        key: 'o'
+    })
+    const output = model3.graph.nodes[node].outputs[0]
+    const expectedModel: Model = {
+        ...model2,
+        focus: {
+            kind: FocusKind.NODE,
+            node,
+            drag: true,
+            quickSelect: {
+                kind: QuickSelectKind.OUTPUT,
+                hotkeys: {
+                    [output]: 'a',
+                }
+            }
+        }
+    }
+    expect(model3).toEqual(expectedModel)
+})
+
+test("pressing hotkey with output quick select will select the output and disable quick select", () => {
+    const generateUUID = makeGenerateUUID()
+    const operations: Operations = {
+        'Add': {
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        },
+    }
+    const model0: Model = {
+        ...emptyModel(),
+        operations
+    }
+    const { model: model1, node } = addNodeToGraph({
+        model: model0,
+        operation: operations['Add'],
+        position: { x: 0, y: 0 },
+        generateUUID: generateUUID
+    })
+    const output = model1.graph.nodes[node].outputs[0]
+    const { model: model2 } = update(generateUUID, model1, {
+        kind: EventKind.KEYDOWN,
+        key: 'o'
+    })
+    const { model: model3 } = update(generateUUID, model2, {
+        kind: EventKind.KEYDOWN,
+        key: 'a'
+    })
+    const expectedModel: Model = {
+        ...model1,
+        focus: {
+            kind: FocusKind.OUTPUT,
+            output,
+            quickSelect: { kind: QuickSelectKind.NONE }
+        }
+    }
+    expect(model3).toEqual(expectedModel)
+})

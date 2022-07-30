@@ -1,12 +1,12 @@
 import { Focus, FocusKind } from "../../src/model/focus"
-import { Input } from "../../src/model/graph"
+import { Input, Output } from "../../src/model/graph"
 import { PointerActionKind } from "../../src/model/pointer_action"
 import { QuickSelectKind } from "../../src/model/quick_select"
 import { Theme } from "../../src/model/theme"
 import { container, row, text } from "../../src/ui"
 import { CrossAxisAlignment } from "../../src/ui/alignment"
 import { AppEvent, EventKind } from "../../src/update"
-import { inputUi, spacer } from "../../src/view"
+import { inputUi, outputUi, spacer } from "../../src/view"
 
 const theme: Theme = {
     background: { red: 2, green: 22, blue: 39, alpha: 255 },
@@ -49,6 +49,43 @@ test("inputUi with quick select", () => {
             }, text({ color: theme.background }, "a")),
             spacer(4),
             text('name')
+        ])
+    )
+    expect(actual).toEqual(expected)
+})
+
+test("outputUI with quick select", () => {
+    const output: Output = {
+        uuid: 'uuid',
+        node: 'node',
+        name: 'name',
+        edges: []
+    }
+    const focus: Focus = {
+        kind: FocusKind.NONE,
+        pointerAction: { kind: PointerActionKind.NONE },
+        quickSelect: {
+            kind: QuickSelectKind.OUTPUT,
+            hotkeys: {
+                'uuid': 'a'
+            }
+        }
+    }
+    const actual = outputUi(theme, output, focus)
+    const expected = container<AppEvent>({
+        onClick: {
+            kind: EventKind.CLICKED_OUTPUT,
+            output: 'uuid'
+        }
+    },
+        row({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
+            text('name'),
+            spacer(4),
+            container({
+                id: 'uuid',
+                padding: { top: 2, right: 4, bottom: 2, left: 4 },
+                color: theme.input
+            }, text({ color: theme.background }, "a")),
         ])
     )
     expect(actual).toEqual(expected)

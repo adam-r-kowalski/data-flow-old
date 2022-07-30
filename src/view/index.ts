@@ -71,10 +71,9 @@ export const outputUi = (theme: Theme, { name, uuid }: Output, focus: Focus): UI
             spacer(4),
             container({
                 id: uuid,
-                width: 14,
-                height: 14,
                 color: isFocused(focus, uuid) ? theme.focusInput : theme.input,
-            }),
+                padding: { top: 2, right: 4, bottom: 2, left: 4 }
+            }, text({ color: theme.background }, focus.quickSelect.kind === QuickSelectKind.OUTPUT ? focus.quickSelect.hotkeys[uuid] : ' ')),
         ])
     )
 

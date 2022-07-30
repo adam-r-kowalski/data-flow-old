@@ -39,7 +39,7 @@ test("pointer down starts panning camera", () => {
     expect(model1).toEqual(expectedModel)
 })
 
-test("two pointers down starts zooming", () => {
+test("two pointers down on background starts zooming", () => {
     const generateUUID = makeGenerateUUID()
     const model = emptyModel()
     const pointer0: Pointer = {
@@ -55,8 +55,14 @@ test("two pointers down starts zooming", () => {
         pointer: pointer0
     })
     const { model: model2 } = update(generateUUID, model1, {
+        kind: EventKind.CLICKED_BACKGROUND,
+    })
+    const { model: model3 } = update(generateUUID, model2, {
         kind: EventKind.POINTER_DOWN,
         pointer: pointer1
+    })
+    const { model: model4 } = update(generateUUID, model3, {
+        kind: EventKind.CLICKED_BACKGROUND,
     })
     const expectedModel: Model = {
         ...emptyModel(),
@@ -69,10 +75,11 @@ test("two pointers down starts zooming", () => {
                 pointerDistance: 0
             },
             quickSelect: { kind: QuickSelectKind.NONE }
-        }
+        },
     }
-    expect(model2).toEqual(expectedModel)
+    expect(model4).toEqual(expectedModel)
 })
+
 
 test("double clicking background opens finder", () => {
     const generateUUID = makeGenerateUUID()
@@ -720,16 +727,30 @@ test("double click opens finder", () => {
         operations
     }
     const { model: model1 } = update(generateUUID, model0, {
-        kind: EventKind.CLICKED_BACKGROUND,
+        kind: EventKind.POINTER_DOWN,
+        pointer: {
+            id: 0,
+            position: { x: 0, y: 0 }
+        }
     })
     const { model: model2 } = update(generateUUID, model1, {
+        kind: EventKind.CLICKED_BACKGROUND,
+    })
+    const { model: model3 } = update(generateUUID, model2, {
+        kind: EventKind.POINTER_UP,
+        pointer: {
+            id: 0,
+            position: { x: 0, y: 0 }
+        }
+    })
+    const { model: model4 } = update(generateUUID, model3, {
         kind: EventKind.POINTER_DOWN,
         pointer: {
             id: 0,
             position: { x: 50, y: 50 }
         }
     })
-    const { model: model3, render } = update(generateUUID, model2, {
+    const { model: model5, render } = update(generateUUID, model4, {
         kind: EventKind.CLICKED_BACKGROUND,
     })
     const expectedModel: Model = {
@@ -748,7 +769,7 @@ test("double click opens finder", () => {
             }
         ]
     }
-    expect(model3).toEqual(expectedModel)
+    expect(model5).toEqual(expectedModel)
     expect(render).toEqual(true)
 })
 
@@ -1992,11 +2013,27 @@ test("clicking background when a number node is selected deselects it", () => {
         generateUUID
     })
     const body = model0.graph.nodes[node].body!
+    const pointer: Pointer = {
+        id: 0,
+        position: { x: 0, y: 0 }
+    }
     const { model: model1 } = update(generateUUID, model0, {
+        kind: EventKind.POINTER_DOWN,
+        pointer
+    })
+    const { model: model2 } = update(generateUUID, model1, {
         kind: EventKind.CLICKED_NUMBER,
         body
     })
-    const { model: model2 } = update(generateUUID, model1, {
+    const { model: model3 } = update(generateUUID, model2, {
+        kind: EventKind.POINTER_UP,
+        pointer
+    })
+    const { model: model4 } = update(generateUUID, model3, {
+        kind: EventKind.POINTER_DOWN,
+        pointer
+    })
+    const { model: model5 } = update(generateUUID, model4, {
         kind: EventKind.CLICKED_BACKGROUND,
     })
     const expectedModel: Model = {
@@ -2006,9 +2043,10 @@ test("clicking background when a number node is selected deselects it", () => {
             pointerAction: { kind: PointerActionKind.PAN },
             quickSelect: { kind: QuickSelectKind.NONE }
         },
-        openFinderFirstClick: true
+        openFinderFirstClick: true,
+        pointers: [pointer]
     }
-    expect(model2).toEqual(expectedModel)
+    expect(model5).toEqual(expectedModel)
 })
 
 test("pressing Escape when a number node is selected deselects it", () => {
@@ -2287,11 +2325,27 @@ test("clicking background when a node is selected deselects it", () => {
         position: { x: 0, y: 0 },
         generateUUID
     })
+    const pointer: Pointer = {
+        id: 0,
+        position: { x: 0, y: 0 }
+    }
     const { model: model2 } = update(generateUUID, model1, {
+        kind: EventKind.POINTER_DOWN,
+        pointer
+    })
+    const { model: model3 } = update(generateUUID, model2, {
         kind: EventKind.CLICKED_NODE,
         node
     })
-    const { model: model3 } = update(generateUUID, model2, {
+    const { model: model4 } = update(generateUUID, model3, {
+        kind: EventKind.POINTER_UP,
+        pointer
+    })
+    const { model: model5 } = update(generateUUID, model4, {
+        kind: EventKind.POINTER_DOWN,
+        pointer
+    })
+    const { model: model6 } = update(generateUUID, model5, {
         kind: EventKind.CLICKED_BACKGROUND,
     })
     const expectedModel: Model = {
@@ -2301,9 +2355,10 @@ test("clicking background when a node is selected deselects it", () => {
             pointerAction: { kind: PointerActionKind.PAN },
             quickSelect: { kind: QuickSelectKind.NONE }
         },
-        openFinderFirstClick: true
+        openFinderFirstClick: true,
+        pointers: [pointer]
     }
-    expect(model3).toEqual(expectedModel)
+    expect(model6).toEqual(expectedModel)
 })
 
 test("pressing escape when a node is selected deselects it", () => {
@@ -2350,12 +2405,28 @@ test("clicking background when a input is selected deselects it", () => {
         position: { x: 0, y: 0 },
         generateUUID
     })
-    const input = model1.graph.nodes[node].inputs[0]
+    const pointer: Pointer = {
+        id: 0,
+        position: { x: 0, y: 0 }
+    }
     const { model: model2 } = update(generateUUID, model1, {
+        kind: EventKind.POINTER_DOWN,
+        pointer
+    })
+    const input = model2.graph.nodes[node].inputs[0]
+    const { model: model3 } = update(generateUUID, model2, {
         kind: EventKind.CLICKED_INPUT,
         input
     })
-    const { model: model3 } = update(generateUUID, model2, {
+    const { model: model4 } = update(generateUUID, model3, {
+        kind: EventKind.POINTER_UP,
+        pointer
+    })
+    const { model: model5 } = update(generateUUID, model4, {
+        kind: EventKind.POINTER_DOWN,
+        pointer
+    })
+    const { model: model6 } = update(generateUUID, model5, {
         kind: EventKind.CLICKED_BACKGROUND,
     })
     const expectedModel: Model = {
@@ -2365,9 +2436,10 @@ test("clicking background when a input is selected deselects it", () => {
             pointerAction: { kind: PointerActionKind.PAN },
             quickSelect: { kind: QuickSelectKind.NONE }
         },
-        openFinderFirstClick: true
+        openFinderFirstClick: true,
+        pointers: [pointer]
     }
-    expect(model3).toEqual(expectedModel)
+    expect(model6).toEqual(expectedModel)
 })
 
 test("pressing escape when a input is selected deselects it", () => {
@@ -2415,12 +2487,28 @@ test("clicking background when a output is selected deselects it", () => {
         position: { x: 0, y: 0 },
         generateUUID
     })
-    const output = model1.graph.nodes[node].outputs[0]
+    const pointer: Pointer = {
+        id: 0,
+        position: { x: 0, y: 0 }
+    }
     const { model: model2 } = update(generateUUID, model1, {
+        kind: EventKind.POINTER_DOWN,
+        pointer
+    })
+    const output = model2.graph.nodes[node].outputs[0]
+    const { model: model3 } = update(generateUUID, model2, {
         kind: EventKind.CLICKED_OUTPUT,
         output
     })
-    const { model: model3 } = update(generateUUID, model2, {
+    const { model: model4 } = update(generateUUID, model3, {
+        kind: EventKind.POINTER_UP,
+        pointer
+    })
+    const { model: model5 } = update(generateUUID, model4, {
+        kind: EventKind.POINTER_DOWN,
+        pointer
+    })
+    const { model: model6 } = update(generateUUID, model5, {
         kind: EventKind.CLICKED_BACKGROUND,
     })
     const expectedModel: Model = {
@@ -2430,9 +2518,10 @@ test("clicking background when a output is selected deselects it", () => {
             pointerAction: { kind: PointerActionKind.PAN },
             quickSelect: { kind: QuickSelectKind.NONE }
         },
-        openFinderFirstClick: true
+        openFinderFirstClick: true,
+        pointers: [pointer]
     }
-    expect(model3).toEqual(expectedModel)
+    expect(model6).toEqual(expectedModel)
 })
 
 test("pressing escape when a output is selected deselects it", () => {

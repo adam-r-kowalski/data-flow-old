@@ -612,15 +612,16 @@ const clickedBackground = (model: Model): UpdateResult<Model, AppEvent> => {
             render: true
         }
     } else {
+        const focus: Focus = model.focus.kind === FocusKind.NONE ? model.focus : {
+            kind: FocusKind.NONE,
+            pointerAction: { kind: PointerActionKind.PAN },
+            quickSelect: { kind: QuickSelectKind.NONE }
+        }
         return {
             model: {
                 ...model,
-                openFinderFirstClick: true,
-                focus: {
-                    kind: FocusKind.NONE,
-                    pointerAction: { kind: PointerActionKind.PAN },
-                    quickSelect: { kind: QuickSelectKind.NONE }
-                }
+                openFinderFirstClick: model.pointers.length == 1,
+                focus
             },
             schedule: [
                 { after: { milliseconds: 300 }, event: { kind: EventKind.OPEN_FINDER_TIMEOUT } }

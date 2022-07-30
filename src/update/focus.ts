@@ -52,3 +52,39 @@ export const selectInput = (model: Model, inputUUID: UUID, generateUUID: Generat
         }
     }
 }
+
+export const selectOutput = (model: Model, outputUUID: UUID, generateUUID: GenerateUUID): UpdateResult<Model, AppEvent> => {
+    if (model.focus.kind === FocusKind.INPUT) {
+        const input = model.graph.inputs[model.focus.input]
+        const output = model.graph.outputs[outputUUID]
+        if (output.node === input.node) {
+            return { model }
+        } else {
+            const graph0 = input.edge !== undefined ?
+                removeInputEdge(model.graph, input.uuid) :
+                model.graph
+            const { graph: graph1 } = addEdge({
+                graph: graph0,
+                input: model.focus.input,
+                output: outputUUID,
+                generateUUID
+            })
+            return {
+                model: clearFocus({ ...model, graph: graph1 }),
+                render: true
+            }
+        }
+    } else {
+        return {
+            model: {
+                ...model,
+                focus: {
+                    kind: FocusKind.OUTPUT,
+                    output: outputUUID,
+                    quickSelect: { kind: QuickSelectKind.NONE }
+                },
+            },
+            render: true
+        }
+    }
+}

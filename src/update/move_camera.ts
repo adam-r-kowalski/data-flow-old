@@ -6,7 +6,7 @@ import { CurrentTime, UpdateResult } from "../ui/run";
 export const maybeStartMoveCamera = (model: Model, key: string, currentTime: CurrentTime): UpdateResult<Model, AppEvent> => {
     const { left, down, up, right } = model.moveCamera
     const notMoving = !(left || down || up || right)
-    const dispatch: AppEvent[] = notMoving ? [{ kind: EventKind.MOVE_CAMERA }] : []
+    const dispatch: AppEvent[] | undefined = notMoving ? [{ kind: EventKind.MOVE_CAMERA }] : undefined
     const now = notMoving ? currentTime() : model.moveCamera.now
     switch (key) {
         case 'h':

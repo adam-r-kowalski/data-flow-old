@@ -555,3 +555,41 @@ test("pressing hotkey with output quick select will select the output and disabl
     }
     expect(model3).toEqual(expectedModel)
 })
+
+test("pressing invalid hotkey with output quick select will disable quick select", () => {
+    const effects = makeEffects()
+    const operations: Operations = {
+        'Add': {
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        },
+    }
+    const model0: Model = {
+        ...emptyModel(),
+        operations
+    }
+    const { model: model1 } = addNodeToGraph({
+        model: model0,
+        operation: operations['Add'],
+        position: { x: 0, y: 0 },
+        generateUUID: effects.generateUUID
+    })
+    const { model: model2 } = update(effects, model1, {
+        kind: EventKind.KEYDOWN,
+        key: 'o'
+    })
+    const { model: model3 } = update(effects, model2, {
+        kind: EventKind.KEYDOWN,
+        key: 'z'
+    })
+    const expectedModel: Model = {
+        ...model1,
+        focus: {
+            kind: FocusKind.NONE,
+            pointerAction: { kind: PointerActionKind.NONE },
+            quickSelect: { kind: QuickSelectKind.NONE }
+        }
+    }
+    expect(model3).toEqual(expectedModel)
+})

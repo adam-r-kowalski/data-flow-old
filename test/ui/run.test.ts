@@ -1,7 +1,8 @@
 import { container, Pointer, row, text, UI } from "../../src/ui"
 import { mockDocument, mockWindow } from "../../src/ui/mock"
-import { Dispatch, run, Success } from "../../src/ui/run"
+import { Dispatch, Effects, run, Success } from "../../src/ui/run"
 import { ProgramError, ProgramKind } from "../../src/ui/webgl2"
+import { makeEffects } from "../mock_effects"
 
 const mockRequestAnimationFrame = (callback: () => void) => callback()
 
@@ -23,7 +24,7 @@ test("run returns a dispatch function which can run your events", () => {
     }
     const model = { value: 0 }
     const view = (model: Model) => text<AppEvent>(model.value.toString())
-    const update = (model: Model, event: AppEvent) => {
+    const update = (_: Effects, model: Model, event: AppEvent) => {
         switch (event) {
             case AppEvent.INCREMENT:
                 model.value++
@@ -42,7 +43,8 @@ test("run returns a dispatch function which can run your events", () => {
         document: mockDocument(),
         requestAnimationFrame: mockRequestAnimationFrame,
         setTimeout: mockSetTimeout,
-        pointerDown: () => { }
+        pointerDown: () => { },
+        effects: makeEffects()
     }))
     dispatch(AppEvent.INCREMENT)
     expect(model).toEqual({ value: 1 })
@@ -57,7 +59,7 @@ test("if update does not return render true then view gets called once", () => {
         ++viewCallCount
         return text<AppEvent>(model.toString())
     }
-    const update = (model: Model, event: AppEvent) => {
+    const update = (_: Effects, model: Model, _1: AppEvent) => {
         return { model }
     }
     const dispatch = extractDispatch(run({
@@ -68,7 +70,8 @@ test("if update does not return render true then view gets called once", () => {
         document: mockDocument(),
         requestAnimationFrame: mockRequestAnimationFrame,
         setTimeout: mockSetTimeout,
-        pointerDown: () => { }
+        pointerDown: () => { },
+        effects: makeEffects()
     }))
     dispatch(true)
     expect(viewCallCount).toEqual(1)
@@ -83,7 +86,7 @@ test("if update returns render true then view gets called again", () => {
         ++viewCallCount
         return text<AppEvent>(model.toString())
     }
-    const update = (model: Model, event: AppEvent) => {
+    const update = (_: Effects, model: Model, _1: AppEvent) => {
         return { model, render: true }
     }
     const dispatch = extractDispatch(run({
@@ -94,7 +97,8 @@ test("if update returns render true then view gets called again", () => {
         document: mockDocument(),
         requestAnimationFrame: mockRequestAnimationFrame,
         setTimeout: mockSetTimeout,
-        pointerDown: () => { }
+        pointerDown: () => { },
+        effects: makeEffects()
     }))
     dispatch(true)
     expect(viewCallCount).toEqual(2)
@@ -106,7 +110,7 @@ test("if update returns scheduled events they get dispatched after some millisec
     const model = 0
     const view = (model: Model) => text<AppEvent>(model.toString())
     const events: AppEvent[] = []
-    const update = (model: Model, event: AppEvent) => {
+    const update = (_: Effects, model: Model, event: AppEvent) => {
         events.push(event)
         return event ? {
             model,
@@ -128,7 +132,8 @@ test("if update returns scheduled events they get dispatched after some millisec
             timeouts.push(milliseconds)
             callback()
         },
-        pointerDown: () => { }
+        pointerDown: () => { },
+        effects: makeEffects()
     }))
     dispatch(true)
     expect(events).toEqual([true, false, false])
@@ -141,7 +146,7 @@ test("if update returns dispatch events they get dispatched immediately", () => 
     const model = 0
     const view = (model: Model) => text<AppEvent>(model.toString())
     const events: AppEvent[] = []
-    const update = (model: Model, event: AppEvent) => {
+    const update = (_: Effects, model: Model, event: AppEvent) => {
         events.push(event)
         return event ? {
             model,
@@ -160,7 +165,8 @@ test("if update returns dispatch events they get dispatched immediately", () => 
             timeouts.push(milliseconds)
             callback()
         },
-        pointerDown: () => { }
+        pointerDown: () => { },
+        effects: makeEffects()
     }))
     dispatch(true)
     expect(events).toEqual([true, false, false])
@@ -171,12 +177,12 @@ test("pointer down events can lead to on click handlers firing", () => {
     type Model = number
     enum AppEvent { A, B }
     const model: Model = 0
-    const view = (model: Model) => row([
+    const view = (_: Model) => row([
         container({ onClick: AppEvent.A, width: 50, height: 50 }),
         container({ onClick: AppEvent.B, width: 50, height: 50 }),
     ])
     const events: AppEvent[] = []
-    const update = (model: Model, event: AppEvent) => {
+    const update = (_: Effects, model: Model, event: AppEvent) => {
         events.push(event)
         return { model }
     }
@@ -190,7 +196,8 @@ test("pointer down events can lead to on click handlers firing", () => {
         document,
         requestAnimationFrame: mockRequestAnimationFrame,
         setTimeout: mockSetTimeout,
-        pointerDown: (_, pointer) => { pointers.push(pointer) }
+        pointerDown: (_, pointer) => { pointers.push(pointer) },
+        effects: makeEffects()
     })
     document.fireEvent('pointerdown', {
         clientX: 0,
@@ -233,7 +240,7 @@ test("resize events trigger a rerender", () => {
         ++viewCallCount
         return text(model.toString())
     }
-    const update = (model: Model, event: AppEvent) => ({ model })
+    const update = (_: Effects, model: Model, _1: AppEvent) => ({ model })
     const window = mockWindow()
     run({
         model,
@@ -243,7 +250,8 @@ test("resize events trigger a rerender", () => {
         document: mockDocument(),
         requestAnimationFrame: mockRequestAnimationFrame,
         setTimeout: mockSetTimeout,
-        pointerDown: () => { }
+        pointerDown: () => { },
+        effects: makeEffects()
     })
     expect(viewCallCount).toEqual(1)
     window.fireEvent('resize')
@@ -255,7 +263,7 @@ test("simulate failure", () => {
     type AppEvent = boolean
     const model: Model = 0
     const view = (model: Model): UI<AppEvent> => text(model.toString())
-    const update = (model: Model, event: AppEvent) => ({ model })
+    const update = (_: Effects, model: Model, _0: AppEvent) => ({ model })
     const window = mockWindow()
     const error = run({
         model,
@@ -265,7 +273,8 @@ test("simulate failure", () => {
         document: mockDocument(true),
         requestAnimationFrame: mockRequestAnimationFrame,
         setTimeout: mockSetTimeout,
-        pointerDown: () => { }
+        pointerDown: () => { },
+        effects: makeEffects()
     }) as ProgramError
     expect(error).toEqual({
         kind: ProgramKind.ERROR,

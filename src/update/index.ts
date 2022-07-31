@@ -1,7 +1,7 @@
 import { fuzzyFind } from "../fuzzy_find"
 import { multiplyMatrices, multiplyMatrixVector, scale, translate } from "../linear_algebra/matrix3x3"
 import { length } from "../linear_algebra/vector3"
-import { UpdateResult } from "../ui/run"
+import { Effects, UpdateResult } from "../ui/run"
 import { Model } from "../model"
 import { Focus, FocusFinder, FocusKind } from '../model/focus'
 import { PointerAction, PointerActionKind } from '../model/pointer_action'
@@ -11,6 +11,7 @@ import { addNode, changeBodyValue, changeNodePosition, removeInputEdge, removeNo
 import { maybeTriggerQuickSelect, quickSelectInput, quickSelectOutput } from "./quick_select"
 import { QuickSelectKind } from "../model/quick_select"
 import { clearFocus, selectInput, selectOutput } from "./focus"
+import { maybeStartMoveCamera, maybeStopMoveCamera, moveCamera } from "./move_camera"
 
 export enum EventKind {
     POINTER_MOVE,
@@ -22,6 +23,7 @@ export enum EventKind {
     CLICKED_OUTPUT,
     OPEN_FINDER_TIMEOUT,
     KEYDOWN,
+    KEYUP,
     VIRTUAL_KEYDOWN,
     CLICKED_FINDER_OPTION,
     CLICKED_NUMBER,
@@ -29,6 +31,7 @@ export enum EventKind {
     DELETE_NODE,
     DELETE_INPUT_EDGE,
     DELETE_OUTPUT_EDGES,
+    MOVE_CAMERA,
 }
 
 export interface PointerMove {
@@ -71,6 +74,12 @@ export interface OpenFinderTimeout {
     readonly kind: EventKind.OPEN_FINDER_TIMEOUT
 }
 
+export interface KeyUp {
+    readonly kind: EventKind.KEYUP
+    readonly key: string
+}
+
+
 export interface KeyDown {
     readonly kind: EventKind.KEYDOWN
     readonly key: string
@@ -110,6 +119,10 @@ export interface DeleteOutputEdges {
     readonly output: UUID
 }
 
+export interface MoveCamera {
+    readonly kind: EventKind.MOVE_CAMERA,
+}
+
 export type AppEvent =
     | PointerMove
     | PointerDown
@@ -120,6 +133,7 @@ export type AppEvent =
     | ClickedOutput
     | OpenFinderTimeout
     | KeyDown
+    | KeyUp
     | VirtualKeyDown
     | ClickedFinderOption
     | ClickedNumber
@@ -127,7 +141,7 @@ export type AppEvent =
     | DeleteNode
     | DeleteInputEdge
     | DeleteOutputEdges
-
+    | MoveCamera
 
 const pointerDown = (model: Model, event: PointerDown): UpdateResult<Model, AppEvent> => {
     const pointers = [...model.pointers, event.pointer]
@@ -415,7 +429,7 @@ export const removeNodeFromGraph = (model: Model, node: UUID): Model => clearFoc
     nodeOrder: model.nodeOrder.filter(n => n !== node),
 })
 
-const keyDown = (model: Model, { key }: KeyDown, generateUUID: GenerateUUID): UpdateResult<Model, AppEvent> => {
+const keyDown = (model: Model, { key }: KeyDown, { generateUUID, currentTime }: Effects): UpdateResult<Model, AppEvent> => {
     switch (model.focus.quickSelect.kind) {
         case QuickSelectKind.INPUT:
             return quickSelectInput(model, model.focus.quickSelect, key, generateUUID)
@@ -477,6 +491,8 @@ const keyDown = (model: Model, { key }: KeyDown, generateUUID: GenerateUUID): Up
                         case 'f':
                             return { model: openFinder(model), render: true }
                         case 'd':
+                        case 'Backspace':
+                        case 'Delete':
                             return {
                                 model: removeNodeFromGraph(model, model.focus.node),
                                 render: true
@@ -491,6 +507,8 @@ const keyDown = (model: Model, { key }: KeyDown, generateUUID: GenerateUUID): Up
                         case 'f':
                             return { model: openFinder(model), render: true }
                         case 'd':
+                        case 'Backspace':
+                        case 'Delete':
                             return {
                                 model: clearFocus({
                                     ...model,
@@ -508,6 +526,8 @@ const keyDown = (model: Model, { key }: KeyDown, generateUUID: GenerateUUID): Up
                         case 'f':
                             return { model: openFinder(model), render: true }
                         case 'd':
+                        case 'Backspace':
+                        case 'Delete':
                             return {
                                 model: clearFocus({
                                     ...model,
@@ -521,10 +541,26 @@ const keyDown = (model: Model, { key }: KeyDown, generateUUID: GenerateUUID): Up
                             return maybeTriggerQuickSelect(model, model.focus, key)
                     }
                 case FocusKind.NONE:
-                    return key == 'f' ?
-                        { model: openFinder(model), render: true } :
-                        maybeTriggerQuickSelect(model, model.focus, key)
+                    if (key == 'f') {
+                        return { model: openFinder(model), render: true }
+                    } else {
+                        const result = maybeTriggerQuickSelect(model, model.focus, key)
+                        if (result.render) {
+                            return result
+                        } else {
+                            return maybeStartMoveCamera(result.model, key, currentTime)
+                        }
+                    }
             }
+    }
+}
+
+const keyUp = (model: Model, { key }: KeyUp): UpdateResult<Model, AppEvent> => {
+    switch (model.focus.kind) {
+        case FocusKind.NONE:
+            return maybeStopMoveCamera(model, key)
+        default:
+            return { model }
     }
 }
 
@@ -652,23 +688,25 @@ const deleteOutputEdges = (model: Model, { output }: DeleteOutputEdges): UpdateR
     render: true
 })
 
-export const update = (generateUUID: GenerateUUID, model: Model, event: AppEvent): UpdateResult<Model, AppEvent> => {
+export const update = (effects: Effects, model: Model, event: AppEvent): UpdateResult<Model, AppEvent> => {
     switch (event.kind) {
         case EventKind.POINTER_DOWN: return pointerDown(model, event)
         case EventKind.POINTER_UP: return pointerUp(model, event)
         case EventKind.POINTER_MOVE: return pointerMove(model, event)
         case EventKind.CLICKED_NODE: return clickedNode(model, event)
         case EventKind.WHEEL: return wheel(model, event)
-        case EventKind.CLICKED_INPUT: return clickedInput(model, event, generateUUID)
-        case EventKind.CLICKED_OUTPUT: return clickedOutput(model, event, generateUUID)
+        case EventKind.CLICKED_INPUT: return clickedInput(model, event, effects.generateUUID)
+        case EventKind.CLICKED_OUTPUT: return clickedOutput(model, event, effects.generateUUID)
         case EventKind.OPEN_FINDER_TIMEOUT: return openFinderTimeout(model, event)
-        case EventKind.KEYDOWN: return keyDown(model, event, generateUUID)
-        case EventKind.VIRTUAL_KEYDOWN: return virtualKeyDown(model, event, generateUUID)
-        case EventKind.CLICKED_FINDER_OPTION: return clickedFinderOption(model, event, generateUUID)
+        case EventKind.KEYDOWN: return keyDown(model, event, effects)
+        case EventKind.KEYUP: return keyUp(model, event)
+        case EventKind.VIRTUAL_KEYDOWN: return virtualKeyDown(model, event, effects.generateUUID)
+        case EventKind.CLICKED_FINDER_OPTION: return clickedFinderOption(model, event, effects.generateUUID)
         case EventKind.CLICKED_NUMBER: return clickedNumber(model, event)
         case EventKind.CLICKED_BACKGROUND: return clickedBackground(model)
         case EventKind.DELETE_NODE: return deleteNode(model, event)
         case EventKind.DELETE_INPUT_EDGE: return deleteInputEdge(model, event)
         case EventKind.DELETE_OUTPUT_EDGES: return deleteOutputEdges(model, event)
+        case EventKind.MOVE_CAMERA: return moveCamera(model, effects.currentTime)
     }
 }

@@ -1,17 +1,17 @@
-import { AppEvent, EventKind, update } from "./update"
+import { EventKind, update } from "./update"
 import { run, transformPointer } from "./ui/run"
 import { view } from './view'
-import { Model } from "./model"
 import { demoModel } from "./model/demo"
 import { Document } from './ui/dom'
 import { ProgramKind } from "./ui/webgl2"
 
 const generateUUID = () => crypto.randomUUID()
+const currentTime = () => performance.now()
 
 const success_or_error = run({
     model: demoModel(generateUUID),
     view,
-    update: (model: Model, event: AppEvent) => update(generateUUID, model, event),
+    update,
     window,
     document: document as Document,
     requestAnimationFrame,
@@ -21,7 +21,8 @@ const success_or_error = run({
             kind: EventKind.POINTER_DOWN,
             pointer
         })
-    }
+    },
+    effects: { currentTime, generateUUID }
 })
 
 if (success_or_error.kind == ProgramKind.ERROR) {
@@ -76,6 +77,14 @@ document.addEventListener('keydown', e => {
     e.preventDefault()
     dispatch({
         kind: EventKind.KEYDOWN,
+        key: e.key
+    })
+})
+
+document.addEventListener('keyup', e => {
+    e.preventDefault()
+    dispatch({
+        kind: EventKind.KEYUP,
         key: e.key
     })
 })

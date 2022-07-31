@@ -3,6 +3,7 @@ import { render } from "./render"
 import { ProgramError, ProgramKind, WebGL2Renderer, webGL2Renderer } from "./webgl2"
 import { Pointer, UI } from "."
 import { Document, Window, PointerEvent } from "./dom"
+import { GenerateUUID } from "../model/graph"
 
 export const transformPointer = (p: PointerEvent): Pointer => ({
     id: p.pointerId,
@@ -29,7 +30,14 @@ export interface UpdateResult<Model, AppEvent> {
     dispatch?: AppEvent[]
 }
 
-type Update<Model, AppEvent> = (model: Model, event: AppEvent) => UpdateResult<Model, AppEvent>
+export type CurrentTime = () => number
+
+export interface Effects {
+    currentTime: CurrentTime
+    generateUUID: GenerateUUID
+}
+
+type Update<Model, AppEvent> = (effects: Effects, model: Model, event: AppEvent) => UpdateResult<Model, AppEvent>
 
 interface Properties<Model, AppEvent> {
     model: Model
@@ -40,6 +48,7 @@ interface Properties<Model, AppEvent> {
     requestAnimationFrame: (callback: () => void) => void
     setTimeout: (callback: () => void, milliseconds: number) => void
     pointerDown: (dispatch: Dispatch<AppEvent>, pointer: Pointer) => void
+    effects: Effects
 }
 
 export interface Success<AppEvent> {
@@ -48,7 +57,7 @@ export interface Success<AppEvent> {
 }
 
 export const run = <Model, AppEvent>(properties: Properties<Model, AppEvent>): Success<AppEvent> | ProgramError => {
-    let { model, view, update, window, document, requestAnimationFrame, setTimeout } = properties
+    let { model, view, update, window, document, requestAnimationFrame, setTimeout, effects } = properties
     const renderer_or_error = webGL2Renderer<AppEvent>({
         width: window.innerWidth,
         height: window.innerHeight,
@@ -71,7 +80,12 @@ export const run = <Model, AppEvent>(properties: Properties<Model, AppEvent>): S
                 }
             }
             const dispatch = (event: AppEvent) => {
-                const { model: newModel, render, schedule, dispatch: dispatchEvents } = update(model, event)
+                const {
+                    model: newModel,
+                    render,
+                    schedule,
+                    dispatch: dispatchEvents
+                } = update(effects, model, event)
                 model = newModel
                 if (render) scheduleRender()
                 for (const { after, event } of schedule ?? []) {

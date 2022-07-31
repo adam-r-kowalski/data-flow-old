@@ -8,39 +8,10 @@ import { PointerActionKind } from "../../src/model/pointer_action"
 import { Pointer } from "../../src/ui"
 import { emptyModel } from "../../src/model/empty"
 import { QuickSelectKind } from "../../src/model/quick_select"
-
-const makeGenerateUUID = (model: { i: number } = { i: 0 }) => {
-    return () => {
-        const uuid = model.i.toString()
-        ++model.i
-        return uuid
-    }
-}
-
-test("pointer down starts panning camera", () => {
-    const model = emptyModel()
-    const pointer: Pointer = {
-        id: 0,
-        position: { x: 0, y: 0 }
-    }
-    const { model: model1 } = update(makeGenerateUUID(), model, {
-        kind: EventKind.POINTER_DOWN,
-        pointer
-    })
-    const expectedModel: Model = {
-        ...emptyModel(),
-        focus: {
-            kind: FocusKind.NONE,
-            pointerAction: { kind: PointerActionKind.PAN },
-            quickSelect: { kind: QuickSelectKind.NONE }
-        },
-        pointers: [pointer],
-    }
-    expect(model1).toEqual(expectedModel)
-})
+import { defaultEffectModel, EffectModel, makeEffects } from "../mock_effects"
 
 test("two pointers down on background starts zooming", () => {
-    const generateUUID = makeGenerateUUID()
+    const effects = makeEffects()
     const model = emptyModel()
     const pointer0: Pointer = {
         id: 0,
@@ -50,18 +21,18 @@ test("two pointers down on background starts zooming", () => {
         id: 1,
         position: { x: 0, y: 0 }
     }
-    const { model: model1 } = update(generateUUID, model, {
+    const { model: model1 } = update(effects, model, {
         kind: EventKind.POINTER_DOWN,
         pointer: pointer0
     })
-    const { model: model2 } = update(generateUUID, model1, {
+    const { model: model2 } = update(effects, model1, {
         kind: EventKind.CLICKED_BACKGROUND,
     })
-    const { model: model3 } = update(generateUUID, model2, {
+    const { model: model3 } = update(effects, model2, {
         kind: EventKind.POINTER_DOWN,
         pointer: pointer1
     })
-    const { model: model4 } = update(generateUUID, model3, {
+    const { model: model4 } = update(effects, model3, {
         kind: EventKind.CLICKED_BACKGROUND,
     })
     const expectedModel: Model = {
@@ -82,28 +53,28 @@ test("two pointers down on background starts zooming", () => {
 
 
 test("double clicking background opens finder", () => {
-    const generateUUID = makeGenerateUUID()
+    const effects = makeEffects()
     const model = emptyModel()
     const pointer: Pointer = {
         id: 0,
         position: { x: 0, y: 0 }
     }
-    const { model: model1 } = update(generateUUID, model, {
+    const { model: model1 } = update(effects, model, {
         kind: EventKind.POINTER_DOWN,
         pointer
     })
-    const { model: model2, schedule } = update(generateUUID, model1, {
+    const { model: model2, schedule } = update(effects, model1, {
         kind: EventKind.CLICKED_BACKGROUND,
     })
-    const { model: model3 } = update(generateUUID, model2, {
+    const { model: model3 } = update(effects, model2, {
         kind: EventKind.POINTER_UP,
         pointer
     })
-    const { model: model4 } = update(generateUUID, model3, {
+    const { model: model4 } = update(effects, model3, {
         kind: EventKind.POINTER_DOWN,
         pointer
     })
-    const { model: model5 } = update(generateUUID, model4, {
+    const { model: model5 } = update(effects, model4, {
         kind: EventKind.CLICKED_BACKGROUND,
     })
     const expectedModel: Model = {
@@ -123,20 +94,20 @@ test("double clicking background opens finder", () => {
 })
 
 test("clicking background triggers finder open timeout", () => {
-    const generateUUID = makeGenerateUUID()
+    const effects = makeEffects()
     const model = emptyModel()
     const pointer: Pointer = {
         id: 0,
         position: { x: 0, y: 0 }
     }
-    const { model: model1 } = update(generateUUID, model, {
+    const { model: model1 } = update(effects, model, {
         kind: EventKind.POINTER_DOWN,
         pointer
     })
-    const { model: model2, schedule } = update(generateUUID, model1, {
+    const { model: model2, schedule } = update(effects, model1, {
         kind: EventKind.CLICKED_BACKGROUND,
     })
-    const { model: model3 } = update(generateUUID, model2, {
+    const { model: model3 } = update(effects, model2, {
         kind: EventKind.POINTER_UP,
         pointer
     })
@@ -151,7 +122,7 @@ test("clicking background triggers finder open timeout", () => {
 })
 
 test("two pointers down then up puts you in pan mode", () => {
-    const generateUUID = makeGenerateUUID()
+    const effects = makeEffects()
     const model = emptyModel()
     const pointer0: Pointer = {
         id: 0,
@@ -161,15 +132,15 @@ test("two pointers down then up puts you in pan mode", () => {
         id: 1,
         position: { x: 0, y: 0 }
     }
-    const { model: model1 } = update(generateUUID, model, {
+    const { model: model1 } = update(effects, model, {
         kind: EventKind.POINTER_DOWN,
         pointer: pointer0
     })
-    const { model: model2 } = update(generateUUID, model1, {
+    const { model: model2 } = update(effects, model1, {
         kind: EventKind.POINTER_DOWN,
         pointer: pointer1
     })
-    const { model: model3 } = update(generateUUID, model2, {
+    const { model: model3 } = update(effects, model2, {
         kind: EventKind.POINTER_UP,
         pointer: pointer0
     })
@@ -186,13 +157,13 @@ test("two pointers down then up puts you in pan mode", () => {
 })
 
 test("pointer down when finder open tracks pointer", () => {
-    const generateUUID = makeGenerateUUID()
+    const effects = makeEffects()
     const model = openFinder(emptyModel())
     const pointer = {
         id: 0,
         position: { x: 0, y: 0 }
     }
-    const { model: model1 } = update(generateUUID, model, {
+    const { model: model1 } = update(effects, model, {
         kind: EventKind.POINTER_DOWN,
         pointer
     })
@@ -204,7 +175,7 @@ test("pointer down when finder open tracks pointer", () => {
 })
 
 test("clicking node selects it and puts it on top of of the node order", () => {
-    const generateUUID = makeGenerateUUID()
+    const effects = makeEffects()
     const operations: Operations = {
         'Add': {
             name: 'Add',
@@ -225,15 +196,15 @@ test("clicking node selects it and puts it on top of of the node order", () => {
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: generateUUID
+        generateUUID: effects.generateUUID
     })
     const { model: model2, node: node1 } = addNodeToGraph({
         model: model1,
         operation: operations['Sub'],
         position: { x: 0, y: 0 },
-        generateUUID: generateUUID
+        generateUUID: effects.generateUUID
     })
-    const { model: model3, render } = update(generateUUID, model2, {
+    const { model: model3, render } = update(effects, model2, {
         kind: EventKind.CLICKED_NODE,
         node: node0
     })
@@ -252,13 +223,13 @@ test("clicking node selects it and puts it on top of of the node order", () => {
 })
 
 test("pointer move before pointer down does nothing", () => {
-    const generateUUID = makeGenerateUUID()
+    const effects = makeEffects()
     const model = emptyModel()
     const pointer: Pointer = {
         id: 0,
         position: { x: 0, y: 0 }
     }
-    const { model: model1 } = update(generateUUID, model, {
+    const { model: model1 } = update(effects, model, {
         kind: EventKind.POINTER_MOVE,
         pointer
     })
@@ -266,16 +237,16 @@ test("pointer move before pointer down does nothing", () => {
 })
 
 test("pointer move after pointer down pans camera", () => {
-    const generateUUID = makeGenerateUUID()
+    const effects = makeEffects()
     const model = emptyModel()
-    const { model: model1 } = update(generateUUID, model, {
+    const { model: model1 } = update(effects, model, {
         kind: EventKind.POINTER_DOWN,
         pointer: {
             id: 0,
             position: { x: 0, y: 0 }
         }
     })
-    const { model: model2, render } = update(generateUUID, model1, {
+    const { model: model2, render } = update(effects, model1, {
         kind: EventKind.POINTER_MOVE,
         pointer: {
             id: 0,
@@ -302,7 +273,7 @@ test("pointer move after pointer down pans camera", () => {
 })
 
 test("pointer move after clicking node pointer down drags node", () => {
-    const generateUUID = makeGenerateUUID()
+    const effects = makeEffects()
     const operations: Operations = {
         'Add': {
             name: 'Add',
@@ -323,26 +294,26 @@ test("pointer move after clicking node pointer down drags node", () => {
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: generateUUID
+        generateUUID: effects.generateUUID
     })
     const { model: model2, node: node1 } = addNodeToGraph({
         model: model1,
         operation: operations['Sub'],
         position: { x: 0, y: 0 },
-        generateUUID: generateUUID
+        generateUUID: effects.generateUUID
     })
-    const { model: model3 } = update(generateUUID, model2, {
+    const { model: model3 } = update(effects, model2, {
         kind: EventKind.CLICKED_NODE,
         node: node0
     })
-    const { model: model4 } = update(generateUUID, model3, {
+    const { model: model4 } = update(effects, model3, {
         kind: EventKind.POINTER_DOWN,
         pointer: {
             id: 0,
             position: { x: 0, y: 0 }
         }
     })
-    const { model: model5, render } = update(generateUUID, model4, {
+    const { model: model5, render } = update(effects, model4, {
         kind: EventKind.POINTER_MOVE,
         pointer: {
             id: 0,
@@ -371,7 +342,7 @@ test("pointer move after clicking node pointer down drags node", () => {
 })
 
 test("pointer move after clicking node, pointer down, then pointer up", () => {
-    const generateUUID = makeGenerateUUID()
+    const effects = makeEffects()
     const operations: Operations = {
         'Add': {
             name: 'Add',
@@ -387,27 +358,27 @@ test("pointer move after clicking node, pointer down, then pointer up", () => {
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: generateUUID
+        generateUUID: effects.generateUUID
     })
-    const { model: model2 } = update(generateUUID, model1, {
+    const { model: model2 } = update(effects, model1, {
         kind: EventKind.CLICKED_NODE,
         node: node0
     })
-    const { model: model3 } = update(generateUUID, model2, {
+    const { model: model3 } = update(effects, model2, {
         kind: EventKind.POINTER_DOWN,
         pointer: {
             id: 0,
             position: { x: 0, y: 0 }
         }
     })
-    const { model: model4 } = update(generateUUID, model3, {
+    const { model: model4 } = update(effects, model3, {
         kind: EventKind.POINTER_UP,
         pointer: {
             id: 0,
             position: { x: 0, y: 0 }
         }
     })
-    const { model: model5 } = update(generateUUID, model4, {
+    const { model: model5 } = update(effects, model4, {
         kind: EventKind.POINTER_MOVE,
         pointer: {
             id: 0,
@@ -428,9 +399,9 @@ test("pointer move after clicking node, pointer down, then pointer up", () => {
 })
 
 test("mouse wheel zooms in camera relative to mouse position", () => {
-    const generateUUID = makeGenerateUUID()
+    const effects = makeEffects()
     const model = emptyModel()
-    const { model: model1 } = update(generateUUID, model, {
+    const { model: model1 } = update(effects, model, {
         kind: EventKind.WHEEL,
         deltaY: 10,
         position: { x: 50, y: 100 }
@@ -447,7 +418,7 @@ test("mouse wheel zooms in camera relative to mouse position", () => {
 })
 
 test("clicking input selects it", () => {
-    const generateUUID = makeGenerateUUID()
+    const effects = makeEffects()
     const operations: Operations = {
         'Add': {
             name: 'Add',
@@ -463,10 +434,10 @@ test("clicking input selects it", () => {
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: generateUUID
+        generateUUID: effects.generateUUID
     })
     const input = model1.graph.nodes[node0].inputs[0]
-    const { model: model2, render } = update(generateUUID, model1, {
+    const { model: model2, render } = update(effects, model1, {
         kind: EventKind.CLICKED_INPUT,
         input
     })
@@ -483,7 +454,7 @@ test("clicking input selects it", () => {
 })
 
 test("clicking new input selects it and deselects old input", () => {
-    const generateUUID = makeGenerateUUID()
+    const effects = makeEffects()
     const operations: Operations = {
         'Add': {
             name: 'Add',
@@ -499,14 +470,14 @@ test("clicking new input selects it and deselects old input", () => {
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: generateUUID
+        generateUUID: effects.generateUUID
     })
     const [input0, input1] = model1.graph.nodes[node0].inputs
-    const { model: model2 } = update(generateUUID, model1, {
+    const { model: model2 } = update(effects, model1, {
         kind: EventKind.CLICKED_INPUT,
         input: input0
     })
-    const { model: model3, render } = update(generateUUID, model2, {
+    const { model: model3, render } = update(effects, model2, {
         kind: EventKind.CLICKED_INPUT,
         input: input1
     })
@@ -523,8 +494,8 @@ test("clicking new input selects it and deselects old input", () => {
 })
 
 test("clicking output after clicking input adds connection", () => {
-    const uuidModel = { i: 0 }
-    const generateUUID = makeGenerateUUID(uuidModel)
+    const effectModel: EffectModel = { uuid: 0, time: 0 }
+    const effects = makeEffects(effectModel)
     const operations: Operations = {
         'Add': {
             name: 'Add',
@@ -545,22 +516,22 @@ test("clicking output after clicking input adds connection", () => {
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: generateUUID
+        generateUUID: effects.generateUUID
     })
     const { model: model2, node: node1 } = addNodeToGraph({
         model: model1,
         operation: operations['Sub'],
         position: { x: 0, y: 0 },
-        generateUUID: generateUUID
+        generateUUID: effects.generateUUID
     })
     const input = model2.graph.nodes[node0].inputs[0]
-    const { model: model3 } = update(generateUUID, model2, {
+    const { model: model3 } = update(effects, model2, {
         kind: EventKind.CLICKED_INPUT,
         input
     })
     const output = model3.graph.nodes[node1].outputs[0]
-    const newUuidModel = { ...uuidModel }
-    const { model: model4, render } = update(generateUUID, model3, {
+    const newEffectModel = { ...effectModel }
+    const { model: model4, render } = update(effects, model3, {
         kind: EventKind.CLICKED_OUTPUT,
         output
     })
@@ -570,7 +541,7 @@ test("clicking output after clicking input adds connection", () => {
             graph: model2.graph,
             input,
             output,
-            generateUUID: makeGenerateUUID(newUuidModel)
+            generateUUID: makeEffects(newEffectModel).generateUUID
         }).graph
     }
     expect(model4).toEqual(expectedModel)
@@ -578,7 +549,7 @@ test("clicking output after clicking input adds connection", () => {
 })
 
 test("clicking output selects it", () => {
-    const generateUUID = makeGenerateUUID()
+    const effects = makeEffects()
     const operations: Operations = {
         'Add': {
             name: 'Add',
@@ -594,10 +565,10 @@ test("clicking output selects it", () => {
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: generateUUID
+        generateUUID: effects.generateUUID
     })
     const output = model1.graph.nodes[node0].outputs[0]
-    const { model: model2, render } = update(generateUUID, model1, {
+    const { model: model2, render } = update(effects, model1, {
         kind: EventKind.CLICKED_OUTPUT,
         output
     })
@@ -614,7 +585,7 @@ test("clicking output selects it", () => {
 })
 
 test("clicking new output selects it and deselects old output", () => {
-    const generateUUID = makeGenerateUUID()
+    const effects = makeEffects()
     const operations: Operations = {
         'Add': {
             name: 'Add',
@@ -630,14 +601,14 @@ test("clicking new output selects it and deselects old output", () => {
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: generateUUID
+        generateUUID: effects.generateUUID
     })
     const [output0, output1] = model1.graph.nodes[node0].outputs
-    const { model: model2 } = update(generateUUID, model1, {
+    const { model: model2 } = update(effects, model1, {
         kind: EventKind.CLICKED_OUTPUT,
         output: output0
     })
-    const { model: model3, render } = update(generateUUID, model2, {
+    const { model: model3, render } = update(effects, model2, {
         kind: EventKind.CLICKED_OUTPUT,
         output: output1
     })
@@ -654,8 +625,8 @@ test("clicking new output selects it and deselects old output", () => {
 })
 
 test("clicking input after clicking output adds connection", () => {
-    const uuidModel = { i: 0 }
-    const generateUUID = makeGenerateUUID(uuidModel)
+    const effectModel = defaultEffectModel()
+    const effects = makeEffects(effectModel)
     const operations: Operations = {
         'Add': {
             name: 'Add',
@@ -676,22 +647,22 @@ test("clicking input after clicking output adds connection", () => {
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: generateUUID
+        generateUUID: effects.generateUUID
     })
     const { model: model2, node: node1 } = addNodeToGraph({
         model: model1,
         operation: operations['Sub'],
         position: { x: 0, y: 0 },
-        generateUUID: generateUUID
+        generateUUID: effects.generateUUID
     })
     const output = model2.graph.nodes[node1].outputs[0]
-    const { model: model3, render } = update(generateUUID, model2, {
+    const { model: model3, render } = update(effects, model2, {
         kind: EventKind.CLICKED_OUTPUT,
         output
     })
-    const newUuidModel = { ...uuidModel }
+    const newEffectModel = { ...effectModel }
     const input = model3.graph.nodes[node0].inputs[0]
-    const { model: model4 } = update(generateUUID, model3, {
+    const { model: model4 } = update(effects, model3, {
         kind: EventKind.CLICKED_INPUT,
         input
     })
@@ -701,7 +672,7 @@ test("clicking input after clicking output adds connection", () => {
             graph: model2.graph,
             input,
             output,
-            generateUUID: makeGenerateUUID(newUuidModel)
+            generateUUID: makeEffects(newEffectModel).generateUUID
         }).graph
     }
     expect(model4).toEqual(expectedModel)
@@ -709,7 +680,7 @@ test("clicking input after clicking output adds connection", () => {
 })
 
 test("double click opens finder", () => {
-    const generateUUID = makeGenerateUUID()
+    const effects = makeEffects()
     const operations: Operations = {
         'Add': {
             name: 'Add',
@@ -726,31 +697,31 @@ test("double click opens finder", () => {
         ...emptyModel(),
         operations
     }
-    const { model: model1 } = update(generateUUID, model0, {
+    const { model: model1 } = update(effects, model0, {
         kind: EventKind.POINTER_DOWN,
         pointer: {
             id: 0,
             position: { x: 0, y: 0 }
         }
     })
-    const { model: model2 } = update(generateUUID, model1, {
+    const { model: model2 } = update(effects, model1, {
         kind: EventKind.CLICKED_BACKGROUND,
     })
-    const { model: model3 } = update(generateUUID, model2, {
+    const { model: model3 } = update(effects, model2, {
         kind: EventKind.POINTER_UP,
         pointer: {
             id: 0,
             position: { x: 0, y: 0 }
         }
     })
-    const { model: model4 } = update(generateUUID, model3, {
+    const { model: model4 } = update(effects, model3, {
         kind: EventKind.POINTER_DOWN,
         pointer: {
             id: 0,
             position: { x: 50, y: 50 }
         }
     })
-    const { model: model5, render } = update(generateUUID, model4, {
+    const { model: model5, render } = update(effects, model4, {
         kind: EventKind.CLICKED_BACKGROUND,
     })
     const expectedModel: Model = {
@@ -775,7 +746,7 @@ test("double click opens finder", () => {
 
 test("key down when finder is not shown does nothing", () => {
     const model = emptyModel()
-    const { model: model1 } = update(makeGenerateUUID(), model, {
+    const { model: model1 } = update(makeEffects(), model, {
         kind: EventKind.KEYDOWN,
         key: 'a'
     })
@@ -800,7 +771,7 @@ test("f key down when finder is not shown opens finder", () => {
         ...emptyModel(),
         operations
     }
-    const { model: model1, render } = update(makeGenerateUUID(), model0, {
+    const { model: model1, render } = update(makeEffects(), model0, {
         kind: EventKind.KEYDOWN,
         key: 'f'
     })
@@ -834,7 +805,7 @@ test("clicking a finder option adds node to graph", () => {
         ...emptyModel(),
         operations
     })
-    const { model: model1, render } = update(makeGenerateUUID(), model0, {
+    const { model: model1, render } = update(makeEffects(), model0, {
         kind: EventKind.CLICKED_FINDER_OPTION,
         option: 'Add'
     })
@@ -842,14 +813,14 @@ test("clicking a finder option adds node to graph", () => {
         model: { ...emptyModel(), operations },
         position: { x: 0, y: 0 },
         operation: operations['Add'],
-        generateUUID: makeGenerateUUID()
+        generateUUID: makeEffects().generateUUID
     })
     expect(model1).toEqual(expectedModel)
     expect(render).toEqual(true)
 })
 
 test("key down when finder is shown appends to search", () => {
-    const generateUUID = makeGenerateUUID()
+    const effects = makeEffects()
     const operations: Operations = {
         'Add': {
             name: 'Add',
@@ -866,15 +837,15 @@ test("key down when finder is shown appends to search", () => {
         ...emptyModel(),
         operations
     })
-    const { model: model1 } = update(generateUUID, model0, {
+    const { model: model1 } = update(effects, model0, {
         kind: EventKind.KEYDOWN,
         key: 'a'
     })
-    const { model: model2 } = update(generateUUID, model1, {
+    const { model: model2 } = update(effects, model1, {
         kind: EventKind.KEYDOWN,
         key: 'd'
     })
-    const { model: model3, render } = update(generateUUID, model2, {
+    const { model: model3, render } = update(effects, model2, {
         kind: EventKind.KEYDOWN,
         key: 'd'
     })
@@ -892,7 +863,7 @@ test("key down when finder is shown appends to search", () => {
 })
 
 test("backspace key down when finder is shown deletes from search", () => {
-    const generateUUID = makeGenerateUUID()
+    const effects = makeEffects()
     const operations: Operations = {
         'Add': {
             name: 'Add',
@@ -909,19 +880,19 @@ test("backspace key down when finder is shown deletes from search", () => {
         ...emptyModel(),
         operations
     })
-    const { model: model1 } = update(generateUUID, model0, {
+    const { model: model1 } = update(effects, model0, {
         kind: EventKind.KEYDOWN,
         key: 'a'
     })
-    const { model: model2 } = update(generateUUID, model1, {
+    const { model: model2 } = update(effects, model1, {
         kind: EventKind.KEYDOWN,
         key: 'd'
     })
-    const { model: model3 } = update(generateUUID, model2, {
+    const { model: model3 } = update(effects, model2, {
         kind: EventKind.KEYDOWN,
         key: 'd'
     })
-    const { model: model4, render } = update(generateUUID, model3, {
+    const { model: model4, render } = update(effects, model3, {
         kind: EventKind.KEYDOWN,
         key: 'Backspace'
     })
@@ -955,7 +926,7 @@ test("enter key down when finder is shown closes finder and adds node", () => {
         ...emptyModel(),
         operations
     })
-    const { model: model1, render } = update(makeGenerateUUID(), model0, {
+    const { model: model1, render } = update(makeEffects(), model0, {
         kind: EventKind.KEYDOWN,
         key: 'Enter'
     })
@@ -963,14 +934,14 @@ test("enter key down when finder is shown closes finder and adds node", () => {
         model: { ...emptyModel(), operations },
         position: { x: 0, y: 0 },
         operation: operations['Add'],
-        generateUUID: makeGenerateUUID()
+        generateUUID: makeEffects().generateUUID
     })
     expect(model1).toEqual(expectedModel)
     expect(render).toEqual(true)
 })
 
 test("enter key down when finder is shown and finder has search closes finder and adds node", () => {
-    const generateUUID = makeGenerateUUID()
+    const effects = makeEffects()
     const operations: Operations = {
         'Add': {
             name: 'Add',
@@ -989,13 +960,13 @@ test("enter key down when finder is shown and finder has search closes finder an
     })
     let model1 = model0
     for (const key of 'add') {
-        const { model: model } = update(generateUUID, model1, {
+        const { model: model } = update(effects, model1, {
             kind: EventKind.KEYDOWN,
             key
         })
         model1 = model
     }
-    const { model: model2 } = update(generateUUID, model1, {
+    const { model: model2 } = update(effects, model1, {
         kind: EventKind.KEYDOWN,
         key: 'Enter'
     })
@@ -1003,13 +974,13 @@ test("enter key down when finder is shown and finder has search closes finder an
         model: { ...emptyModel(), operations },
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: makeGenerateUUID()
+        generateUUID: makeEffects().generateUUID
     })
     expect(model2).toEqual(expectedModel)
 })
 
 test("enter key down when finder is shown and finder has search eliminates all options closes finder", () => {
-    const generateUUID = makeGenerateUUID()
+    const effects = makeEffects()
     const operations: Operations = {
         'Add': {
             name: 'Add',
@@ -1026,11 +997,11 @@ test("enter key down when finder is shown and finder has search eliminates all o
         ...emptyModel(),
         operations
     })
-    const { model: model1 } = update(generateUUID, model0, {
+    const { model: model1 } = update(effects, model0, {
         kind: EventKind.KEYDOWN,
         key: 'x'
     })
-    const { model: model2 } = update(generateUUID, model1, {
+    const { model: model2 } = update(effects, model1, {
         kind: EventKind.KEYDOWN,
         key: 'Enter'
     })
@@ -1038,7 +1009,7 @@ test("enter key down when finder is shown and finder has search eliminates all o
 })
 
 test("ret virtual key down when finder is shown and finder has search eliminates all options closes finder", () => {
-    const generateUUID = makeGenerateUUID()
+    const effects = makeEffects()
     const operations: Operations = {
         'Add': {
             name: 'Add',
@@ -1055,11 +1026,11 @@ test("ret virtual key down when finder is shown and finder has search eliminates
         ...emptyModel(),
         operations
     })
-    const { model: model1 } = update(generateUUID, model0, {
+    const { model: model1 } = update(effects, model0, {
         kind: EventKind.VIRTUAL_KEYDOWN,
         key: 'x'
     })
-    const { model: model2 } = update(generateUUID, model1, {
+    const { model: model2 } = update(effects, model1, {
         kind: EventKind.VIRTUAL_KEYDOWN,
         key: 'ret'
     })
@@ -1069,7 +1040,7 @@ test("ret virtual key down when finder is shown and finder has search eliminates
 
 
 test("escape key down when finder is shown closes finder", () => {
-    const generateUUID = makeGenerateUUID()
+    const effects = makeEffects()
     const operations: Operations = {
         'Add': {
             name: 'Add',
@@ -1086,7 +1057,7 @@ test("escape key down when finder is shown closes finder", () => {
         ...emptyModel(),
         operations
     })
-    const { model: model1, render } = update(generateUUID, model0, {
+    const { model: model1, render } = update(effects, model0, {
         kind: EventKind.KEYDOWN,
         key: 'Escape'
     })
@@ -1096,7 +1067,7 @@ test("escape key down when finder is shown closes finder", () => {
 })
 
 test("shift key down when finder is shown are ignored", () => {
-    const generateUUID = makeGenerateUUID()
+    const effects = makeEffects()
     const operations: Operations = {
         'Add': {
             name: 'Add',
@@ -1113,7 +1084,7 @@ test("shift key down when finder is shown are ignored", () => {
         ...emptyModel(),
         operations
     })
-    const { model: model1, render } = update(generateUUID, model0, {
+    const { model: model1, render } = update(effects, model0, {
         kind: EventKind.KEYDOWN,
         key: 'Shift'
     })
@@ -1122,7 +1093,7 @@ test("shift key down when finder is shown are ignored", () => {
 })
 
 test("alt key down when finder is shown are ignored", () => {
-    const generateUUID = makeGenerateUUID()
+    const effects = makeEffects()
     const operations: Operations = {
         'Add': {
             name: 'Add',
@@ -1139,7 +1110,7 @@ test("alt key down when finder is shown are ignored", () => {
         ...emptyModel(),
         operations
     })
-    const { model: model1, render } = update(generateUUID, model0, {
+    const { model: model1, render } = update(effects, model0, {
         kind: EventKind.KEYDOWN,
         key: 'Alt'
     })
@@ -1148,7 +1119,7 @@ test("alt key down when finder is shown are ignored", () => {
 })
 
 test("control key down when finder is shown are ignored", () => {
-    const generateUUID = makeGenerateUUID()
+    const effects = makeEffects()
     const operations: Operations = {
         'Add': {
             name: 'Add',
@@ -1165,7 +1136,7 @@ test("control key down when finder is shown are ignored", () => {
         ...emptyModel(),
         operations
     })
-    const { model: model1, render } = update(generateUUID, model0, {
+    const { model: model1, render } = update(effects, model0, {
         kind: EventKind.KEYDOWN,
         key: 'Control'
     })
@@ -1174,7 +1145,7 @@ test("control key down when finder is shown are ignored", () => {
 })
 
 test("meta key down when finder is shown are ignored", () => {
-    const generateUUID = makeGenerateUUID()
+    const effects = makeEffects()
     const operations: Operations = {
         'Add': {
             name: 'Add',
@@ -1191,7 +1162,7 @@ test("meta key down when finder is shown are ignored", () => {
         ...emptyModel(),
         operations
     })
-    const { model: model1, render } = update(generateUUID, model0, {
+    const { model: model1, render } = update(effects, model0, {
         kind: EventKind.KEYDOWN,
         key: 'Meta'
     })
@@ -1200,7 +1171,7 @@ test("meta key down when finder is shown are ignored", () => {
 })
 
 test("Tab key down when finder is shown are ignored", () => {
-    const generateUUID = makeGenerateUUID()
+    const effects = makeEffects()
     const operations: Operations = {
         'Add': {
             name: 'Add',
@@ -1217,7 +1188,7 @@ test("Tab key down when finder is shown are ignored", () => {
         ...emptyModel(),
         operations
     })
-    const { model: model1, render } = update(generateUUID, model0, {
+    const { model: model1, render } = update(effects, model0, {
         kind: EventKind.KEYDOWN,
         key: 'Tab'
     })
@@ -1227,7 +1198,7 @@ test("Tab key down when finder is shown are ignored", () => {
 })
 
 test("virtual key down when finder is shown appends to search", () => {
-    const generateUUID = makeGenerateUUID()
+    const effects = makeEffects()
     const operations: Operations = {
         'Add': {
             name: 'Add',
@@ -1244,15 +1215,15 @@ test("virtual key down when finder is shown appends to search", () => {
         ...emptyModel(),
         operations
     })
-    const { model: model1 } = update(generateUUID, model0, {
+    const { model: model1 } = update(effects, model0, {
         kind: EventKind.VIRTUAL_KEYDOWN,
         key: 'a'
     })
-    const { model: model2 } = update(generateUUID, model1, {
+    const { model: model2 } = update(effects, model1, {
         kind: EventKind.VIRTUAL_KEYDOWN,
         key: 'd'
     })
-    const { model: model3, render } = update(generateUUID, model2, {
+    const { model: model3, render } = update(effects, model2, {
         kind: EventKind.KEYDOWN,
         key: 'd'
     })
@@ -1270,7 +1241,7 @@ test("virtual key down when finder is shown appends to search", () => {
 })
 
 test("del virtual key down when finder is shown deletes from search", () => {
-    const generateUUID = makeGenerateUUID()
+    const effects = makeEffects()
     const operations: Operations = {
         'Add': {
             name: 'Add',
@@ -1287,19 +1258,19 @@ test("del virtual key down when finder is shown deletes from search", () => {
         ...emptyModel(),
         operations
     })
-    const { model: model1 } = update(generateUUID, model0, {
+    const { model: model1 } = update(effects, model0, {
         kind: EventKind.VIRTUAL_KEYDOWN,
         key: 'a'
     })
-    const { model: model2 } = update(generateUUID, model1, {
+    const { model: model2 } = update(effects, model1, {
         kind: EventKind.VIRTUAL_KEYDOWN,
         key: 'd'
     })
-    const { model: model3 } = update(generateUUID, model2, {
+    const { model: model3 } = update(effects, model2, {
         kind: EventKind.VIRTUAL_KEYDOWN,
         key: 'd'
     })
-    const { model: model4, render } = update(generateUUID, model3, {
+    const { model: model4, render } = update(effects, model3, {
         kind: EventKind.VIRTUAL_KEYDOWN,
         key: 'del'
     })
@@ -1317,7 +1288,7 @@ test("del virtual key down when finder is shown deletes from search", () => {
 })
 
 test("space virtual key down when finder is shown adds space to search", () => {
-    const generateUUID = makeGenerateUUID()
+    const effects = makeEffects()
     const operations: Operations = {
         'Add': {
             name: 'Add',
@@ -1334,15 +1305,15 @@ test("space virtual key down when finder is shown adds space to search", () => {
         ...emptyModel(),
         operations
     })
-    const { model: model1 } = update(generateUUID, model0, {
+    const { model: model1 } = update(effects, model0, {
         kind: EventKind.VIRTUAL_KEYDOWN,
         key: 'a'
     })
-    const { model: model2 } = update(generateUUID, model1, {
+    const { model: model2 } = update(effects, model1, {
         kind: EventKind.VIRTUAL_KEYDOWN,
         key: 'space'
     })
-    const { model: model3, render } = update(generateUUID, model2, {
+    const { model: model3, render } = update(effects, model2, {
         kind: EventKind.VIRTUAL_KEYDOWN,
         key: 'd'
     })
@@ -1376,7 +1347,7 @@ test("ret virtual key down when finder is shown closes finder and adds node", ()
         ...emptyModel(),
         operations
     })
-    const { model: model1, render } = update(makeGenerateUUID(), model0, {
+    const { model: model1, render } = update(makeEffects(), model0, {
         kind: EventKind.VIRTUAL_KEYDOWN,
         key: 'ret'
     })
@@ -1384,14 +1355,14 @@ test("ret virtual key down when finder is shown closes finder and adds node", ()
         model: { ...emptyModel(), operations },
         position: { x: 0, y: 0 },
         operation: operations['Add'],
-        generateUUID: makeGenerateUUID()
+        generateUUID: makeEffects().generateUUID
     })
     expect(model1).toEqual(expectedModel)
     expect(render).toEqual(true)
 })
 
 test("sft virtual key down when finder is shown are ignored", () => {
-    const generateUUID = makeGenerateUUID()
+    const effects = makeEffects()
     const operations: Operations = {
         'Add': {
             name: 'Add',
@@ -1408,7 +1379,7 @@ test("sft virtual key down when finder is shown are ignored", () => {
         ...emptyModel(),
         operations
     })
-    const { model: model1, render } = update(generateUUID, model0, {
+    const { model: model1, render } = update(effects, model0, {
         kind: EventKind.VIRTUAL_KEYDOWN,
         key: 'sft'
     })
@@ -1417,8 +1388,8 @@ test("sft virtual key down when finder is shown are ignored", () => {
 })
 
 test("pressing number on keyboard appends to number node", () => {
-    const uuidModel = { i: 0 }
-    const generateUUID = makeGenerateUUID(uuidModel)
+    const effectModel = defaultEffectModel()
+    const effects = makeEffects(effectModel)
     const operations: Operations = {
         'Number': {
             name: 'Number',
@@ -1431,18 +1402,18 @@ test("pressing number on keyboard appends to number node", () => {
         model: { ...emptyModel(), operations },
         operation: operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID
+        generateUUID: effects.generateUUID
     })
     const model1 = openNumericKeyboard(model0, model0.graph.nodes[node].body!)
     let model2 = model1
     for (const key of '1234567890') {
-        const { model: model } = update(generateUUID, model2, {
+        const { model: model } = update(effects, model2, {
             kind: EventKind.KEYDOWN,
             key
         })
         model2 = model
     }
-    const body = makeGenerateUUID({ i: uuidModel.i - 1 })()
+    const body = makeEffects({ ...effectModel, uuid: effectModel.uuid - 1 }).generateUUID()
     const expectedModel: Model = {
         ...model0,
         operations,
@@ -1466,8 +1437,8 @@ test("pressing number on keyboard appends to number node", () => {
 })
 
 test("pressing backspace on keyboard deletes from number node", () => {
-    const uuidModel = { i: 0 }
-    const generateUUID = makeGenerateUUID(uuidModel)
+    const effectModel = defaultEffectModel()
+    const effects = makeEffects(effectModel)
     const operations: Operations = {
         'Number': {
             name: 'Number',
@@ -1480,22 +1451,22 @@ test("pressing backspace on keyboard deletes from number node", () => {
         model: { ...emptyModel(), operations },
         operation: operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID
+        generateUUID: effects.generateUUID
     })
     const model1 = openNumericKeyboard(model0, model0.graph.nodes[node].body!)
     let model2 = model1
     for (const key of '1234567890') {
-        const { model: model } = update(generateUUID, model2, {
+        const { model: model } = update(effects, model2, {
             kind: EventKind.KEYDOWN,
             key
         })
         model2 = model
     }
-    const { model: model3 } = update(generateUUID, model2, {
+    const { model: model3 } = update(effects, model2, {
         kind: EventKind.KEYDOWN,
         key: 'Backspace'
     })
-    const body = makeGenerateUUID({ i: uuidModel.i - 1 })()
+    const body = makeEffects({ ...effectModel, uuid: effectModel.uuid - 1 }).generateUUID()
     const expectedModel: Model = {
         ...model0,
         operations,
@@ -1519,8 +1490,8 @@ test("pressing backspace on keyboard deletes from number node", () => {
 })
 
 test("pressing backspace when number node value is 0 has no effect", () => {
-    const uuidModel = { i: 0 }
-    const generateUUID = makeGenerateUUID(uuidModel)
+    const effectModel = defaultEffectModel()
+    const effects = makeEffects(effectModel)
     const operations: Operations = {
         'Number': {
             name: 'Number',
@@ -1533,18 +1504,18 @@ test("pressing backspace when number node value is 0 has no effect", () => {
         model: { ...emptyModel(), operations },
         operation: operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID
+        generateUUID: effects.generateUUID
     })
     const model1 = openNumericKeyboard(model0, model0.graph.nodes[node].body!)
     let model2 = model1
     for (let i = 0; i < 3; ++i) {
-        const { model: model } = update(generateUUID, model1, {
+        const { model: model } = update(effects, model1, {
             kind: EventKind.KEYDOWN,
             key: 'Backspace'
         })
         model2 = model
     }
-    const body = makeGenerateUUID({ i: uuidModel.i - 1 })()
+    const body = makeEffects({ ...effectModel, uuid: effectModel.uuid - 1 }).generateUUID()
     const expectedModel: Model = {
         ...model0,
         operations,
@@ -1568,8 +1539,8 @@ test("pressing backspace when number node value is 0 has no effect", () => {
 })
 
 test("pressing del on virtual keyboard when number node value is 0 has no effect", () => {
-    const uuidModel = { i: 0 }
-    const generateUUID = makeGenerateUUID(uuidModel)
+    const effectModel = defaultEffectModel()
+    const effects = makeEffects(effectModel)
     const operations: Operations = {
         'Number': {
             name: 'Number',
@@ -1582,18 +1553,18 @@ test("pressing del on virtual keyboard when number node value is 0 has no effect
         model: { ...emptyModel(), operations },
         operation: operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID
+        generateUUID: effects.generateUUID
     })
     const model1 = openNumericKeyboard(model0, model0.graph.nodes[node].body!)
     let model2 = model1
     for (let i = 0; i < 3; ++i) {
-        const { model: model } = update(generateUUID, model2, {
+        const { model: model } = update(effects, model2, {
             kind: EventKind.VIRTUAL_KEYDOWN,
             key: 'del'
         })
         model2 = model
     }
-    const body = makeGenerateUUID({ i: uuidModel.i - 1 })()
+    const body = makeEffects({ ...effectModel, uuid: effectModel.uuid - 1 }).generateUUID()
     const expectedModel: Model = {
         ...model0,
         operations,
@@ -1617,8 +1588,8 @@ test("pressing del on virtual keyboard when number node value is 0 has no effect
 })
 
 test("pressing number on virtual keyboard appends to number node", () => {
-    const uuidModel = { i: 0 }
-    const generateUUID = makeGenerateUUID(uuidModel)
+    const effectModel = defaultEffectModel()
+    const effects = makeEffects(effectModel)
     const operations: Operations = {
         'Number': {
             name: 'Number',
@@ -1631,18 +1602,18 @@ test("pressing number on virtual keyboard appends to number node", () => {
         model: { ...emptyModel(), operations },
         operation: operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID
+        generateUUID: effects.generateUUID
     })
     const model1 = openNumericKeyboard(model0, model0.graph.nodes[node].body!)
     let model2 = model1
     for (const key of '1234567890') {
-        const { model: model } = update(generateUUID, model2, {
+        const { model: model } = update(effects, model2, {
             kind: EventKind.VIRTUAL_KEYDOWN,
             key
         })
         model2 = model
     }
-    const body = makeGenerateUUID({ i: uuidModel.i - 1 })()
+    const body = makeEffects({ ...effectModel, uuid: effectModel.uuid - 1 }).generateUUID()
     const expectedModel: Model = {
         ...model0,
         operations,
@@ -1666,8 +1637,8 @@ test("pressing number on virtual keyboard appends to number node", () => {
 })
 
 test("pressing del on virtual keyboard deletes from number node", () => {
-    const uuidModel = { i: 0 }
-    const generateUUID = makeGenerateUUID(uuidModel)
+    const effectModel = defaultEffectModel()
+    const effects = makeEffects(effectModel)
     const operations: Operations = {
         'Number': {
             name: 'Number',
@@ -1680,22 +1651,22 @@ test("pressing del on virtual keyboard deletes from number node", () => {
         model: { ...emptyModel(), operations },
         operation: operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID
+        generateUUID: effects.generateUUID
     })
     const model1 = openNumericKeyboard(model0, model0.graph.nodes[node].body!)
     let model2 = model1
     for (const key of '1234567890') {
-        const { model: model } = update(generateUUID, model2, {
+        const { model: model } = update(effects, model2, {
             kind: EventKind.VIRTUAL_KEYDOWN,
             key
         })
         model2 = model
     }
-    const { model: model3 } = update(generateUUID, model2, {
+    const { model: model3 } = update(effects, model2, {
         kind: EventKind.VIRTUAL_KEYDOWN,
         key: 'del'
     })
-    const body = makeGenerateUUID({ i: uuidModel.i - 1 })()
+    const body = makeEffects({ ...effectModel, uuid: effectModel.uuid - 1 }).generateUUID()
     const expectedModel: Model = {
         ...model0,
         operations,
@@ -1719,8 +1690,8 @@ test("pressing del on virtual keyboard deletes from number node", () => {
 })
 
 test("pressing enter on keyboard while editing number node exits virtual keyboard", () => {
-    const uuidModel = { i: 0 }
-    const generateUUID = makeGenerateUUID(uuidModel)
+    const effectModel = defaultEffectModel()
+    const effects = makeEffects(effectModel)
     const operations: Operations = {
         'Number': {
             name: 'Number',
@@ -1733,22 +1704,22 @@ test("pressing enter on keyboard while editing number node exits virtual keyboar
         model: { ...emptyModel(), operations },
         operation: operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID
+        generateUUID: effects.generateUUID
     })
     const model1 = openNumericKeyboard(model0, model0.graph.nodes[node].body!)
     let model2 = model1
     for (const key of '1234567890') {
-        const { model: model } = update(generateUUID, model2, {
+        const { model: model } = update(effects, model2, {
             kind: EventKind.KEYDOWN,
             key
         })
         model2 = model
     }
-    const { model: model3 } = update(generateUUID, model2, {
+    const { model: model3 } = update(effects, model2, {
         kind: EventKind.KEYDOWN,
         key: 'Enter'
     })
-    const body = makeGenerateUUID({ i: uuidModel.i - 1 })()
+    const body = makeEffects({ ...effectModel, uuid: effectModel.uuid - 1 }).generateUUID()
     const expectedModel: Model = {
         ...model0,
         operations,
@@ -1767,8 +1738,8 @@ test("pressing enter on keyboard while editing number node exits virtual keyboar
 })
 
 test("pressing ret on virtual keyboard while editing number node exits virtual keyboard", () => {
-    const uuidModel = { i: 0 }
-    const generateUUID = makeGenerateUUID(uuidModel)
+    const effectModel = defaultEffectModel()
+    const effects = makeEffects(effectModel)
     const operations: Operations = {
         'Number': {
             name: 'Number',
@@ -1781,22 +1752,22 @@ test("pressing ret on virtual keyboard while editing number node exits virtual k
         model: { ...emptyModel(), operations },
         operation: operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID
+        generateUUID: effects.generateUUID
     })
     const model1 = openNumericKeyboard(model0, model0.graph.nodes[node].body!)
     let model2 = model1
     for (const key of '1234567890') {
-        const { model: model } = update(generateUUID, model2, {
+        const { model: model } = update(effects, model2, {
             kind: EventKind.VIRTUAL_KEYDOWN,
             key
         })
         model2 = model
     }
-    const { model: model3 } = update(generateUUID, model2, {
+    const { model: model3 } = update(effects, model2, {
         kind: EventKind.VIRTUAL_KEYDOWN,
         key: 'ret'
     })
-    const body = makeGenerateUUID({ i: uuidModel.i - 1 })()
+    const body = makeEffects({ ...effectModel, uuid: effectModel.uuid - 1 }).generateUUID()
     const expectedModel: Model = {
         ...model0,
         operations,
@@ -1816,8 +1787,8 @@ test("pressing ret on virtual keyboard while editing number node exits virtual k
 
 
 test("pressing non number on keyboard while editing number node is ignored", () => {
-    const uuidModel = { i: 0 }
-    const generateUUID = makeGenerateUUID(uuidModel)
+    const effectModel = defaultEffectModel()
+    const effects = makeEffects(effectModel)
     const operations: Operations = {
         'Number': {
             name: 'Number',
@@ -1830,18 +1801,18 @@ test("pressing non number on keyboard while editing number node is ignored", () 
         model: { ...emptyModel(), operations },
         operation: operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID
+        generateUUID: effects.generateUUID
     })
     const model1 = openNumericKeyboard(model0, node)
     let model2 = model1
     for (const key of 'qwertyuiopasdfghjklzxcvbnm') {
-        const { model: model } = update(generateUUID, model2, {
+        const { model: model } = update(effects, model2, {
             kind: EventKind.KEYDOWN,
             key
         })
         model2 = model
     }
-    const body = makeGenerateUUID({ i: uuidModel.i - 1 })()
+    const body = makeEffects({ ...effectModel, uuid: effectModel.uuid - 1 }).generateUUID()
     const expectedModel: Model = {
         ...model1,
         operations,
@@ -1861,8 +1832,8 @@ test("pressing non number on keyboard while editing number node is ignored", () 
 
 
 test("pressing non number on virtual keyboard while editing number node is ignored", () => {
-    const uuidModel = { i: 0 }
-    const generateUUID = makeGenerateUUID(uuidModel)
+    const effectModel = defaultEffectModel()
+    const effects = makeEffects(effectModel)
     const operations: Operations = {
         'Number': {
             name: 'Number',
@@ -1875,18 +1846,18 @@ test("pressing non number on virtual keyboard while editing number node is ignor
         model: { ...emptyModel(), operations },
         operation: operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID
+        generateUUID: effects.generateUUID
     })
     const model1 = openNumericKeyboard(model0, node)
     let model2 = model1
     for (const key of 'qwertyuiopasdfghjklzxcvbnm') {
-        const { model: model } = update(generateUUID, model2, {
+        const { model: model } = update(effects, model2, {
             kind: EventKind.VIRTUAL_KEYDOWN,
             key
         })
         model2 = model
     }
-    const body = makeGenerateUUID({ i: uuidModel.i - 1 })()
+    const body = makeEffects({ ...effectModel, uuid: effectModel.uuid - 1 }).generateUUID()
     const expectedModel: Model = {
         ...model1,
         operations,
@@ -1905,7 +1876,7 @@ test("pressing non number on virtual keyboard while editing number node is ignor
 })
 
 test("pressing a key on virtual keyboard while no input target selected doesn't change the model", () => {
-    const generateUUID = makeGenerateUUID()
+    const effects = makeEffects()
     const operations: Operations = {
         'Number': {
             name: 'Number',
@@ -1926,9 +1897,9 @@ test("pressing a key on virtual keyboard while no input target selected doesn't 
         },
         operation: operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID
+        generateUUID: effects.generateUUID
     })
-    const { model: model1 } = update(generateUUID, model0, {
+    const { model: model1 } = update(effects, model0, {
         kind: EventKind.VIRTUAL_KEYDOWN,
         key: '1'
     })
@@ -1936,7 +1907,7 @@ test("pressing a key on virtual keyboard while no input target selected doesn't 
 })
 
 test("clicking a number node opens the numeric keyboard", () => {
-    const generateUUID = makeGenerateUUID()
+    const effects = makeEffects()
     const operations: Operations = {
         'Number': {
             name: 'Number',
@@ -1949,10 +1920,10 @@ test("clicking a number node opens the numeric keyboard", () => {
         model: { ...emptyModel(), operations },
         operation: operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID
+        generateUUID: effects.generateUUID
     })
     const body = model0.graph.nodes[node].body!
-    const { model: model1 } = update(generateUUID, model0, {
+    const { model: model1 } = update(effects, model0, {
         kind: EventKind.CLICKED_NUMBER,
         body
     })
@@ -1961,7 +1932,7 @@ test("clicking a number node opens the numeric keyboard", () => {
 })
 
 test("clicking a number node when another number node is selected switches selections", () => {
-    const generateUUID = makeGenerateUUID()
+    const effects = makeEffects()
     const operations: Operations = {
         'Number': {
             name: 'Number',
@@ -1974,21 +1945,21 @@ test("clicking a number node when another number node is selected switches selec
         model: { ...emptyModel(), operations },
         operation: operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID
+        generateUUID: effects.generateUUID
     })
     const { model: model1, node: node1 } = addNodeToGraph({
         model: model0,
         operation: operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID
+        generateUUID: effects.generateUUID
     })
     const body0 = model1.graph.nodes[node0].body!
-    const { model: model2 } = update(generateUUID, model1, {
+    const { model: model2 } = update(effects, model1, {
         kind: EventKind.CLICKED_NUMBER,
         body: body0
     })
     const body1 = model2.graph.nodes[node1].body!
-    const { model: model3 } = update(generateUUID, model2, {
+    const { model: model3 } = update(effects, model2, {
         kind: EventKind.CLICKED_NUMBER,
         body: body1
     })
@@ -1997,7 +1968,7 @@ test("clicking a number node when another number node is selected switches selec
 })
 
 test("clicking background when a number node is selected deselects it", () => {
-    const generateUUID = makeGenerateUUID()
+    const effects = makeEffects()
     const operations: Operations = {
         'Number': {
             name: 'Number',
@@ -2010,30 +1981,30 @@ test("clicking background when a number node is selected deselects it", () => {
         model: { ...emptyModel(), operations },
         operation: operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID
+        generateUUID: effects.generateUUID
     })
     const body = model0.graph.nodes[node].body!
     const pointer: Pointer = {
         id: 0,
         position: { x: 0, y: 0 }
     }
-    const { model: model1 } = update(generateUUID, model0, {
+    const { model: model1 } = update(effects, model0, {
         kind: EventKind.POINTER_DOWN,
         pointer
     })
-    const { model: model2 } = update(generateUUID, model1, {
+    const { model: model2 } = update(effects, model1, {
         kind: EventKind.CLICKED_NUMBER,
         body
     })
-    const { model: model3 } = update(generateUUID, model2, {
+    const { model: model3 } = update(effects, model2, {
         kind: EventKind.POINTER_UP,
         pointer
     })
-    const { model: model4 } = update(generateUUID, model3, {
+    const { model: model4 } = update(effects, model3, {
         kind: EventKind.POINTER_DOWN,
         pointer
     })
-    const { model: model5 } = update(generateUUID, model4, {
+    const { model: model5 } = update(effects, model4, {
         kind: EventKind.CLICKED_BACKGROUND,
     })
     const expectedModel: Model = {
@@ -2050,7 +2021,7 @@ test("clicking background when a number node is selected deselects it", () => {
 })
 
 test("pressing Escape when a number node is selected deselects it", () => {
-    const generateUUID = makeGenerateUUID()
+    const effects = makeEffects()
     const operations: Operations = {
         'Number': {
             name: 'Number',
@@ -2063,14 +2034,14 @@ test("pressing Escape when a number node is selected deselects it", () => {
         model: { ...emptyModel(), operations },
         operation: operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID
+        generateUUID: effects.generateUUID
     })
     const body = model0.graph.nodes[node].body!
-    const { model: model1 } = update(generateUUID, model0, {
+    const { model: model1 } = update(effects, model0, {
         kind: EventKind.CLICKED_NUMBER,
         body
     })
-    const { model: model2 } = update(generateUUID, model1, {
+    const { model: model2 } = update(effects, model1, {
         kind: EventKind.KEYDOWN,
         key: 'Escape'
     })
@@ -2078,7 +2049,7 @@ test("pressing Escape when a number node is selected deselects it", () => {
 })
 
 test("clicking input when a number node is selected deselects it and selects input", () => {
-    const generateUUID = makeGenerateUUID()
+    const effects = makeEffects()
     const operations: Operations = {
         'Number': {
             name: 'Number',
@@ -2091,15 +2062,15 @@ test("clicking input when a number node is selected deselects it and selects inp
         model: { ...emptyModel(), operations },
         operation: operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID
+        generateUUID: effects.generateUUID
     })
     const body = model0.graph.nodes[node].body!
-    const { model: model1 } = update(generateUUID, model0, {
+    const { model: model1 } = update(effects, model0, {
         kind: EventKind.CLICKED_NUMBER,
         body
     })
     const input = model0.graph.nodes[node].inputs[0]
-    const { model: model2 } = update(generateUUID, model1, {
+    const { model: model2 } = update(effects, model1, {
         kind: EventKind.CLICKED_INPUT,
         input
     })
@@ -2115,7 +2086,7 @@ test("clicking input when a number node is selected deselects it and selects inp
 })
 
 test("clicking output when a number node is selected deselects it and selects output", () => {
-    const generateUUID = makeGenerateUUID()
+    const effects = makeEffects()
     const operations: Operations = {
         'Number': {
             name: 'Number',
@@ -2128,15 +2099,15 @@ test("clicking output when a number node is selected deselects it and selects ou
         model: { ...emptyModel(), operations },
         operation: operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID
+        generateUUID: effects.generateUUID
     })
     const body = model0.graph.nodes[node].body!
-    const { model: model1 } = update(generateUUID, model0, {
+    const { model: model1 } = update(effects, model0, {
         kind: EventKind.CLICKED_NUMBER,
         body
     })
     const output = model0.graph.nodes[node].outputs[0]
-    const { model: model2 } = update(generateUUID, model1, {
+    const { model: model2 } = update(effects, model1, {
         kind: EventKind.CLICKED_OUTPUT,
         output
     })
@@ -2152,7 +2123,7 @@ test("clicking output when a number node is selected deselects it and selects ou
 })
 
 test("clicking node when a number node is selected deselects it and selects node", () => {
-    const generateUUID = makeGenerateUUID()
+    const effects = makeEffects()
     const operations: Operations = {
         'Number': {
             name: 'Number',
@@ -2165,14 +2136,14 @@ test("clicking node when a number node is selected deselects it and selects node
         model: { ...emptyModel(), operations },
         operation: operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID
+        generateUUID: effects.generateUUID
     })
     const body = model0.graph.nodes[node].body!
-    const { model: model1 } = update(generateUUID, model0, {
+    const { model: model1 } = update(effects, model0, {
         kind: EventKind.CLICKED_NUMBER,
         body
     })
-    const { model: model2 } = update(generateUUID, model1, {
+    const { model: model2 } = update(effects, model1, {
         kind: EventKind.CLICKED_NODE,
         node
     })
@@ -2189,7 +2160,7 @@ test("clicking node when a number node is selected deselects it and selects node
 })
 
 test("zooming", () => {
-    const generateUUID = makeGenerateUUID()
+    const effects = makeEffects()
     const pointer0: Pointer = {
         id: 0,
         position: { x: 0, y: 0 }
@@ -2207,7 +2178,7 @@ test("zooming", () => {
         position: { x: 30, y: 30 }
     }
     const model0 = emptyModel()
-    const { model: model1 } = update(generateUUID, model0, {
+    const { model: model1 } = update(effects, model0, {
         kind: EventKind.POINTER_DOWN,
         pointer: pointer0
     })
@@ -2221,7 +2192,7 @@ test("zooming", () => {
         pointers: [pointer0]
     }
     expect(model1).toEqual(expectedModel0)
-    const { model: model2 } = update(generateUUID, model1, {
+    const { model: model2 } = update(effects, model1, {
         kind: EventKind.POINTER_DOWN,
         pointer: pointer1
     })
@@ -2239,7 +2210,7 @@ test("zooming", () => {
         pointers: [pointer0, pointer1]
     }
     expect(model2).toEqual(expectedModel1)
-    const { model: model3 } = update(generateUUID, model2, {
+    const { model: model3 } = update(effects, model2, {
         kind: EventKind.POINTER_MOVE,
         pointer: pointer2
     })
@@ -2257,7 +2228,7 @@ test("zooming", () => {
         pointers: [pointer0, pointer2]
     }
     expect(model3).toEqual(expectedModel2)
-    const { model: model4 } = update(generateUUID, model3, {
+    const { model: model4 } = update(effects, model3, {
         kind: EventKind.POINTER_MOVE,
         pointer: pointer3
     })
@@ -2283,7 +2254,7 @@ test("zooming", () => {
 })
 
 test("pressing d on keyboard with node selected deletes it", () => {
-    const generateUUID = makeGenerateUUID()
+    const effects = makeEffects()
     const operations: Operations = {
         'Add': {
             name: 'Add',
@@ -2296,13 +2267,13 @@ test("pressing d on keyboard with node selected deletes it", () => {
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID
+        generateUUID: effects.generateUUID
     })
-    const { model: model2 } = update(generateUUID, model1, {
+    const { model: model2 } = update(effects, model1, {
         kind: EventKind.CLICKED_NODE,
         node
     })
-    const { model: model3 } = update(generateUUID, model2, {
+    const { model: model3 } = update(effects, model2, {
         kind: EventKind.KEYDOWN,
         key: 'd'
     })
@@ -2310,7 +2281,7 @@ test("pressing d on keyboard with node selected deletes it", () => {
 })
 
 test("clicking background when a node is selected deselects it", () => {
-    const generateUUID = makeGenerateUUID()
+    const effects = makeEffects()
     const operations: Operations = {
         'Add': {
             name: 'Add',
@@ -2323,29 +2294,29 @@ test("clicking background when a node is selected deselects it", () => {
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID
+        generateUUID: effects.generateUUID
     })
     const pointer: Pointer = {
         id: 0,
         position: { x: 0, y: 0 }
     }
-    const { model: model2 } = update(generateUUID, model1, {
+    const { model: model2 } = update(effects, model1, {
         kind: EventKind.POINTER_DOWN,
         pointer
     })
-    const { model: model3 } = update(generateUUID, model2, {
+    const { model: model3 } = update(effects, model2, {
         kind: EventKind.CLICKED_NODE,
         node
     })
-    const { model: model4 } = update(generateUUID, model3, {
+    const { model: model4 } = update(effects, model3, {
         kind: EventKind.POINTER_UP,
         pointer
     })
-    const { model: model5 } = update(generateUUID, model4, {
+    const { model: model5 } = update(effects, model4, {
         kind: EventKind.POINTER_DOWN,
         pointer
     })
-    const { model: model6 } = update(generateUUID, model5, {
+    const { model: model6 } = update(effects, model5, {
         kind: EventKind.CLICKED_BACKGROUND,
     })
     const expectedModel: Model = {
@@ -2362,7 +2333,7 @@ test("clicking background when a node is selected deselects it", () => {
 })
 
 test("pressing escape when a node is selected deselects it", () => {
-    const generateUUID = makeGenerateUUID()
+    const effects = makeEffects()
     const operations: Operations = {
         'Add': {
             name: 'Add',
@@ -2375,13 +2346,13 @@ test("pressing escape when a node is selected deselects it", () => {
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID
+        generateUUID: effects.generateUUID
     })
-    const { model: model2 } = update(generateUUID, model1, {
+    const { model: model2 } = update(effects, model1, {
         kind: EventKind.CLICKED_NODE,
         node
     })
-    const { model: model3 } = update(generateUUID, model2, {
+    const { model: model3 } = update(effects, model2, {
         kind: EventKind.KEYDOWN,
         key: 'Escape'
     })
@@ -2390,7 +2361,7 @@ test("pressing escape when a node is selected deselects it", () => {
 
 
 test("clicking background when a input is selected deselects it", () => {
-    const generateUUID = makeGenerateUUID()
+    const effects = makeEffects()
     const operations: Operations = {
         'Add': {
             name: 'Add',
@@ -2403,30 +2374,30 @@ test("clicking background when a input is selected deselects it", () => {
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID
+        generateUUID: effects.generateUUID
     })
     const pointer: Pointer = {
         id: 0,
         position: { x: 0, y: 0 }
     }
-    const { model: model2 } = update(generateUUID, model1, {
+    const { model: model2 } = update(effects, model1, {
         kind: EventKind.POINTER_DOWN,
         pointer
     })
     const input = model2.graph.nodes[node].inputs[0]
-    const { model: model3 } = update(generateUUID, model2, {
+    const { model: model3 } = update(effects, model2, {
         kind: EventKind.CLICKED_INPUT,
         input
     })
-    const { model: model4 } = update(generateUUID, model3, {
+    const { model: model4 } = update(effects, model3, {
         kind: EventKind.POINTER_UP,
         pointer
     })
-    const { model: model5 } = update(generateUUID, model4, {
+    const { model: model5 } = update(effects, model4, {
         kind: EventKind.POINTER_DOWN,
         pointer
     })
-    const { model: model6 } = update(generateUUID, model5, {
+    const { model: model6 } = update(effects, model5, {
         kind: EventKind.CLICKED_BACKGROUND,
     })
     const expectedModel: Model = {
@@ -2443,7 +2414,7 @@ test("clicking background when a input is selected deselects it", () => {
 })
 
 test("pressing escape when a input is selected deselects it", () => {
-    const generateUUID = makeGenerateUUID()
+    const effects = makeEffects()
     const operations: Operations = {
         'Add': {
             name: 'Add',
@@ -2456,14 +2427,14 @@ test("pressing escape when a input is selected deselects it", () => {
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID
+        generateUUID: effects.generateUUID
     })
     const input = model1.graph.nodes[node].inputs[0]
-    const { model: model2 } = update(generateUUID, model1, {
+    const { model: model2 } = update(effects, model1, {
         kind: EventKind.CLICKED_INPUT,
         input
     })
-    const { model: model3 } = update(generateUUID, model2, {
+    const { model: model3 } = update(effects, model2, {
         kind: EventKind.KEYDOWN,
         key: 'Escape'
     })
@@ -2472,7 +2443,7 @@ test("pressing escape when a input is selected deselects it", () => {
 
 
 test("clicking background when a output is selected deselects it", () => {
-    const generateUUID = makeGenerateUUID()
+    const effects = makeEffects()
     const operations: Operations = {
         'Add': {
             name: 'Add',
@@ -2485,30 +2456,30 @@ test("clicking background when a output is selected deselects it", () => {
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID
+        generateUUID: effects.generateUUID
     })
     const pointer: Pointer = {
         id: 0,
         position: { x: 0, y: 0 }
     }
-    const { model: model2 } = update(generateUUID, model1, {
+    const { model: model2 } = update(effects, model1, {
         kind: EventKind.POINTER_DOWN,
         pointer
     })
     const output = model2.graph.nodes[node].outputs[0]
-    const { model: model3 } = update(generateUUID, model2, {
+    const { model: model3 } = update(effects, model2, {
         kind: EventKind.CLICKED_OUTPUT,
         output
     })
-    const { model: model4 } = update(generateUUID, model3, {
+    const { model: model4 } = update(effects, model3, {
         kind: EventKind.POINTER_UP,
         pointer
     })
-    const { model: model5 } = update(generateUUID, model4, {
+    const { model: model5 } = update(effects, model4, {
         kind: EventKind.POINTER_DOWN,
         pointer
     })
-    const { model: model6 } = update(generateUUID, model5, {
+    const { model: model6 } = update(effects, model5, {
         kind: EventKind.CLICKED_BACKGROUND,
     })
     const expectedModel: Model = {
@@ -2525,7 +2496,7 @@ test("clicking background when a output is selected deselects it", () => {
 })
 
 test("pressing escape when a output is selected deselects it", () => {
-    const generateUUID = makeGenerateUUID()
+    const effects = makeEffects()
     const operations: Operations = {
         'Add': {
             name: 'Add',
@@ -2538,14 +2509,14 @@ test("pressing escape when a output is selected deselects it", () => {
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID
+        generateUUID: effects.generateUUID
     })
     const output = model1.graph.nodes[node].outputs[0]
-    const { model: model2 } = update(generateUUID, model1, {
+    const { model: model2 } = update(effects, model1, {
         kind: EventKind.CLICKED_OUTPUT,
         output
     })
-    const { model: model3 } = update(generateUUID, model2, {
+    const { model: model3 } = update(effects, model2, {
         kind: EventKind.KEYDOWN,
         key: 'Escape'
     })
@@ -2554,7 +2525,7 @@ test("pressing escape when a output is selected deselects it", () => {
 
 
 test("delete input edge", () => {
-    const generateUUID = makeGenerateUUID()
+    const effects = makeEffects()
     const operations: Operations = {
         'Add': {
             name: 'Add',
@@ -2572,25 +2543,25 @@ test("delete input edge", () => {
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID
+        generateUUID: effects.generateUUID
     })
     const { model: model2, node: node1 } = addNodeToGraph({
         model: model1,
         operation: operations['Sub'],
         position: { x: 0, y: 0 },
-        generateUUID
+        generateUUID: effects.generateUUID
     })
     const input = model2.graph.nodes[node0].inputs[0]
-    const { model: model3 } = update(generateUUID, model2, {
+    const { model: model3 } = update(effects, model2, {
         kind: EventKind.CLICKED_INPUT,
         input
     })
     const output = model3.graph.nodes[node1].outputs[0]
-    const { model: model4 } = update(generateUUID, model3, {
+    const { model: model4 } = update(effects, model3, {
         kind: EventKind.CLICKED_OUTPUT,
         output
     })
-    const { model: model5 } = update(generateUUID, model4, {
+    const { model: model5 } = update(effects, model4, {
         kind: EventKind.DELETE_INPUT_EDGE,
         input
     })
@@ -2598,7 +2569,7 @@ test("delete input edge", () => {
 })
 
 test("pressing d on keyboard with input selected delete edge attached", () => {
-    const generateUUID = makeGenerateUUID()
+    const effects = makeEffects()
     const operations: Operations = {
         'Add': {
             name: 'Add',
@@ -2616,29 +2587,29 @@ test("pressing d on keyboard with input selected delete edge attached", () => {
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID
+        generateUUID: effects.generateUUID
     })
     const { model: model2, node: node1 } = addNodeToGraph({
         model: model1,
         operation: operations['Sub'],
         position: { x: 0, y: 0 },
-        generateUUID
+        generateUUID: effects.generateUUID
     })
     const input = model2.graph.nodes[node0].inputs[0]
-    const { model: model3 } = update(generateUUID, model2, {
+    const { model: model3 } = update(effects, model2, {
         kind: EventKind.CLICKED_INPUT,
         input
     })
     const output = model3.graph.nodes[node1].outputs[0]
-    const { model: model4 } = update(generateUUID, model3, {
+    const { model: model4 } = update(effects, model3, {
         kind: EventKind.CLICKED_OUTPUT,
         output
     })
-    const { model: model5 } = update(generateUUID, model4, {
+    const { model: model5 } = update(effects, model4, {
         kind: EventKind.CLICKED_INPUT,
         input
     })
-    const { model: model6 } = update(generateUUID, model5, {
+    const { model: model6 } = update(effects, model5, {
         kind: EventKind.KEYDOWN,
         key: 'd'
     })
@@ -2646,7 +2617,7 @@ test("pressing d on keyboard with input selected delete edge attached", () => {
 })
 
 test("delete output edges", () => {
-    const generateUUID = makeGenerateUUID()
+    const effects = makeEffects()
     const operations: Operations = {
         'Add': {
             name: 'Add',
@@ -2664,33 +2635,33 @@ test("delete output edges", () => {
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID
+        generateUUID: effects.generateUUID
     })
     const { model: model2, node: node1 } = addNodeToGraph({
         model: model1,
         operation: operations['Sub'],
         position: { x: 0, y: 0 },
-        generateUUID
+        generateUUID: effects.generateUUID
     })
     const [input0, input1] = model2.graph.nodes[node0].inputs
-    const { model: model3 } = update(generateUUID, model2, {
+    const { model: model3 } = update(effects, model2, {
         kind: EventKind.CLICKED_INPUT,
         input: input0
     })
     const output = model3.graph.nodes[node1].outputs[0]
-    const { model: model4 } = update(generateUUID, model3, {
+    const { model: model4 } = update(effects, model3, {
         kind: EventKind.CLICKED_OUTPUT,
         output
     })
-    const { model: model5 } = update(generateUUID, model4, {
+    const { model: model5 } = update(effects, model4, {
         kind: EventKind.CLICKED_INPUT,
         input: input1
     })
-    const { model: model6 } = update(generateUUID, model5, {
+    const { model: model6 } = update(effects, model5, {
         kind: EventKind.CLICKED_OUTPUT,
         output
     })
-    const { model: model7 } = update(generateUUID, model6, {
+    const { model: model7 } = update(effects, model6, {
         kind: EventKind.DELETE_OUTPUT_EDGES,
         output
     })
@@ -2698,7 +2669,7 @@ test("delete output edges", () => {
 })
 
 test("pressing d on keyboard with output selected delete edges attached", () => {
-    const generateUUID = makeGenerateUUID()
+    const effects = makeEffects()
     const operations: Operations = {
         'Add': {
             name: 'Add',
@@ -2716,37 +2687,37 @@ test("pressing d on keyboard with output selected delete edges attached", () => 
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID
+        generateUUID: effects.generateUUID
     })
     const { model: model2, node: node1 } = addNodeToGraph({
         model: model1,
         operation: operations['Sub'],
         position: { x: 0, y: 0 },
-        generateUUID
+        generateUUID: effects.generateUUID
     })
     const [input0, input1] = model2.graph.nodes[node0].inputs
-    const { model: model3 } = update(generateUUID, model2, {
+    const { model: model3 } = update(effects, model2, {
         kind: EventKind.CLICKED_INPUT,
         input: input0
     })
     const output = model3.graph.nodes[node1].outputs[0]
-    const { model: model4 } = update(generateUUID, model3, {
+    const { model: model4 } = update(effects, model3, {
         kind: EventKind.CLICKED_OUTPUT,
         output
     })
-    const { model: model5 } = update(generateUUID, model4, {
+    const { model: model5 } = update(effects, model4, {
         kind: EventKind.CLICKED_INPUT,
         input: input1
     })
-    const { model: model6 } = update(generateUUID, model5, {
+    const { model: model6 } = update(effects, model5, {
         kind: EventKind.CLICKED_OUTPUT,
         output
     })
-    const { model: model7 } = update(generateUUID, model6, {
+    const { model: model7 } = update(effects, model6, {
         kind: EventKind.CLICKED_OUTPUT,
         output
     })
-    const { model: model8 } = update(generateUUID, model7, {
+    const { model: model8 } = update(effects, model7, {
         kind: EventKind.KEYDOWN,
         key: 'd'
     })
@@ -2754,7 +2725,7 @@ test("pressing d on keyboard with output selected delete edges attached", () => 
 })
 
 test("connecting output of same node where input is selected is not allowed", () => {
-    const generateUUID = makeGenerateUUID()
+    const effects = makeEffects()
     const operations: Operations = {
         'Add': {
             name: 'Add',
@@ -2767,15 +2738,15 @@ test("connecting output of same node where input is selected is not allowed", ()
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID
+        generateUUID: effects.generateUUID
     })
     const input = model1.graph.nodes[node0].inputs[0]
-    const { model: model2 } = update(generateUUID, model1, {
+    const { model: model2 } = update(effects, model1, {
         kind: EventKind.CLICKED_INPUT,
         input
     })
     const output = model2.graph.nodes[node0].outputs[0]
-    const { model: model3 } = update(generateUUID, model2, {
+    const { model: model3 } = update(effects, model2, {
         kind: EventKind.CLICKED_OUTPUT,
         output
     })
@@ -2784,7 +2755,7 @@ test("connecting output of same node where input is selected is not allowed", ()
 
 
 test("connecting input of same node where output is selected is not allowed", () => {
-    const generateUUID = makeGenerateUUID()
+    const effects = makeEffects()
     const operations: Operations = {
         'Add': {
             name: 'Add',
@@ -2797,15 +2768,15 @@ test("connecting input of same node where output is selected is not allowed", ()
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID
+        generateUUID: effects.generateUUID
     })
     const output = model1.graph.nodes[node0].outputs[0]
-    const { model: model2 } = update(generateUUID, model1, {
+    const { model: model2 } = update(effects, model1, {
         kind: EventKind.CLICKED_OUTPUT,
         output
     })
     const input = model1.graph.nodes[node0].inputs[0]
-    const { model: model3 } = update(generateUUID, model2, {
+    const { model: model3 } = update(effects, model2, {
         kind: EventKind.CLICKED_INPUT,
         input
     })
@@ -2813,8 +2784,8 @@ test("connecting input of same node where output is selected is not allowed", ()
 })
 
 test("connecting output to input if input already has edge replaces it", () => {
-    const uuidModel = { i: 0 }
-    const generateUUID = makeGenerateUUID(uuidModel)
+    const effectModel = defaultEffectModel()
+    const effects = makeEffects(effectModel)
     const operations: Operations = {
         'Add': {
             name: 'Add',
@@ -2837,36 +2808,36 @@ test("connecting output to input if input already has edge replaces it", () => {
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID
+        generateUUID: effects.generateUUID
     })
     const { model: model2, node: node1 } = addNodeToGraph({
         model: model1,
         operation: operations['Sub'],
         position: { x: 0, y: 0 },
-        generateUUID
+        generateUUID: effects.generateUUID
     })
     const { model: model3, node: node2 } = addNodeToGraph({
         model: model2,
         operation: operations['Div'],
         position: { x: 0, y: 0 },
-        generateUUID
+        generateUUID: effects.generateUUID
     })
     const input = model3.graph.nodes[node0].inputs[0]
-    const { model: model4 } = update(generateUUID, model3, {
+    const { model: model4 } = update(effects, model3, {
         kind: EventKind.CLICKED_INPUT,
         input
     })
     const output0 = model4.graph.nodes[node1].outputs[0]
-    const { model: model5 } = update(generateUUID, model4, {
+    const { model: model5 } = update(effects, model4, {
         kind: EventKind.CLICKED_OUTPUT,
         output: output0
     })
-    const { model: model6 } = update(generateUUID, model5, {
+    const { model: model6 } = update(effects, model5, {
         kind: EventKind.CLICKED_INPUT,
         input
     })
     const output1 = model6.graph.nodes[node2].outputs[0]
-    const { model: model7 } = update(generateUUID, model6, {
+    const { model: model7 } = update(effects, model6, {
         kind: EventKind.CLICKED_OUTPUT,
         output: output1
     })
@@ -2876,7 +2847,7 @@ test("connecting output to input if input already has edge replaces it", () => {
             graph: model3.graph,
             input,
             output: output1,
-            generateUUID: makeGenerateUUID({ i: uuidModel.i - 1 })
+            generateUUID: makeEffects({ ...effectModel, uuid: effectModel.uuid - 1 }).generateUUID
         }).graph
     }
     expect(model7).toEqual(expectedModel)
@@ -2884,8 +2855,8 @@ test("connecting output to input if input already has edge replaces it", () => {
 
 
 test("connecting input to output if input already has edge replaces it", () => {
-    const uuidModel = { i: 0 }
-    const generateUUID = makeGenerateUUID(uuidModel)
+    const effectModel = defaultEffectModel()
+    const effects = makeEffects(effectModel)
     const operations: Operations = {
         'Add': {
             name: 'Add',
@@ -2908,36 +2879,36 @@ test("connecting input to output if input already has edge replaces it", () => {
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID
+        generateUUID: effects.generateUUID
     })
     const { model: model2, node: node1 } = addNodeToGraph({
         model: model1,
         operation: operations['Sub'],
         position: { x: 0, y: 0 },
-        generateUUID
+        generateUUID: effects.generateUUID
     })
     const { model: model3, node: node2 } = addNodeToGraph({
         model: model2,
         operation: operations['Div'],
         position: { x: 0, y: 0 },
-        generateUUID
+        generateUUID: effects.generateUUID
     })
     const input = model3.graph.nodes[node0].inputs[0]
-    const { model: model4 } = update(generateUUID, model3, {
+    const { model: model4 } = update(effects, model3, {
         kind: EventKind.CLICKED_INPUT,
         input
     })
     const output0 = model4.graph.nodes[node1].outputs[0]
-    const { model: model5 } = update(generateUUID, model4, {
+    const { model: model5 } = update(effects, model4, {
         kind: EventKind.CLICKED_OUTPUT,
         output: output0
     })
     const output1 = model5.graph.nodes[node2].outputs[0]
-    const { model: model6 } = update(generateUUID, model5, {
+    const { model: model6 } = update(effects, model5, {
         kind: EventKind.CLICKED_OUTPUT,
         output: output1
     })
-    const { model: model7 } = update(generateUUID, model6, {
+    const { model: model7 } = update(effects, model6, {
         kind: EventKind.CLICKED_INPUT,
         input
     })
@@ -2947,7 +2918,7 @@ test("connecting input to output if input already has edge replaces it", () => {
             graph: model3.graph,
             input,
             output: output1,
-            generateUUID: makeGenerateUUID({ i: uuidModel.i - 1 })
+            generateUUID: makeEffects({ ...effectModel, uuid: effectModel.uuid - 1 }).generateUUID
         }).graph
     }
     expect(model7).toEqual(expectedModel)

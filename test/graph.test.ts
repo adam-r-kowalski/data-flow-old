@@ -528,7 +528,6 @@ test("remove node from graph", () => {
     }
 })
 
-
 test("remove input edge", () => {
     const generateUUID0 = generateUUID()
     const generateUUID1 = generateUUID()
@@ -654,6 +653,216 @@ test("remove input edge", () => {
         })
     }
 })
+
+test("remove node with input edge", () => {
+    const generateUUID0 = generateUUID()
+    const generateUUID1 = generateUUID()
+    const graph = emptyGraph()
+    const { graph: graph1, node: add } = addNode({
+        graph,
+        operation: {
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out'],
+        },
+        position: { x: 0, y: 0 },
+        generateUUID: generateUUID0
+    })
+    const { graph: graph2, node: log } = addNode({
+        graph: graph1,
+        operation: {
+            name: 'Log To Console',
+            inputs: ['value'],
+            outputs: [],
+        },
+        position: { x: 50, y: 50 },
+        generateUUID: generateUUID0
+    })
+    const value = graph2.nodes[log].inputs[0]
+    const out = graph2.nodes[add].outputs[0]
+    const { graph: graph3 } = addEdge({
+        graph: graph2,
+        input: value,
+        output: out,
+        generateUUID: generateUUID0
+    })
+    const graph4 = removeNode(graph3, log)
+    {
+        const addUUID = generateUUID1()
+        const xUUID = generateUUID1()
+        const yUUID = generateUUID1()
+        const outUUID = generateUUID1()
+        const logUUID = generateUUID1()
+        const valueUUID = generateUUID1()
+        const edgeUUID = generateUUID1()
+        const add: Node = {
+            uuid: addUUID,
+            name: 'Add',
+            inputs: [xUUID, yUUID],
+            outputs: [outUUID],
+            position: { x: 0, y: 0 },
+        }
+        const x: Input = {
+            uuid: xUUID,
+            node: addUUID,
+            name: 'x'
+        }
+        const y: Input = {
+            uuid: yUUID,
+            node: addUUID,
+            name: 'y'
+        }
+        const out: Output = {
+            uuid: outUUID,
+            node: addUUID,
+            name: 'out',
+            edges: [edgeUUID]
+        }
+        const log: Node = {
+            uuid: logUUID,
+            name: 'Log To Console',
+            inputs: [valueUUID],
+            outputs: [],
+            position: { x: 50, y: 50 }
+        }
+        const value: Input = {
+            uuid: valueUUID,
+            node: logUUID,
+            name: 'value',
+            edge: edgeUUID
+        }
+        const edge: Edge = {
+            uuid: edgeUUID,
+            input: value.uuid,
+            output: out.uuid,
+        }
+        expect(graph3).toEqual({
+            nodes: {
+                [add.uuid]: add,
+                [log.uuid]: log
+            },
+            edges: {
+                [edge.uuid]: edge,
+            },
+            inputs: {
+                [x.uuid]: x,
+                [y.uuid]: y,
+                [value.uuid]: value,
+            },
+            bodys: {},
+            outputs: {
+                [out.uuid]: out
+            },
+        })
+        expect(graph4).toEqual({
+            nodes: {
+                [add.uuid]: add,
+            },
+            edges: {},
+            inputs: {
+                [x.uuid]: x,
+                [y.uuid]: y,
+            },
+            bodys: {},
+            outputs: {
+                [out.uuid]: {
+                    ...out,
+                    edges: []
+                }
+            },
+        })
+    }
+})
+
+
+test("remove input edge when node has no inputs nothing changes", () => {
+    const generateUUID0 = generateUUID()
+    const generateUUID1 = generateUUID()
+    const graph = emptyGraph()
+    const { graph: graph1 } = addNode({
+        graph,
+        operation: {
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out'],
+        },
+        position: { x: 0, y: 0 },
+        generateUUID: generateUUID0
+    })
+    const { graph: graph2, node } = addNode({
+        graph: graph1,
+        operation: {
+            name: 'Log To Console',
+            inputs: ['value'],
+            outputs: [],
+        },
+        position: { x: 50, y: 50 },
+        generateUUID: generateUUID0
+    })
+    const input = graph2.nodes[node].inputs[0]
+    const graph3 = removeInputEdge(graph2, input)
+    {
+        const addUUID = generateUUID1()
+        const xUUID = generateUUID1()
+        const yUUID = generateUUID1()
+        const outUUID = generateUUID1()
+        const logUUID = generateUUID1()
+        const valueUUID = generateUUID1()
+        const add: Node = {
+            uuid: addUUID,
+            name: 'Add',
+            inputs: [xUUID, yUUID],
+            outputs: [outUUID],
+            position: { x: 0, y: 0 },
+        }
+        const x: Input = {
+            uuid: xUUID,
+            node: addUUID,
+            name: 'x'
+        }
+        const y: Input = {
+            uuid: yUUID,
+            node: addUUID,
+            name: 'y'
+        }
+        const out: Output = {
+            uuid: outUUID,
+            node: addUUID,
+            name: 'out',
+            edges: []
+        }
+        const log: Node = {
+            uuid: logUUID,
+            name: 'Log To Console',
+            inputs: [valueUUID],
+            outputs: [],
+            position: { x: 50, y: 50 }
+        }
+        const value: Input = {
+            uuid: valueUUID,
+            node: logUUID,
+            name: 'value',
+        }
+        expect(graph2).toEqual({
+            nodes: {
+                [add.uuid]: add,
+                [log.uuid]: log
+            },
+            edges: {},
+            inputs: {
+                [x.uuid]: x,
+                [y.uuid]: y,
+                [value.uuid]: value,
+            },
+            bodys: {},
+            outputs: {
+                [out.uuid]: out
+            },
+        })
+        expect(graph3).toEqual(graph2)
+    }
+})
+
 
 test("remove output edge", () => {
     const generateUUID0 = generateUUID()

@@ -92,7 +92,7 @@ export const numberUi = (theme: Theme, body: Body, focus: Focus): UI<AppEvent> =
         color: isFocused(focus, body.uuid) ? theme.focusInput : theme.background,
         padding: 5,
         onClick: {
-            kind: EventKind.CLICKED_NUMBER,
+            kind: EventKind.CLICKED_BODY,
             body: body.uuid
         }
     },

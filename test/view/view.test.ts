@@ -254,7 +254,7 @@ test("numberUi not focused", () => {
         color: theme.background,
         padding: 5,
         onClick: {
-            kind: EventKind.CLICKED_NUMBER,
+            kind: EventKind.CLICKED_BODY,
             body: 'body uuid'
         }
     },
@@ -277,7 +277,7 @@ test("numberUi editing", () => {
         color: theme.focusInput,
         padding: 5,
         onClick: {
-            kind: EventKind.CLICKED_NUMBER,
+            kind: EventKind.CLICKED_BODY,
             body: 'body uuid'
         }
     },

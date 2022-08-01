@@ -172,7 +172,7 @@ test("pressing i with body focused launches quick select for inputs", () => {
     })
     const body = model2.graph.nodes[node0].body!
     const { model: model3 } = update(effects, model2, {
-        kind: EventKind.CLICKED_NUMBER,
+        kind: EventKind.CLICKED_BODY,
         body
     })
     const { model: model4 } = update(effects, model3, {
@@ -446,7 +446,7 @@ test("pressing o with body focused launches quick select for outputs", () => {
     })
     const body = model2.graph.nodes[node0].body!
     const { model: model3 } = update(effects, model2, {
-        kind: EventKind.CLICKED_NUMBER,
+        kind: EventKind.CLICKED_BODY,
         body
     })
     const { model: model4 } = update(effects, model3, {

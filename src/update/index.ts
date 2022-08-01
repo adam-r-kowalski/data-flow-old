@@ -26,7 +26,7 @@ export enum EventKind {
     KEYUP,
     VIRTUAL_KEYDOWN,
     CLICKED_FINDER_OPTION,
-    CLICKED_NUMBER,
+    CLICKED_BODY,
     CLICKED_BACKGROUND,
     DELETE_NODE,
     DELETE_INPUT_EDGE,
@@ -96,7 +96,7 @@ export interface ClickedFinderOption {
 }
 
 export interface ClickedNumber {
-    readonly kind: EventKind.CLICKED_NUMBER,
+    readonly kind: EventKind.CLICKED_BODY,
     readonly body: UUID
 }
 
@@ -702,7 +702,7 @@ export const update = (effects: Effects, model: Model, event: AppEvent): UpdateR
         case EventKind.KEYUP: return keyUp(model, event)
         case EventKind.VIRTUAL_KEYDOWN: return virtualKeyDown(model, event, effects.generateUUID)
         case EventKind.CLICKED_FINDER_OPTION: return clickedFinderOption(model, event, effects.generateUUID)
-        case EventKind.CLICKED_NUMBER: return clickedNumber(model, event)
+        case EventKind.CLICKED_BODY: return clickedNumber(model, event)
         case EventKind.CLICKED_BACKGROUND: return clickedBackground(model)
         case EventKind.DELETE_NODE: return deleteNode(model, event)
         case EventKind.DELETE_INPUT_EDGE: return deleteInputEdge(model, event)

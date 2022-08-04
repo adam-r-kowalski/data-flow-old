@@ -838,6 +838,7 @@ test("view with no nodes or edges", () => {
         operations: {},
         openFinderFirstClick: false,
         panCamera: { left: false, up: false, down: false, right: false, now: 0 },
+        zoomCamera: { in: false, out: false, now: 0 },
         theme
     }
     const actual = view(model)
@@ -870,6 +871,7 @@ test("view with no nodes or edges but finder shown", () => {
         camera: identity(),
         operations: {},
         panCamera: { left: false, up: false, down: false, right: false, now: 0 },
+        zoomCamera: { in: false, out: false, now: 0 },
         theme
     }
     const actual = view(model)
@@ -928,6 +930,7 @@ test("view with three nodes and no edges", () => {
         camera: identity(),
         operations: {},
         panCamera: { left: false, up: false, down: false, right: false, now: 0 },
+        zoomCamera: { in: false, out: false, now: 0 },
         theme
     }
     const actual = view(model)
@@ -990,6 +993,7 @@ test("view with three nodes and no edges", () => {
         camera: identity(),
         operations: {},
         panCamera: { left: false, up: false, down: false, right: false, now: 0 },
+        zoomCamera: { in: false, out: false, now: 0 },
         theme
     }
     const actual = view(model)
@@ -1086,6 +1090,7 @@ test("view with three nodes and one edges", () => {
         camera: identity(),
         operations: {},
         panCamera: { left: false, up: false, down: false, right: false, now: 0 },
+        zoomCamera: { in: false, out: false, now: 0 },
         theme
     }
     const actual = view(model)
@@ -1156,6 +1161,7 @@ test("view with body selected", () => {
         camera: identity(),
         operations: {},
         panCamera: { left: false, up: false, down: false, right: false, now: 0 },
+        zoomCamera: { in: false, out: false, now: 0 },
         theme
     }
     const actual = view(model)
@@ -1253,6 +1259,7 @@ test("view with input selected", () => {
         camera: identity(),
         operations: {},
         panCamera: { left: false, up: false, down: false, right: false, now: 0 },
+        zoomCamera: { in: false, out: false, now: 0 },
         theme
     }
     const actual = view(model)
@@ -1368,6 +1375,7 @@ test("view with output selected", () => {
         camera: identity(),
         operations: {},
         panCamera: { left: false, up: false, down: false, right: false, now: 0 },
+        zoomCamera: { in: false, out: false, now: 0 },
         theme
     }
     const actual = view(model)

@@ -346,22 +346,27 @@ test("pressing a non hotkey when nothing focused does nothing", () => {
     })
     expect(dispatch0).toBeUndefined()
     expect(model1).toEqual(model)
-    const { model: model2, schedule } = update(effects, model1, {
+    const { model: model2, schedule: schedule0 } = update(effects, model1, {
         kind: EventKind.PAN_CAMERA,
     })
-    expect(schedule).toBeUndefined()
+    expect(schedule0).toBeUndefined()
     expect(model2).toEqual(model)
-    const { model: model3, dispatch: dispatch1 } = update(effects, model2, {
+    const { model: model3, schedule: schedule1 } = update(effects, model2, {
+        kind: EventKind.ZOOM_CAMERA,
+    })
+    expect(schedule1).toBeUndefined()
+    expect(model3).toEqual(model)
+    const { model: model4, dispatch: dispatch1 } = update(effects, model3, {
         kind: EventKind.KEYUP,
         key: 'z',
         ctrl: false,
     })
     expect(dispatch1).toBeUndefined()
-    expect(model3).toEqual(model)
+    expect(model4).toEqual(model)
 })
 
 
-test("ctrl j when nothing focused zooms camera in", () => {
+test("ctrl j when nothing focused zooms camera out", () => {
     const model = emptyModel()
     const effects = makeEffects()
     const { model: model1, dispatch } = update(effects, model, {
@@ -400,5 +405,76 @@ test("ctrl j when nothing focused zooms camera in", () => {
             0, 0, 1,
         ],
         zoomCamera: { in: false, out: false, now: 1 }
+    })
+})
+
+test("ctrl k when nothing focused zooms camera in", () => {
+    const model = emptyModel()
+    const effects = makeEffects()
+    const { model: model1, dispatch } = update(effects, model, {
+        kind: EventKind.KEYDOWN,
+        key: 'k',
+        ctrl: true
+    })
+    expect(dispatch).toEqual([{ kind: EventKind.ZOOM_CAMERA }])
+    const { model: model2, schedule } = update(effects, model1, {
+        kind: EventKind.ZOOM_CAMERA
+    })
+    expect(schedule).toEqual([{
+        after: { milliseconds: 10 },
+        event: { kind: EventKind.ZOOM_CAMERA }
+    }])
+    expect(model2).toEqual({
+        ...emptyModel(),
+        camera: [
+            0.9930924954370359, 0, 0,
+            0, 0.9930924954370359, 0,
+            0, 0, 1,
+        ],
+        zoomCamera: { in: true, out: false, now: 1 }
+    })
+    const { model: model3, dispatch: dispatch0 } = update(effects, model2, {
+        kind: EventKind.KEYUP,
+        key: 'k',
+        ctrl: true,
+    })
+    expect(dispatch0).toBeUndefined()
+    expect(model3).toEqual({
+        ...emptyModel(),
+        camera: [
+            0.9930924954370359, 0, 0,
+            0, 0.9930924954370359, 0,
+            0, 0, 1,
+        ],
+        zoomCamera: { in: false, out: false, now: 1 }
+    })
+})
+
+test("pressing ctrl j then ctrl k when nothing focused does nothing", () => {
+    const model = emptyModel()
+    const effects = makeEffects()
+    const { model: model1, dispatch: dispatch0 } = update(effects, model, {
+        kind: EventKind.KEYDOWN,
+        key: 'j',
+        ctrl: true
+    })
+    expect(dispatch0).toEqual([{ kind: EventKind.ZOOM_CAMERA }])
+    const { model: model2, dispatch: dispatch1 } = update(effects, model1, {
+        kind: EventKind.KEYDOWN,
+        key: 'k',
+        ctrl: true
+    })
+    expect(dispatch1).toBeUndefined()
+    const { model: model3, schedule } = update(effects, model2, {
+        kind: EventKind.ZOOM_CAMERA
+    })
+    expect(schedule).toEqual([{
+        after: { milliseconds: 10 },
+        event: { kind: EventKind.ZOOM_CAMERA }
+    }])
+    expect(model3).toEqual({
+        ...emptyModel(),
+        camera: identity(),
+        zoomCamera: { in: true, out: true, now: 1 }
     })
 })

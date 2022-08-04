@@ -4,18 +4,28 @@ import { Model } from "../model";
 import { CurrentTime, UpdateResult } from "../ui/run";
 
 export const maybeStartMoveCamera = (model: Model, { key, ctrl }: KeyDown, currentTime: CurrentTime): UpdateResult<Model, AppEvent> => {
-    const panDispatch = () => {
+    interface Result {
+        now: number
+        dispatch?: AppEvent[]
+    }
+    const panDispatch = (): Result => {
         const { left, down, up, right } = model.panCamera
         const notMoving = !(left || down || up || right)
-        const now = notMoving ? currentTime() : model.panCamera.now
-        const dispatch: AppEvent[] | undefined = notMoving ? [{ kind: EventKind.PAN_CAMERA }] : undefined
-        return { now, dispatch }
+        return notMoving ?
+            {
+                now: currentTime(),
+                dispatch: [{ kind: EventKind.PAN_CAMERA }]
+            } :
+            { now: model.panCamera.now }
     }
-    const zoomDispatch = () => {
+    const zoomDispatch = (): Result => {
         const notMoving = !(model.zoomCamera.in || model.zoomCamera.out)
-        const now = notMoving ? currentTime() : model.zoomCamera.now
-        const dispatch: AppEvent[] | undefined = notMoving ? [{ kind: EventKind.ZOOM_CAMERA }] : undefined
-        return { now, dispatch }
+        return notMoving ?
+            {
+                now: currentTime(),
+                dispatch: [{ kind: EventKind.ZOOM_CAMERA }]
+            } :
+            { now: model.zoomCamera.now }
     }
     switch (key) {
         case 'h':

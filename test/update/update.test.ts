@@ -93,6 +93,34 @@ test("double clicking background opens finder", () => {
     ])
 })
 
+test("clicking background then waiting too long cancels opens finder", () => {
+    const effects = makeEffects()
+    const model = emptyModel()
+    const pointer: Pointer = {
+        id: 0,
+        position: { x: 0, y: 0 }
+    }
+    const { model: model1 } = update(effects, model, {
+        kind: EventKind.POINTER_DOWN,
+        pointer
+    })
+    const { model: model2, schedule } = update(effects, model1, {
+        kind: EventKind.CLICKED_BACKGROUND,
+    })
+    expect(schedule).toEqual([
+        { after: { milliseconds: 300 }, event: { kind: EventKind.OPEN_FINDER_TIMEOUT } }
+    ])
+    const { model: model3 } = update(effects, model2, {
+        kind: EventKind.POINTER_UP,
+        pointer
+    })
+    const { model: model4 } = update(effects, model3, {
+        kind: EventKind.OPEN_FINDER_TIMEOUT,
+    })
+    expect(model4).toEqual(model)
+})
+
+
 test("clicking background triggers finder open timeout", () => {
     const effects = makeEffects()
     const model = emptyModel()
@@ -2556,6 +2584,29 @@ test("pressing escape when a output is selected deselects it", () => {
     expect(model3).toEqual(model1)
 })
 
+test("delete node", () => {
+    const effects = makeEffects()
+    const operations: Operations = {
+        'Add': {
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        },
+    }
+    let model0 = { ...emptyModel(), operations }
+    const { model: model1, node } = addNodeToGraph({
+        model: model0,
+        operation: operations['Add'],
+        position: { x: 0, y: 0 },
+        generateUUID: effects.generateUUID
+    })
+    const { model: model2 } = update(effects, model1, {
+        kind: EventKind.DELETE_NODE,
+        node,
+    })
+    expect(model2).toEqual(model0)
+})
+
 
 test("delete input edge", () => {
     const effects = makeEffects()
@@ -3396,4 +3447,77 @@ test("pressing f with output selected opens finder", () => {
         }
     }
     expect(model5).toEqual(expectedModel)
+})
+
+test("key up with input selected does nothing", () => {
+    const effects = makeEffects()
+    const model: Model = {
+        ...emptyModel(),
+        operations: {
+            'Add': {
+                name: 'Add',
+                inputs: ['x', 'y'],
+                outputs: ['out']
+            }
+        }
+    }
+    const { model: model1, node } = addNodeToGraph({
+        model,
+        operation: model.operations['Add'],
+        position: { x: 0, y: 0 },
+        generateUUID: effects.generateUUID
+    })
+    const pointer0: Pointer = {
+        id: 0,
+        position: { x: 0, y: 0 }
+    }
+    const { model: model2 } = update(effects, model1, {
+        kind: EventKind.POINTER_DOWN,
+        pointer: pointer0
+    })
+    const { model: model3 } = update(effects, model2, {
+        kind: EventKind.CLICKED_INPUT,
+        input: model2.graph.nodes[node].inputs[0]
+    })
+    const { model: model4 } = update(effects, model3, {
+        kind: EventKind.POINTER_UP,
+        pointer: pointer0
+    })
+    const { model: model5 } = update(effects, model4, {
+        kind: EventKind.KEYDOWN,
+        key: 'z',
+        ctrl: false
+    })
+    const { model: model6 } = update(effects, model5, {
+        kind: EventKind.KEYUP,
+        key: 'z',
+        ctrl: false
+    })
+    expect(model6).toEqual(model4)
+})
+
+test("clicking background with finder open closes it", () => {
+    const effects = makeEffects()
+    const model0 = emptyModel()
+    const { model: model1 } = update(effects, model0, {
+        kind: EventKind.KEYDOWN,
+        key: 'f',
+        ctrl: false
+    })
+    const pointer: Pointer = {
+        id: 0,
+        position: { x: 0, y: 0 }
+    }
+    const { model: model2 } = update(effects, model1, {
+        kind: EventKind.POINTER_DOWN,
+        pointer
+    })
+    const { model: model3 } = update(effects, model2, {
+        kind: EventKind.CLICKED_BACKGROUND,
+    })
+    const expectedModel: Model = {
+        ...model0,
+        pointers: [pointer]
+    }
+    expect(model3).toEqual(expectedModel)
 })

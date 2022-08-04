@@ -18,7 +18,8 @@ export const emptyModel = (): Model => ({
     openFinderFirstClick: false,
     nodePlacementLocation: { x: 0, y: 0 },
     operations: {},
-    moveCamera: { left: false, down: false, up: false, right: false, now: 0 },
+    panCamera: { left: false, down: false, up: false, right: false, now: 0 },
+    zoomCamera: { in: false, out: false, now: 0 },
     theme: {
         background: { red: 2, green: 22, blue: 39, alpha: 255 },
         node: { red: 41, green: 95, blue: 120, alpha: 255 },

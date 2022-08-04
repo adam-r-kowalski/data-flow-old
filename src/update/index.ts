@@ -11,7 +11,7 @@ import { addNode, changeBodyValue, changeNodePosition, removeInputEdge, removeNo
 import { maybeTriggerQuickSelect, quickSelectInput, quickSelectOutput } from "./quick_select"
 import { QuickSelectKind } from "../model/quick_select"
 import { clearFocus, selectInput, selectOutput } from "./focus"
-import { maybeStartMoveCamera, maybeStopMoveCamera, moveCamera } from "./move_camera"
+import { maybeStartMoveCamera, maybeStopMoveCamera, panCamera, zoomCamera } from "./move_camera"
 
 export enum EventKind {
     POINTER_MOVE,
@@ -31,7 +31,8 @@ export enum EventKind {
     DELETE_NODE,
     DELETE_INPUT_EDGE,
     DELETE_OUTPUT_EDGES,
-    MOVE_CAMERA,
+    PAN_CAMERA,
+    ZOOM_CAMERA,
 }
 
 export interface PointerMove {
@@ -77,12 +78,14 @@ export interface OpenFinderTimeout {
 export interface KeyUp {
     readonly kind: EventKind.KEYUP
     readonly key: string
+    readonly ctrl: boolean
 }
 
 
 export interface KeyDown {
     readonly kind: EventKind.KEYDOWN
     readonly key: string
+    readonly ctrl: boolean
 }
 
 export interface VirtualKeyDown {
@@ -119,9 +122,14 @@ export interface DeleteOutputEdges {
     readonly output: UUID
 }
 
-export interface MoveCamera {
-    readonly kind: EventKind.MOVE_CAMERA,
+export interface PanCamera {
+    readonly kind: EventKind.PAN_CAMERA,
 }
+
+export interface ZoomCamera {
+    readonly kind: EventKind.ZOOM_CAMERA,
+}
+
 
 export type AppEvent =
     | PointerMove
@@ -141,7 +149,8 @@ export type AppEvent =
     | DeleteNode
     | DeleteInputEdge
     | DeleteOutputEdges
-    | MoveCamera
+    | PanCamera
+    | ZoomCamera
 
 const pointerDown = (model: Model, event: PointerDown): UpdateResult<Model, AppEvent> => {
     const pointers = [...model.pointers, event.pointer]
@@ -429,7 +438,8 @@ export const removeNodeFromGraph = (model: Model, node: UUID): Model => clearFoc
     nodeOrder: model.nodeOrder.filter(n => n !== node),
 })
 
-const keyDown = (model: Model, { key }: KeyDown, { generateUUID, currentTime }: Effects): UpdateResult<Model, AppEvent> => {
+const keyDown = (model: Model, event: KeyDown, { generateUUID, currentTime }: Effects): UpdateResult<Model, AppEvent> => {
+    const { key } = event
     switch (model.focus.quickSelect.kind) {
         case QuickSelectKind.INPUT:
             return quickSelectInput(model, model.focus.quickSelect, key, generateUUID)
@@ -548,17 +558,17 @@ const keyDown = (model: Model, { key }: KeyDown, { generateUUID, currentTime }: 
                         if (result.render) {
                             return result
                         } else {
-                            return maybeStartMoveCamera(result.model, key, currentTime)
+                            return maybeStartMoveCamera(result.model, event, currentTime)
                         }
                     }
             }
     }
 }
 
-const keyUp = (model: Model, { key }: KeyUp): UpdateResult<Model, AppEvent> => {
+const keyUp = (model: Model, event: KeyUp): UpdateResult<Model, AppEvent> => {
     switch (model.focus.kind) {
         case FocusKind.NONE:
-            return maybeStopMoveCamera(model, key)
+            return maybeStopMoveCamera(model, event)
         default:
             return { model }
     }
@@ -707,6 +717,7 @@ export const update = (effects: Effects, model: Model, event: AppEvent): UpdateR
         case EventKind.DELETE_NODE: return deleteNode(model, event)
         case EventKind.DELETE_INPUT_EDGE: return deleteInputEdge(model, event)
         case EventKind.DELETE_OUTPUT_EDGES: return deleteOutputEdges(model, event)
-        case EventKind.MOVE_CAMERA: return moveCamera(model, effects.currentTime)
+        case EventKind.PAN_CAMERA: return panCamera(model, effects.currentTime)
+        case EventKind.ZOOM_CAMERA: return zoomCamera(model, effects.currentTime)
     }
 }

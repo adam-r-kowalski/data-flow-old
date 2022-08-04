@@ -77,7 +77,8 @@ document.addEventListener('keydown', e => {
     e.preventDefault()
     dispatch({
         kind: EventKind.KEYDOWN,
-        key: e.key
+        key: e.key,
+        ctrl: e.ctrlKey
     })
 })
 
@@ -85,6 +86,7 @@ document.addEventListener('keyup', e => {
     e.preventDefault()
     dispatch({
         kind: EventKind.KEYUP,
-        key: e.key
+        key: e.key,
+        ctrl: e.ctrlKey
     })
 })

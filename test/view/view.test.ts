@@ -254,7 +254,7 @@ test("numberUi not focused", () => {
         color: theme.background,
         padding: 5,
         onClick: {
-            kind: EventKind.CLICKED_NUMBER,
+            kind: EventKind.CLICKED_BODY,
             body: 'body uuid'
         }
     },
@@ -277,7 +277,7 @@ test("numberUi editing", () => {
         color: theme.focusInput,
         padding: 5,
         onClick: {
-            kind: EventKind.CLICKED_NUMBER,
+            kind: EventKind.CLICKED_BODY,
             body: 'body uuid'
         }
     },
@@ -1106,6 +1106,298 @@ test("view with three nodes and one edges", () => {
                 }
             ]
         }),
+    ])
+    expect(actual).toEqual(expected)
+})
+
+test("view with body selected", () => {
+    const model: Model = {
+        graph: {
+            nodes: {
+                "number": {
+                    uuid: "number",
+                    name: "number",
+                    inputs: [],
+                    body: "body",
+                    outputs: ["out"],
+                    position: { x: 0, y: 0 }
+                }
+            },
+            edges: {},
+            inputs: {},
+            outputs: {
+                "out": {
+                    uuid: "out",
+                    name: "out",
+                    edges: [],
+                    node: "number"
+                }
+            },
+            bodys: {
+                "body": {
+                    uuid: "body",
+                    node: "number",
+                    value: 0,
+                }
+            }
+        },
+        nodeOrder: ["number"],
+        pointers: [],
+        nodePlacementLocation: {
+            x: 0,
+            y: 0,
+        },
+        focus: {
+            kind: FocusKind.BODY,
+            body: "body",
+            quickSelect: { kind: QuickSelectKind.NONE },
+        },
+        openFinderFirstClick: false,
+        camera: identity(),
+        operations: {},
+        moveCamera: { left: false, up: false, down: false, right: false, now: 0 },
+        theme
+    }
+    const actual = view(model)
+    const expected = stack([
+        container({ color: model.theme.background, onClick: { kind: EventKind.CLICKED_BACKGROUND } }),
+        scene({
+            camera: model.camera,
+            children: [
+                nodeUi(model.theme, "number", model.graph, model.focus),
+            ],
+            connections: []
+        }),
+        numericVirtualKeyboard(model.theme)
+    ])
+    expect(actual).toEqual(expected)
+})
+
+test("view with input selected", () => {
+    const model: Model = {
+        graph: {
+            nodes: {
+                "add": {
+                    uuid: "add",
+                    name: "add",
+                    inputs: ["x0", "y0"],
+                    outputs: ["out0"],
+                    position: { x: 0, y: 0 }
+                },
+                "sub": {
+                    uuid: "sub",
+                    name: "sub",
+                    inputs: ["x1", "y1"],
+                    outputs: ["out1"],
+                    position: { x: 0, y: 0 }
+                }
+            },
+            edges: {
+                "edge": {
+                    uuid: "edge",
+                    input: "x1",
+                    output: "out0"
+                }
+            },
+            inputs: {
+                "x0": {
+                    uuid: "x0",
+                    name: "x",
+                    node: "add",
+                },
+                "y0": {
+                    uuid: "y0",
+                    name: "y",
+                    node: "add",
+                },
+                "x1": {
+                    uuid: "x1",
+                    name: "x",
+                    node: "sub",
+                    edge: "edge"
+                },
+                "y1": {
+                    uuid: "y1",
+                    name: "y",
+                    node: "sub",
+                }
+            },
+            outputs: {
+                "out0": {
+                    uuid: "out0",
+                    name: "out",
+                    edges: ["edge"],
+                    node: "add"
+                },
+                "out1": {
+                    uuid: "out1",
+                    name: "out",
+                    edges: [],
+                    node: "sub"
+                }
+            },
+            bodys: {}
+        },
+        nodeOrder: ["add", "sub"],
+        pointers: [],
+        nodePlacementLocation: {
+            x: 0,
+            y: 0,
+        },
+        focus: {
+            kind: FocusKind.INPUT,
+            input: "x1",
+            quickSelect: { kind: QuickSelectKind.NONE },
+        },
+        openFinderFirstClick: false,
+        camera: identity(),
+        operations: {},
+        moveCamera: { left: false, up: false, down: false, right: false, now: 0 },
+        theme
+    }
+    const actual = view(model)
+    const expected = stack([
+        container({ color: model.theme.background, onClick: { kind: EventKind.CLICKED_BACKGROUND } }),
+        scene({
+            camera: model.camera,
+            children: [
+                nodeUi(model.theme, "add", model.graph, model.focus),
+                nodeUi(model.theme, "sub", model.graph, model.focus),
+            ],
+            connections: [
+                {
+                    from: "out0",
+                    to: "x1",
+                    color: { red: 255, green: 255, blue: 255, alpha: 255 }
+                }
+            ]
+        }),
+        contextMenu({
+            items: [{
+                name: 'Delete Edge',
+                shortcut: 'd',
+                onClick: {
+                    kind: EventKind.DELETE_INPUT_EDGE,
+                    input: "x1"
+                }
+            }],
+            backgroundColor: theme.node
+        })
+    ])
+    expect(actual).toEqual(expected)
+})
+
+
+test("view with output selected", () => {
+    const model: Model = {
+        graph: {
+            nodes: {
+                "add": {
+                    uuid: "add",
+                    name: "add",
+                    inputs: ["x0", "y0"],
+                    outputs: ["out0"],
+                    position: { x: 0, y: 0 }
+                },
+                "sub": {
+                    uuid: "sub",
+                    name: "sub",
+                    inputs: ["x1", "y1"],
+                    outputs: ["out1"],
+                    position: { x: 0, y: 0 }
+                }
+            },
+            edges: {
+                "edge": {
+                    uuid: "edge",
+                    input: "x1",
+                    output: "out0"
+                }
+            },
+            inputs: {
+                "x0": {
+                    uuid: "x0",
+                    name: "x",
+                    node: "add",
+                },
+                "y0": {
+                    uuid: "y0",
+                    name: "y",
+                    node: "add",
+                },
+                "x1": {
+                    uuid: "x1",
+                    name: "x",
+                    node: "sub",
+                    edge: "edge"
+                },
+                "y1": {
+                    uuid: "y1",
+                    name: "y",
+                    node: "sub",
+                }
+            },
+            outputs: {
+                "out0": {
+                    uuid: "out0",
+                    name: "out",
+                    edges: ["edge"],
+                    node: "add"
+                },
+                "out1": {
+                    uuid: "out1",
+                    name: "out",
+                    edges: [],
+                    node: "sub"
+                }
+            },
+            bodys: {}
+        },
+        nodeOrder: ["add", "sub"],
+        pointers: [],
+        nodePlacementLocation: {
+            x: 0,
+            y: 0,
+        },
+        focus: {
+            kind: FocusKind.OUTPUT,
+            output: "out0",
+            quickSelect: { kind: QuickSelectKind.NONE },
+        },
+        openFinderFirstClick: false,
+        camera: identity(),
+        operations: {},
+        moveCamera: { left: false, up: false, down: false, right: false, now: 0 },
+        theme
+    }
+    const actual = view(model)
+    const expected = stack([
+        container({ color: model.theme.background, onClick: { kind: EventKind.CLICKED_BACKGROUND } }),
+        scene({
+            camera: model.camera,
+            children: [
+                nodeUi(model.theme, "add", model.graph, model.focus),
+                nodeUi(model.theme, "sub", model.graph, model.focus),
+            ],
+            connections: [
+                {
+                    from: "out0",
+                    to: "x1",
+                    color: { red: 255, green: 255, blue: 255, alpha: 255 }
+                }
+            ]
+        }),
+        contextMenu({
+            items: [{
+                name: 'Delete Edge',
+                shortcut: 'd',
+                onClick: {
+                    kind: EventKind.DELETE_OUTPUT_EDGES,
+                    output: "out0"
+                }
+            }],
+            backgroundColor: theme.node
+        })
     ])
     expect(actual).toEqual(expected)
 })

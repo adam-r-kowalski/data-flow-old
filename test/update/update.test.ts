@@ -1924,7 +1924,7 @@ test("clicking a number node opens the numeric keyboard", () => {
     })
     const body = model0.graph.nodes[node].body!
     const { model: model1 } = update(effects, model0, {
-        kind: EventKind.CLICKED_NUMBER,
+        kind: EventKind.CLICKED_BODY,
         body
     })
     const expectedModel = openNumericKeyboard(model0, body)
@@ -1955,12 +1955,12 @@ test("clicking a number node when another number node is selected switches selec
     })
     const body0 = model1.graph.nodes[node0].body!
     const { model: model2 } = update(effects, model1, {
-        kind: EventKind.CLICKED_NUMBER,
+        kind: EventKind.CLICKED_BODY,
         body: body0
     })
     const body1 = model2.graph.nodes[node1].body!
     const { model: model3 } = update(effects, model2, {
-        kind: EventKind.CLICKED_NUMBER,
+        kind: EventKind.CLICKED_BODY,
         body: body1
     })
     const expectedModel = openNumericKeyboard(model1, body1)
@@ -1993,7 +1993,7 @@ test("clicking background when a number node is selected deselects it", () => {
         pointer
     })
     const { model: model2 } = update(effects, model1, {
-        kind: EventKind.CLICKED_NUMBER,
+        kind: EventKind.CLICKED_BODY,
         body
     })
     const { model: model3 } = update(effects, model2, {
@@ -2038,7 +2038,7 @@ test("pressing Escape when a number node is selected deselects it", () => {
     })
     const body = model0.graph.nodes[node].body!
     const { model: model1 } = update(effects, model0, {
-        kind: EventKind.CLICKED_NUMBER,
+        kind: EventKind.CLICKED_BODY,
         body
     })
     const { model: model2 } = update(effects, model1, {
@@ -2066,7 +2066,7 @@ test("clicking input when a number node is selected deselects it and selects inp
     })
     const body = model0.graph.nodes[node].body!
     const { model: model1 } = update(effects, model0, {
-        kind: EventKind.CLICKED_NUMBER,
+        kind: EventKind.CLICKED_BODY,
         body
     })
     const input = model0.graph.nodes[node].inputs[0]
@@ -2103,7 +2103,7 @@ test("clicking output when a number node is selected deselects it and selects ou
     })
     const body = model0.graph.nodes[node].body!
     const { model: model1 } = update(effects, model0, {
-        kind: EventKind.CLICKED_NUMBER,
+        kind: EventKind.CLICKED_BODY,
         body
     })
     const output = model0.graph.nodes[node].outputs[0]
@@ -2140,7 +2140,7 @@ test("clicking node when a number node is selected deselects it and selects node
     })
     const body = model0.graph.nodes[node].body!
     const { model: model1 } = update(effects, model0, {
-        kind: EventKind.CLICKED_NUMBER,
+        kind: EventKind.CLICKED_BODY,
         body
     })
     const { model: model2 } = update(effects, model1, {
@@ -2922,4 +2922,440 @@ test("connecting input to output if input already has edge replaces it", () => {
         }).graph
     }
     expect(model7).toEqual(expectedModel)
+})
+
+test("three pointers down then one up doesn't change state", () => {
+    const effects = makeEffects()
+    const model = emptyModel()
+    const pointer0: Pointer = {
+        id: 0,
+        position: { x: 0, y: 0 }
+    }
+    const pointer1: Pointer = {
+        id: 1,
+        position: { x: 0, y: 0 }
+    }
+    const pointer2: Pointer = {
+        id: 2,
+        position: { x: 0, y: 0 }
+    }
+    const { model: model1 } = update(effects, model, {
+        kind: EventKind.POINTER_DOWN,
+        pointer: pointer0
+    })
+    const { model: model2 } = update(effects, model1, {
+        kind: EventKind.POINTER_DOWN,
+        pointer: pointer1
+    })
+    const { model: model3 } = update(effects, model2, {
+        kind: EventKind.POINTER_DOWN,
+        pointer: pointer2
+    })
+    const { model: model4 } = update(effects, model3, {
+        kind: EventKind.POINTER_UP,
+        pointer: pointer2
+    })
+    const expectedModel: Model = {
+        ...emptyModel(),
+        pointers: [pointer0, pointer1],
+    }
+    expect(model4).toEqual(expectedModel)
+})
+
+
+test("three pointers down on node then one up keeps state dragging", () => {
+    const effects = makeEffects()
+    const model: Model = {
+        ...emptyModel(),
+        operations: {
+            'Add': {
+                name: 'Add',
+                inputs: ['x', 'y'],
+                outputs: ['out']
+            }
+        }
+    }
+    const { model: model1, node } = addNodeToGraph({
+        model,
+        operation: model.operations['Add'],
+        position: { x: 0, y: 0 },
+        generateUUID: effects.generateUUID
+    })
+    const pointer0: Pointer = {
+        id: 0,
+        position: { x: 0, y: 0 }
+    }
+    const pointer1: Pointer = {
+        id: 1,
+        position: { x: 0, y: 0 }
+    }
+    const { model: model2 } = update(effects, model1, {
+        kind: EventKind.POINTER_DOWN,
+        pointer: pointer0
+    })
+    const { model: model3 } = update(effects, model2, {
+        kind: EventKind.CLICKED_NODE,
+        node
+    })
+    const { model: model4 } = update(effects, model3, {
+        kind: EventKind.POINTER_DOWN,
+        pointer: pointer1
+    })
+    const { model: model5 } = update(effects, model4, {
+        kind: EventKind.CLICKED_NODE,
+        node
+    })
+    const { model: model6 } = update(effects, model5, {
+        kind: EventKind.POINTER_UP,
+        pointer: pointer1
+    })
+    const expectedModel: Model = {
+        ...model1,
+        focus: {
+            kind: FocusKind.NODE,
+            node,
+            drag: true,
+            quickSelect: { kind: QuickSelectKind.NONE }
+        },
+        pointers: [pointer0],
+    }
+    expect(model6).toEqual(expectedModel)
+})
+
+test("pointer move when input selected updates node placement location", () => {
+    const effects = makeEffects()
+    const model: Model = {
+        ...emptyModel(),
+        operations: {
+            'Add': {
+                name: 'Add',
+                inputs: ['x', 'y'],
+                outputs: ['out']
+            }
+        }
+    }
+    const { model: model1, node } = addNodeToGraph({
+        model,
+        operation: model.operations['Add'],
+        position: { x: 0, y: 0 },
+        generateUUID: effects.generateUUID
+    })
+    const pointer0: Pointer = {
+        id: 0,
+        position: { x: 0, y: 0 }
+    }
+    const { model: model2 } = update(effects, model1, {
+        kind: EventKind.POINTER_DOWN,
+        pointer: pointer0
+    })
+    const { model: model3 } = update(effects, model2, {
+        kind: EventKind.CLICKED_INPUT,
+        input: model2.graph.nodes[node].inputs[0]
+    })
+    const pointer1: Pointer = {
+        id: 0,
+        position: { x: 50, y: 50 }
+    }
+    const { model: model4 } = update(effects, model3, {
+        kind: EventKind.POINTER_MOVE,
+        pointer: pointer1
+    })
+    const expectedModel: Model = {
+        ...model3,
+        nodePlacementLocation: { x: 50, y: 50 },
+        pointers: [pointer1]
+    }
+    expect(model4).toEqual(expectedModel)
+})
+
+test("pointer move when output selected updates node placement location", () => {
+    const effects = makeEffects()
+    const model: Model = {
+        ...emptyModel(),
+        operations: {
+            'Add': {
+                name: 'Add',
+                inputs: ['x', 'y'],
+                outputs: ['out']
+            }
+        }
+    }
+    const { model: model1, node } = addNodeToGraph({
+        model,
+        operation: model.operations['Add'],
+        position: { x: 0, y: 0 },
+        generateUUID: effects.generateUUID
+    })
+    const pointer0: Pointer = {
+        id: 0,
+        position: { x: 0, y: 0 }
+    }
+    const { model: model2 } = update(effects, model1, {
+        kind: EventKind.POINTER_DOWN,
+        pointer: pointer0
+    })
+    const { model: model3 } = update(effects, model2, {
+        kind: EventKind.CLICKED_OUTPUT,
+        output: model2.graph.nodes[node].outputs[0]
+    })
+    const pointer1: Pointer = {
+        id: 0,
+        position: { x: 50, y: 50 }
+    }
+    const { model: model4 } = update(effects, model3, {
+        kind: EventKind.POINTER_MOVE,
+        pointer: pointer1
+    })
+    const expectedModel: Model = {
+        ...model3,
+        nodePlacementLocation: { x: 50, y: 50 },
+        pointers: [pointer1]
+    }
+    expect(model4).toEqual(expectedModel)
+})
+
+test("pointer move when body selected updates node placement location", () => {
+    const effects = makeEffects()
+    const model: Model = {
+        ...emptyModel(),
+        operations: {
+            'Number': {
+                name: 'Number',
+                inputs: [],
+                body: 0,
+                outputs: ['out']
+            }
+        }
+    }
+    const { model: model1, node } = addNodeToGraph({
+        model,
+        operation: model.operations['Number'],
+        position: { x: 0, y: 0 },
+        generateUUID: effects.generateUUID
+    })
+    const pointer0: Pointer = {
+        id: 0,
+        position: { x: 0, y: 0 }
+    }
+    const { model: model2 } = update(effects, model1, {
+        kind: EventKind.POINTER_DOWN,
+        pointer: pointer0
+    })
+    const { model: model3 } = update(effects, model2, {
+        kind: EventKind.CLICKED_BODY,
+        body: model2.graph.nodes[node].body!
+    })
+    const pointer1: Pointer = {
+        id: 0,
+        position: { x: 50, y: 50 }
+    }
+    const { model: model4 } = update(effects, model3, {
+        kind: EventKind.POINTER_MOVE,
+        pointer: pointer1
+    })
+    const expectedModel: Model = {
+        ...model3,
+        nodePlacementLocation: { x: 50, y: 50 },
+        pointers: [pointer1]
+    }
+    expect(model4).toEqual(expectedModel)
+})
+
+test("pointer move when finder open only updates pointer state", () => {
+    const effects = makeEffects()
+    const model = emptyModel()
+    const pointer0: Pointer = {
+        id: 0,
+        position: { x: 0, y: 0 }
+    }
+    const { model: model1 } = update(effects, model, {
+        kind: EventKind.POINTER_DOWN,
+        pointer: pointer0
+    })
+    const { model: model2 } = update(effects, model1, {
+        kind: EventKind.CLICKED_BACKGROUND,
+    })
+    const { model: model3 } = update(effects, model2, {
+        kind: EventKind.POINTER_UP,
+        pointer: pointer0
+    })
+    const pointer1: Pointer = {
+        id: 0,
+        position: { x: 0, y: 0 }
+    }
+    const { model: model4 } = update(effects, model3, {
+        kind: EventKind.POINTER_DOWN,
+        pointer: pointer1
+    })
+    const { model: model5 } = update(effects, model4, {
+        kind: EventKind.CLICKED_BACKGROUND,
+    })
+    const { model: model6 } = update(effects, model5, {
+        kind: EventKind.POINTER_UP,
+        pointer: pointer1
+    })
+    const pointer2: Pointer = {
+        id: 0,
+        position: { x: 50, y: 50 }
+    }
+    const { model: model7 } = update(effects, model6, {
+        kind: EventKind.POINTER_MOVE,
+        pointer: pointer2
+    })
+    const expectedModel: Model = {
+        ...model6,
+        pointers: []
+    }
+    expect(model7).toEqual(expectedModel)
+})
+
+test("pressing f with node selected opens finder", () => {
+    const effects = makeEffects()
+    const model: Model = {
+        ...emptyModel(),
+        operations: {
+            'Add': {
+                name: 'Add',
+                inputs: ['x', 'y'],
+                outputs: ['out']
+            }
+        }
+    }
+    const { model: model1, node } = addNodeToGraph({
+        model,
+        operation: model.operations['Add'],
+        position: { x: 0, y: 0 },
+        generateUUID: effects.generateUUID
+    })
+    const pointer0: Pointer = {
+        id: 0,
+        position: { x: 0, y: 0 }
+    }
+    const { model: model2 } = update(effects, model1, {
+        kind: EventKind.POINTER_DOWN,
+        pointer: pointer0
+    })
+    const { model: model3 } = update(effects, model2, {
+        kind: EventKind.CLICKED_NODE,
+        node
+    })
+    const { model: model4 } = update(effects, model3, {
+        kind: EventKind.POINTER_UP,
+        pointer: pointer0
+    })
+    const { model: model5 } = update(effects, model4, {
+        kind: EventKind.KEYDOWN,
+        key: 'f'
+    })
+    const expectedModel: Model = {
+        ...model4,
+        focus: {
+            kind: FocusKind.FINDER,
+            search: '',
+            options: ['Add'],
+            quickSelect: { kind: QuickSelectKind.NONE }
+        }
+    }
+    expect(model5).toEqual(expectedModel)
+})
+
+
+test("pressing f with input selected opens finder", () => {
+    const effects = makeEffects()
+    const model: Model = {
+        ...emptyModel(),
+        operations: {
+            'Add': {
+                name: 'Add',
+                inputs: ['x', 'y'],
+                outputs: ['out']
+            }
+        }
+    }
+    const { model: model1, node } = addNodeToGraph({
+        model,
+        operation: model.operations['Add'],
+        position: { x: 0, y: 0 },
+        generateUUID: effects.generateUUID
+    })
+    const pointer0: Pointer = {
+        id: 0,
+        position: { x: 0, y: 0 }
+    }
+    const { model: model2 } = update(effects, model1, {
+        kind: EventKind.POINTER_DOWN,
+        pointer: pointer0
+    })
+    const { model: model3 } = update(effects, model2, {
+        kind: EventKind.CLICKED_INPUT,
+        input: model2.graph.nodes[node].inputs[0]
+    })
+    const { model: model4 } = update(effects, model3, {
+        kind: EventKind.POINTER_UP,
+        pointer: pointer0
+    })
+    const { model: model5 } = update(effects, model4, {
+        kind: EventKind.KEYDOWN,
+        key: 'f'
+    })
+    const expectedModel: Model = {
+        ...model4,
+        focus: {
+            kind: FocusKind.FINDER,
+            search: '',
+            options: ['Add'],
+            quickSelect: { kind: QuickSelectKind.NONE }
+        }
+    }
+    expect(model5).toEqual(expectedModel)
+})
+
+test("pressing f with output selected opens finder", () => {
+    const effects = makeEffects()
+    const model: Model = {
+        ...emptyModel(),
+        operations: {
+            'Add': {
+                name: 'Add',
+                inputs: ['x', 'y'],
+                outputs: ['out']
+            }
+        }
+    }
+    const { model: model1, node } = addNodeToGraph({
+        model,
+        operation: model.operations['Add'],
+        position: { x: 0, y: 0 },
+        generateUUID: effects.generateUUID
+    })
+    const pointer0: Pointer = {
+        id: 0,
+        position: { x: 0, y: 0 }
+    }
+    const { model: model2 } = update(effects, model1, {
+        kind: EventKind.POINTER_DOWN,
+        pointer: pointer0
+    })
+    const { model: model3 } = update(effects, model2, {
+        kind: EventKind.CLICKED_OUTPUT,
+        output: model2.graph.nodes[node].outputs[0]
+    })
+    const { model: model4 } = update(effects, model3, {
+        kind: EventKind.POINTER_UP,
+        pointer: pointer0
+    })
+    const { model: model5 } = update(effects, model4, {
+        kind: EventKind.KEYDOWN,
+        key: 'f'
+    })
+    const expectedModel: Model = {
+        ...model4,
+        focus: {
+            kind: FocusKind.FINDER,
+            search: '',
+            options: ['Add'],
+            quickSelect: { kind: QuickSelectKind.NONE }
+        }
+    }
+    expect(model5).toEqual(expectedModel)
 })

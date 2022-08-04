@@ -172,7 +172,7 @@ test("pressing i with body focused launches quick select for inputs", () => {
     })
     const body = model2.graph.nodes[node0].body!
     const { model: model3 } = update(effects, model2, {
-        kind: EventKind.CLICKED_NUMBER,
+        kind: EventKind.CLICKED_BODY,
         body
     })
     const { model: model4 } = update(effects, model3, {
@@ -446,7 +446,7 @@ test("pressing o with body focused launches quick select for outputs", () => {
     })
     const body = model2.graph.nodes[node0].body!
     const { model: model3 } = update(effects, model2, {
-        kind: EventKind.CLICKED_NUMBER,
+        kind: EventKind.CLICKED_BODY,
         body
     })
     const { model: model4 } = update(effects, model3, {
@@ -550,6 +550,44 @@ test("pressing hotkey with output quick select will select the output and disabl
         focus: {
             kind: FocusKind.OUTPUT,
             output,
+            quickSelect: { kind: QuickSelectKind.NONE }
+        }
+    }
+    expect(model3).toEqual(expectedModel)
+})
+
+test("pressing invalid hotkey with output quick select will disable quick select", () => {
+    const effects = makeEffects()
+    const operations: Operations = {
+        'Add': {
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        },
+    }
+    const model0: Model = {
+        ...emptyModel(),
+        operations
+    }
+    const { model: model1 } = addNodeToGraph({
+        model: model0,
+        operation: operations['Add'],
+        position: { x: 0, y: 0 },
+        generateUUID: effects.generateUUID
+    })
+    const { model: model2 } = update(effects, model1, {
+        kind: EventKind.KEYDOWN,
+        key: 'o'
+    })
+    const { model: model3 } = update(effects, model2, {
+        kind: EventKind.KEYDOWN,
+        key: 'z'
+    })
+    const expectedModel: Model = {
+        ...model1,
+        focus: {
+            kind: FocusKind.NONE,
+            pointerAction: { kind: PointerActionKind.NONE },
             quickSelect: { kind: QuickSelectKind.NONE }
         }
     }

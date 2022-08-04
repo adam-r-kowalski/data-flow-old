@@ -29,7 +29,8 @@ test("pressing i with nothing focused launches quick select for inputs", () => {
     const inputs = model1.graph.nodes[node].inputs
     const { model: model2 } = update(effects, model1, {
         kind: EventKind.KEYDOWN,
-        key: 'i'
+        key: 'i',
+        ctrl: false
     })
     const expectedModel: Model = {
         ...model1,
@@ -75,7 +76,8 @@ test("pressing i with output focused launches quick select for inputs", () => {
     const inputs = model2.graph.nodes[node].inputs
     const { model: model3 } = update(effects, model2, {
         kind: EventKind.KEYDOWN,
-        key: 'i'
+        key: 'i',
+        ctrl: false
     })
     const expectedModel: Model = {
         ...model1,
@@ -120,7 +122,8 @@ test("pressing i with input focused launches quick select for inputs", () => {
     })
     const { model: model3 } = update(effects, model2, {
         kind: EventKind.KEYDOWN,
-        key: 'i'
+        key: 'i',
+        ctrl: false
     })
     const expectedModel: Model = {
         ...model1,
@@ -177,7 +180,8 @@ test("pressing i with body focused launches quick select for inputs", () => {
     })
     const { model: model4 } = update(effects, model3, {
         kind: EventKind.KEYDOWN,
-        key: 'i'
+        key: 'i',
+        ctrl: false
     })
     const inputs = model4.graph.nodes[node1].inputs
     const expectedModel: Model = {
@@ -222,7 +226,8 @@ test("pressing i with node focused launches quick select for inputs", () => {
     })
     const { model: model3 } = update(effects, model2, {
         kind: EventKind.KEYDOWN,
-        key: 'i'
+        key: 'i',
+        ctrl: false
     })
     const inputs = model3.graph.nodes[node].inputs
     const expectedModel: Model = {
@@ -266,11 +271,13 @@ test("pressing hotkey with input quick select will select the input and disable 
     const inputs = model1.graph.nodes[node].inputs
     const { model: model2 } = update(effects, model1, {
         kind: EventKind.KEYDOWN,
-        key: 'i'
+        key: 'i',
+        ctrl: false
     })
     const { model: model3 } = update(effects, model2, {
         kind: EventKind.KEYDOWN,
-        key: 'a'
+        key: 'a',
+        ctrl: false
     })
     const expectedModel: Model = {
         ...model1,
@@ -306,7 +313,8 @@ test("pressing o with nothing focused launches quick select for outputs", () => 
     const output = model1.graph.nodes[node].outputs[0]
     const { model: model2 } = update(effects, model1, {
         kind: EventKind.KEYDOWN,
-        key: 'o'
+        key: 'o',
+        ctrl: false
     })
     const expectedModel: Model = {
         ...model1,
@@ -350,7 +358,8 @@ test("pressing o with output focused launches quick select for outputs", () => {
     })
     const { model: model3 } = update(effects, model2, {
         kind: EventKind.KEYDOWN,
-        key: 'o'
+        key: 'o',
+        ctrl: false
     })
     const expectedModel: Model = {
         ...model1,
@@ -394,7 +403,8 @@ test("pressing o with input focused launches quick select for outputs", () => {
     })
     const { model: model3 } = update(effects, model2, {
         kind: EventKind.KEYDOWN,
-        key: 'o'
+        key: 'o',
+        ctrl: false
     })
     const output = model3.graph.nodes[node].outputs[0]
     const expectedModel: Model = {
@@ -451,7 +461,8 @@ test("pressing o with body focused launches quick select for outputs", () => {
     })
     const { model: model4 } = update(effects, model3, {
         kind: EventKind.KEYDOWN,
-        key: 'o'
+        key: 'o',
+        ctrl: false
     })
     const output0 = model4.graph.nodes[node0].outputs[0]
     const output1 = model4.graph.nodes[node1].outputs[0]
@@ -497,7 +508,8 @@ test("pressing o with node focused launches quick select for outputs", () => {
     })
     const { model: model3 } = update(effects, model2, {
         kind: EventKind.KEYDOWN,
-        key: 'o'
+        key: 'o',
+        ctrl: false
     })
     const output = model3.graph.nodes[node].outputs[0]
     const expectedModel: Model = {
@@ -539,11 +551,13 @@ test("pressing hotkey with output quick select will select the output and disabl
     const output = model1.graph.nodes[node].outputs[0]
     const { model: model2 } = update(effects, model1, {
         kind: EventKind.KEYDOWN,
-        key: 'o'
+        key: 'o',
+        ctrl: false
     })
     const { model: model3 } = update(effects, model2, {
         kind: EventKind.KEYDOWN,
-        key: 'a'
+        key: 'a',
+        ctrl: false
     })
     const expectedModel: Model = {
         ...model1,
@@ -577,11 +591,13 @@ test("pressing invalid hotkey with output quick select will disable quick select
     })
     const { model: model2 } = update(effects, model1, {
         kind: EventKind.KEYDOWN,
-        key: 'o'
+        key: 'o',
+        ctrl: false
     })
     const { model: model3 } = update(effects, model2, {
         kind: EventKind.KEYDOWN,
-        key: 'z'
+        key: 'z',
+        ctrl: false
     })
     const expectedModel: Model = {
         ...model1,

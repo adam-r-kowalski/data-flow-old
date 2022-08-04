@@ -35,15 +35,16 @@ test("h when nothing focused pans camera left", () => {
     const effects = makeEffects()
     const { model: model1, dispatch } = update(effects, model, {
         kind: EventKind.KEYDOWN,
-        key: 'h'
+        key: 'h',
+        ctrl: false
     })
-    expect(dispatch).toEqual([{ kind: EventKind.MOVE_CAMERA }])
+    expect(dispatch).toEqual([{ kind: EventKind.PAN_CAMERA }])
     const { model: model2, schedule } = update(effects, model1, {
-        kind: EventKind.MOVE_CAMERA
+        kind: EventKind.PAN_CAMERA
     })
     expect(schedule).toEqual([{
         after: { milliseconds: 10 },
-        event: { kind: EventKind.MOVE_CAMERA }
+        event: { kind: EventKind.PAN_CAMERA }
     }])
     expect(model2).toEqual({
         ...emptyModel(),
@@ -67,15 +68,16 @@ test("Left arrow when nothing focused pans camera left", () => {
     const effects = makeEffects()
     const { model: model1, dispatch } = update(effects, model, {
         kind: EventKind.KEYDOWN,
-        key: 'ArrowLeft'
+        key: 'ArrowLeft',
+        ctrl: false
     })
-    expect(dispatch).toEqual([{ kind: EventKind.MOVE_CAMERA }])
+    expect(dispatch).toEqual([{ kind: EventKind.PAN_CAMERA }])
     const { model: model2, schedule } = update(effects, model1, {
-        kind: EventKind.MOVE_CAMERA
+        kind: EventKind.PAN_CAMERA
     })
     expect(schedule).toEqual([{
         after: { milliseconds: 10 },
-        event: { kind: EventKind.MOVE_CAMERA }
+        event: { kind: EventKind.PAN_CAMERA }
     }])
     expect(model2).toEqual({
         ...emptyModel(),
@@ -100,15 +102,16 @@ test("j when nothing focused pans camera down", () => {
     const effects = makeEffects()
     const { model: model1, dispatch } = update(effects, model, {
         kind: EventKind.KEYDOWN,
-        key: 'j'
+        key: 'j',
+        ctrl: false
     })
-    expect(dispatch).toEqual([{ kind: EventKind.MOVE_CAMERA }])
+    expect(dispatch).toEqual([{ kind: EventKind.PAN_CAMERA }])
     const { model: model2, schedule } = update(effects, model1, {
-        kind: EventKind.MOVE_CAMERA
+        kind: EventKind.PAN_CAMERA
     })
     expect(schedule).toEqual([{
         after: { milliseconds: 10 },
-        event: { kind: EventKind.MOVE_CAMERA }
+        event: { kind: EventKind.PAN_CAMERA }
     }])
     expect(model2).toEqual({
         ...emptyModel(),
@@ -132,15 +135,16 @@ test("Down arrow when nothing focused pans camera down", () => {
     const effects = makeEffects()
     const { model: model1, dispatch } = update(effects, model, {
         kind: EventKind.KEYDOWN,
-        key: 'ArrowDown'
+        key: 'ArrowDown',
+        ctrl: false
     })
-    expect(dispatch).toEqual([{ kind: EventKind.MOVE_CAMERA }])
+    expect(dispatch).toEqual([{ kind: EventKind.PAN_CAMERA }])
     const { model: model2, schedule } = update(effects, model1, {
-        kind: EventKind.MOVE_CAMERA
+        kind: EventKind.PAN_CAMERA
     })
     expect(schedule).toEqual([{
         after: { milliseconds: 10 },
-        event: { kind: EventKind.MOVE_CAMERA }
+        event: { kind: EventKind.PAN_CAMERA }
     }])
     expect(model2).toEqual({
         ...emptyModel(),
@@ -165,15 +169,16 @@ test("k when nothing focused pans camera up", () => {
     const effects = makeEffects()
     const { model: model1, dispatch } = update(effects, model, {
         kind: EventKind.KEYDOWN,
-        key: 'k'
+        key: 'k',
+        ctrl: false
     })
-    expect(dispatch).toEqual([{ kind: EventKind.MOVE_CAMERA }])
+    expect(dispatch).toEqual([{ kind: EventKind.PAN_CAMERA }])
     const { model: model2, schedule } = update(effects, model1, {
-        kind: EventKind.MOVE_CAMERA
+        kind: EventKind.PAN_CAMERA
     })
     expect(schedule).toEqual([{
         after: { milliseconds: 10 },
-        event: { kind: EventKind.MOVE_CAMERA }
+        event: { kind: EventKind.PAN_CAMERA }
     }])
     expect(model2).toEqual({
         ...emptyModel(),
@@ -197,15 +202,16 @@ test("Up Arrow when nothing focused pans camera up", () => {
     const effects = makeEffects()
     const { model: model1, dispatch } = update(effects, model, {
         kind: EventKind.KEYDOWN,
-        key: 'ArrowUp'
+        key: 'ArrowUp',
+        ctrl: false
     })
-    expect(dispatch).toEqual([{ kind: EventKind.MOVE_CAMERA }])
+    expect(dispatch).toEqual([{ kind: EventKind.PAN_CAMERA }])
     const { model: model2, schedule } = update(effects, model1, {
-        kind: EventKind.MOVE_CAMERA
+        kind: EventKind.PAN_CAMERA
     })
     expect(schedule).toEqual([{
         after: { milliseconds: 10 },
-        event: { kind: EventKind.MOVE_CAMERA }
+        event: { kind: EventKind.PAN_CAMERA }
     }])
     expect(model2).toEqual({
         ...emptyModel(),
@@ -230,15 +236,16 @@ test("l when nothing focused pans camera right", () => {
     const effects = makeEffects()
     const { model: model1, dispatch } = update(effects, model, {
         kind: EventKind.KEYDOWN,
-        key: 'l'
+        key: 'l',
+        ctrl: false
     })
-    expect(dispatch).toEqual([{ kind: EventKind.MOVE_CAMERA }])
+    expect(dispatch).toEqual([{ kind: EventKind.PAN_CAMERA }])
     const { model: model2, schedule } = update(effects, model1, {
-        kind: EventKind.MOVE_CAMERA
+        kind: EventKind.PAN_CAMERA
     })
     expect(schedule).toEqual([{
         after: { milliseconds: 10 },
-        event: { kind: EventKind.MOVE_CAMERA }
+        event: { kind: EventKind.PAN_CAMERA }
     }])
     expect(model2).toEqual({
         ...emptyModel(),
@@ -262,15 +269,16 @@ test("Right arrow when nothing focused pans camera right", () => {
     const effects = makeEffects()
     const { model: model1, dispatch } = update(effects, model, {
         kind: EventKind.KEYDOWN,
-        key: 'ArrowRight'
+        key: 'ArrowRight',
+        ctrl: false
     })
-    expect(dispatch).toEqual([{ kind: EventKind.MOVE_CAMERA }])
+    expect(dispatch).toEqual([{ kind: EventKind.PAN_CAMERA }])
     const { model: model2, schedule } = update(effects, model1, {
-        kind: EventKind.MOVE_CAMERA
+        kind: EventKind.PAN_CAMERA
     })
     expect(schedule).toEqual([{
         after: { milliseconds: 10 },
-        event: { kind: EventKind.MOVE_CAMERA }
+        event: { kind: EventKind.PAN_CAMERA }
     }])
     expect(model2).toEqual({
         ...emptyModel(),
@@ -295,20 +303,22 @@ test("pressing h then l when nothing focused does nothing", () => {
     const effects = makeEffects()
     const { model: model1, dispatch: dispatch0 } = update(effects, model, {
         kind: EventKind.KEYDOWN,
-        key: 'h'
+        key: 'h',
+        ctrl: false
     })
-    expect(dispatch0).toEqual([{ kind: EventKind.MOVE_CAMERA }])
+    expect(dispatch0).toEqual([{ kind: EventKind.PAN_CAMERA }])
     const { model: model2, dispatch: dispatch1 } = update(effects, model1, {
         kind: EventKind.KEYDOWN,
-        key: 'l'
+        key: 'l',
+        ctrl: false
     })
     expect(dispatch1).toBeUndefined()
     const { model: model3, schedule } = update(effects, model2, {
-        kind: EventKind.MOVE_CAMERA
+        kind: EventKind.PAN_CAMERA
     })
     expect(schedule).toEqual([{
         after: { milliseconds: 10 },
-        event: { kind: EventKind.MOVE_CAMERA }
+        event: { kind: EventKind.PAN_CAMERA }
     }])
     expect(model3).toEqual({
         ...emptyModel(),
@@ -323,12 +333,13 @@ test("pressing a non hotkey when nothing focused does nothing", () => {
     const effects = makeEffects()
     const { model: model1, dispatch: dispatch0 } = update(effects, model, {
         kind: EventKind.KEYDOWN,
-        key: 'z'
+        key: 'z',
+        ctrl: false
     })
     expect(dispatch0).toBeUndefined()
     expect(model1).toEqual(model)
     const { model: model2, schedule } = update(effects, model1, {
-        kind: EventKind.MOVE_CAMERA,
+        kind: EventKind.PAN_CAMERA,
     })
     expect(schedule).toBeUndefined()
     expect(model2).toEqual(model)
@@ -338,4 +349,38 @@ test("pressing a non hotkey when nothing focused does nothing", () => {
     })
     expect(dispatch1).toBeUndefined()
     expect(model3).toEqual(model)
+})
+
+
+test("ctrl j when nothing focused zooms camera in", () => {
+    const model = emptyModel()
+    const effects = makeEffects()
+    const { model: model1, dispatch } = update(effects, model, {
+        kind: EventKind.KEYDOWN,
+        key: 'j',
+        ctrl: true
+    })
+    expect(dispatch).toEqual([{ kind: EventKind.PAN_CAMERA }])
+    const { model: model2, schedule } = update(effects, model1, {
+        kind: EventKind.PAN_CAMERA
+    })
+    expect(schedule).toEqual([{
+        after: { milliseconds: 10 },
+        event: { kind: EventKind.PAN_CAMERA }
+    }])
+    expect(model2).toEqual({
+        ...emptyModel(),
+        camera: translate(0, 0.5),
+        moveCamera: { left: false, up: false, down: true, right: false, now: 1 }
+    })
+    const { model: model3, dispatch: dispatch0 } = update(effects, model2, {
+        kind: EventKind.KEYUP,
+        key: 'j'
+    })
+    expect(dispatch0).toBeUndefined()
+    expect(model3).toEqual({
+        ...emptyModel(),
+        camera: translate(0, 0.5),
+        moveCamera: { left: false, up: false, down: false, right: false, now: 1 }
+    })
 })

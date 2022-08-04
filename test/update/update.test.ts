@@ -748,7 +748,8 @@ test("key down when finder is not shown does nothing", () => {
     const model = emptyModel()
     const { model: model1 } = update(makeEffects(), model, {
         kind: EventKind.KEYDOWN,
-        key: 'a'
+        key: 'a',
+        ctrl: false
     })
     expect(model1).toEqual(emptyModel())
 })
@@ -773,7 +774,8 @@ test("f key down when finder is not shown opens finder", () => {
     }
     const { model: model1, render } = update(makeEffects(), model0, {
         kind: EventKind.KEYDOWN,
-        key: 'f'
+        key: 'f',
+        ctrl: false
     })
     const expectedModel: Model = {
         ...model0,
@@ -839,15 +841,18 @@ test("key down when finder is shown appends to search", () => {
     })
     const { model: model1 } = update(effects, model0, {
         kind: EventKind.KEYDOWN,
-        key: 'a'
+        key: 'a',
+        ctrl: false
     })
     const { model: model2 } = update(effects, model1, {
         kind: EventKind.KEYDOWN,
-        key: 'd'
+        key: 'd',
+        ctrl: false
     })
     const { model: model3, render } = update(effects, model2, {
         kind: EventKind.KEYDOWN,
-        key: 'd'
+        key: 'd',
+        ctrl: false
     })
     const expectedModel: Model = {
         ...model0,
@@ -882,19 +887,23 @@ test("backspace key down when finder is shown deletes from search", () => {
     })
     const { model: model1 } = update(effects, model0, {
         kind: EventKind.KEYDOWN,
-        key: 'a'
+        key: 'a',
+        ctrl: false
     })
     const { model: model2 } = update(effects, model1, {
         kind: EventKind.KEYDOWN,
-        key: 'd'
+        key: 'd',
+        ctrl: false
     })
     const { model: model3 } = update(effects, model2, {
         kind: EventKind.KEYDOWN,
-        key: 'd'
+        key: 'd',
+        ctrl: false
     })
     const { model: model4, render } = update(effects, model3, {
         kind: EventKind.KEYDOWN,
-        key: 'Backspace'
+        key: 'Backspace',
+        ctrl: false
     })
     const expectedModel: Model = {
         ...model0,
@@ -928,7 +937,8 @@ test("enter key down when finder is shown closes finder and adds node", () => {
     })
     const { model: model1, render } = update(makeEffects(), model0, {
         kind: EventKind.KEYDOWN,
-        key: 'Enter'
+        key: 'Enter',
+        ctrl: false
     })
     const { model: expectedModel } = addNodeToGraph({
         model: { ...emptyModel(), operations },
@@ -962,13 +972,15 @@ test("enter key down when finder is shown and finder has search closes finder an
     for (const key of 'add') {
         const { model: model } = update(effects, model1, {
             kind: EventKind.KEYDOWN,
-            key
+            key,
+            ctrl: false
         })
         model1 = model
     }
     const { model: model2 } = update(effects, model1, {
         kind: EventKind.KEYDOWN,
-        key: 'Enter'
+        key: 'Enter',
+        ctrl: false
     })
     const { model: expectedModel } = addNodeToGraph({
         model: { ...emptyModel(), operations },
@@ -999,11 +1011,13 @@ test("enter key down when finder is shown and finder has search eliminates all o
     })
     const { model: model1 } = update(effects, model0, {
         kind: EventKind.KEYDOWN,
-        key: 'x'
+        key: 'x',
+        ctrl: false
     })
     const { model: model2 } = update(effects, model1, {
         kind: EventKind.KEYDOWN,
-        key: 'Enter'
+        key: 'Enter',
+        ctrl: false
     })
     expect(model2).toEqual({ ...emptyModel(), operations })
 })
@@ -1059,7 +1073,8 @@ test("escape key down when finder is shown closes finder", () => {
     })
     const { model: model1, render } = update(effects, model0, {
         kind: EventKind.KEYDOWN,
-        key: 'Escape'
+        key: 'Escape',
+        ctrl: false
     })
     const expectedModel = { ...emptyModel(), operations }
     expect(model1).toEqual(expectedModel)
@@ -1086,7 +1101,8 @@ test("shift key down when finder is shown are ignored", () => {
     })
     const { model: model1, render } = update(effects, model0, {
         kind: EventKind.KEYDOWN,
-        key: 'Shift'
+        key: 'Shift',
+        ctrl: false
     })
     expect(model1).toEqual(model0)
     expect(render).toBeUndefined()
@@ -1112,7 +1128,8 @@ test("alt key down when finder is shown are ignored", () => {
     })
     const { model: model1, render } = update(effects, model0, {
         kind: EventKind.KEYDOWN,
-        key: 'Alt'
+        key: 'Alt',
+        ctrl: false
     })
     expect(model1).toEqual(model0)
     expect(render).toBeUndefined()
@@ -1138,7 +1155,8 @@ test("control key down when finder is shown are ignored", () => {
     })
     const { model: model1, render } = update(effects, model0, {
         kind: EventKind.KEYDOWN,
-        key: 'Control'
+        key: 'Control',
+        ctrl: false
     })
     expect(model1).toEqual(model0)
     expect(render).toBeUndefined()
@@ -1164,7 +1182,8 @@ test("meta key down when finder is shown are ignored", () => {
     })
     const { model: model1, render } = update(effects, model0, {
         kind: EventKind.KEYDOWN,
-        key: 'Meta'
+        key: 'Meta',
+        ctrl: false
     })
     expect(model1).toEqual(model0)
     expect(render).toBeUndefined()
@@ -1190,7 +1209,8 @@ test("Tab key down when finder is shown are ignored", () => {
     })
     const { model: model1, render } = update(effects, model0, {
         kind: EventKind.KEYDOWN,
-        key: 'Tab'
+        key: 'Tab',
+        ctrl: false
     })
     expect(model1).toEqual(model0)
     expect(render).toBeUndefined()
@@ -1225,7 +1245,8 @@ test("virtual key down when finder is shown appends to search", () => {
     })
     const { model: model3, render } = update(effects, model2, {
         kind: EventKind.KEYDOWN,
-        key: 'd'
+        key: 'd',
+        ctrl: false
     })
     const expectedModel: Model = {
         ...model0,
@@ -1409,7 +1430,8 @@ test("pressing number on keyboard appends to number node", () => {
     for (const key of '1234567890') {
         const { model: model } = update(effects, model2, {
             kind: EventKind.KEYDOWN,
-            key
+            key,
+            ctrl: false
         })
         model2 = model
     }
@@ -1458,13 +1480,15 @@ test("pressing backspace on keyboard deletes from number node", () => {
     for (const key of '1234567890') {
         const { model: model } = update(effects, model2, {
             kind: EventKind.KEYDOWN,
-            key
+            key,
+            ctrl: false
         })
         model2 = model
     }
     const { model: model3 } = update(effects, model2, {
         kind: EventKind.KEYDOWN,
-        key: 'Backspace'
+        key: 'Backspace',
+        ctrl: false
     })
     const body = makeEffects({ ...effectModel, uuid: effectModel.uuid - 1 }).generateUUID()
     const expectedModel: Model = {
@@ -1511,7 +1535,8 @@ test("pressing backspace when number node value is 0 has no effect", () => {
     for (let i = 0; i < 3; ++i) {
         const { model: model } = update(effects, model1, {
             kind: EventKind.KEYDOWN,
-            key: 'Backspace'
+            key: 'Backspace',
+            ctrl: false
         })
         model2 = model
     }
@@ -1711,13 +1736,15 @@ test("pressing enter on keyboard while editing number node exits virtual keyboar
     for (const key of '1234567890') {
         const { model: model } = update(effects, model2, {
             kind: EventKind.KEYDOWN,
-            key
+            key,
+            ctrl: false
         })
         model2 = model
     }
     const { model: model3 } = update(effects, model2, {
         kind: EventKind.KEYDOWN,
-        key: 'Enter'
+        key: 'Enter',
+        ctrl: false
     })
     const body = makeEffects({ ...effectModel, uuid: effectModel.uuid - 1 }).generateUUID()
     const expectedModel: Model = {
@@ -1808,7 +1835,8 @@ test("pressing non number on keyboard while editing number node is ignored", () 
     for (const key of 'qwertyuiopasdfghjklzxcvbnm') {
         const { model: model } = update(effects, model2, {
             kind: EventKind.KEYDOWN,
-            key
+            key,
+            ctrl: false
         })
         model2 = model
     }
@@ -2043,7 +2071,8 @@ test("pressing Escape when a number node is selected deselects it", () => {
     })
     const { model: model2 } = update(effects, model1, {
         kind: EventKind.KEYDOWN,
-        key: 'Escape'
+        key: 'Escape',
+        ctrl: false
     })
     expect(model2).toEqual(model0)
 })
@@ -2275,7 +2304,8 @@ test("pressing d on keyboard with node selected deletes it", () => {
     })
     const { model: model3 } = update(effects, model2, {
         kind: EventKind.KEYDOWN,
-        key: 'd'
+        key: 'd',
+        ctrl: false
     })
     expect(model3).toEqual(model0)
 })
@@ -2354,7 +2384,8 @@ test("pressing escape when a node is selected deselects it", () => {
     })
     const { model: model3 } = update(effects, model2, {
         kind: EventKind.KEYDOWN,
-        key: 'Escape'
+        key: 'Escape',
+        ctrl: false
     })
     expect(model3).toEqual(model1)
 })
@@ -2436,7 +2467,8 @@ test("pressing escape when a input is selected deselects it", () => {
     })
     const { model: model3 } = update(effects, model2, {
         kind: EventKind.KEYDOWN,
-        key: 'Escape'
+        key: 'Escape',
+        ctrl: false
     })
     expect(model3).toEqual(model1)
 })
@@ -2518,7 +2550,8 @@ test("pressing escape when a output is selected deselects it", () => {
     })
     const { model: model3 } = update(effects, model2, {
         kind: EventKind.KEYDOWN,
-        key: 'Escape'
+        key: 'Escape',
+        ctrl: false
     })
     expect(model3).toEqual(model1)
 })
@@ -2611,7 +2644,8 @@ test("pressing d on keyboard with input selected delete edge attached", () => {
     })
     const { model: model6 } = update(effects, model5, {
         kind: EventKind.KEYDOWN,
-        key: 'd'
+        key: 'd',
+        ctrl: false
     })
     expect(model6).toEqual(model2)
 })
@@ -2719,7 +2753,8 @@ test("pressing d on keyboard with output selected delete edges attached", () => 
     })
     const { model: model8 } = update(effects, model7, {
         kind: EventKind.KEYDOWN,
-        key: 'd'
+        key: 'd',
+        ctrl: false
     })
     expect(model8).toEqual(model2)
 })
@@ -3245,7 +3280,8 @@ test("pressing f with node selected opens finder", () => {
     })
     const { model: model5 } = update(effects, model4, {
         kind: EventKind.KEYDOWN,
-        key: 'f'
+        key: 'f',
+        ctrl: false
     })
     const expectedModel: Model = {
         ...model4,
@@ -3296,7 +3332,8 @@ test("pressing f with input selected opens finder", () => {
     })
     const { model: model5 } = update(effects, model4, {
         kind: EventKind.KEYDOWN,
-        key: 'f'
+        key: 'f',
+        ctrl: false
     })
     const expectedModel: Model = {
         ...model4,
@@ -3346,7 +3383,8 @@ test("pressing f with output selected opens finder", () => {
     })
     const { model: model5 } = update(effects, model4, {
         kind: EventKind.KEYDOWN,
-        key: 'f'
+        key: 'f',
+        ctrl: false
     })
     const expectedModel: Model = {
         ...model4,

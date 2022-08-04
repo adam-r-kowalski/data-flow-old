@@ -837,7 +837,7 @@ test("view with no nodes or edges", () => {
         camera: identity(),
         operations: {},
         openFinderFirstClick: false,
-        moveCamera: { left: false, up: false, down: false, right: false, now: 0 },
+        panCamera: { left: false, up: false, down: false, right: false, now: 0 },
         theme
     }
     const actual = view(model)
@@ -869,7 +869,7 @@ test("view with no nodes or edges but finder shown", () => {
         openFinderFirstClick: false,
         camera: identity(),
         operations: {},
-        moveCamera: { left: false, up: false, down: false, right: false, now: 0 },
+        panCamera: { left: false, up: false, down: false, right: false, now: 0 },
         theme
     }
     const actual = view(model)
@@ -927,7 +927,7 @@ test("view with three nodes and no edges", () => {
         openFinderFirstClick: false,
         camera: identity(),
         operations: {},
-        moveCamera: { left: false, up: false, down: false, right: false, now: 0 },
+        panCamera: { left: false, up: false, down: false, right: false, now: 0 },
         theme
     }
     const actual = view(model)
@@ -989,7 +989,7 @@ test("view with three nodes and no edges", () => {
         openFinderFirstClick: false,
         camera: identity(),
         operations: {},
-        moveCamera: { left: false, up: false, down: false, right: false, now: 0 },
+        panCamera: { left: false, up: false, down: false, right: false, now: 0 },
         theme
     }
     const actual = view(model)
@@ -1085,7 +1085,7 @@ test("view with three nodes and one edges", () => {
         openFinderFirstClick: false,
         camera: identity(),
         operations: {},
-        moveCamera: { left: false, up: false, down: false, right: false, now: 0 },
+        panCamera: { left: false, up: false, down: false, right: false, now: 0 },
         theme
     }
     const actual = view(model)
@@ -1155,7 +1155,7 @@ test("view with body selected", () => {
         openFinderFirstClick: false,
         camera: identity(),
         operations: {},
-        moveCamera: { left: false, up: false, down: false, right: false, now: 0 },
+        panCamera: { left: false, up: false, down: false, right: false, now: 0 },
         theme
     }
     const actual = view(model)
@@ -1252,7 +1252,7 @@ test("view with input selected", () => {
         openFinderFirstClick: false,
         camera: identity(),
         operations: {},
-        moveCamera: { left: false, up: false, down: false, right: false, now: 0 },
+        panCamera: { left: false, up: false, down: false, right: false, now: 0 },
         theme
     }
     const actual = view(model)
@@ -1367,7 +1367,7 @@ test("view with output selected", () => {
         openFinderFirstClick: false,
         camera: identity(),
         operations: {},
-        moveCamera: { left: false, up: false, down: false, right: false, now: 0 },
+        panCamera: { left: false, up: false, down: false, right: false, now: 0 },
         theme
     }
     const actual = view(model)

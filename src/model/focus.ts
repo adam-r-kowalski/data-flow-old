@@ -11,10 +11,20 @@ export enum FocusKind {
     NONE
 }
 
+export interface MoveNode {
+    readonly left: boolean
+    readonly down: boolean
+    readonly up: boolean
+    readonly right: boolean
+    readonly now: number
+}
+
+
 export interface FocusNode {
     readonly kind: FocusKind.NODE
     readonly node: UUID
     readonly drag: boolean
+    readonly move: MoveNode
     readonly quickSelect: QuickSelect
 }
 

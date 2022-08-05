@@ -3,7 +3,7 @@ import { UUID } from "./graph"
 export enum QuickSelectKind {
     NONE,
     INPUT,
-    OUTPUT
+    OUTPUT,
 }
 
 export interface QuickSelectNone {

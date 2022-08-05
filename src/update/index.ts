@@ -12,6 +12,7 @@ import { maybeTriggerQuickSelect, quickSelectInput, quickSelectOutput } from "./
 import { QuickSelectKind } from "../model/quick_select"
 import { clearFocus, selectInput, selectOutput } from "./focus"
 import { maybeStartMoveCamera, maybeStopMoveCamera, panCamera, zoomCamera } from "./move_camera"
+import { maybeStartMoveNode, maybeStopMoveNode, moveNode } from "./move_node"
 
 export enum EventKind {
     POINTER_MOVE,
@@ -33,6 +34,7 @@ export enum EventKind {
     DELETE_OUTPUT_EDGES,
     PAN_CAMERA,
     ZOOM_CAMERA,
+    MOVE_NODE,
 }
 
 export interface PointerMove {
@@ -130,6 +132,10 @@ export interface ZoomCamera {
     readonly kind: EventKind.ZOOM_CAMERA,
 }
 
+export interface MoveNode {
+    readonly kind: EventKind.MOVE_NODE,
+}
+
 
 export type AppEvent =
     | PointerMove
@@ -151,6 +157,7 @@ export type AppEvent =
     | DeleteOutputEdges
     | PanCamera
     | ZoomCamera
+    | MoveNode
 
 const pointerDown = (model: Model, event: PointerDown): UpdateResult<Model, AppEvent> => {
     const pointers = [...model.pointers, event.pointer]
@@ -320,7 +327,8 @@ const clickedNode = (model: Model, event: ClickedNode): UpdateResult<Model, AppE
                 kind: FocusKind.NODE,
                 node: event.node,
                 drag: true,
-                quickSelect: { kind: QuickSelectKind.NONE }
+                quickSelect: { kind: QuickSelectKind.NONE },
+                move: { left: false, up: false, down: false, right: false, now: 0 }
             },
             nodeOrder
         },
@@ -510,7 +518,12 @@ const keyDown = (model: Model, event: KeyDown, { generateUUID, currentTime }: Ef
                         case 'Escape':
                             return { model: clearFocus(model), render: true }
                         default:
-                            return maybeTriggerQuickSelect(model, model.focus, key)
+                            const result = maybeTriggerQuickSelect(model, model.focus, key)
+                            if (result.render) {
+                                return result
+                            } else {
+                                return maybeStartMoveNode(result.model, model.focus, key, currentTime)
+                            }
                     }
                 case FocusKind.INPUT:
                     switch (key) {
@@ -569,6 +582,8 @@ const keyUp = (model: Model, event: KeyUp): UpdateResult<Model, AppEvent> => {
     switch (model.focus.kind) {
         case FocusKind.NONE:
             return maybeStopMoveCamera(model, event)
+        case FocusKind.NODE:
+            return maybeStopMoveNode(model, model.focus, event.key)
         default:
             return { model }
     }
@@ -719,5 +734,6 @@ export const update = (effects: Effects, model: Model, event: AppEvent): UpdateR
         case EventKind.DELETE_OUTPUT_EDGES: return deleteOutputEdges(model, event)
         case EventKind.PAN_CAMERA: return panCamera(model, effects.currentTime)
         case EventKind.ZOOM_CAMERA: return zoomCamera(model, effects.currentTime)
+        case EventKind.MOVE_NODE: return moveNode(model, effects.currentTime)
     }
 }

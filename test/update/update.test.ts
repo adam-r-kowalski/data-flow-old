@@ -242,6 +242,7 @@ test("clicking node selects it and puts it on top of of the node order", () => {
             kind: FocusKind.NODE,
             node: node0,
             drag: true,
+            move: { left: false, up: false, down: false, right: false, now: 0 },
             quickSelect: { kind: QuickSelectKind.NONE }
         },
         nodeOrder: [node1, node0],
@@ -362,6 +363,7 @@ test("pointer move after clicking node pointer down drags node", () => {
             kind: FocusKind.NODE,
             node: node0,
             drag: true,
+            move: { left: false, up: false, down: false, right: false, now: 0 },
             quickSelect: { kind: QuickSelectKind.NONE }
         }
     }
@@ -420,6 +422,7 @@ test("pointer move after clicking node, pointer down, then pointer up", () => {
             kind: FocusKind.NODE,
             node: node0,
             drag: false,
+            move: { left: false, up: false, down: false, right: false, now: 0 },
             quickSelect: { kind: QuickSelectKind.NONE }
         },
     }
@@ -2210,6 +2213,7 @@ test("clicking node when a number node is selected deselects it and selects node
             kind: FocusKind.NODE,
             node,
             drag: true,
+            move: { left: false, up: false, down: false, right: false, now: 0 },
             quickSelect: { kind: QuickSelectKind.NONE }
         }
     }
@@ -3101,6 +3105,7 @@ test("three pointers down on node then one up keeps state dragging", () => {
             kind: FocusKind.NODE,
             node,
             drag: true,
+            move: { left: false, up: false, down: false, right: false, now: 0 },
             quickSelect: { kind: QuickSelectKind.NONE }
         },
         pointers: [pointer0],

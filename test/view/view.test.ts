@@ -987,6 +987,7 @@ test("view with three nodes and no edges", () => {
             kind: FocusKind.NODE,
             node: 'first',
             drag: false,
+            move: { left: false, up: false, down: false, right: false, now: 0 },
             quickSelect: { kind: QuickSelectKind.NONE },
         },
         openFinderFirstClick: false,

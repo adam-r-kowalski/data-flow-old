@@ -2,6 +2,7 @@ export interface Style {
     touchAction: 'none'
     width: string
     height: string
+    display: 'block'
 }
 
 export interface Buffer {

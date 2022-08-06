@@ -86,7 +86,7 @@ test("double clicking background opens finder", () => {
             options: [],
             quickSelect: { kind: QuickSelectKind.NONE }
         },
-        nodePlacementLocation: { x: 0, y: 0 }
+        nodePlacementLocation: { x: 0, y: 0, show: false }
     }
     expect(model5).toEqual(expectedModel)
     expect(schedule).toEqual([
@@ -258,7 +258,7 @@ test("pointer move before pointer down changes node placement location", () => {
     })
     const expectedModel: Model = {
         ...model,
-        nodePlacementLocation: { x: 0, y: 0 },
+        nodePlacementLocation: { x: 0, y: 0, show: false },
     }
     expect(model1).toEqual(expectedModel)
 })
@@ -408,7 +408,7 @@ test("pointer move after clicking node, pointer down, then pointer up", () => {
     })
     const expectedModel: Model = {
         ...model1,
-        nodePlacementLocation: { x: 50, y: 75 },
+        nodePlacementLocation: { x: 50, y: 75, show: false },
         focus: {
             kind: FocusKind.NODE,
             node: node0,
@@ -732,7 +732,7 @@ test("double click opens finder", () => {
             options: ['Add', 'Sub'],
             quickSelect: { kind: QuickSelectKind.NONE }
         },
-        nodePlacementLocation: { x: 50, y: 50 },
+        nodePlacementLocation: { x: 50, y: 50, show: false },
         pointers: [
             {
                 id: 0,
@@ -3062,7 +3062,7 @@ test("pointer move when input selected updates node placement location", () => {
     })
     const expectedModel: Model = {
         ...model3,
-        nodePlacementLocation: { x: 50, y: 50 },
+        nodePlacementLocation: { x: 50, y: 50, show: false },
         pointers: [pointer1]
     }
     expect(model4).toEqual(expectedModel)
@@ -3108,7 +3108,7 @@ test("pointer move when output selected updates node placement location", () => 
     })
     const expectedModel: Model = {
         ...model3,
-        nodePlacementLocation: { x: 50, y: 50 },
+        nodePlacementLocation: { x: 50, y: 50, show: false },
         pointers: [pointer1]
     }
     expect(model4).toEqual(expectedModel)
@@ -3155,7 +3155,7 @@ test("pointer move when body selected updates node placement location", () => {
     })
     const expectedModel: Model = {
         ...model3,
-        nodePlacementLocation: { x: 50, y: 50 },
+        nodePlacementLocation: { x: 50, y: 50, show: false },
         pointers: [pointer1]
     }
     expect(model4).toEqual(expectedModel)
@@ -3207,6 +3207,7 @@ test("pointer move when finder open only updates pointer state", () => {
     }
     expect(model7).toEqual(expectedModel)
 })
+
 
 test("pressing f with node selected opens finder", () => {
     const effects = makeEffects()
@@ -3432,4 +3433,38 @@ test("clicking background with finder open closes it", () => {
         pointers: [pointer]
     }
     expect(model3).toEqual(expectedModel)
+})
+
+test("pointer move after moving with keyboard stops showing node placement location", () => {
+    const effects = makeEffects()
+    const { model: model1, render: render0 } = update(effects, model, {
+        kind: EventKind.KEYDOWN,
+        key: 'h',
+        ctrl: false
+    })
+    expect(render0).toBeUndefined()
+    expect(model1).toEqual({
+        ...model,
+        nodePlacementLocation: { x: 250, y: 250, show: true },
+        panCamera: { left: true, up: false, down: false, right: false, now: 0 }
+    })
+    const pointer: Pointer = {
+        id: 0,
+        position: { x: 0, y: 0 }
+    }
+    const { model: model2, render: render1 } = update(effects, model1, {
+        kind: EventKind.POINTER_MOVE,
+        pointer
+    })
+    expect(render1).toEqual(true)
+    expect(model2).toEqual({
+        ...model1,
+        nodePlacementLocation: { x: 0, y: 0, show: false }
+    })
+    const { model: model3, render: render2 } = update(effects, model2, {
+        kind: EventKind.POINTER_MOVE,
+        pointer
+    })
+    expect(render2).toBeUndefined()
+    expect(model3).toEqual(model2)
 })

@@ -49,7 +49,8 @@ test("h when nothing focused pans camera left", () => {
     expect(model2).toEqual({
         ...model,
         camera: translate(-0.5, 0),
-        panCamera: { left: true, up: false, down: false, right: false, now: 1 }
+        panCamera: { left: true, up: false, down: false, right: false, now: 1 },
+        nodePlacementLocation: { x: 250, y: 250, show: true },
     })
     const { model: model3, dispatch: dispatch0 } = update(effects, model2, {
         kind: EventKind.KEYUP,
@@ -60,7 +61,8 @@ test("h when nothing focused pans camera left", () => {
     expect(model3).toEqual({
         ...model,
         camera: translate(-0.5, 0),
-        panCamera: { left: false, up: false, down: false, right: false, now: 1 }
+        panCamera: { left: false, up: false, down: false, right: false, now: 1 },
+        nodePlacementLocation: { x: 250, y: 250, show: true },
     })
 })
 
@@ -82,7 +84,8 @@ test("Left arrow when nothing focused pans camera left", () => {
     expect(model2).toEqual({
         ...model,
         camera: translate(-0.5, 0),
-        panCamera: { left: true, up: false, down: false, right: false, now: 1 }
+        panCamera: { left: true, up: false, down: false, right: false, now: 1 },
+        nodePlacementLocation: { x: 250, y: 250, show: true },
     })
     const { model: model3, dispatch: dispatch0 } = update(effects, model2, {
         kind: EventKind.KEYUP,
@@ -93,7 +96,8 @@ test("Left arrow when nothing focused pans camera left", () => {
     expect(model3).toEqual({
         ...model,
         camera: translate(-0.5, 0),
-        panCamera: { left: false, up: false, down: false, right: false, now: 1 }
+        panCamera: { left: false, up: false, down: false, right: false, now: 1 },
+        nodePlacementLocation: { x: 250, y: 250, show: true },
     })
 })
 
@@ -116,7 +120,8 @@ test("j when nothing focused pans camera down", () => {
     expect(model2).toEqual({
         ...model,
         camera: translate(0, 0.5),
-        panCamera: { left: false, up: false, down: true, right: false, now: 1 }
+        panCamera: { left: false, up: false, down: true, right: false, now: 1 },
+        nodePlacementLocation: { x: 250, y: 250, show: true },
     })
     const { model: model3, dispatch: dispatch0 } = update(effects, model2, {
         kind: EventKind.KEYUP,
@@ -127,7 +132,8 @@ test("j when nothing focused pans camera down", () => {
     expect(model3).toEqual({
         ...model,
         camera: translate(0, 0.5),
-        panCamera: { left: false, up: false, down: false, right: false, now: 1 }
+        panCamera: { left: false, up: false, down: false, right: false, now: 1 },
+        nodePlacementLocation: { x: 250, y: 250, show: true },
     })
 })
 
@@ -149,7 +155,8 @@ test("Down arrow when nothing focused pans camera down", () => {
     expect(model2).toEqual({
         ...model,
         camera: translate(0, 0.5),
-        panCamera: { left: false, up: false, down: true, right: false, now: 1 }
+        panCamera: { left: false, up: false, down: true, right: false, now: 1 },
+        nodePlacementLocation: { x: 250, y: 250, show: true },
     })
     const { model: model3, dispatch: dispatch0 } = update(effects, model2, {
         kind: EventKind.KEYUP,
@@ -160,7 +167,8 @@ test("Down arrow when nothing focused pans camera down", () => {
     expect(model3).toEqual({
         ...model,
         camera: translate(0, 0.5),
-        panCamera: { left: false, up: false, down: false, right: false, now: 1 }
+        panCamera: { left: false, up: false, down: false, right: false, now: 1 },
+        nodePlacementLocation: { x: 250, y: 250, show: true },
     })
 })
 
@@ -183,7 +191,8 @@ test("k when nothing focused pans camera up", () => {
     expect(model2).toEqual({
         ...model,
         camera: translate(0, -0.5),
-        panCamera: { left: false, up: true, down: false, right: false, now: 1 }
+        panCamera: { left: false, up: true, down: false, right: false, now: 1 },
+        nodePlacementLocation: { x: 250, y: 250, show: true },
     })
     const { model: model3, dispatch: dispatch0 } = update(effects, model2, {
         kind: EventKind.KEYUP,
@@ -194,7 +203,8 @@ test("k when nothing focused pans camera up", () => {
     expect(model3).toEqual({
         ...model,
         camera: translate(0, -0.5),
-        panCamera: { left: false, up: false, down: false, right: false, now: 1 }
+        panCamera: { left: false, up: false, down: false, right: false, now: 1 },
+        nodePlacementLocation: { x: 250, y: 250, show: true },
     })
 })
 
@@ -216,7 +226,8 @@ test("Up Arrow when nothing focused pans camera up", () => {
     expect(model2).toEqual({
         ...model,
         camera: translate(0, -0.5),
-        panCamera: { left: false, up: true, down: false, right: false, now: 1 }
+        panCamera: { left: false, up: true, down: false, right: false, now: 1 },
+        nodePlacementLocation: { x: 250, y: 250, show: true },
     })
     const { model: model3, dispatch: dispatch0 } = update(effects, model2, {
         kind: EventKind.KEYUP,
@@ -227,7 +238,8 @@ test("Up Arrow when nothing focused pans camera up", () => {
     expect(model3).toEqual({
         ...model,
         camera: translate(0, -0.5),
-        panCamera: { left: false, up: false, down: false, right: false, now: 1 }
+        panCamera: { left: false, up: false, down: false, right: false, now: 1 },
+        nodePlacementLocation: { x: 250, y: 250, show: true },
     })
 })
 
@@ -250,7 +262,8 @@ test("l when nothing focused pans camera right", () => {
     expect(model2).toEqual({
         ...model,
         camera: translate(0.5, 0),
-        panCamera: { left: false, up: false, down: false, right: true, now: 1 }
+        panCamera: { left: false, up: false, down: false, right: true, now: 1 },
+        nodePlacementLocation: { x: 250, y: 250, show: true },
     })
     const { model: model3, dispatch: dispatch0 } = update(effects, model2, {
         kind: EventKind.KEYUP,
@@ -261,7 +274,8 @@ test("l when nothing focused pans camera right", () => {
     expect(model3).toEqual({
         ...model,
         camera: translate(0.5, 0),
-        panCamera: { left: false, up: false, down: false, right: false, now: 1 }
+        panCamera: { left: false, up: false, down: false, right: false, now: 1 },
+        nodePlacementLocation: { x: 250, y: 250, show: true },
     })
 })
 
@@ -283,7 +297,8 @@ test("Right arrow when nothing focused pans camera right", () => {
     expect(model2).toEqual({
         ...model,
         camera: translate(0.5, 0),
-        panCamera: { left: false, up: false, down: false, right: true, now: 1 }
+        panCamera: { left: false, up: false, down: false, right: true, now: 1 },
+        nodePlacementLocation: { x: 250, y: 250, show: true },
     })
     const { model: model3, dispatch: dispatch0 } = update(effects, model2, {
         kind: EventKind.KEYUP,
@@ -294,7 +309,8 @@ test("Right arrow when nothing focused pans camera right", () => {
     expect(model3).toEqual({
         ...model,
         camera: translate(0.5, 0),
-        panCamera: { left: false, up: false, down: false, right: false, now: 1 }
+        panCamera: { left: false, up: false, down: false, right: false, now: 1 },
+        nodePlacementLocation: { x: 250, y: 250, show: true },
     })
 })
 
@@ -323,7 +339,8 @@ test("pressing h then l when nothing focused does nothing", () => {
     expect(model3).toEqual({
         ...model,
         camera: identity(),
-        panCamera: { left: true, up: false, down: false, right: true, now: 1 }
+        panCamera: { left: true, up: false, down: false, right: true, now: 1 },
+        nodePlacementLocation: { x: 250, y: 250, show: true },
     })
 })
 
@@ -379,7 +396,8 @@ test("ctrl j when nothing focused zooms camera out", () => {
             0, 1.0069555500567189, -1.7388875141797087,
             0, 0, 1,
         ],
-        zoomCamera: { in: false, out: true, now: 1 }
+        zoomCamera: { in: false, out: true, now: 1 },
+        nodePlacementLocation: { x: 250, y: 250, show: true },
     })
     const { model: model3, dispatch: dispatch0 } = update(effects, model2, {
         kind: EventKind.KEYUP,
@@ -394,7 +412,8 @@ test("ctrl j when nothing focused zooms camera out", () => {
             0, 1.0069555500567189, -1.7388875141797087,
             0, 0, 1,
         ],
-        zoomCamera: { in: false, out: false, now: 1 }
+        zoomCamera: { in: false, out: false, now: 1 },
+        nodePlacementLocation: { x: 250, y: 250, show: true },
     })
 })
 
@@ -420,7 +439,8 @@ test("ctrl k when nothing focused zooms camera in", () => {
             0, 0.9930924954370359, 1.7268761407410125,
             0, 0, 1,
         ],
-        zoomCamera: { in: true, out: false, now: 1 }
+        zoomCamera: { in: true, out: false, now: 1 },
+        nodePlacementLocation: { x: 250, y: 250, show: true },
     })
     const { model: model3, dispatch: dispatch0 } = update(effects, model2, {
         kind: EventKind.KEYUP,
@@ -435,7 +455,8 @@ test("ctrl k when nothing focused zooms camera in", () => {
             0, 0.9930924954370359, 1.7268761407410125,
             0, 0, 1,
         ],
-        zoomCamera: { in: false, out: false, now: 1 }
+        zoomCamera: { in: false, out: false, now: 1 },
+        nodePlacementLocation: { x: 250, y: 250, show: true },
     })
 })
 
@@ -463,6 +484,7 @@ test("pressing ctrl j then ctrl k when nothing focused does nothing", () => {
     expect(model3).toEqual({
         ...model,
         camera: identity(),
-        zoomCamera: { in: true, out: true, now: 1 }
+        zoomCamera: { in: true, out: true, now: 1 },
+        nodePlacementLocation: { x: 250, y: 250, show: true },
     })
 })

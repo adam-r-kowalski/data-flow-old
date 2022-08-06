@@ -16,7 +16,7 @@ export const emptyModel = (window: Window): Model => ({
         quickSelect: { kind: QuickSelectKind.NONE }
     },
     openFinderFirstClick: false,
-    nodePlacementLocation: { x: window.width / 2, y: window.height / 2 },
+    nodePlacementLocation: { x: window.width / 2, y: window.height / 2, show: false },
     window,
     operations: {},
     panCamera: { left: false, down: false, up: false, right: false, now: 0 },
@@ -24,6 +24,7 @@ export const emptyModel = (window: Window): Model => ({
     theme: {
         background: { red: 2, green: 22, blue: 39, alpha: 255 },
         node: { red: 41, green: 95, blue: 120, alpha: 255 },
+        nodePlacementLocation: { red: 41, green: 95, blue: 120, alpha: 50 },
         focusNode: { red: 23, green: 54, blue: 69, alpha: 255 },
         input: { red: 188, green: 240, blue: 192, alpha: 255 },
         focusInput: { red: 175, green: 122, blue: 208, alpha: 255 },

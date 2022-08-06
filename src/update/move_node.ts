@@ -1,7 +1,7 @@
 import { AppEvent, EventKind } from ".";
 import { inverse, multiplyMatrixVector } from "../linear_algebra/matrix3x3";
 import { length } from "../linear_algebra/vector3";
-import { Model } from "../model";
+import { Model, NodePlacementLocation } from "../model";
 import { FocusKind, FocusNode } from "../model/focus";
 import { CurrentTime, UpdateResult } from "../ui/run";
 import { changeNodePosition } from "./graph";
@@ -19,6 +19,10 @@ export const maybeStartMoveNode = (model: Model, focus: FocusNode, key: string, 
             dispatch: [{ kind: EventKind.MOVE_NODE }]
         } :
         { now: focus.move.now }
+    const nodePlacementLocation: NodePlacementLocation = {
+        ...model.nodePlacementLocation,
+        show: false
+    }
     switch (key) {
         case 'h':
         case 'ArrowLeft': {
@@ -28,7 +32,8 @@ export const maybeStartMoveNode = (model: Model, focus: FocusNode, key: string, 
                     focus: {
                         ...focus,
                         move: { ...focus.move, left: true, now }
-                    }
+                    },
+                    nodePlacementLocation,
                 },
                 dispatch
             }
@@ -41,7 +46,8 @@ export const maybeStartMoveNode = (model: Model, focus: FocusNode, key: string, 
                     focus: {
                         ...focus,
                         move: { ...focus.move, down: true, now }
-                    }
+                    },
+                    nodePlacementLocation,
                 },
                 dispatch
             }
@@ -54,7 +60,8 @@ export const maybeStartMoveNode = (model: Model, focus: FocusNode, key: string, 
                     focus: {
                         ...focus,
                         move: { ...focus.move, up: true, now }
-                    }
+                    },
+                    nodePlacementLocation,
                 },
                 dispatch
             }
@@ -67,7 +74,8 @@ export const maybeStartMoveNode = (model: Model, focus: FocusNode, key: string, 
                     focus: {
                         ...focus,
                         move: { ...focus.move, right: true, now }
-                    }
+                    },
+                    nodePlacementLocation,
                 },
                 dispatch
             }

@@ -1,6 +1,6 @@
 import { AppEvent, EventKind, KeyDown, KeyUp } from ".";
 import { multiplyMatrices, scale, translate } from "../linear_algebra/matrix3x3";
-import { Model } from "../model";
+import { Model, NodePlacementLocation } from "../model";
 import { CurrentTime, UpdateResult } from "../ui/run";
 
 export const maybeStartMoveCamera = (model: Model, { key, ctrl }: KeyDown, currentTime: CurrentTime): UpdateResult<Model, AppEvent> => {
@@ -27,6 +27,11 @@ export const maybeStartMoveCamera = (model: Model, { key, ctrl }: KeyDown, curre
             } :
             { now: model.zoomCamera.now }
     }
+    const nodePlacementLocation: NodePlacementLocation = {
+        x: model.window.width / 2,
+        y: model.window.height / 2,
+        show: true
+    }
     switch (key) {
         case 'h':
         case 'ArrowLeft': {
@@ -35,6 +40,7 @@ export const maybeStartMoveCamera = (model: Model, { key, ctrl }: KeyDown, curre
                 model: {
                     ...model,
                     panCamera: { ...model.panCamera, left: true, now },
+                    nodePlacementLocation,
                 },
                 dispatch
             }
@@ -47,7 +53,8 @@ export const maybeStartMoveCamera = (model: Model, { key, ctrl }: KeyDown, curre
                     model: {
                         ...model,
                         zoomCamera: { ...model.zoomCamera, out: true, now },
-                        panCamera: { ...model.panCamera, up: false, down: false }
+                        panCamera: { ...model.panCamera, up: false, down: false },
+                        nodePlacementLocation,
                     },
                     dispatch
                 }
@@ -58,6 +65,7 @@ export const maybeStartMoveCamera = (model: Model, { key, ctrl }: KeyDown, curre
                         ...model,
                         zoomCamera: { ...model.zoomCamera, in: false, out: false },
                         panCamera: { ...model.panCamera, down: true, now },
+                        nodePlacementLocation,
                     },
                     dispatch
                 }
@@ -71,7 +79,8 @@ export const maybeStartMoveCamera = (model: Model, { key, ctrl }: KeyDown, curre
                     model: {
                         ...model,
                         zoomCamera: { ...model.zoomCamera, in: true, now },
-                        panCamera: { ...model.panCamera, up: false, down: false }
+                        panCamera: { ...model.panCamera, up: false, down: false },
+                        nodePlacementLocation,
                     },
                     dispatch
                 }
@@ -81,7 +90,8 @@ export const maybeStartMoveCamera = (model: Model, { key, ctrl }: KeyDown, curre
                     model: {
                         ...model,
                         zoomCamera: { ...model.zoomCamera, in: false, out: false },
-                        panCamera: { ...model.panCamera, up: true, now }
+                        panCamera: { ...model.panCamera, up: true, now },
+                        nodePlacementLocation,
                     },
                     dispatch
                 }
@@ -93,7 +103,8 @@ export const maybeStartMoveCamera = (model: Model, { key, ctrl }: KeyDown, curre
             return {
                 model: {
                     ...model,
-                    panCamera: { ...model.panCamera, right: true, now }
+                    panCamera: { ...model.panCamera, right: true, now },
+                    nodePlacementLocation,
                 },
                 dispatch
             }

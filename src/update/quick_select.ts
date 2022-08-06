@@ -2,7 +2,7 @@ import { AppEvent } from ".";
 import { Model } from "../model";
 import { Focus, FocusFinder, FocusKind } from "../model/focus";
 import { GenerateUUID, UUID } from "../model/graph";
-import { QuickSelectInput, QuickSelectOutput, QuickSelectKind, QuickSelectNode } from "../model/quick_select";
+import { QuickSelectInput, QuickSelectOutput, QuickSelectKind, QuickSelectNode, QuickSelectBody } from "../model/quick_select";
 import { UpdateResult } from "../ui/run";
 import { selectInput, selectOutput } from "./focus";
 
@@ -65,6 +65,25 @@ export const maybeTriggerQuickSelect = (model: Model, focus: Exclude<Focus, Focu
                 render: true
             }
         }
+        case 'b': {
+            const hotkeys: { [body: UUID]: string } = {}
+            Object.keys(model.graph.bodys).forEach((body, i) => {
+                hotkeys[body] = String.fromCharCode(97 + i)
+            })
+            return {
+                model: {
+                    ...model,
+                    focus: {
+                        ...focus,
+                        quickSelect: {
+                            kind: QuickSelectKind.BODY,
+                            hotkeys
+                        }
+                    }
+                },
+                render: true
+            }
+        }
         default:
             return { model }
     }
@@ -120,6 +139,35 @@ export const quickSelectNode = (model: Model, quickSelect: QuickSelectNode, key:
                     node,
                     drag: false,
                     move: { left: false, up: false, down: false, right: false, now: 0 },
+                    quickSelect: { kind: QuickSelectKind.NONE }
+                }
+            },
+            render: true
+        }
+    } else {
+        return {
+            model: {
+                ...model,
+                focus: {
+                    ...model.focus,
+                    quickSelect: { kind: QuickSelectKind.NONE }
+                }
+            },
+            render: true
+        }
+    }
+}
+
+export const quickSelectBody = (model: Model, quickSelect: QuickSelectBody, key: string): UpdateResult<Model, AppEvent> => {
+    const entry = Object.entries(quickSelect.hotkeys).find(([_, hotkey]) => hotkey === key)
+    if (entry !== undefined) {
+        const [body, _] = entry
+        return {
+            model: {
+                ...model,
+                focus: {
+                    kind: FocusKind.BODY,
+                    body,
                     quickSelect: { kind: QuickSelectKind.NONE }
                 }
             },

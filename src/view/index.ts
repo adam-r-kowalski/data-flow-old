@@ -114,6 +114,9 @@ export const nodeUi = (theme: Theme, nodeUUID: UUID, graph: Graph, focus: Focus)
     if (node.outputs.length) {
         rowEntries.push(outputsUi(theme, node.outputs.map(o => graph.outputs[o]), focus))
     }
+    const name = focus.quickSelect.kind === QuickSelectKind.NODE ?
+        focus.quickSelect.hotkeys[node.uuid] :
+        node.name
     return container(
         {
             color: isFocused(focus, node.uuid) ? theme.focusNode : theme.node,
@@ -126,7 +129,7 @@ export const nodeUi = (theme: Theme, nodeUUID: UUID, graph: Graph, focus: Focus)
             }
         },
         column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
-            text(node.name),
+            text(name),
             spacer(4),
             row(rowEntries)
         ])

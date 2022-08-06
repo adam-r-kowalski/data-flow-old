@@ -1,12 +1,12 @@
 import { Focus, FocusKind } from "../../src/model/focus"
-import { Input, Output } from "../../src/model/graph"
+import { emptyGraph, Graph, Input, Node, Output } from "../../src/model/graph"
 import { PointerActionKind } from "../../src/model/pointer_action"
 import { QuickSelectKind } from "../../src/model/quick_select"
 import { Theme } from "../../src/model/theme"
-import { container, row, text } from "../../src/ui"
+import { column, container, row, text } from "../../src/ui"
 import { CrossAxisAlignment } from "../../src/ui/alignment"
 import { AppEvent, EventKind } from "../../src/update"
-import { inputUi, outputUi, spacer } from "../../src/view"
+import { inputUi, nodeUi, outputUi, spacer } from "../../src/view"
 
 const theme: Theme = {
     background: { red: 2, green: 22, blue: 39, alpha: 255 },
@@ -86,6 +86,49 @@ test("outputUI with quick select", () => {
                 padding: { top: 2, right: 4, bottom: 2, left: 4 },
                 color: theme.input
             }, text({ color: theme.background }, "a")),
+        ])
+    )
+    expect(actual).toEqual(expected)
+})
+
+test("nodeUi with quick select", () => {
+    const node: Node = {
+        uuid: 'uuid',
+        name: "node",
+        position: { x: 0, y: 0 },
+        inputs: [],
+        outputs: [],
+    }
+    const graph: Graph = {
+        ...emptyGraph(),
+        nodes: { [node.uuid]: node }
+    }
+    const focus: Focus = {
+        kind: FocusKind.NONE,
+        pointerAction: { kind: PointerActionKind.NONE },
+        quickSelect: {
+            kind: QuickSelectKind.NODE,
+            hotkeys: {
+                'uuid': 'a'
+            }
+        }
+    }
+    const actual = nodeUi(theme, node.uuid, graph, focus)
+    const expected = container<AppEvent>(
+        {
+            color: theme.node,
+            padding: 4,
+            x: 0,
+            y: 0,
+            onClick: {
+                kind: EventKind.CLICKED_NODE,
+                node: 'uuid'
+            }
+        },
+        column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
+            text("a"),
+            spacer(4),
+            row([])
         ])
     )
     expect(actual).toEqual(expected)

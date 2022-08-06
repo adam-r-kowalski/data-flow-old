@@ -123,7 +123,7 @@ export class MockCanvasContext {
 }
 
 export class MockCanvas {
-    style: Style = { width: '0px', height: '0px', touchAction: 'none' }
+    style: Style = { width: '0px', height: '0px', touchAction: 'none', display: 'block' }
     width: number = 0
     height: number = 0
 

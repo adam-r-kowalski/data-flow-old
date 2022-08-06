@@ -4152,6 +4152,7 @@ class WebGL2Renderer {
         canvas.height = size.height * window.devicePixelRatio;
         canvas.style.width = `${size.width}px`;
         canvas.style.height = `${size.height}px`;
+        canvas.style.display = "block";
         gl.viewport(0, 0, canvas.width, canvas.height);
         this._size = size;
     }

@@ -8,7 +8,7 @@ import { PointerAction, PointerActionKind } from '../model/pointer_action'
 import { GenerateUUID, Operation, Operations, Position, UUID } from '../model/graph'
 import { Pointer } from "../ui"
 import { addNode, changeBodyValue, changeNodePosition, removeInputEdge, removeNode, removeOutputEdges } from "./graph"
-import { maybeTriggerQuickSelect, quickSelectInput, quickSelectOutput, quickSelectNode } from "./quick_select"
+import { maybeTriggerQuickSelect, quickSelectInput, quickSelectOutput, quickSelectNode, quickSelectBody } from "./quick_select"
 import { QuickSelectKind } from "../model/quick_select"
 import { clearFocus, selectInput, selectOutput } from "./focus"
 import { maybeStartMoveCamera, maybeStopMoveCamera, panCamera, zoomCamera } from "./move_camera"
@@ -455,6 +455,8 @@ const keyDown = (model: Model, event: KeyDown, { generateUUID, currentTime }: Ef
             return quickSelectOutput(model, model.focus.quickSelect, key, generateUUID)
         case QuickSelectKind.NODE:
             return quickSelectNode(model, model.focus.quickSelect, key)
+        case QuickSelectKind.BODY:
+            return quickSelectBody(model, model.focus.quickSelect, key)
         case QuickSelectKind.NONE:
             switch (model.focus.kind) {
                 case FocusKind.FINDER:

@@ -87,8 +87,11 @@ export const outputsUi = (theme: Theme, outputs: Output[], focus: Focus) =>
     )
 
 
-export const numberUi = (theme: Theme, body: Body, focus: Focus): UI<AppEvent> =>
-    container({
+export const numberUi = (theme: Theme, body: Body, focus: Focus): UI<AppEvent> => {
+    const value = focus.quickSelect.kind === QuickSelectKind.BODY ?
+        focus.quickSelect.hotkeys[body.uuid] :
+        body.value.toString()
+    return container({
         color: isFocused(focus, body.uuid) ? theme.focusInput : theme.background,
         padding: 5,
         onClick: {
@@ -96,7 +99,8 @@ export const numberUi = (theme: Theme, body: Body, focus: Focus): UI<AppEvent> =
             body: body.uuid
         }
     },
-        text(body.value.toString()))
+        text(value))
+}
 
 
 export const nodeUi = (theme: Theme, nodeUUID: UUID, graph: Graph, focus: Focus): UI<AppEvent> => {

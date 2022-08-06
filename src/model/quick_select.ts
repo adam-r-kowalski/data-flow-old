@@ -4,7 +4,8 @@ export enum QuickSelectKind {
     NONE,
     INPUT,
     OUTPUT,
-    NODE
+    NODE,
+    BODY,
 }
 
 export interface QuickSelectNone {
@@ -26,9 +27,14 @@ export interface QuickSelectNode {
     readonly hotkeys: Readonly<{ [node: UUID]: string }>
 }
 
+export interface QuickSelectBody {
+    readonly kind: QuickSelectKind.BODY
+    readonly hotkeys: Readonly<{ [body: UUID]: string }>
+}
 
 export type QuickSelect =
     | QuickSelectNone
     | QuickSelectInput
     | QuickSelectOutput
     | QuickSelectNode
+    | QuickSelectBody

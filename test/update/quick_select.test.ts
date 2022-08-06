@@ -649,3 +649,208 @@ test("pressing n with nothing focused launches quick select for nodes", () => {
     }
     expect(model2).toEqual(expectedModel)
 })
+
+test("pressing hotkey with node quick select will select the node and disable quick select", () => {
+    const effects = makeEffects()
+    const operations: Operations = {
+        'Add': {
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        },
+    }
+    const model0: Model = {
+        ...emptyModel(),
+        operations
+    }
+    const { model: model1, node } = addNodeToGraph({
+        model: model0,
+        operation: operations['Add'],
+        position: { x: 0, y: 0 },
+        generateUUID: effects.generateUUID
+    })
+    const { model: model2 } = update(effects, model1, {
+        kind: EventKind.KEYDOWN,
+        key: 'n',
+        ctrl: false
+    })
+    const { model: model3 } = update(effects, model2, {
+        kind: EventKind.KEYDOWN,
+        key: 'a',
+        ctrl: false
+    })
+    const expectedModel: Model = {
+        ...model1,
+        focus: {
+            kind: FocusKind.NODE,
+            node,
+            drag: false,
+            move: { left: false, up: false, down: false, right: false, now: 0 },
+            quickSelect: { kind: QuickSelectKind.NONE }
+        }
+    }
+    expect(model3).toEqual(expectedModel)
+})
+
+test("pressing invalid hotkey with node quick select will disable quick select", () => {
+    const effects = makeEffects()
+    const operations: Operations = {
+        'Add': {
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out']
+        },
+    }
+    const model0: Model = {
+        ...emptyModel(),
+        operations
+    }
+    const { model: model1 } = addNodeToGraph({
+        model: model0,
+        operation: operations['Add'],
+        position: { x: 0, y: 0 },
+        generateUUID: effects.generateUUID
+    })
+    const { model: model2 } = update(effects, model1, {
+        kind: EventKind.KEYDOWN,
+        key: 'n',
+        ctrl: false
+    })
+    const { model: model3 } = update(effects, model2, {
+        kind: EventKind.KEYDOWN,
+        key: 'z',
+        ctrl: false
+    })
+    const expectedModel: Model = {
+        ...model1,
+        focus: {
+            kind: FocusKind.NONE,
+            pointerAction: { kind: PointerActionKind.NONE },
+            quickSelect: { kind: QuickSelectKind.NONE }
+        }
+    }
+    expect(model3).toEqual(expectedModel)
+})
+
+test("pressing b with nothing focused launches quick select for body", () => {
+    const effects = makeEffects()
+    const operations: Operations = {
+        'Number': {
+            name: 'Number',
+            inputs: [],
+            body: 0,
+            outputs: ['out']
+        },
+    }
+    const model0: Model = {
+        ...emptyModel(),
+        operations
+    }
+    const { model: model1, node } = addNodeToGraph({
+        model: model0,
+        operation: operations['Number'],
+        position: { x: 0, y: 0 },
+        generateUUID: effects.generateUUID
+    })
+    const { model: model2 } = update(effects, model1, {
+        kind: EventKind.KEYDOWN,
+        key: 'b',
+        ctrl: false
+    })
+    const body = model2.graph.nodes[node].body!
+    const expectedModel: Model = {
+        ...model1,
+        focus: {
+            kind: FocusKind.NONE,
+            pointerAction: { kind: PointerActionKind.NONE },
+            quickSelect: {
+                kind: QuickSelectKind.BODY,
+                hotkeys: { [body]: 'a' }
+            }
+        }
+    }
+    expect(model2).toEqual(expectedModel)
+})
+
+test("pressing hotkey with body quick select will select the body and disable quick select", () => {
+    const effects = makeEffects()
+    const operations: Operations = {
+        'Number': {
+            name: 'Number',
+            inputs: [],
+            body: 0,
+            outputs: ['out']
+        },
+    }
+    const model0: Model = {
+        ...emptyModel(),
+        operations
+    }
+    const { model: model1, node } = addNodeToGraph({
+        model: model0,
+        operation: operations['Number'],
+        position: { x: 0, y: 0 },
+        generateUUID: effects.generateUUID
+    })
+    const { model: model2 } = update(effects, model1, {
+        kind: EventKind.KEYDOWN,
+        key: 'b',
+        ctrl: false
+    })
+    const { model: model3 } = update(effects, model2, {
+        kind: EventKind.KEYDOWN,
+        key: 'a',
+        ctrl: false
+    })
+    const body = model3.graph.nodes[node].body!
+    const expectedModel: Model = {
+        ...model1,
+        focus: {
+            kind: FocusKind.BODY,
+            body,
+            quickSelect: { kind: QuickSelectKind.NONE }
+        }
+    }
+    expect(model3).toEqual(expectedModel)
+})
+
+test("pressing invalid hotkey with body quick select will disable quick select", () => {
+    const effects = makeEffects()
+    const operations: Operations = {
+        'Number': {
+            name: 'Number',
+            inputs: [],
+            body: 0,
+            outputs: ['out']
+        },
+    }
+    const model0: Model = {
+        ...emptyModel(),
+        operations
+    }
+    const { model: model1 } = addNodeToGraph({
+        model: model0,
+        operation: operations['Number'],
+        position: { x: 0, y: 0 },
+        generateUUID: effects.generateUUID
+    })
+    const { model: model2 } = update(effects, model1, {
+        kind: EventKind.KEYDOWN,
+        key: 'b',
+        ctrl: false
+    })
+    const { model: model3 } = update(effects, model2, {
+        kind: EventKind.KEYDOWN,
+        key: 'z',
+        ctrl: false
+    })
+    const expectedModel: Model = {
+        ...model1,
+        focus: {
+            kind: FocusKind.NONE,
+            pointerAction: { kind: PointerActionKind.NONE },
+            quickSelect: { kind: QuickSelectKind.NONE }
+        }
+    }
+    expect(model3).toEqual(expectedModel)
+})

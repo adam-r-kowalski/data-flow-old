@@ -1,8 +1,8 @@
 import { AppEvent } from ".";
 import { Model } from "../model";
-import { Focus, FocusFinder } from "../model/focus";
+import { Focus, FocusFinder, FocusKind } from "../model/focus";
 import { GenerateUUID, UUID } from "../model/graph";
-import { QuickSelectInput, QuickSelectOutput, QuickSelectKind } from "../model/quick_select";
+import { QuickSelectInput, QuickSelectOutput, QuickSelectKind, QuickSelectNode } from "../model/quick_select";
 import { UpdateResult } from "../ui/run";
 import { selectInput, selectOutput } from "./focus";
 
@@ -46,6 +46,25 @@ export const maybeTriggerQuickSelect = (model: Model, focus: Exclude<Focus, Focu
                 render: true
             }
         }
+        case 'n': {
+            const hotkeys: { [node: UUID]: string } = {}
+            Object.keys(model.graph.nodes).forEach((node, i) => {
+                hotkeys[node] = String.fromCharCode(97 + i)
+            })
+            return {
+                model: {
+                    ...model,
+                    focus: {
+                        ...focus,
+                        quickSelect: {
+                            kind: QuickSelectKind.NODE,
+                            hotkeys
+                        }
+                    }
+                },
+                render: true
+            }
+        }
         default:
             return { model }
     }
@@ -75,6 +94,37 @@ export const quickSelectOutput = (model: Model, quickSelect: QuickSelectOutput, 
     if (entry !== undefined) {
         const [output, _] = entry
         return selectOutput(model, output, generateUUID)
+    } else {
+        return {
+            model: {
+                ...model,
+                focus: {
+                    ...model.focus,
+                    quickSelect: { kind: QuickSelectKind.NONE }
+                }
+            },
+            render: true
+        }
+    }
+}
+
+export const quickSelectNode = (model: Model, quickSelect: QuickSelectNode, key: string): UpdateResult<Model, AppEvent> => {
+    const entry = Object.entries(quickSelect.hotkeys).find(([_, hotkey]) => hotkey === key)
+    if (entry !== undefined) {
+        const [node, _] = entry
+        return {
+            model: {
+                ...model,
+                focus: {
+                    kind: FocusKind.NODE,
+                    node,
+                    drag: false,
+                    move: { left: false, up: false, down: false, right: false, now: 0 },
+                    quickSelect: { kind: QuickSelectKind.NONE }
+                }
+            },
+            render: true
+        }
     } else {
         return {
             model: {

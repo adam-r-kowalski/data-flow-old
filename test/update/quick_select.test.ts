@@ -7,6 +7,8 @@ import { QuickSelectKind } from "../../src/model/quick_select"
 import { addNodeToGraph, EventKind, update } from "../../src/update"
 import { makeEffects } from "../mock_effects"
 
+const model = emptyModel({ width: 500, height: 500 })
+
 test("pressing i with nothing focused launches quick select for inputs", () => {
     const effects = makeEffects()
     const operations: Operations = {
@@ -16,10 +18,7 @@ test("pressing i with nothing focused launches quick select for inputs", () => {
             outputs: ['out']
         },
     }
-    const model0: Model = {
-        ...emptyModel(),
-        operations
-    }
+    const model0: Model = { ...model, operations }
     const { model: model1, node } = addNodeToGraph({
         model: model0,
         operation: operations['Add'],
@@ -58,10 +57,7 @@ test("pressing i with output focused launches quick select for inputs", () => {
             outputs: ['out']
         },
     }
-    const model0: Model = {
-        ...emptyModel(),
-        operations
-    }
+    const model0: Model = { ...model, operations }
     const { model: model1, node } = addNodeToGraph({
         model: model0,
         operation: operations['Add'],
@@ -105,10 +101,7 @@ test("pressing i with input focused launches quick select for inputs", () => {
             outputs: ['out']
         },
     }
-    const model0: Model = {
-        ...emptyModel(),
-        operations
-    }
+    const model0: Model = { ...model, operations }
     const { model: model1, node } = addNodeToGraph({
         model: model0,
         operation: operations['Add'],
@@ -157,10 +150,7 @@ test("pressing i with body focused launches quick select for inputs", () => {
             outputs: ['out']
         },
     }
-    const model0: Model = {
-        ...emptyModel(),
-        operations
-    }
+    const model0: Model = { ...model, operations }
     const { model: model1, node: node0 } = addNodeToGraph({
         model: model0,
         operation: operations['Number'],
@@ -210,10 +200,7 @@ test("pressing i with node focused launches quick select for inputs", () => {
             outputs: ['out']
         },
     }
-    const model0: Model = {
-        ...emptyModel(),
-        operations
-    }
+    const model0: Model = { ...model, operations }
     const { model: model1, node } = addNodeToGraph({
         model: model0,
         operation: operations['Number'],
@@ -259,10 +246,7 @@ test("pressing hotkey with input quick select will select the input and disable 
             outputs: ['out']
         },
     }
-    const model0: Model = {
-        ...emptyModel(),
-        operations
-    }
+    const model0: Model = { ...model, operations }
     const { model: model1, node } = addNodeToGraph({
         model: model0,
         operation: operations['Add'],
@@ -301,10 +285,7 @@ test("pressing o with nothing focused launches quick select for outputs", () => 
             outputs: ['out']
         },
     }
-    const model0: Model = {
-        ...emptyModel(),
-        operations
-    }
+    const model0: Model = { ...model, operations }
     const { model: model1, node } = addNodeToGraph({
         model: model0,
         operation: operations['Add'],
@@ -342,10 +323,7 @@ test("pressing o with output focused launches quick select for outputs", () => {
             outputs: ['out']
         },
     }
-    const model0: Model = {
-        ...emptyModel(),
-        operations
-    }
+    const model0: Model = { ...model, operations }
     const { model: model1, node } = addNodeToGraph({
         model: model0,
         operation: operations['Add'],
@@ -387,10 +365,7 @@ test("pressing o with input focused launches quick select for outputs", () => {
             outputs: ['out']
         },
     }
-    const model0: Model = {
-        ...emptyModel(),
-        operations
-    }
+    const model0: Model = { ...model, operations }
     const { model: model1, node } = addNodeToGraph({
         model: model0,
         operation: operations['Add'],
@@ -439,10 +414,7 @@ test("pressing o with body focused launches quick select for outputs", () => {
             outputs: ['out']
         },
     }
-    const model0: Model = {
-        ...emptyModel(),
-        operations
-    }
+    const model0: Model = { ...model, operations }
     const { model: model1, node: node0 } = addNodeToGraph({
         model: model0,
         operation: operations['Number'],
@@ -493,10 +465,7 @@ test("pressing o with node focused launches quick select for outputs", () => {
             outputs: ['out']
         },
     }
-    const model0: Model = {
-        ...emptyModel(),
-        operations
-    }
+    const model0: Model = { ...model, operations }
     const { model: model1, node } = addNodeToGraph({
         model: model0,
         operation: operations['Number'],
@@ -540,10 +509,7 @@ test("pressing hotkey with output quick select will select the output and disabl
             outputs: ['out']
         },
     }
-    const model0: Model = {
-        ...emptyModel(),
-        operations
-    }
+    const model0: Model = { ...model, operations }
     const { model: model1, node } = addNodeToGraph({
         model: model0,
         operation: operations['Add'],
@@ -581,10 +547,7 @@ test("pressing invalid hotkey with output quick select will disable quick select
             outputs: ['out']
         },
     }
-    const model0: Model = {
-        ...emptyModel(),
-        operations
-    }
+    const model0: Model = { ...model, operations }
     const { model: model1 } = addNodeToGraph({
         model: model0,
         operation: operations['Add'],
@@ -621,10 +584,7 @@ test("pressing n with nothing focused launches quick select for nodes", () => {
             outputs: ['out']
         },
     }
-    const model0: Model = {
-        ...emptyModel(),
-        operations
-    }
+    const model0: Model = { ...model, operations }
     const { model: model1, node } = addNodeToGraph({
         model: model0,
         operation: operations['Add'],
@@ -659,10 +619,7 @@ test("pressing hotkey with node quick select will select the node and disable qu
             outputs: ['out']
         },
     }
-    const model0: Model = {
-        ...emptyModel(),
-        operations
-    }
+    const model0: Model = { ...model, operations }
     const { model: model1, node } = addNodeToGraph({
         model: model0,
         operation: operations['Add'],
@@ -701,10 +658,7 @@ test("pressing invalid hotkey with node quick select will disable quick select",
             outputs: ['out']
         },
     }
-    const model0: Model = {
-        ...emptyModel(),
-        operations
-    }
+    const model0: Model = { ...model, operations }
     const { model: model1 } = addNodeToGraph({
         model: model0,
         operation: operations['Add'],
@@ -742,10 +696,7 @@ test("pressing b with nothing focused launches quick select for body", () => {
             outputs: ['out']
         },
     }
-    const model0: Model = {
-        ...emptyModel(),
-        operations
-    }
+    const model0: Model = { ...model, operations }
     const { model: model1, node } = addNodeToGraph({
         model: model0,
         operation: operations['Number'],
@@ -782,10 +733,7 @@ test("pressing hotkey with body quick select will select the body and disable qu
             outputs: ['out']
         },
     }
-    const model0: Model = {
-        ...emptyModel(),
-        operations
-    }
+    const model0: Model = { ...model, operations }
     const { model: model1, node } = addNodeToGraph({
         model: model0,
         operation: operations['Number'],
@@ -824,10 +772,7 @@ test("pressing invalid hotkey with body quick select will disable quick select",
             outputs: ['out']
         },
     }
-    const model0: Model = {
-        ...emptyModel(),
-        operations
-    }
+    const model0: Model = { ...model, operations }
     const { model: model1 } = addNodeToGraph({
         model: model0,
         operation: operations['Number'],

@@ -10,9 +10,10 @@ import { emptyModel } from "../../src/model/empty"
 import { QuickSelectKind } from "../../src/model/quick_select"
 import { defaultEffectModel, EffectModel, makeEffects } from "../mock_effects"
 
+const model = emptyModel({ width: 500, height: 500 })
+
 test("two pointers down on background starts zooming", () => {
     const effects = makeEffects()
-    const model = emptyModel()
     const pointer0: Pointer = {
         id: 0,
         position: { x: 0, y: 0 }
@@ -36,7 +37,7 @@ test("two pointers down on background starts zooming", () => {
         kind: EventKind.CLICKED_BACKGROUND,
     })
     const expectedModel: Model = {
-        ...emptyModel(),
+        ...model,
         pointers: [pointer0, pointer1],
         focus: {
             kind: FocusKind.NONE,
@@ -54,7 +55,6 @@ test("two pointers down on background starts zooming", () => {
 
 test("double clicking background opens finder", () => {
     const effects = makeEffects()
-    const model = emptyModel()
     const pointer: Pointer = {
         id: 0,
         position: { x: 0, y: 0 }
@@ -85,7 +85,8 @@ test("double clicking background opens finder", () => {
             search: '',
             options: [],
             quickSelect: { kind: QuickSelectKind.NONE }
-        }
+        },
+        nodePlacementLocation: { x: 0, y: 0, show: false }
     }
     expect(model5).toEqual(expectedModel)
     expect(schedule).toEqual([
@@ -95,7 +96,6 @@ test("double clicking background opens finder", () => {
 
 test("clicking background then waiting too long cancels opens finder", () => {
     const effects = makeEffects()
-    const model = emptyModel()
     const pointer: Pointer = {
         id: 0,
         position: { x: 0, y: 0 }
@@ -123,7 +123,6 @@ test("clicking background then waiting too long cancels opens finder", () => {
 
 test("clicking background triggers finder open timeout", () => {
     const effects = makeEffects()
-    const model = emptyModel()
     const pointer: Pointer = {
         id: 0,
         position: { x: 0, y: 0 }
@@ -151,7 +150,6 @@ test("clicking background triggers finder open timeout", () => {
 
 test("two pointers down then up puts you in pan mode", () => {
     const effects = makeEffects()
-    const model = emptyModel()
     const pointer0: Pointer = {
         id: 0,
         position: { x: 0, y: 0 }
@@ -173,7 +171,7 @@ test("two pointers down then up puts you in pan mode", () => {
         pointer: pointer0
     })
     const expectedModel: Model = {
-        ...emptyModel(),
+        ...model,
         focus: {
             kind: FocusKind.NONE,
             pointerAction: { kind: PointerActionKind.PAN },
@@ -186,18 +184,18 @@ test("two pointers down then up puts you in pan mode", () => {
 
 test("pointer down when finder open tracks pointer", () => {
     const effects = makeEffects()
-    const model = openFinder(emptyModel())
+    const model0 = openFinder(model)
     const pointer = {
         id: 0,
         position: { x: 0, y: 0 }
     }
-    const { model: model1 } = update(effects, model, {
+    const { model: model1 } = update(effects, model0, {
         kind: EventKind.POINTER_DOWN,
         pointer
     })
     const expectedModel: Model = {
-        ...model,
-        pointers: [pointer]
+        ...model0,
+        pointers: [pointer],
     }
     expect(model1).toEqual(expectedModel)
 })
@@ -216,10 +214,7 @@ test("clicking node selects it and puts it on top of of the node order", () => {
             outputs: ['out']
         }
     }
-    const model0: Model = {
-        ...emptyModel(),
-        operations
-    }
+    const model0: Model = { ...model, operations }
     const { model: model1, node: node0 } = addNodeToGraph({
         model: model0,
         operation: operations['Add'],
@@ -251,9 +246,8 @@ test("clicking node selects it and puts it on top of of the node order", () => {
     expect(render).toEqual(true)
 })
 
-test("pointer move before pointer down does nothing", () => {
+test("pointer move before pointer down changes node placement location", () => {
     const effects = makeEffects()
-    const model = emptyModel()
     const pointer: Pointer = {
         id: 0,
         position: { x: 0, y: 0 }
@@ -262,12 +256,15 @@ test("pointer move before pointer down does nothing", () => {
         kind: EventKind.POINTER_MOVE,
         pointer
     })
-    expect(model1).toEqual(emptyModel())
+    const expectedModel: Model = {
+        ...model,
+        nodePlacementLocation: { x: 0, y: 0, show: false },
+    }
+    expect(model1).toEqual(expectedModel)
 })
 
 test("pointer move after pointer down pans camera", () => {
     const effects = makeEffects()
-    const model = emptyModel()
     const { model: model1 } = update(effects, model, {
         kind: EventKind.POINTER_DOWN,
         pointer: {
@@ -283,7 +280,7 @@ test("pointer move after pointer down pans camera", () => {
         }
     })
     const expectedModel: Model = {
-        ...emptyModel(),
+        ...model,
         camera: translate(-50, -75),
         focus: {
             kind: FocusKind.NONE,
@@ -315,10 +312,7 @@ test("pointer move after clicking node pointer down drags node", () => {
             outputs: ['out']
         }
     }
-    const model0: Model = {
-        ...emptyModel(),
-        operations
-    }
+    const model0: Model = { ...model, operations }
     const { model: model1, node: node0 } = addNodeToGraph({
         model: model0,
         operation: operations['Add'],
@@ -380,10 +374,7 @@ test("pointer move after clicking node, pointer down, then pointer up", () => {
             outputs: ['out']
         },
     }
-    const model0: Model = {
-        ...emptyModel(),
-        operations
-    }
+    const model0: Model = { ...model, operations }
     const { model: model1, node: node0 } = addNodeToGraph({
         model: model0,
         operation: operations['Add'],
@@ -417,7 +408,7 @@ test("pointer move after clicking node, pointer down, then pointer up", () => {
     })
     const expectedModel: Model = {
         ...model1,
-        nodePlacementLocation: { x: 50, y: 75 },
+        nodePlacementLocation: { x: 50, y: 75, show: false },
         focus: {
             kind: FocusKind.NODE,
             node: node0,
@@ -431,14 +422,13 @@ test("pointer move after clicking node, pointer down, then pointer up", () => {
 
 test("mouse wheel zooms in camera relative to mouse position", () => {
     const effects = makeEffects()
-    const model = emptyModel()
     const { model: model1 } = update(effects, model, {
         kind: EventKind.WHEEL,
         deltaY: 10,
         position: { x: 50, y: 100 }
     })
     const expectedModel = {
-        ...emptyModel(),
+        ...model,
         camera: [
             1.0717734625362931, 0, -3.588673126814655,
             0, 1.0717734625362931, -7.17734625362931,
@@ -457,10 +447,7 @@ test("clicking input selects it", () => {
             outputs: ['out']
         },
     }
-    const model0: Model = {
-        ...emptyModel(),
-        operations
-    }
+    const model0: Model = { ...model, operations }
     const { model: model1, node: node0 } = addNodeToGraph({
         model: model0,
         operation: operations['Add'],
@@ -493,10 +480,7 @@ test("clicking new input selects it and deselects old input", () => {
             outputs: ['out']
         },
     }
-    const model0: Model = {
-        ...emptyModel(),
-        operations
-    }
+    const model0: Model = { ...model, operations }
     const { model: model1, node: node0 } = addNodeToGraph({
         model: model0,
         operation: operations['Add'],
@@ -539,10 +523,7 @@ test("clicking output after clicking input adds connection", () => {
             outputs: ['out']
         }
     }
-    const model0: Model = {
-        ...emptyModel(),
-        operations
-    }
+    const model0: Model = { ...model, operations }
     const { model: model1, node: node0 } = addNodeToGraph({
         model: model0,
         operation: operations['Add'],
@@ -588,10 +569,7 @@ test("clicking output selects it", () => {
             outputs: ['out']
         },
     }
-    const model0: Model = {
-        ...emptyModel(),
-        operations
-    }
+    const model0: Model = { ...model, operations }
     const { model: model1, node: node0 } = addNodeToGraph({
         model: model0,
         operation: operations['Add'],
@@ -624,10 +602,7 @@ test("clicking new output selects it and deselects old output", () => {
             outputs: ['out']
         },
     }
-    const model0: Model = {
-        ...emptyModel(),
-        operations
-    }
+    const model0: Model = { ...model, operations }
     const { model: model1, node: node0 } = addNodeToGraph({
         model: model0,
         operation: operations['Add'],
@@ -670,10 +645,7 @@ test("clicking input after clicking output adds connection", () => {
             outputs: ['out']
         }
     }
-    const model0: Model = {
-        ...emptyModel(),
-        operations
-    }
+    const model0: Model = { ...model, operations }
     const { model: model1, node: node0 } = addNodeToGraph({
         model: model0,
         operation: operations['Add'],
@@ -724,10 +696,7 @@ test("double click opens finder", () => {
             outputs: ['out']
         }
     }
-    const model0: Model = {
-        ...emptyModel(),
-        operations
-    }
+    const model0: Model = { ...model, operations }
     const { model: model1 } = update(effects, model0, {
         kind: EventKind.POINTER_DOWN,
         pointer: {
@@ -763,7 +732,7 @@ test("double click opens finder", () => {
             options: ['Add', 'Sub'],
             quickSelect: { kind: QuickSelectKind.NONE }
         },
-        nodePlacementLocation: { x: 50, y: 50 },
+        nodePlacementLocation: { x: 50, y: 50, show: false },
         pointers: [
             {
                 id: 0,
@@ -776,13 +745,12 @@ test("double click opens finder", () => {
 })
 
 test("key down when finder is not shown does nothing", () => {
-    const model = emptyModel()
     const { model: model1 } = update(makeEffects(), model, {
         kind: EventKind.KEYDOWN,
         key: 'a',
         ctrl: false
     })
-    expect(model1).toEqual(emptyModel())
+    expect(model1).toEqual(model)
 })
 
 
@@ -799,10 +767,7 @@ test("f key down when finder is not shown opens finder", () => {
             outputs: ['out']
         }
     }
-    const model0: Model = {
-        ...emptyModel(),
-        operations
-    }
+    const model0: Model = { ...model, operations }
     const { model: model1, render } = update(makeEffects(), model0, {
         kind: EventKind.KEYDOWN,
         key: 'f',
@@ -834,17 +799,14 @@ test("clicking a finder option adds node to graph", () => {
             outputs: ['out']
         }
     }
-    const model0 = openFinder({
-        ...emptyModel(),
-        operations
-    })
+    const model0 = openFinder({ ...model, operations })
     const { model: model1, render } = update(makeEffects(), model0, {
         kind: EventKind.CLICKED_FINDER_OPTION,
         option: 'Add'
     })
     const { model: expectedModel } = addNodeToGraph({
-        model: { ...emptyModel(), operations },
-        position: { x: 0, y: 0 },
+        model: { ...model, operations },
+        position: { x: 250, y: 250 },
         operation: operations['Add'],
         generateUUID: makeEffects().generateUUID
     })
@@ -866,10 +828,7 @@ test("key down when finder is shown appends to search", () => {
             outputs: ['out']
         }
     }
-    const model0 = openFinder({
-        ...emptyModel(),
-        operations
-    })
+    const model0 = openFinder({ ...model, operations })
     const { model: model1 } = update(effects, model0, {
         kind: EventKind.KEYDOWN,
         key: 'a',
@@ -912,10 +871,7 @@ test("backspace key down when finder is shown deletes from search", () => {
             outputs: ['out']
         }
     }
-    const model0 = openFinder({
-        ...emptyModel(),
-        operations
-    })
+    const model0 = openFinder({ ...model, operations })
     const { model: model1 } = update(effects, model0, {
         kind: EventKind.KEYDOWN,
         key: 'a',
@@ -962,18 +918,15 @@ test("enter key down when finder is shown closes finder and adds node", () => {
             outputs: ['out']
         }
     }
-    const model0 = openFinder({
-        ...emptyModel(),
-        operations
-    })
+    const model0 = openFinder({ ...model, operations })
     const { model: model1, render } = update(makeEffects(), model0, {
         kind: EventKind.KEYDOWN,
         key: 'Enter',
         ctrl: false
     })
     const { model: expectedModel } = addNodeToGraph({
-        model: { ...emptyModel(), operations },
-        position: { x: 0, y: 0 },
+        model: { ...model, operations },
+        position: { x: 250, y: 250 },
         operation: operations['Add'],
         generateUUID: makeEffects().generateUUID
     })
@@ -995,10 +948,7 @@ test("enter key down when finder is shown and finder has search closes finder an
             outputs: ['out']
         }
     }
-    let model0 = openFinder({
-        ...emptyModel(),
-        operations
-    })
+    const model0: Model = openFinder({ ...model, operations })
     let model1 = model0
     for (const key of 'add') {
         const { model: model } = update(effects, model1, {
@@ -1014,9 +964,9 @@ test("enter key down when finder is shown and finder has search closes finder an
         ctrl: false
     })
     const { model: expectedModel } = addNodeToGraph({
-        model: { ...emptyModel(), operations },
+        model: { ...model, operations },
         operation: operations['Add'],
-        position: { x: 0, y: 0 },
+        position: { x: 250, y: 250 },
         generateUUID: makeEffects().generateUUID
     })
     expect(model2).toEqual(expectedModel)
@@ -1036,10 +986,7 @@ test("enter key down when finder is shown and finder has search eliminates all o
             outputs: ['out']
         }
     }
-    let model0 = openFinder({
-        ...emptyModel(),
-        operations
-    })
+    const model0: Model = openFinder({ ...model, operations })
     const { model: model1 } = update(effects, model0, {
         kind: EventKind.KEYDOWN,
         key: 'x',
@@ -1050,7 +997,7 @@ test("enter key down when finder is shown and finder has search eliminates all o
         key: 'Enter',
         ctrl: false
     })
-    expect(model2).toEqual({ ...emptyModel(), operations })
+    expect(model2).toEqual({ ...model, operations })
 })
 
 test("ret virtual key down when finder is shown and finder has search eliminates all options closes finder", () => {
@@ -1067,10 +1014,7 @@ test("ret virtual key down when finder is shown and finder has search eliminates
             outputs: ['out']
         }
     }
-    let model0 = openFinder({
-        ...emptyModel(),
-        operations
-    })
+    const model0: Model = openFinder({ ...model, operations })
     const { model: model1 } = update(effects, model0, {
         kind: EventKind.VIRTUAL_KEYDOWN,
         key: 'x'
@@ -1079,7 +1023,7 @@ test("ret virtual key down when finder is shown and finder has search eliminates
         kind: EventKind.VIRTUAL_KEYDOWN,
         key: 'ret'
     })
-    const expectedModel = { ...emptyModel(), operations }
+    const expectedModel = { ...model, operations }
     expect(model2).toEqual(expectedModel)
 })
 
@@ -1098,16 +1042,13 @@ test("escape key down when finder is shown closes finder", () => {
             outputs: ['out']
         }
     }
-    let model0 = openFinder({
-        ...emptyModel(),
-        operations
-    })
+    const model0: Model = openFinder({ ...model, operations })
     const { model: model1, render } = update(effects, model0, {
         kind: EventKind.KEYDOWN,
         key: 'Escape',
         ctrl: false
     })
-    const expectedModel = { ...emptyModel(), operations }
+    const expectedModel = { ...model, operations }
     expect(model1).toEqual(expectedModel)
     expect(render).toEqual(true)
 })
@@ -1126,10 +1067,7 @@ test("shift key down when finder is shown are ignored", () => {
             outputs: ['out']
         }
     }
-    let model0 = openFinder({
-        ...emptyModel(),
-        operations
-    })
+    const model0: Model = openFinder({ ...model, operations })
     const { model: model1, render } = update(effects, model0, {
         kind: EventKind.KEYDOWN,
         key: 'Shift',
@@ -1153,10 +1091,7 @@ test("alt key down when finder is shown are ignored", () => {
             outputs: ['out']
         }
     }
-    let model0 = openFinder({
-        ...emptyModel(),
-        operations
-    })
+    const model0: Model = openFinder({ ...model, operations })
     const { model: model1, render } = update(effects, model0, {
         kind: EventKind.KEYDOWN,
         key: 'Alt',
@@ -1180,10 +1115,7 @@ test("control key down when finder is shown are ignored", () => {
             outputs: ['out']
         }
     }
-    let model0 = openFinder({
-        ...emptyModel(),
-        operations
-    })
+    const model0: Model = openFinder({ ...model, operations })
     const { model: model1, render } = update(effects, model0, {
         kind: EventKind.KEYDOWN,
         key: 'Control',
@@ -1207,10 +1139,7 @@ test("meta key down when finder is shown are ignored", () => {
             outputs: ['out']
         }
     }
-    let model0 = openFinder({
-        ...emptyModel(),
-        operations
-    })
+    const model0: Model = openFinder({ ...model, operations })
     const { model: model1, render } = update(effects, model0, {
         kind: EventKind.KEYDOWN,
         key: 'Meta',
@@ -1234,10 +1163,7 @@ test("Tab key down when finder is shown are ignored", () => {
             outputs: ['out']
         }
     }
-    let model0 = openFinder({
-        ...emptyModel(),
-        operations
-    })
+    const model0: Model = openFinder({ ...model, operations })
     const { model: model1, render } = update(effects, model0, {
         kind: EventKind.KEYDOWN,
         key: 'Tab',
@@ -1262,10 +1188,7 @@ test("virtual key down when finder is shown appends to search", () => {
             outputs: ['out']
         }
     }
-    let model0 = openFinder({
-        ...emptyModel(),
-        operations
-    })
+    const model0: Model = openFinder({ ...model, operations })
     const { model: model1 } = update(effects, model0, {
         kind: EventKind.VIRTUAL_KEYDOWN,
         key: 'a'
@@ -1306,10 +1229,7 @@ test("del virtual key down when finder is shown deletes from search", () => {
             outputs: ['out']
         }
     }
-    const model0 = openFinder({
-        ...emptyModel(),
-        operations
-    })
+    const model0 = openFinder({ ...model, operations })
     const { model: model1 } = update(effects, model0, {
         kind: EventKind.VIRTUAL_KEYDOWN,
         key: 'a'
@@ -1353,10 +1273,7 @@ test("space virtual key down when finder is shown adds space to search", () => {
             outputs: ['out']
         }
     }
-    const model0 = openFinder({
-        ...emptyModel(),
-        operations
-    })
+    const model0 = openFinder({ ...model, operations })
     const { model: model1 } = update(effects, model0, {
         kind: EventKind.VIRTUAL_KEYDOWN,
         key: 'a'
@@ -1395,17 +1312,14 @@ test("ret virtual key down when finder is shown closes finder and adds node", ()
             outputs: ['out']
         }
     }
-    const model0 = openFinder({
-        ...emptyModel(),
-        operations
-    })
+    const model0 = openFinder({ ...model, operations })
     const { model: model1, render } = update(makeEffects(), model0, {
         kind: EventKind.VIRTUAL_KEYDOWN,
         key: 'ret'
     })
     const { model: expectedModel } = addNodeToGraph({
-        model: { ...emptyModel(), operations },
-        position: { x: 0, y: 0 },
+        model: { ...model, operations },
+        position: { x: 250, y: 250 },
         operation: operations['Add'],
         generateUUID: makeEffects().generateUUID
     })
@@ -1427,10 +1341,7 @@ test("sft virtual key down when finder is shown are ignored", () => {
             outputs: ['out']
         }
     }
-    let model0 = openFinder({
-        ...emptyModel(),
-        operations
-    })
+    const model0: Model = openFinder({ ...model, operations })
     const { model: model1, render } = update(effects, model0, {
         kind: EventKind.VIRTUAL_KEYDOWN,
         key: 'sft'
@@ -1451,7 +1362,7 @@ test("pressing number on keyboard appends to number node", () => {
         }
     }
     const { model: model0, node } = addNodeToGraph({
-        model: { ...emptyModel(), operations },
+        model: { ...model, operations },
         operation: operations['Number'],
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
@@ -1501,7 +1412,7 @@ test("pressing backspace on keyboard deletes from number node", () => {
         }
     }
     const { model: model0, node } = addNodeToGraph({
-        model: { ...emptyModel(), operations },
+        model: { ...model, operations },
         operation: operations['Number'],
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
@@ -1556,7 +1467,7 @@ test("pressing backspace when number node value is 0 has no effect", () => {
         }
     }
     const { model: model0, node } = addNodeToGraph({
-        model: { ...emptyModel(), operations },
+        model: { ...model, operations },
         operation: operations['Number'],
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
@@ -1606,7 +1517,7 @@ test("pressing del on virtual keyboard when number node value is 0 has no effect
         }
     }
     const { model: model0, node } = addNodeToGraph({
-        model: { ...emptyModel(), operations },
+        model: { ...model, operations },
         operation: operations['Number'],
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
@@ -1655,7 +1566,7 @@ test("pressing number on virtual keyboard appends to number node", () => {
         }
     }
     const { model: model0, node } = addNodeToGraph({
-        model: { ...emptyModel(), operations },
+        model: { ...model, operations },
         operation: operations['Number'],
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
@@ -1704,7 +1615,7 @@ test("pressing del on virtual keyboard deletes from number node", () => {
         }
     }
     const { model: model0, node } = addNodeToGraph({
-        model: { ...emptyModel(), operations },
+        model: { ...model, operations },
         operation: operations['Number'],
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
@@ -1757,7 +1668,7 @@ test("pressing enter on keyboard while editing number node exits virtual keyboar
         }
     }
     const { model: model0, node } = addNodeToGraph({
-        model: { ...emptyModel(), operations },
+        model: { ...model, operations },
         operation: operations['Number'],
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
@@ -1807,7 +1718,7 @@ test("pressing ret on virtual keyboard while editing number node exits virtual k
         }
     }
     const { model: model0, node } = addNodeToGraph({
-        model: { ...emptyModel(), operations },
+        model: { ...model, operations },
         operation: operations['Number'],
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
@@ -1856,7 +1767,7 @@ test("pressing non number on keyboard while editing number node is ignored", () 
         }
     }
     const { model: model0, node } = addNodeToGraph({
-        model: { ...emptyModel(), operations },
+        model: { ...model, operations },
         operation: operations['Number'],
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
@@ -1902,7 +1813,7 @@ test("pressing non number on virtual keyboard while editing number node is ignor
         }
     }
     const { model: model0, node } = addNodeToGraph({
-        model: { ...emptyModel(), operations },
+        model: { ...model, operations },
         operation: operations['Number'],
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
@@ -1946,7 +1857,7 @@ test("pressing a key on virtual keyboard while no input target selected doesn't 
     }
     const { model: model0 } = addNodeToGraph({
         model: {
-            ...emptyModel(),
+            ...model,
             operations,
             focus: {
                 kind: FocusKind.NONE,
@@ -1976,7 +1887,7 @@ test("clicking a number node opens the numeric keyboard", () => {
         }
     }
     const { model: model0, node } = addNodeToGraph({
-        model: { ...emptyModel(), operations },
+        model: { ...model, operations },
         operation: operations['Number'],
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
@@ -2001,7 +1912,7 @@ test("clicking a number node when another number node is selected switches selec
         }
     }
     const { model: model0, node: node0 } = addNodeToGraph({
-        model: { ...emptyModel(), operations },
+        model: { ...model, operations },
         operation: operations['Number'],
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
@@ -2037,7 +1948,7 @@ test("clicking background when a number node is selected deselects it", () => {
         }
     }
     const { model: model0, node } = addNodeToGraph({
-        model: { ...emptyModel(), operations },
+        model: { ...model, operations },
         operation: operations['Number'],
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
@@ -2090,7 +2001,7 @@ test("pressing Escape when a number node is selected deselects it", () => {
         }
     }
     const { model: model0, node } = addNodeToGraph({
-        model: { ...emptyModel(), operations },
+        model: { ...model, operations },
         operation: operations['Number'],
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
@@ -2119,7 +2030,7 @@ test("clicking input when a number node is selected deselects it and selects inp
         }
     }
     const { model: model0, node } = addNodeToGraph({
-        model: { ...emptyModel(), operations },
+        model: { ...model, operations },
         operation: operations['Number'],
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
@@ -2156,7 +2067,7 @@ test("clicking output when a number node is selected deselects it and selects ou
         }
     }
     const { model: model0, node } = addNodeToGraph({
-        model: { ...emptyModel(), operations },
+        model: { ...model, operations },
         operation: operations['Number'],
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
@@ -2193,7 +2104,7 @@ test("clicking node when a number node is selected deselects it and selects node
         }
     }
     const { model: model0, node } = addNodeToGraph({
-        model: { ...emptyModel(), operations },
+        model: { ...model, operations },
         operation: operations['Number'],
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
@@ -2238,13 +2149,12 @@ test("zooming", () => {
         id: 1,
         position: { x: 30, y: 30 }
     }
-    const model0 = emptyModel()
-    const { model: model1 } = update(effects, model0, {
+    const { model: model1 } = update(effects, model, {
         kind: EventKind.POINTER_DOWN,
         pointer: pointer0
     })
     const expectedModel0: Model = {
-        ...emptyModel(),
+        ...model,
         focus: {
             kind: FocusKind.NONE,
             pointerAction: { kind: PointerActionKind.PAN },
@@ -2258,7 +2168,7 @@ test("zooming", () => {
         pointer: pointer1
     })
     const expectedModel1: Model = {
-        ...emptyModel(),
+        ...model,
         focus: {
             kind: FocusKind.NONE,
             pointerAction: {
@@ -2276,7 +2186,7 @@ test("zooming", () => {
         pointer: pointer2
     })
     const expectedModel2: Model = {
-        ...emptyModel(),
+        ...model,
         focus: {
             kind: FocusKind.NONE,
             pointerAction: {
@@ -2294,7 +2204,7 @@ test("zooming", () => {
         pointer: pointer3
     })
     const expectedModel3: Model = {
-        ...emptyModel(),
+        ...model,
         focus: {
             kind: FocusKind.NONE,
             pointerAction: {
@@ -2323,7 +2233,7 @@ test("pressing d on keyboard with node selected deletes it", () => {
             outputs: ['out']
         },
     }
-    let model0 = { ...emptyModel(), operations }
+    const model0: Model = { ...model, operations }
     const { model: model1, node } = addNodeToGraph({
         model: model0,
         operation: operations['Add'],
@@ -2351,7 +2261,7 @@ test("clicking background when a node is selected deselects it", () => {
             outputs: ['out']
         },
     }
-    let model0 = { ...emptyModel(), operations }
+    const model0: Model = { ...model, operations }
     const { model: model1, node } = addNodeToGraph({
         model: model0,
         operation: operations['Add'],
@@ -2403,7 +2313,7 @@ test("pressing escape when a node is selected deselects it", () => {
             outputs: ['out']
         },
     }
-    let model0 = { ...emptyModel(), operations }
+    const model0: Model = { ...model, operations }
     const { model: model1, node } = addNodeToGraph({
         model: model0,
         operation: operations['Add'],
@@ -2432,7 +2342,7 @@ test("clicking background when a input is selected deselects it", () => {
             outputs: ['out']
         },
     }
-    let model0 = { ...emptyModel(), operations }
+    const model0: Model = { ...model, operations }
     const { model: model1, node } = addNodeToGraph({
         model: model0,
         operation: operations['Add'],
@@ -2485,7 +2395,7 @@ test("pressing escape when a input is selected deselects it", () => {
             outputs: ['out']
         },
     }
-    let model0 = { ...emptyModel(), operations }
+    const model0: Model = { ...model, operations }
     const { model: model1, node } = addNodeToGraph({
         model: model0,
         operation: operations['Add'],
@@ -2515,7 +2425,7 @@ test("clicking background when a output is selected deselects it", () => {
             outputs: ['out']
         },
     }
-    let model0 = { ...emptyModel(), operations }
+    const model0: Model = { ...model, operations }
     const { model: model1, node } = addNodeToGraph({
         model: model0,
         operation: operations['Add'],
@@ -2568,7 +2478,7 @@ test("pressing escape when a output is selected deselects it", () => {
             outputs: ['out']
         },
     }
-    let model0 = { ...emptyModel(), operations }
+    const model0: Model = { ...model, operations }
     const { model: model1, node } = addNodeToGraph({
         model: model0,
         operation: operations['Add'],
@@ -2597,7 +2507,7 @@ test("delete node", () => {
             outputs: ['out']
         },
     }
-    let model0 = { ...emptyModel(), operations }
+    const model0: Model = { ...model, operations }
     const { model: model1, node } = addNodeToGraph({
         model: model0,
         operation: operations['Add'],
@@ -2626,7 +2536,7 @@ test("delete input edge", () => {
             outputs: ['out']
         },
     }
-    let model0 = { ...emptyModel(), operations }
+    const model0: Model = { ...model, operations }
     const { model: model1, node: node0 } = addNodeToGraph({
         model: model0,
         operation: operations['Add'],
@@ -2670,7 +2580,7 @@ test("pressing d on keyboard with input selected delete edge attached", () => {
             outputs: ['out']
         },
     }
-    let model0 = { ...emptyModel(), operations }
+    const model0: Model = { ...model, operations }
     const { model: model1, node: node0 } = addNodeToGraph({
         model: model0,
         operation: operations['Add'],
@@ -2719,7 +2629,7 @@ test("delete output edges", () => {
             outputs: ['out']
         },
     }
-    let model0 = { ...emptyModel(), operations }
+    const model0: Model = { ...model, operations }
     const { model: model1, node: node0 } = addNodeToGraph({
         model: model0,
         operation: operations['Add'],
@@ -2771,7 +2681,7 @@ test("pressing d on keyboard with output selected delete edges attached", () => 
             outputs: ['out']
         },
     }
-    let model0 = { ...emptyModel(), operations }
+    const model0: Model = { ...model, operations }
     const { model: model1, node: node0 } = addNodeToGraph({
         model: model0,
         operation: operations['Add'],
@@ -2823,7 +2733,7 @@ test("connecting output of same node where input is selected is not allowed", ()
             outputs: ['out']
         },
     }
-    let model0 = { ...emptyModel(), operations }
+    const model0: Model = { ...model, operations }
     const { model: model1, node: node0 } = addNodeToGraph({
         model: model0,
         operation: operations['Add'],
@@ -2853,7 +2763,7 @@ test("connecting input of same node where output is selected is not allowed", ()
             outputs: ['out']
         },
     }
-    let model0 = { ...emptyModel(), operations }
+    const model0: Model = { ...model, operations }
     const { model: model1, node: node0 } = addNodeToGraph({
         model: model0,
         operation: operations['Add'],
@@ -2893,7 +2803,7 @@ test("connecting output to input if input already has edge replaces it", () => {
             outputs: ['out']
         },
     }
-    let model0 = { ...emptyModel(), operations }
+    const model0: Model = { ...model, operations }
     const { model: model1, node: node0 } = addNodeToGraph({
         model: model0,
         operation: operations['Add'],
@@ -2964,7 +2874,7 @@ test("connecting input to output if input already has edge replaces it", () => {
             outputs: ['out']
         },
     }
-    let model0 = { ...emptyModel(), operations }
+    const model0: Model = { ...model, operations }
     const { model: model1, node: node0 } = addNodeToGraph({
         model: model0,
         operation: operations['Add'],
@@ -3016,7 +2926,6 @@ test("connecting input to output if input already has edge replaces it", () => {
 
 test("three pointers down then one up doesn't change state", () => {
     const effects = makeEffects()
-    const model = emptyModel()
     const pointer0: Pointer = {
         id: 0,
         position: { x: 0, y: 0 }
@@ -3046,7 +2955,7 @@ test("three pointers down then one up doesn't change state", () => {
         pointer: pointer2
     })
     const expectedModel: Model = {
-        ...emptyModel(),
+        ...model,
         pointers: [pointer0, pointer1],
     }
     expect(model4).toEqual(expectedModel)
@@ -3055,8 +2964,8 @@ test("three pointers down then one up doesn't change state", () => {
 
 test("three pointers down on node then one up keeps state dragging", () => {
     const effects = makeEffects()
-    const model: Model = {
-        ...emptyModel(),
+    const model0: Model = {
+        ...model,
         operations: {
             'Add': {
                 name: 'Add',
@@ -3066,9 +2975,9 @@ test("three pointers down on node then one up keeps state dragging", () => {
         }
     }
     const { model: model1, node } = addNodeToGraph({
-        model,
-        operation: model.operations['Add'],
-        position: { x: 0, y: 0 },
+        model: model0,
+        operation: model0.operations['Add'],
+        position: { x: 250, y: 250 },
         generateUUID: effects.generateUUID
     })
     const pointer0: Pointer = {
@@ -3115,8 +3024,8 @@ test("three pointers down on node then one up keeps state dragging", () => {
 
 test("pointer move when input selected updates node placement location", () => {
     const effects = makeEffects()
-    const model: Model = {
-        ...emptyModel(),
+    const model0: Model = {
+        ...model,
         operations: {
             'Add': {
                 name: 'Add',
@@ -3126,8 +3035,8 @@ test("pointer move when input selected updates node placement location", () => {
         }
     }
     const { model: model1, node } = addNodeToGraph({
-        model,
-        operation: model.operations['Add'],
+        model: model0,
+        operation: model0.operations['Add'],
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
     })
@@ -3153,7 +3062,7 @@ test("pointer move when input selected updates node placement location", () => {
     })
     const expectedModel: Model = {
         ...model3,
-        nodePlacementLocation: { x: 50, y: 50 },
+        nodePlacementLocation: { x: 50, y: 50, show: false },
         pointers: [pointer1]
     }
     expect(model4).toEqual(expectedModel)
@@ -3161,8 +3070,8 @@ test("pointer move when input selected updates node placement location", () => {
 
 test("pointer move when output selected updates node placement location", () => {
     const effects = makeEffects()
-    const model: Model = {
-        ...emptyModel(),
+    const model0: Model = {
+        ...model,
         operations: {
             'Add': {
                 name: 'Add',
@@ -3172,8 +3081,8 @@ test("pointer move when output selected updates node placement location", () => 
         }
     }
     const { model: model1, node } = addNodeToGraph({
-        model,
-        operation: model.operations['Add'],
+        model: model0,
+        operation: model0.operations['Add'],
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
     })
@@ -3199,7 +3108,7 @@ test("pointer move when output selected updates node placement location", () => 
     })
     const expectedModel: Model = {
         ...model3,
-        nodePlacementLocation: { x: 50, y: 50 },
+        nodePlacementLocation: { x: 50, y: 50, show: false },
         pointers: [pointer1]
     }
     expect(model4).toEqual(expectedModel)
@@ -3207,8 +3116,8 @@ test("pointer move when output selected updates node placement location", () => 
 
 test("pointer move when body selected updates node placement location", () => {
     const effects = makeEffects()
-    const model: Model = {
-        ...emptyModel(),
+    const model0: Model = {
+        ...model,
         operations: {
             'Number': {
                 name: 'Number',
@@ -3219,8 +3128,8 @@ test("pointer move when body selected updates node placement location", () => {
         }
     }
     const { model: model1, node } = addNodeToGraph({
-        model,
-        operation: model.operations['Number'],
+        model: model0,
+        operation: model0.operations['Number'],
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
     })
@@ -3246,7 +3155,7 @@ test("pointer move when body selected updates node placement location", () => {
     })
     const expectedModel: Model = {
         ...model3,
-        nodePlacementLocation: { x: 50, y: 50 },
+        nodePlacementLocation: { x: 50, y: 50, show: false },
         pointers: [pointer1]
     }
     expect(model4).toEqual(expectedModel)
@@ -3254,7 +3163,6 @@ test("pointer move when body selected updates node placement location", () => {
 
 test("pointer move when finder open only updates pointer state", () => {
     const effects = makeEffects()
-    const model = emptyModel()
     const pointer0: Pointer = {
         id: 0,
         position: { x: 0, y: 0 }
@@ -3300,10 +3208,11 @@ test("pointer move when finder open only updates pointer state", () => {
     expect(model7).toEqual(expectedModel)
 })
 
+
 test("pressing f with node selected opens finder", () => {
     const effects = makeEffects()
-    const model: Model = {
-        ...emptyModel(),
+    const model0: Model = {
+        ...model,
         operations: {
             'Add': {
                 name: 'Add',
@@ -3313,8 +3222,8 @@ test("pressing f with node selected opens finder", () => {
         }
     }
     const { model: model1, node } = addNodeToGraph({
-        model,
-        operation: model.operations['Add'],
+        model: model0,
+        operation: model0.operations['Add'],
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
     })
@@ -3354,8 +3263,8 @@ test("pressing f with node selected opens finder", () => {
 
 test("pressing f with input selected opens finder", () => {
     const effects = makeEffects()
-    const model: Model = {
-        ...emptyModel(),
+    const model0: Model = {
+        ...model,
         operations: {
             'Add': {
                 name: 'Add',
@@ -3365,8 +3274,8 @@ test("pressing f with input selected opens finder", () => {
         }
     }
     const { model: model1, node } = addNodeToGraph({
-        model,
-        operation: model.operations['Add'],
+        model: model0,
+        operation: model0.operations['Add'],
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
     })
@@ -3405,8 +3314,8 @@ test("pressing f with input selected opens finder", () => {
 
 test("pressing f with output selected opens finder", () => {
     const effects = makeEffects()
-    const model: Model = {
-        ...emptyModel(),
+    const model0: Model = {
+        ...model,
         operations: {
             'Add': {
                 name: 'Add',
@@ -3416,8 +3325,8 @@ test("pressing f with output selected opens finder", () => {
         }
     }
     const { model: model1, node } = addNodeToGraph({
-        model,
-        operation: model.operations['Add'],
+        model: model0,
+        operation: model0.operations['Add'],
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
     })
@@ -3456,8 +3365,8 @@ test("pressing f with output selected opens finder", () => {
 
 test("key up with input selected does nothing", () => {
     const effects = makeEffects()
-    const model: Model = {
-        ...emptyModel(),
+    const model0: Model = {
+        ...model,
         operations: {
             'Add': {
                 name: 'Add',
@@ -3467,8 +3376,8 @@ test("key up with input selected does nothing", () => {
         }
     }
     const { model: model1, node } = addNodeToGraph({
-        model,
-        operation: model.operations['Add'],
+        model: model0,
+        operation: model0.operations['Add'],
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
     })
@@ -3503,8 +3412,7 @@ test("key up with input selected does nothing", () => {
 
 test("clicking background with finder open closes it", () => {
     const effects = makeEffects()
-    const model0 = emptyModel()
-    const { model: model1 } = update(effects, model0, {
+    const { model: model1 } = update(effects, model, {
         kind: EventKind.KEYDOWN,
         key: 'f',
         ctrl: false
@@ -3521,8 +3429,42 @@ test("clicking background with finder open closes it", () => {
         kind: EventKind.CLICKED_BACKGROUND,
     })
     const expectedModel: Model = {
-        ...model0,
+        ...model,
         pointers: [pointer]
     }
     expect(model3).toEqual(expectedModel)
+})
+
+test("pointer move after moving with keyboard stops showing node placement location", () => {
+    const effects = makeEffects()
+    const { model: model1, render: render0 } = update(effects, model, {
+        kind: EventKind.KEYDOWN,
+        key: 'h',
+        ctrl: false
+    })
+    expect(render0).toBeUndefined()
+    expect(model1).toEqual({
+        ...model,
+        nodePlacementLocation: { x: 250, y: 250, show: true },
+        panCamera: { left: true, up: false, down: false, right: false, now: 0 }
+    })
+    const pointer: Pointer = {
+        id: 0,
+        position: { x: 0, y: 0 }
+    }
+    const { model: model2, render: render1 } = update(effects, model1, {
+        kind: EventKind.POINTER_MOVE,
+        pointer
+    })
+    expect(render1).toEqual(true)
+    expect(model2).toEqual({
+        ...model1,
+        nodePlacementLocation: { x: 0, y: 0, show: false }
+    })
+    const { model: model3, render: render2 } = update(effects, model2, {
+        kind: EventKind.POINTER_MOVE,
+        pointer
+    })
+    expect(render2).toBeUndefined()
+    expect(model3).toEqual(model2)
 })

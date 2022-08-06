@@ -7,6 +7,7 @@ import { text, stack, scene, row, container, column, Connection, UI } from '../u
 import { Body, Graph, Input, Output, UUID } from "../model/graph"
 import { contextMenu } from "./context_menu"
 import { QuickSelectKind } from "../model/quick_select"
+import { identity } from "../linear_algebra/matrix3x3"
 
 
 export const spacer = (size: number): UI<AppEvent> =>
@@ -221,6 +222,7 @@ export const numericVirtualKeyboard = (theme: Theme) =>
         ]),
     ])
 
+const identityCamera = identity()
 
 export const view = (model: Model): UI<AppEvent> => {
     const nodes = model.nodeOrder
@@ -241,6 +243,23 @@ export const view = (model: Model): UI<AppEvent> => {
         container({ color: model.theme.background, onClick: { kind: EventKind.CLICKED_BACKGROUND } }),
         scene({ camera: model.camera, children: nodes, connections }),
     ]
+    if (model.nodePlacementLocation.show) {
+        stacked.push(
+            scene({
+                camera: identityCamera,
+                children: [
+                    container({
+                        color: model.theme.nodePlacementLocation,
+                        width: 10,
+                        height: 10,
+                        x: model.nodePlacementLocation.x,
+                        y: model.nodePlacementLocation.y,
+                    })
+                ],
+                connections: []
+            })
+        )
+    }
     switch (model.focus.kind) {
         case FocusKind.FINDER:
             stacked.push(

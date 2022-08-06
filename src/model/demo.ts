@@ -1,11 +1,11 @@
 import { GenerateUUID } from './graph'
 import { addEdge, addNode, changeBodyValue } from "../update/graph"
-import { Model } from '.'
+import { Model, Window } from '.'
 import { emptyModel } from './empty'
 
-export const demoModel = (generateUUID: GenerateUUID): Model => {
+export const demoModel = (window: Window, generateUUID: GenerateUUID): Model => {
     const model = {
-        ...emptyModel(),
+        ...emptyModel(window),
         operations: {
             "Number": {
                 name: "Number",

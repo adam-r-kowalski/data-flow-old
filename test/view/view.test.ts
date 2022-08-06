@@ -37,6 +37,7 @@ test("intersperse", () => {
 const theme: Theme = {
     background: { red: 2, green: 22, blue: 39, alpha: 255 },
     node: { red: 41, green: 95, blue: 120, alpha: 255 },
+    nodePlacementLocation: { red: 41, green: 95, blue: 120, alpha: 50 },
     focusNode: { red: 23, green: 54, blue: 69, alpha: 255 },
     input: { red: 188, green: 240, blue: 192, alpha: 255 },
     focusInput: { red: 175, green: 122, blue: 208, alpha: 255 },
@@ -828,7 +829,8 @@ test("view with no nodes or edges", () => {
         },
         nodeOrder: [],
         pointers: [],
-        nodePlacementLocation: { x: 0, y: 0 },
+        nodePlacementLocation: { x: 250, y: 250, show: false },
+        window: { width: 500, height: 500 },
         focus: {
             kind: FocusKind.NONE,
             pointerAction: { kind: PointerActionKind.NONE },
@@ -860,7 +862,8 @@ test("view with no nodes or edges but finder shown", () => {
         },
         nodeOrder: [],
         pointers: [],
-        nodePlacementLocation: { x: 0, y: 0 },
+        nodePlacementLocation: { x: 250, y: 250, show: false },
+        window: { width: 500, height: 500 },
         focus: {
             kind: FocusKind.FINDER,
             search: "",
@@ -917,10 +920,8 @@ test("view with three nodes and no edges", () => {
         },
         nodeOrder: ["first", "second", "third"],
         pointers: [],
-        nodePlacementLocation: {
-            x: 0,
-            y: 0,
-        },
+        nodePlacementLocation: { x: 250, y: 250, show: false },
+        window: { width: 500, height: 500 },
         focus: {
             kind: FocusKind.NONE,
             pointerAction: { kind: PointerActionKind.NONE },
@@ -982,7 +983,8 @@ test("view with three nodes and no edges", () => {
         },
         nodeOrder: ["first", "second", "third"],
         pointers: [],
-        nodePlacementLocation: { x: 0, y: 0, },
+        nodePlacementLocation: { x: 250, y: 250, show: false },
+        window: { width: 500, height: 500 },
         focus: {
             kind: FocusKind.NODE,
             node: 'first',
@@ -1078,10 +1080,8 @@ test("view with three nodes and one edges", () => {
         },
         nodeOrder: ["first", "second", "third"],
         pointers: [],
-        nodePlacementLocation: {
-            x: 0,
-            y: 0,
-        },
+        nodePlacementLocation: { x: 250, y: 250, show: false },
+        window: { width: 500, height: 500 },
         focus: {
             kind: FocusKind.NONE,
             pointerAction: { kind: PointerActionKind.NONE },
@@ -1149,10 +1149,8 @@ test("view with body selected", () => {
         },
         nodeOrder: ["number"],
         pointers: [],
-        nodePlacementLocation: {
-            x: 0,
-            y: 0,
-        },
+        nodePlacementLocation: { x: 250, y: 250, show: false },
+        window: { width: 500, height: 500 },
         focus: {
             kind: FocusKind.BODY,
             body: "body",
@@ -1247,10 +1245,8 @@ test("view with input selected", () => {
         },
         nodeOrder: ["add", "sub"],
         pointers: [],
-        nodePlacementLocation: {
-            x: 0,
-            y: 0,
-        },
+        nodePlacementLocation: { x: 250, y: 250, show: false },
+        window: { width: 500, height: 500 },
         focus: {
             kind: FocusKind.INPUT,
             input: "x1",
@@ -1363,10 +1359,8 @@ test("view with output selected", () => {
         },
         nodeOrder: ["add", "sub"],
         pointers: [],
-        nodePlacementLocation: {
-            x: 0,
-            y: 0,
-        },
+        nodePlacementLocation: { x: 250, y: 250, show: false },
+        window: { width: 500, height: 500 },
         focus: {
             kind: FocusKind.OUTPUT,
             output: "out0",
@@ -1407,6 +1401,52 @@ test("view with output selected", () => {
             }],
             backgroundColor: theme.node
         })
+    ])
+    expect(actual).toEqual(expected)
+})
+
+test("view with node placement location shown", () => {
+    const model: Model = {
+        graph: {
+            nodes: {},
+            edges: {},
+            inputs: {},
+            outputs: {},
+            bodys: {}
+        },
+        nodeOrder: [],
+        pointers: [],
+        nodePlacementLocation: { x: 250, y: 250, show: true },
+        window: { width: 500, height: 500 },
+        focus: {
+            kind: FocusKind.NONE,
+            pointerAction: { kind: PointerActionKind.NONE },
+            quickSelect: { kind: QuickSelectKind.NONE }
+        },
+        camera: identity(),
+        operations: {},
+        openFinderFirstClick: false,
+        panCamera: { left: false, up: false, down: false, right: false, now: 0 },
+        zoomCamera: { in: false, out: false, now: 0 },
+        theme
+    }
+    const actual = view(model)
+    const expected = stack([
+        container({ color: model.theme.background, onClick: { kind: EventKind.CLICKED_BACKGROUND } }),
+        scene({ camera: model.camera, children: [], connections: [] }),
+        scene({
+            camera: identity(),
+            children: [
+                container({
+                    color: model.theme.nodePlacementLocation,
+                    width: 10,
+                    height: 10,
+                    x: 250,
+                    y: 250,
+                })
+            ],
+            connections: []
+        }),
     ])
     expect(actual).toEqual(expected)
 })

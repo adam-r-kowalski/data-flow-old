@@ -1,5 +1,5 @@
-import { emptyGraph, Input, Node, Output, Edge, Body } from "../src/model/graph"
-import { addNode, addEdge, changeNodePosition, removeNode, removeInputEdge, removeOutputEdges } from "../src/update/graph"
+import { emptyGraph, Input, Node, Output, Edge, Body } from "../../src/model/graph"
+import { addNode, addEdge, changeNodePosition, removeNode, removeInputEdge, removeOutputEdges } from "../../src/update/graph"
 
 const generateUUID = () => {
     let i = 0

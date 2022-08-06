@@ -4,6 +4,8 @@ import { addNodeToGraph, EventKind, update } from "../../src/update"
 import { changeNodePosition } from "../../src/update/graph"
 import { makeEffects } from "../mock_effects"
 
+const model = emptyModel({ width: 500, height: 500 })
+
 test("h when a node is focused moves node left", () => {
     const effects = makeEffects()
     const operations: Operations = {
@@ -13,7 +15,7 @@ test("h when a node is focused moves node left", () => {
             outputs: ['out']
         },
     }
-    let model0 = { ...emptyModel(), operations }
+    const model0 = { ...model, operations }
     const { model: model1, node } = addNodeToGraph({
         model: model0,
         operation: operations['Add'],
@@ -77,7 +79,7 @@ test("j when a node is focused moves node down", () => {
             outputs: ['out']
         },
     }
-    let model0 = { ...emptyModel(), operations }
+    const model0 = { ...model, operations }
     const { model: model1, node } = addNodeToGraph({
         model: model0,
         operation: operations['Add'],
@@ -141,7 +143,7 @@ test("k when a node is focused moves node up", () => {
             outputs: ['out']
         },
     }
-    let model0 = { ...emptyModel(), operations }
+    const model0 = { ...model, operations }
     const { model: model1, node } = addNodeToGraph({
         model: model0,
         operation: operations['Add'],
@@ -205,7 +207,7 @@ test("l when a node is focused moves node right", () => {
             outputs: ['out']
         },
     }
-    let model0 = { ...emptyModel(), operations }
+    const model0 = { ...model, operations }
     const { model: model1, node } = addNodeToGraph({
         model: model0,
         operation: operations['Add'],
@@ -269,7 +271,7 @@ test("pressing a non hotkey when node focused does nothing", () => {
             outputs: ['out']
         },
     }
-    let model0 = { ...emptyModel(), operations }
+    const model0 = { ...model, operations }
     const { model: model1, node } = addNodeToGraph({
         model: model0,
         operation: operations['Add'],
@@ -310,7 +312,7 @@ test("pressing h then l when node focused does nothing", () => {
             outputs: ['out']
         },
     }
-    let model0 = { ...emptyModel(), operations }
+    const model0 = { ...model, operations }
     const { model: model1, node } = addNodeToGraph({
         model: model0,
         operation: operations['Add'],
@@ -358,7 +360,7 @@ test("move node when nothing focused does nothing", () => {
             outputs: ['out']
         },
     }
-    let model0 = { ...emptyModel(), operations }
+    const model0 = { ...model, operations }
     const { model: model1 } = addNodeToGraph({
         model: model0,
         operation: operations['Add'],

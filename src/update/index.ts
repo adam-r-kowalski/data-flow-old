@@ -2,7 +2,7 @@ import { fuzzyFind } from "../fuzzy_find"
 import { multiplyMatrices, multiplyMatrixVector, scale, translate } from "../linear_algebra/matrix3x3"
 import { length } from "../linear_algebra/vector3"
 import { Effects, UpdateResult } from "../ui/run"
-import { Model } from "../model"
+import { Model, NodePlacementLocation } from "../model"
 import { Focus, FocusFinder, FocusKind } from '../model/focus'
 import { PointerAction, PointerActionKind } from '../model/pointer_action'
 import { GenerateUUID, Operation, Operations, Position, UUID } from '../model/graph'
@@ -246,13 +246,18 @@ const pointerMove = (model: Model, event: PointerMove): UpdateResult<Model, AppE
     const index = model.pointers.findIndex(p => p.id === event.pointer.id)
     const pointer = model.pointers[index]
     const pointers = index === -1 ? model.pointers : changeNth(model.pointers, index, event.pointer)
-    const nodePlacementLocation = event.pointer.position
+    const nodePlacementLocation: NodePlacementLocation = {
+        x: event.pointer.position.x,
+        y: event.pointer.position.y,
+        show: false
+    }
     switch (model.focus.kind) {
         case FocusKind.NONE:
             const previousPointerAction = model.focus.pointerAction
             switch (previousPointerAction.kind) {
                 case PointerActionKind.NONE:
-                    return { model: { ...model, nodePlacementLocation, pointers } }
+                    const render = model.nodePlacementLocation.show ? true : undefined
+                    return { model: { ...model, nodePlacementLocation, pointers }, render }
                 case PointerActionKind.PAN:
                     const dx = event.pointer.position.x - pointer.position.x
                     const dy = event.pointer.position.y - pointer.position.y
@@ -372,7 +377,7 @@ export const openFinder = (model: Model): Model => ({
         options: Object.keys(model.operations),
         quickSelect: { kind: QuickSelectKind.NONE }
     },
-    openFinderFirstClick: false
+    openFinderFirstClick: false,
 })
 
 
@@ -669,10 +674,11 @@ const clickedBackground = (model: Model): UpdateResult<Model, AppEvent> => {
             render: true
         }
     } else if (model.openFinderFirstClick) {
+        const { x, y } = model.pointers[0].position
         return {
             model: openFinder({
                 ...model,
-                nodePlacementLocation: model.pointers[0].position,
+                nodePlacementLocation: { x, y, show: false },
             }),
             render: true
         }

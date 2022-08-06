@@ -828,7 +828,8 @@ test("view with no nodes or edges", () => {
         },
         nodeOrder: [],
         pointers: [],
-        nodePlacementLocation: { x: 0, y: 0 },
+        nodePlacementLocation: { x: 250, y: 250 },
+        window: { width: 500, height: 500 },
         focus: {
             kind: FocusKind.NONE,
             pointerAction: { kind: PointerActionKind.NONE },
@@ -860,7 +861,8 @@ test("view with no nodes or edges but finder shown", () => {
         },
         nodeOrder: [],
         pointers: [],
-        nodePlacementLocation: { x: 0, y: 0 },
+        nodePlacementLocation: { x: 250, y: 250 },
+        window: { width: 500, height: 500 },
         focus: {
             kind: FocusKind.FINDER,
             search: "",
@@ -917,10 +919,8 @@ test("view with three nodes and no edges", () => {
         },
         nodeOrder: ["first", "second", "third"],
         pointers: [],
-        nodePlacementLocation: {
-            x: 0,
-            y: 0,
-        },
+        nodePlacementLocation: { x: 250, y: 250 },
+        window: { width: 500, height: 500 },
         focus: {
             kind: FocusKind.NONE,
             pointerAction: { kind: PointerActionKind.NONE },
@@ -982,7 +982,8 @@ test("view with three nodes and no edges", () => {
         },
         nodeOrder: ["first", "second", "third"],
         pointers: [],
-        nodePlacementLocation: { x: 0, y: 0, },
+        nodePlacementLocation: { x: 250, y: 250 },
+        window: { width: 500, height: 500 },
         focus: {
             kind: FocusKind.NODE,
             node: 'first',
@@ -1078,10 +1079,8 @@ test("view with three nodes and one edges", () => {
         },
         nodeOrder: ["first", "second", "third"],
         pointers: [],
-        nodePlacementLocation: {
-            x: 0,
-            y: 0,
-        },
+        nodePlacementLocation: { x: 250, y: 250 },
+        window: { width: 500, height: 500 },
         focus: {
             kind: FocusKind.NONE,
             pointerAction: { kind: PointerActionKind.NONE },
@@ -1149,10 +1148,8 @@ test("view with body selected", () => {
         },
         nodeOrder: ["number"],
         pointers: [],
-        nodePlacementLocation: {
-            x: 0,
-            y: 0,
-        },
+        nodePlacementLocation: { x: 250, y: 250 },
+        window: { width: 500, height: 500 },
         focus: {
             kind: FocusKind.BODY,
             body: "body",
@@ -1247,10 +1244,8 @@ test("view with input selected", () => {
         },
         nodeOrder: ["add", "sub"],
         pointers: [],
-        nodePlacementLocation: {
-            x: 0,
-            y: 0,
-        },
+        nodePlacementLocation: { x: 250, y: 250 },
+        window: { width: 500, height: 500 },
         focus: {
             kind: FocusKind.INPUT,
             input: "x1",
@@ -1363,10 +1358,8 @@ test("view with output selected", () => {
         },
         nodeOrder: ["add", "sub"],
         pointers: [],
-        nodePlacementLocation: {
-            x: 0,
-            y: 0,
-        },
+        nodePlacementLocation: { x: 250, y: 250 },
+        window: { width: 500, height: 500 },
         focus: {
             kind: FocusKind.OUTPUT,
             output: "out0",

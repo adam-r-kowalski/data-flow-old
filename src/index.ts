@@ -9,7 +9,7 @@ const generateUUID = () => crypto.randomUUID()
 const currentTime = () => performance.now()
 
 const success_or_error = run({
-    model: demoModel(generateUUID),
+    model: demoModel({ width: window.innerWidth, height: window.innerHeight }, generateUUID),
     view,
     update,
     window,

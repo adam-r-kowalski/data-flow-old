@@ -1,11 +1,11 @@
-import { Model } from "."
+import { Model, Window } from "."
 import { FocusKind } from "./focus"
 import { PointerActionKind } from "./pointer_action"
 import { identity } from "../linear_algebra/matrix3x3"
 import { emptyGraph } from './graph'
 import { QuickSelectKind } from "./quick_select"
 
-export const emptyModel = (): Model => ({
+export const emptyModel = (window: Window): Model => ({
     graph: emptyGraph(),
     nodeOrder: [],
     pointers: [],
@@ -16,7 +16,8 @@ export const emptyModel = (): Model => ({
         quickSelect: { kind: QuickSelectKind.NONE }
     },
     openFinderFirstClick: false,
-    nodePlacementLocation: { x: 0, y: 0 },
+    nodePlacementLocation: { x: window.width / 2, y: window.height / 2 },
+    window,
     operations: {},
     panCamera: { left: false, down: false, up: false, right: false, now: 0 },
     zoomCamera: { in: false, out: false, now: 0 },

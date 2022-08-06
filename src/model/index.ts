@@ -5,6 +5,12 @@ import { Focus } from './focus'
 import { Theme } from './theme'
 import { PanCamera, ZoomCamera } from './move_camera'
 
+
+export interface Window {
+    readonly width: number
+    readonly height: number
+}
+
 export interface Model {
     readonly graph: Graph
     readonly nodeOrder: Readonly<UUID[]>
@@ -12,6 +18,7 @@ export interface Model {
     readonly focus: Focus
     readonly openFinderFirstClick: boolean
     readonly nodePlacementLocation: Position
+    readonly window: Window
     readonly camera: Matrix3x3
     readonly operations: Readonly<Operations>
     readonly panCamera: PanCamera

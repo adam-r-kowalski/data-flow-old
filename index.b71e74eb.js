@@ -601,7 +601,11 @@ document.addEventListener("touchend", ()=>{
     document.body.requestFullscreen();
 });
 document.addEventListener("keydown", (e)=>{
-    e.preventDefault();
+    if (e.ctrlKey) switch(e.key){
+        case "j":
+        case "k":
+            e.preventDefault();
+    }
     dispatch({
         kind: (0, _update.EventKind).KEYDOWN,
         key: e.key,
@@ -609,15 +613,15 @@ document.addEventListener("keydown", (e)=>{
     });
 });
 document.addEventListener("keyup", (e)=>{
-    e.preventDefault();
     dispatch({
         kind: (0, _update.EventKind).KEYUP,
         key: e.key,
         ctrl: e.ctrlKey
     });
 });
+if ("serviceWorker" in navigator) navigator.serviceWorker.register(require("24a5b8c3f264d2d2"));
 
-},{"./update":"ilzHD","./ui/run":"e5SKV","./view":"kkyMT","./model/demo":"5AK9F","./ui/webgl2":"gDI6s"}],"ilzHD":[function(require,module,exports) {
+},{"./update":"ilzHD","./ui/run":"e5SKV","./view":"kkyMT","./model/demo":"5AK9F","./ui/webgl2":"gDI6s","24a5b8c3f264d2d2":"1mLYK"}],"ilzHD":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "EventKind", ()=>EventKind);
@@ -4714,7 +4718,7 @@ const view = (model)=>{
     return (0, _ui.stack)(stacked);
 };
 
-},{"../ui/alignment":"eEpxz","../update":"ilzHD","../model/focus":"4HSqF","../ui":"cOWCo","./context_menu":"kv4Be","../model/quick_select":"imfkP","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","../linear_algebra/matrix3x3":"aZqnw"}],"kv4Be":[function(require,module,exports) {
+},{"../ui/alignment":"eEpxz","../update":"ilzHD","../model/focus":"4HSqF","../ui":"cOWCo","./context_menu":"kv4Be","../model/quick_select":"imfkP","../linear_algebra/matrix3x3":"aZqnw","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"kv4Be":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "contextMenu", ()=>contextMenu);
@@ -5027,6 +5031,43 @@ const emptyGraph = ()=>({
         outputs: {}
     });
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["iJYvl","h7u1C"], "h7u1C", "parcelRequire045c")
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"1mLYK":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("7UhFu") + "service_worker.js" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"lgJ39":[function(require,module,exports) {
+"use strict";
+var bundleURL = {};
+function getBundleURLCached(id) {
+    var value = bundleURL[id];
+    if (!value) {
+        value = getBundleURL();
+        bundleURL[id] = value;
+    }
+    return value;
+}
+function getBundleURL() {
+    try {
+        throw new Error();
+    } catch (err) {
+        var matches = ("" + err.stack).match(/(https?|file|ftp|(chrome|moz|safari-web)-extension):\/\/[^)\n]+/g);
+        if (matches) // The first two stack frames will be this function and getBundleURLCached.
+        // Use the 3rd one, which will be a runtime in the original bundle.
+        return getBaseURL(matches[2]);
+    }
+    return "/";
+}
+function getBaseURL(url) {
+    return ("" + url).replace(/^((?:https?|file|ftp|(chrome|moz|safari-web)-extension):\/\/.+)\/[^/]+$/, "$1") + "/";
+} // TODO: Replace uses with `new URL(url).origin` when ie11 is no longer supported.
+function getOrigin(url) {
+    var matches = ("" + url).match(/(https?|file|ftp|(chrome|moz|safari-web)-extension):\/\/[^/]+/);
+    if (!matches) throw new Error("Origin not found");
+    return matches[0];
+}
+exports.getBundleURL = getBundleURLCached;
+exports.getBaseURL = getBaseURL;
+exports.getOrigin = getOrigin;
+
+},{}]},["iJYvl","h7u1C"], "h7u1C", "parcelRequire045c")
 
 //# sourceMappingURL=index.b71e74eb.js.map

@@ -1,5 +1,5 @@
 import { AppEvent, EventKind } from "../../src/update"
-import { Body, BodyKind, emptyGraph, Graph, Input, Node, Output } from "../../src/model/graph"
+import { Body, emptyGraph, Graph, Input, Node, Output } from "../../src/model/graph"
 import { identity } from "../../src/linear_algebra/matrix3x3"
 import { Model } from "../../src/model"
 import { Theme } from "../../src/model/theme"
@@ -14,7 +14,7 @@ import {
     inputUi,
     intersperse,
     nodeUi,
-    numberUi,
+    bodyUi,
     numericVirtualKeyboard,
     outputsUi,
     outputUi,
@@ -239,19 +239,19 @@ test("outputsUi", () => {
     expect(actual).toEqual(expected)
 })
 
-test("numberUi not focused", () => {
+test("bodyUi not focused", () => {
     const body: Body = {
-        kind: BodyKind.NUMBER,
         uuid: 'body uuid',
         node: 'node',
         value: 0,
+        editable: true,
     }
     const focus: Focus = {
         kind: FocusKind.NONE,
         pointerAction: { kind: PointerActionKind.NONE },
         quickSelect: { kind: QuickSelectKind.NONE }
     }
-    const actual = numberUi(theme, body, focus)
+    const actual = bodyUi(theme, body, focus)
     const expected = container({
         color: theme.background,
         padding: 5,
@@ -264,14 +264,14 @@ test("numberUi not focused", () => {
     expect(actual).toEqual(expected)
 })
 
-test("numberUi editing", () => {
+test("bodyUi editing", () => {
     const body: Body = {
-        kind: BodyKind.NUMBER,
         uuid: 'body uuid',
         node: 'node',
         value: 0,
+        editable: true,
     }
-    const actual = numberUi(theme, body, {
+    const actual = bodyUi(theme, body, {
         kind: FocusKind.BODY,
         body: 'body uuid',
         quickSelect: { kind: QuickSelectKind.NONE }
@@ -425,10 +425,10 @@ test("nodeUi no inputs or outputs but body defined", () => {
         outputs: [],
     }
     const body: Body = {
-        kind: BodyKind.NUMBER,
         uuid: 'body uuid',
         node: 'node',
-        value: 0
+        value: 0,
+        editable: true,
     }
     const graph: Graph = {
         ...emptyGraph(),
@@ -455,7 +455,7 @@ test("nodeUi no inputs or outputs but body defined", () => {
         column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             text("node"),
             spacer(4),
-            row([numberUi(theme, body, focus), spacer(15)])
+            row([bodyUi(theme, body, focus), spacer(15)])
         ])
     )
     expect(actual).toEqual(expected)
@@ -531,10 +531,10 @@ test("nodeUi 1 input body but no outputs", () => {
         name: 'first'
     }
     const body: Body = {
-        kind: BodyKind.NUMBER,
         uuid: 'body uuid',
         node: 'node uuid',
-        value: 0
+        value: 0,
+        editable: true,
     }
     const graph: Graph = {
         ...emptyGraph(),
@@ -564,7 +564,7 @@ test("nodeUi 1 input body but no outputs", () => {
             spacer(4),
             row([
                 inputsUi(theme, node.inputs.map(i => graph.inputs[i]), focus),
-                numberUi(theme, body, focus),
+                bodyUi(theme, body, focus),
                 spacer(15),
             ])
         ])
@@ -588,10 +588,10 @@ test("nodeUi 1 output body but no inputs", () => {
         edges: []
     }
     const body: Body = {
-        kind: BodyKind.NUMBER,
         uuid: 'body uuid',
         node: 'node uuid',
-        value: 0
+        value: 0,
+        editable: true,
     }
     const graph: Graph = {
         ...emptyGraph(),
@@ -620,7 +620,7 @@ test("nodeUi 1 output body but no inputs", () => {
             text("node"),
             spacer(4),
             row([
-                numberUi(theme, body, focus),
+                bodyUi(theme, body, focus),
                 spacer(15),
                 outputsUi(theme, node.outputs.map(o => graph.outputs[o]), focus),
             ])
@@ -651,10 +651,10 @@ test("nodeUi 1 input body and 1 output", () => {
         edges: []
     }
     const body: Body = {
-        kind: BodyKind.NUMBER,
         uuid: 'body uuid',
         node: 'node uuid',
-        value: 0
+        value: 0,
+        editable: true,
     }
     const graph: Graph = {
         ...emptyGraph(),
@@ -686,7 +686,7 @@ test("nodeUi 1 input body and 1 output", () => {
             row([
                 inputsUi(theme, node.inputs.map(i => graph.inputs[i]), focus),
                 spacer(15),
-                numberUi(theme, body, focus),
+                bodyUi(theme, body, focus),
                 spacer(15),
                 outputsUi(theme, node.outputs.map(o => graph.outputs[o]), focus),
             ])
@@ -1147,10 +1147,10 @@ test("view with body selected", () => {
             },
             bodys: {
                 "body": {
-                    kind: BodyKind.NUMBER,
                     uuid: "body",
                     node: "number",
                     value: 0,
+                    editable: true,
                 }
             }
         },

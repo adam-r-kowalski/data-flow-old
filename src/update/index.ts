@@ -1,3 +1,5 @@
+import * as tf from '@tensorflow/tfjs'
+
 import { fuzzyFind } from "../fuzzy_find"
 import { multiplyMatrices, multiplyMatrixVector, scale, translate } from "../linear_algebra/matrix3x3"
 import { length } from "../linear_algebra/vector3"
@@ -7,7 +9,7 @@ import { Focus, FocusFinder, FocusKind } from '../model/focus'
 import { PointerAction, PointerActionKind } from '../model/pointer_action'
 import { GenerateUUID, Operation, Operations, Position, UUID } from '../model/graph'
 import { Pointer } from "../ui"
-import { addNode, changeBodyNumber, changeNodePosition, removeInputEdge, removeNode, removeOutputEdges } from "./graph"
+import { addNode, changeBodyValue, changeNodePosition, removeInputEdge, removeNode, removeOutputEdges } from "./graph"
 import { maybeTriggerQuickSelect, quickSelectInput, quickSelectOutput, quickSelectNode, quickSelectBody } from "./quick_select"
 import { QuickSelectKind } from "../model/quick_select"
 import { clearFocus, selectInput, selectOutput } from "./focus"
@@ -410,11 +412,11 @@ const updateFinderSearch = (model: Model, focus: FocusFinder, transform: (search
     }
 }
 
-const updateBodyNumber = (model: Model, body: UUID, transform: (value: number) => number): UpdateResult<Model, AppEvent> => {
+const updateBodyNumber = (model: Model, body: UUID, transform: (value: tf.TensorLike) => tf.TensorLike): UpdateResult<Model, AppEvent> => {
     return {
         model: {
             ...model,
-            graph: changeBodyNumber(model.graph, body, transform)
+            graph: changeBodyValue(model.graph, body, transform)
         },
         render: true
     }

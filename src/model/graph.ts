@@ -1,3 +1,5 @@
+import * as tf from '@tensorflow/tfjs-core';
+
 export type UUID = string
 
 export type GenerateUUID = () => UUID
@@ -16,11 +18,28 @@ export interface Output {
     readonly edges: Readonly<UUID[]>
 }
 
-export interface Body {
+export enum BodyKind {
+    NUMBER,
+    RESULT,
+}
+
+export interface BodyNumber {
+    readonly kind: BodyKind.NUMBER
     readonly uuid: UUID
     readonly node: UUID
     readonly value: number
 }
+
+export interface BodyResult {
+    readonly kind: BodyKind.RESULT
+    readonly uuid: UUID
+    readonly node: UUID
+    readonly value: tf.TensorLike
+}
+
+export type Body =
+    | BodyNumber
+    | BodyResult
 
 export interface Position {
     readonly x: number
@@ -34,6 +53,7 @@ export interface Node {
     readonly body?: UUID
     readonly outputs: Readonly<UUID[]>
     readonly position: Position
+    readonly operation?: (...inputs: Tensor[]) => tf.Tensor<tf.Rank>
 }
 
 export interface Edge {
@@ -56,11 +76,14 @@ export interface Graph {
     readonly outputs: Readonly<Outputs>
 }
 
+export type Tensor = tf.TensorLike | tf.Tensor<tf.Rank>
+
 export interface Operation {
     readonly name: string
     readonly inputs: Readonly<string[]>
     readonly body?: number
     readonly outputs: Readonly<string[]>
+    readonly operation?: (...inputs: Tensor[]) => tf.Tensor<tf.Rank>
 }
 
 export type Operations = { [name: string]: Operation }

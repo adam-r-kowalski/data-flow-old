@@ -7,7 +7,7 @@ import { Focus, FocusFinder, FocusKind } from '../model/focus'
 import { PointerAction, PointerActionKind } from '../model/pointer_action'
 import { GenerateUUID, Operation, Operations, Position, UUID } from '../model/graph'
 import { Pointer } from "../ui"
-import { addNode, changeBodyValue, changeNodePosition, removeInputEdge, removeNode, removeOutputEdges } from "./graph"
+import { addNode, changeBodyNumber, changeNodePosition, removeInputEdge, removeNode, removeOutputEdges } from "./graph"
 import { maybeTriggerQuickSelect, quickSelectInput, quickSelectOutput, quickSelectNode, quickSelectBody } from "./quick_select"
 import { QuickSelectKind } from "../model/quick_select"
 import { clearFocus, selectInput, selectOutput } from "./focus"
@@ -410,11 +410,11 @@ const updateFinderSearch = (model: Model, focus: FocusFinder, transform: (search
     }
 }
 
-const updateBodyValue = (model: Model, body: UUID, transform: (value: number) => number): UpdateResult<Model, AppEvent> => {
+const updateBodyNumber = (model: Model, body: UUID, transform: (value: number) => number): UpdateResult<Model, AppEvent> => {
     return {
         model: {
             ...model,
-            graph: changeBodyValue(model.graph, body, transform)
+            graph: changeBodyNumber(model.graph, body, transform)
         },
         render: true
     }
@@ -489,7 +489,7 @@ const keyDown = (model: Model, event: KeyDown, { generateUUID, currentTime }: Ef
                 case FocusKind.BODY:
                     switch (key) {
                         case 'Backspace':
-                            return updateBodyValue(model, model.focus.body, value => {
+                            return updateBodyNumber(model, model.focus.body, value => {
                                 let newValue = value.toString().slice(0, -1)
                                 return newValue === '' ? 0 : parseFloat(newValue)
                             })
@@ -503,7 +503,7 @@ const keyDown = (model: Model, event: KeyDown, { generateUUID, currentTime }: Ef
                         case '8':
                         case '9':
                         case '0':
-                            return updateBodyValue(model, model.focus.body, value => parseFloat(value.toString() + key))
+                            return updateBodyNumber(model, model.focus.body, value => parseFloat(value.toString() + key))
                         case 'Enter':
                         case 'Escape':
                             return {
@@ -621,7 +621,7 @@ const virtualKeyDown = (model: Model, { key }: VirtualKeyDown, generateUUID: Gen
         case FocusKind.BODY:
             switch (key) {
                 case 'del':
-                    return updateBodyValue(model, model.focus.body, value => {
+                    return updateBodyNumber(model, model.focus.body, value => {
                         let newValue = value.toString().slice(0, -1)
                         return newValue === '' ? 0 : parseFloat(newValue)
                     })
@@ -636,7 +636,7 @@ const virtualKeyDown = (model: Model, { key }: VirtualKeyDown, generateUUID: Gen
                 case '9':
                 case '0':
                 case '.':
-                    return updateBodyValue(model, model.focus.body, value => parseFloat(value.toString() + key))
+                    return updateBodyNumber(model, model.focus.body, value => parseFloat(value.toString() + key))
                 case 'ret':
                     return {
                         model: clearFocus(model),

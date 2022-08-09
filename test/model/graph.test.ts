@@ -1,4 +1,4 @@
-import { emptyGraph, Input, Node, Output, Edge, Body } from "../../src/model/graph"
+import { emptyGraph, Input, Node, Output, Edge, Body, BodyKind } from "../../src/model/graph"
 import { addNode, addEdge, changeNodePosition, removeNode, removeInputEdge, removeOutputEdges } from "../../src/update/graph"
 
 const generateUUID = () => {
@@ -113,6 +113,7 @@ test("add operation with body to graph", () => {
         edges: []
     }
     const body: Body = {
+        kind: BodyKind.NUMBER,
         uuid: bodyUUID,
         node: numberUUID,
         value: 0

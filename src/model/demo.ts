@@ -1,52 +1,56 @@
+import * as tf from '@tensorflow/tfjs-core';
+import '@tensorflow/tfjs-backend-cpu'
+
 import { GenerateUUID } from './graph'
-import { addEdge, addNode, changeBodyValue } from "../update/graph"
+import { addEdge, addNode, changeBodyNumber } from "../update/graph"
 import { Model, Window } from '.'
 import { emptyModel } from './empty'
 
 export const demoModel = (window: Window, generateUUID: GenerateUUID): Model => {
-    const model = {
+    const model: Model = {
         ...emptyModel(window),
         operations: {
             "Number": {
                 name: "Number",
                 inputs: [],
                 body: 0,
-                outputs: ["out"]
+                outputs: ["out"],
             },
             "Add": {
                 name: "Add",
                 inputs: ["x", "y"],
-                outputs: ["out"]
+                outputs: ["out"],
+                operation: tf.add
             },
             "Subtract": {
                 name: "Subtract",
                 inputs: ["x", "y"],
-                outputs: ["out"]
+                outputs: ["out"],
+                operation: tf.sub
             },
             "Multiply": {
                 name: "Multiply",
                 inputs: ["x", "y"],
-                outputs: ["out"]
+                outputs: ["out"],
+                operation: tf.mul
             },
             "Divide": {
                 name: "Divide",
                 inputs: ["x", "y"],
-                outputs: ["out"]
+                outputs: ["out"],
+                operation: tf.div
             },
             "Equal": {
                 name: "Equal",
                 inputs: ["x", "y"],
-                outputs: ["out"]
+                outputs: ["out"],
+                operation: tf.equal
             },
             "Less Than": {
                 name: "Less Than",
                 inputs: ["x", "y"],
-                outputs: ["out"]
-            },
-            "Print": {
-                name: "Print",
-                inputs: ["value"],
-                outputs: []
+                outputs: ["out"],
+                operation: tf.less
             }
         }
     }
@@ -56,14 +60,14 @@ export const demoModel = (window: Window, generateUUID: GenerateUUID): Model => 
         position: { x: 25, y: 20 },
         generateUUID
     })
-    const graph1 = changeBodyValue(graph0, graph0.nodes[number0].body!, () => 10)
+    const graph1 = changeBodyNumber(graph0, graph0.nodes[number0].body!, () => 10)
     const { graph: graph2, node: number1 } = addNode({
         graph: graph1,
         operation: model.operations["Number"],
         position: { x: 55, y: 105 },
         generateUUID
     })
-    const graph3 = changeBodyValue(graph2, graph2.nodes[number1].body!, () => 25)
+    const graph3 = changeBodyNumber(graph2, graph2.nodes[number1].body!, () => 25)
     const { graph: graph4, node: add } = addNode({
         graph: graph3,
         operation: model.operations["Add"],
@@ -88,7 +92,7 @@ export const demoModel = (window: Window, generateUUID: GenerateUUID): Model => 
         position: { x: 225, y: 145 },
         generateUUID
     })
-    const graph8 = changeBodyValue(graph7, graph7.nodes[number2].body!, () => 5)
+    const graph8 = changeBodyNumber(graph7, graph7.nodes[number2].body!, () => 5)
     const { graph: graph9, node: div } = addNode({
         graph: graph8,
         operation: model.operations["Divide"],
@@ -107,21 +111,9 @@ export const demoModel = (window: Window, generateUUID: GenerateUUID): Model => 
         output: graph10.nodes[number2].outputs[0],
         generateUUID
     })
-    const { graph: graph12, node: print } = addNode({
-        graph: graph11,
-        operation: model.operations["Print"],
-        position: { x: 535, y: 85 },
-        generateUUID
-    })
-    const { graph: graph13 } = addEdge({
-        graph: graph12,
-        input: graph12.nodes[print].inputs[0],
-        output: graph12.nodes[div].outputs[0],
-        generateUUID
-    })
     return {
         ...model,
-        graph: graph13,
-        nodeOrder: [number0, number1, add, number2, div, print]
+        graph: graph11,
+        nodeOrder: [number0, number1, add, number2, div]
     }
 }

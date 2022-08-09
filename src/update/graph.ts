@@ -1,4 +1,4 @@
-import { Body, Edge, GenerateUUID, Graph, Inputs, Node, Operation, Outputs, Position, UUID } from "../model/graph"
+import { Body, BodyKind, Edge, GenerateUUID, Graph, Inputs, Node, Operation, Outputs, Position, UUID, BodyResult } from "../model/graph"
 
 interface AddNodeInputs {
     graph: Graph
@@ -42,13 +42,15 @@ export const addNode = ({ graph, operation, position, generateUUID }: AddNodeInp
         name: operation.name,
         inputs: inputUUIDs,
         outputs: outputUUIDs,
-        position
+        position,
+        operation: operation.operation
     }
     if (operation.body !== undefined) {
         const body: Body = {
+            kind: BodyKind.NUMBER,
             uuid: generateUUID(),
             node: nodeUUID,
-            value: operation.body
+            value: operation.body,
         }
         return {
             graph: {
@@ -209,17 +211,57 @@ export const addEdge = ({ graph, input, output, generateUUID }: AddEdgeInputs): 
             edges: [...currentOutput.edges, edge.uuid]
         }
     }
-    return {
-        graph: {
-            ...graph,
-            inputs,
-            outputs,
-            edges: {
-                ...graph.edges,
-                [edge.uuid]: edge
+    const graph1: Graph = {
+        ...graph,
+        inputs,
+        outputs,
+        edges: {
+            ...graph.edges,
+            [edge.uuid]: edge
+        }
+    }
+    const nodeUUID = graph1.inputs[input].node
+    const node = graph1.nodes[nodeUUID]
+    const values = node.inputs
+        .map(input => graph1.inputs[input].edge)
+        .filter(edgeUUID => edgeUUID !== undefined)
+        .map(edgeUUID => {
+            const edge = graph1.edges[edgeUUID!]
+            const output = graph1.outputs[edge.output]
+            return graph1.nodes[output.node].body
+        })
+        .filter(bodyUUID => bodyUUID !== undefined)
+        .map(bodyUUID => graph1.bodys[bodyUUID!].value)
+    if (values.length > 0 && values.length === node.inputs.length) {
+        const body: BodyResult = {
+            kind: BodyKind.RESULT,
+            uuid: generateUUID(),
+            node: node.uuid,
+            value: node.operation!.apply(this, values).arraySync(),
+        }
+        const graph2: Graph = {
+            ...graph1,
+            nodes: {
+                ...graph1.nodes,
+                [node.uuid]: {
+                    ...node,
+                    body: body.uuid
+                }
+            },
+            bodys: {
+                ...graph1.bodys,
+                [body.uuid]: body
             }
-        },
-        edge: edge.uuid
+        }
+        return {
+            graph: graph2,
+            edge: edge.uuid
+        }
+    } else {
+        return {
+            graph: graph1,
+            edge: edge.uuid
+        }
     }
 }
 
@@ -237,16 +279,21 @@ export const changeNodePosition = (graph: Graph, node: UUID, transform: (positio
     }
 }
 
-export const changeBodyValue = (graph: Graph, body: UUID, transform: (value: number) => number): Graph => {
+export const changeBodyNumber = (graph: Graph, body: UUID, transform: (value: number) => number): Graph => {
     const currentBody = graph.bodys[body]
-    return {
-        ...graph,
-        bodys: {
-            ...graph.bodys,
-            [body]: {
-                ...currentBody,
-                value: transform(currentBody.value)
+    switch (currentBody.kind) {
+        case BodyKind.NUMBER:
+            return {
+                ...graph,
+                bodys: {
+                    ...graph.bodys,
+                    [body]: {
+                        ...currentBody,
+                        value: transform(currentBody.value)
+                    }
+                }
             }
-        }
+        case BodyKind.RESULT:
+            return graph
     }
 }

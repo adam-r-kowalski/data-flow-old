@@ -621,7 +621,7 @@ document.addEventListener("keyup", (e)=>{
 });
 if ("serviceWorker" in navigator) navigator.serviceWorker.register(require("24a5b8c3f264d2d2"));
 
-},{"./update":"ilzHD","./ui/run":"e5SKV","./view":"kkyMT","./model/demo":"5AK9F","./ui/webgl2":"gDI6s","24a5b8c3f264d2d2":"1mLYK"}],"ilzHD":[function(require,module,exports) {
+},{"./update":"ilzHD","./ui/run":"e5SKV","./view":"kkyMT","./model/demo":"5AK9F","./ui/webgl2":"gDI6s","24a5b8c3f264d2d2":"3aGm3"}],"ilzHD":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "EventKind", ()=>EventKind);
@@ -1030,7 +1030,7 @@ const updateBodyNumber = (model, body, transform)=>{
     return {
         model: {
             ...model,
-            graph: (0, _graph.changeBodyNumber)(model.graph, body, transform)
+            graph: (0, _graph.changeBodyValue)(model.graph, body, transform)
         },
         render: true
     };
@@ -1665,8 +1665,7 @@ parcelHelpers.export(exports, "removeInputEdge", ()=>removeInputEdge);
 parcelHelpers.export(exports, "removeOutputEdges", ()=>removeOutputEdges);
 parcelHelpers.export(exports, "addEdge", ()=>addEdge);
 parcelHelpers.export(exports, "changeNodePosition", ()=>changeNodePosition);
-parcelHelpers.export(exports, "changeBodyNumber", ()=>changeBodyNumber);
-var _graph = require("../model/graph");
+parcelHelpers.export(exports, "changeBodyValue", ()=>changeBodyValue);
 const addNode = ({ graph , operation , position , generateUUID  })=>{
     const nodeUUID = generateUUID();
     const inputs = {
@@ -1706,10 +1705,10 @@ const addNode = ({ graph , operation , position , generateUUID  })=>{
     };
     if (operation.body !== undefined) {
         const body = {
-            kind: (0, _graph.BodyKind).NUMBER,
             uuid: generateUUID(),
             node: nodeUUID,
-            value: operation.body
+            value: operation.body,
+            editable: true
         };
         return {
             graph: {
@@ -1893,10 +1892,10 @@ const addEdge = ({ graph , input: input2 , output: output2 , generateUUID  })=>{
     }).filter((bodyUUID)=>bodyUUID !== undefined).map((bodyUUID)=>graph1.bodys[bodyUUID].value);
     if (values.length > 0 && values.length === node.inputs.length) {
         const body = {
-            kind: (0, _graph.BodyKind).RESULT,
             uuid: generateUUID(),
             node: node.uuid,
-            value: node.operation.apply(undefined, values).arraySync()
+            value: node.operation.apply(undefined, values).arraySync(),
+            editable: false
         };
         const graph2 = {
             ...graph1,
@@ -1934,42 +1933,19 @@ const changeNodePosition = (graph, node, transform)=>{
         }
     };
 };
-const changeBodyNumber = (graph, body, transform)=>{
+const changeBodyValue = (graph, body, transform)=>{
     const currentBody = graph.bodys[body];
-    switch(currentBody.kind){
-        case (0, _graph.BodyKind).NUMBER:
-            return {
-                ...graph,
-                bodys: {
-                    ...graph.bodys,
-                    [body]: {
-                        ...currentBody,
-                        value: transform(currentBody.value)
-                    }
-                }
-            };
-        case (0, _graph.BodyKind).RESULT:
-            return graph;
-    }
+    return {
+        ...graph,
+        bodys: {
+            ...graph.bodys,
+            [body]: {
+                ...currentBody,
+                value: transform(currentBody.value)
+            }
+        }
+    };
 };
-
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","../model/graph":"j9QYs"}],"j9QYs":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "BodyKind", ()=>BodyKind);
-parcelHelpers.export(exports, "emptyGraph", ()=>emptyGraph);
-let BodyKind;
-(function(BodyKind1) {
-    BodyKind1[BodyKind1["NUMBER"] = 0] = "NUMBER";
-    BodyKind1[BodyKind1["RESULT"] = 1] = "RESULT";
-})(BodyKind || (BodyKind = {}));
-const emptyGraph = ()=>({
-        nodes: {},
-        edges: {},
-        inputs: {},
-        bodys: {},
-        outputs: {}
-    });
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"2jbfz":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
@@ -2047,9 +2023,7 @@ const maybeTriggerQuickSelect = (model, focus, key)=>{
         case "b":
             {
                 const hotkeys = {};
-                Object.keys(model.graph.bodys).forEach((body, i)=>{
-                    hotkeys[body] = String.fromCharCode(97 + i);
-                });
+                Object.values(model.graph.bodys).filter((body)=>body.editable).forEach((body, i)=>hotkeys[body.uuid] = String.fromCharCode(97 + i));
                 return {
                     model: {
                         ...model,
@@ -4402,7 +4376,7 @@ parcelHelpers.export(exports, "inputUi", ()=>inputUi);
 parcelHelpers.export(exports, "inputsUi", ()=>inputsUi);
 parcelHelpers.export(exports, "outputUi", ()=>outputUi);
 parcelHelpers.export(exports, "outputsUi", ()=>outputsUi);
-parcelHelpers.export(exports, "numberUi", ()=>numberUi);
+parcelHelpers.export(exports, "bodyUi", ()=>bodyUi);
 parcelHelpers.export(exports, "nodeUi", ()=>nodeUi);
 parcelHelpers.export(exports, "finder", ()=>finder);
 parcelHelpers.export(exports, "virtualKey", ()=>virtualKey);
@@ -4490,8 +4464,8 @@ const outputUi = (theme, { name , uuid  }, focus)=>(0, _ui.container)({
         }, focus.quickSelect.kind === (0, _quickSelect.QuickSelectKind).OUTPUT ? focus.quickSelect.hotkeys[uuid] : " ")), 
     ]));
 const outputsUi = (theme, outputs, focus)=>(0, _ui.column)(intersperse(outputs.map((output)=>outputUi(theme, output, focus)), spacer(4)));
-const numberUi = (theme, body, focus)=>{
-    const value = focus.quickSelect.kind === (0, _quickSelect.QuickSelectKind).BODY ? focus.quickSelect.hotkeys[body.uuid] : body.value.toString();
+const bodyUi = (theme, body, focus)=>{
+    const value = focus.quickSelect.kind === (0, _quickSelect.QuickSelectKind).BODY ? focus.quickSelect.hotkeys[body.uuid] ?? body.value.toString() : body.value.toString();
     return (0, _ui.container)({
         color: isFocused(focus, body.uuid) ? theme.focusInput : theme.background,
         padding: 5,
@@ -4506,7 +4480,7 @@ const nodeUi = (theme, nodeUUID, graph, focus)=>{
     const rowEntries = [];
     if (node.inputs.length) rowEntries.push(inputsUi(theme, node.inputs.map((i)=>graph.inputs[i]), focus));
     if (node.inputs.length && node.outputs.length) rowEntries.push(spacer(15));
-    if (node.body) rowEntries.push(numberUi(theme, graph.bodys[node.body], focus), spacer(15));
+    if (node.body) rowEntries.push(bodyUi(theme, graph.bodys[node.body], focus), spacer(15));
     if (node.outputs.length) rowEntries.push(outputsUi(theme, node.outputs.map((o)=>graph.outputs[o]), focus));
     const name = focus.quickSelect.kind === (0, _quickSelect.QuickSelectKind).NODE ? focus.quickSelect.hotkeys[node.uuid] : node.name;
     return (0, _ui.container)({
@@ -4903,7 +4877,7 @@ const demoModel = (window, generateUUID)=>{
         },
         generateUUID
     });
-    const graph1 = (0, _graph.changeBodyNumber)(graph0, graph0.nodes[number0].body, ()=>10);
+    const graph1 = (0, _graph.changeBodyValue)(graph0, graph0.nodes[number0].body, ()=>10);
     const { graph: graph2 , node: number1  } = (0, _graph.addNode)({
         graph: graph1,
         operation: model.operations["Number"],
@@ -4913,7 +4887,7 @@ const demoModel = (window, generateUUID)=>{
         },
         generateUUID
     });
-    const graph3 = (0, _graph.changeBodyNumber)(graph2, graph2.nodes[number1].body, ()=>25);
+    const graph3 = (0, _graph.changeBodyValue)(graph2, graph2.nodes[number1].body, ()=>25);
     const { graph: graph4 , node: add  } = (0, _graph.addNode)({
         graph: graph3,
         operation: model.operations["Add"],
@@ -4944,7 +4918,7 @@ const demoModel = (window, generateUUID)=>{
         },
         generateUUID
     });
-    const graph8 = (0, _graph.changeBodyNumber)(graph7, graph7.nodes[number2].body, ()=>5);
+    const graph8 = (0, _graph.changeBodyValue)(graph7, graph7.nodes[number2].body, ()=>5);
     const { graph: graph9 , node: div  } = (0, _graph.addNode)({
         graph: graph8,
         operation: model.operations["Divide"],
@@ -4979,96 +4953,7 @@ const demoModel = (window, generateUUID)=>{
     };
 };
 
-},{"../update/graph":"kDSit","./empty":"6CUrf","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@tensorflow/tfjs-core":"2votT","@tensorflow/tfjs-backend-cpu":"alTEC"}],"6CUrf":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "emptyModel", ()=>emptyModel);
-var _focus = require("./focus");
-var _pointerAction = require("./pointer_action");
-var _matrix3X3 = require("../linear_algebra/matrix3x3");
-var _graph = require("./graph");
-var _quickSelect = require("./quick_select");
-const emptyModel = (window)=>({
-        graph: (0, _graph.emptyGraph)(),
-        nodeOrder: [],
-        pointers: [],
-        camera: (0, _matrix3X3.identity)(),
-        focus: {
-            kind: (0, _focus.FocusKind).NONE,
-            pointerAction: {
-                kind: (0, _pointerAction.PointerActionKind).NONE
-            },
-            quickSelect: {
-                kind: (0, _quickSelect.QuickSelectKind).NONE
-            }
-        },
-        openFinderFirstClick: false,
-        nodePlacementLocation: {
-            x: window.width / 2,
-            y: window.height / 2,
-            show: false
-        },
-        window,
-        operations: {},
-        panCamera: {
-            left: false,
-            down: false,
-            up: false,
-            right: false,
-            now: 0
-        },
-        zoomCamera: {
-            in: false,
-            out: false,
-            now: 0
-        },
-        theme: {
-            background: {
-                red: 2,
-                green: 22,
-                blue: 39,
-                alpha: 255
-            },
-            node: {
-                red: 41,
-                green: 95,
-                blue: 120,
-                alpha: 255
-            },
-            nodePlacementLocation: {
-                red: 41,
-                green: 95,
-                blue: 120,
-                alpha: 50
-            },
-            focusNode: {
-                red: 23,
-                green: 54,
-                blue: 69,
-                alpha: 255
-            },
-            input: {
-                red: 188,
-                green: 240,
-                blue: 192,
-                alpha: 255
-            },
-            focusInput: {
-                red: 175,
-                green: 122,
-                blue: 208,
-                alpha: 255
-            },
-            connection: {
-                red: 255,
-                green: 255,
-                blue: 255,
-                alpha: 255
-            }
-        }
-    });
-
-},{"./focus":"4HSqF","./pointer_action":"dtHMy","../linear_algebra/matrix3x3":"aZqnw","./graph":"j9QYs","./quick_select":"imfkP","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"2votT":[function(require,module,exports) {
+},{"@tensorflow/tfjs-core":"2votT","@tensorflow/tfjs-backend-cpu":"alTEC","../update/graph":"kDSit","./empty":"6CUrf","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"2votT":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 /**
@@ -48710,8 +48595,109 @@ parcelHelpers.export(exports, "version", ()=>version);
 /** @license See the LICENSE file. */ // This code is auto-generated, do not modify this file!
 const version = "3.19.0";
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"1mLYK":[function(require,module,exports) {
-module.exports = require("./helpers/bundle-url").getBundleURL("7UhFu") + "service_worker.js" + "?" + Date.now();
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"6CUrf":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "emptyModel", ()=>emptyModel);
+var _focus = require("./focus");
+var _pointerAction = require("./pointer_action");
+var _matrix3X3 = require("../linear_algebra/matrix3x3");
+var _graph = require("./graph");
+var _quickSelect = require("./quick_select");
+const emptyModel = (window)=>({
+        graph: (0, _graph.emptyGraph)(),
+        nodeOrder: [],
+        pointers: [],
+        camera: (0, _matrix3X3.identity)(),
+        focus: {
+            kind: (0, _focus.FocusKind).NONE,
+            pointerAction: {
+                kind: (0, _pointerAction.PointerActionKind).NONE
+            },
+            quickSelect: {
+                kind: (0, _quickSelect.QuickSelectKind).NONE
+            }
+        },
+        openFinderFirstClick: false,
+        nodePlacementLocation: {
+            x: window.width / 2,
+            y: window.height / 2,
+            show: false
+        },
+        window,
+        operations: {},
+        panCamera: {
+            left: false,
+            down: false,
+            up: false,
+            right: false,
+            now: 0
+        },
+        zoomCamera: {
+            in: false,
+            out: false,
+            now: 0
+        },
+        theme: {
+            background: {
+                red: 2,
+                green: 22,
+                blue: 39,
+                alpha: 255
+            },
+            node: {
+                red: 41,
+                green: 95,
+                blue: 120,
+                alpha: 255
+            },
+            nodePlacementLocation: {
+                red: 41,
+                green: 95,
+                blue: 120,
+                alpha: 50
+            },
+            focusNode: {
+                red: 23,
+                green: 54,
+                blue: 69,
+                alpha: 255
+            },
+            input: {
+                red: 188,
+                green: 240,
+                blue: 192,
+                alpha: 255
+            },
+            focusInput: {
+                red: 175,
+                green: 122,
+                blue: 208,
+                alpha: 255
+            },
+            connection: {
+                red: 255,
+                green: 255,
+                blue: 255,
+                alpha: 255
+            }
+        }
+    });
+
+},{"./focus":"4HSqF","./pointer_action":"dtHMy","../linear_algebra/matrix3x3":"aZqnw","./graph":"j9QYs","./quick_select":"imfkP","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"j9QYs":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "emptyGraph", ()=>emptyGraph);
+const emptyGraph = ()=>({
+        nodes: {},
+        edges: {},
+        inputs: {},
+        bodys: {},
+        outputs: {}
+    });
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"3aGm3":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("7UhFu") + "src/service_worker.js" + "?" + Date.now();
 
 },{"./helpers/bundle-url":"lgJ39"}],"lgJ39":[function(require,module,exports) {
 "use strict";

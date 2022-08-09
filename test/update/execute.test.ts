@@ -3,7 +3,7 @@ import '@tensorflow/tfjs-backend-cpu'
 
 import { Model } from '../../src/model'
 import { emptyModel } from '../../src/model/empty'
-import { BodyKind, Operations } from "../../src/model/graph"
+import { Operations } from "../../src/model/graph"
 import { addNodeToGraph, EventKind, update } from '../../src/update'
 import { EffectModel, makeEffects } from "../mock_effects"
 
@@ -139,22 +139,22 @@ test("clicking output after clicking input adds connection", () => {
             },
             bodys: {
                 [model4.graph.nodes[x].body!]: {
-                    kind: BodyKind.NUMBER,
                     uuid: model4.graph.nodes[x].body!,
                     node: x,
-                    value: 5
+                    value: 5,
+                    editable: true,
                 },
                 [model4.graph.nodes[y].body!]: {
-                    kind: BodyKind.NUMBER,
                     uuid: model4.graph.nodes[y].body!,
                     node: y,
-                    value: 5
+                    value: 5,
+                    editable: true,
                 },
                 '12': {
-                    kind: BodyKind.RESULT,
                     uuid: '12',
                     node: add,
-                    value: 10
+                    value: 10,
+                    editable: false,
                 },
             }
         },

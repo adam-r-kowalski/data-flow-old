@@ -1,12 +1,12 @@
 import { Focus, FocusKind } from "../../src/model/focus"
-import { Body, BodyKind, emptyGraph, Graph, Input, Node, Output } from "../../src/model/graph"
+import { Body, emptyGraph, Graph, Input, Node, Output } from "../../src/model/graph"
 import { PointerActionKind } from "../../src/model/pointer_action"
 import { QuickSelectKind } from "../../src/model/quick_select"
 import { Theme } from "../../src/model/theme"
 import { column, container, row, text } from "../../src/ui"
 import { CrossAxisAlignment } from "../../src/ui/alignment"
 import { AppEvent, EventKind } from "../../src/update"
-import { inputUi, nodeUi, numberUi, outputUi, spacer } from "../../src/view"
+import { inputUi, nodeUi, bodyUi, outputUi, spacer } from "../../src/view"
 
 const theme: Theme = {
     background: { red: 2, green: 22, blue: 39, alpha: 255 },
@@ -135,12 +135,12 @@ test("nodeUi with quick select", () => {
     expect(actual).toEqual(expected)
 })
 
-test("numberUi quick select", () => {
+test("bodyUi quick select", () => {
     const body: Body = {
-        kind: BodyKind.NUMBER,
         uuid: 'body uuid',
         node: 'node',
         value: 0,
+        editable: true,
     }
     const focus: Focus = {
         kind: FocusKind.NONE,
@@ -150,7 +150,7 @@ test("numberUi quick select", () => {
             hotkeys: { 'body uuid': 'a' }
         }
     }
-    const actual = numberUi(theme, body, focus)
+    const actual = bodyUi(theme, body, focus)
     const expected = container({
         color: theme.background,
         padding: 5,
@@ -160,5 +160,33 @@ test("numberUi quick select", () => {
         }
     },
         text('a'))
+    expect(actual).toEqual(expected)
+})
+
+test("bodyUi quick select non editable", () => {
+    const body: Body = {
+        uuid: 'body uuid',
+        node: 'node',
+        value: 0,
+        editable: false,
+    }
+    const focus: Focus = {
+        kind: FocusKind.NONE,
+        pointerAction: { kind: PointerActionKind.NONE },
+        quickSelect: {
+            kind: QuickSelectKind.BODY,
+            hotkeys: {}
+        }
+    }
+    const actual = bodyUi(theme, body, focus)
+    const expected = container({
+        color: theme.background,
+        padding: 5,
+        onClick: {
+            kind: EventKind.CLICKED_BODY,
+            body: 'body uuid'
+        }
+    },
+        text('0'))
     expect(actual).toEqual(expected)
 })

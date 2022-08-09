@@ -18,28 +18,12 @@ export interface Output {
     readonly edges: Readonly<UUID[]>
 }
 
-export enum BodyKind {
-    NUMBER,
-    RESULT,
-}
-
-export interface BodyNumber {
-    readonly kind: BodyKind.NUMBER
-    readonly uuid: UUID
-    readonly node: UUID
-    readonly value: number
-}
-
-export interface BodyResult {
-    readonly kind: BodyKind.RESULT
+export interface Body {
     readonly uuid: UUID
     readonly node: UUID
     readonly value: tf.TensorLike
+    readonly editable: boolean
 }
-
-export type Body =
-    | BodyNumber
-    | BodyResult
 
 export interface Position {
     readonly x: number

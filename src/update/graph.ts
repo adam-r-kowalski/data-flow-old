@@ -1,4 +1,6 @@
-import { Body, BodyKind, Edge, GenerateUUID, Graph, Inputs, Node, Operation, Outputs, Position, UUID, BodyResult } from "../model/graph"
+import * as tf from '@tensorflow/tfjs'
+
+import { Body, Edge, GenerateUUID, Graph, Inputs, Node, Operation, Outputs, Position, UUID } from "../model/graph"
 
 interface AddNodeInputs {
     graph: Graph
@@ -47,10 +49,10 @@ export const addNode = ({ graph, operation, position, generateUUID }: AddNodeInp
     }
     if (operation.body !== undefined) {
         const body: Body = {
-            kind: BodyKind.NUMBER,
             uuid: generateUUID(),
             node: nodeUUID,
             value: operation.body,
+            editable: true
         }
         return {
             graph: {
@@ -233,11 +235,11 @@ export const addEdge = ({ graph, input, output, generateUUID }: AddEdgeInputs): 
         .filter(bodyUUID => bodyUUID !== undefined)
         .map(bodyUUID => graph1.bodys[bodyUUID!].value)
     if (values.length > 0 && values.length === node.inputs.length) {
-        const body: BodyResult = {
-            kind: BodyKind.RESULT,
+        const body: Body = {
             uuid: generateUUID(),
             node: node.uuid,
             value: node.operation!.apply(this, values).arraySync(),
+            editable: false
         }
         const graph2: Graph = {
             ...graph1,
@@ -279,21 +281,16 @@ export const changeNodePosition = (graph: Graph, node: UUID, transform: (positio
     }
 }
 
-export const changeBodyNumber = (graph: Graph, body: UUID, transform: (value: number) => number): Graph => {
+export const changeBodyValue = (graph: Graph, body: UUID, transform: (value: tf.TensorLike) => tf.TensorLike): Graph => {
     const currentBody = graph.bodys[body]
-    switch (currentBody.kind) {
-        case BodyKind.NUMBER:
-            return {
-                ...graph,
-                bodys: {
-                    ...graph.bodys,
-                    [body]: {
-                        ...currentBody,
-                        value: transform(currentBody.value)
-                    }
-                }
+    return {
+        ...graph,
+        bodys: {
+            ...graph.bodys,
+            [body]: {
+                ...currentBody,
+                value: transform(currentBody.value)
             }
-        case BodyKind.RESULT:
-            return graph
+        }
     }
 }

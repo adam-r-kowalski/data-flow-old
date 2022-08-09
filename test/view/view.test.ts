@@ -1,5 +1,5 @@
 import { AppEvent, EventKind } from "../../src/update"
-import { Body, emptyGraph, Graph, Input, Node, Output } from "../../src/model/graph"
+import { Body, BodyKind, emptyGraph, Graph, Input, Node, Output } from "../../src/model/graph"
 import { identity } from "../../src/linear_algebra/matrix3x3"
 import { Model } from "../../src/model"
 import { Theme } from "../../src/model/theme"
@@ -241,6 +241,7 @@ test("outputsUi", () => {
 
 test("numberUi not focused", () => {
     const body: Body = {
+        kind: BodyKind.NUMBER,
         uuid: 'body uuid',
         node: 'node',
         value: 0,
@@ -265,6 +266,7 @@ test("numberUi not focused", () => {
 
 test("numberUi editing", () => {
     const body: Body = {
+        kind: BodyKind.NUMBER,
         uuid: 'body uuid',
         node: 'node',
         value: 0,
@@ -423,6 +425,7 @@ test("nodeUi no inputs or outputs but body defined", () => {
         outputs: [],
     }
     const body: Body = {
+        kind: BodyKind.NUMBER,
         uuid: 'body uuid',
         node: 'node',
         value: 0
@@ -528,6 +531,7 @@ test("nodeUi 1 input body but no outputs", () => {
         name: 'first'
     }
     const body: Body = {
+        kind: BodyKind.NUMBER,
         uuid: 'body uuid',
         node: 'node uuid',
         value: 0
@@ -584,6 +588,7 @@ test("nodeUi 1 output body but no inputs", () => {
         edges: []
     }
     const body: Body = {
+        kind: BodyKind.NUMBER,
         uuid: 'body uuid',
         node: 'node uuid',
         value: 0
@@ -646,6 +651,7 @@ test("nodeUi 1 input body and 1 output", () => {
         edges: []
     }
     const body: Body = {
+        kind: BodyKind.NUMBER,
         uuid: 'body uuid',
         node: 'node uuid',
         value: 0
@@ -1141,6 +1147,7 @@ test("view with body selected", () => {
             },
             bodys: {
                 "body": {
+                    kind: BodyKind.NUMBER,
                     uuid: "body",
                     node: "number",
                     value: 0,

@@ -74,7 +74,13 @@ document.addEventListener('touchend', () => {
 })
 
 document.addEventListener('keydown', e => {
-    e.preventDefault()
+    if (e.ctrlKey) {
+        switch (e.key) {
+            case 'j':
+            case 'k':
+                e.preventDefault()
+        }
+    }
     dispatch({
         kind: EventKind.KEYDOWN,
         key: e.key,
@@ -83,10 +89,16 @@ document.addEventListener('keydown', e => {
 })
 
 document.addEventListener('keyup', e => {
-    e.preventDefault()
     dispatch({
         kind: EventKind.KEYUP,
         key: e.key,
         ctrl: e.ctrlKey
     })
 })
+
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register(
+        new URL('service_worker.ts', import.meta.url),
+        { type: 'module' }
+    );
+}

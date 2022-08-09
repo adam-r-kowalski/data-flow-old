@@ -1,5 +1,5 @@
 import { Focus, FocusKind } from "../../src/model/focus"
-import { Body, emptyGraph, Graph, Input, Node, Output } from "../../src/model/graph"
+import { Body, BodyKind, emptyGraph, Graph, Input, Node, Output } from "../../src/model/graph"
 import { PointerActionKind } from "../../src/model/pointer_action"
 import { QuickSelectKind } from "../../src/model/quick_select"
 import { Theme } from "../../src/model/theme"
@@ -137,6 +137,7 @@ test("nodeUi with quick select", () => {
 
 test("numberUi quick select", () => {
     const body: Body = {
+        kind: BodyKind.NUMBER,
         uuid: 'body uuid',
         node: 'node',
         value: 0,

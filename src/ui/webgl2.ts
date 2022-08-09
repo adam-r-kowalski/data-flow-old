@@ -130,6 +130,8 @@ export class WebGL2Renderer<AppEvent> {
         public clickHandlers: ClickHandlers<AppEvent>,
         public dispatch: (event: AppEvent) => void
     ) {
+        this._size = { width: 0, height: 0 }
+        this._cameras = []
     }
 
     clear = () => {

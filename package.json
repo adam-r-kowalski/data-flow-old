@@ -3,10 +3,14 @@
         "version": "1.0.0",
         "license": "MIT",
         "devDependencies": {
+                "@parcel/packager-raw-url": "2.6.2",
+                "@parcel/transformer-webmanifest": "2.6.2",
                 "@types/jest": "^27.5.1",
+                "buffer": "^6.0.3",
                 "gh-pages": "^3.2.3",
                 "jest": "^28.1.0",
                 "parcel": "^2.6.0",
+                "process": "^0.11.10",
                 "rimraf": "^3.0.2",
                 "ts-jest": "^28.0.3",
                 "typescript": "^4.7.2"
@@ -20,5 +24,7 @@
                 "test": "yarn jest",
                 "coverage": "yarn jest --coverage --collectCoverageFrom='./src/**'"
         },
-        "dependencies": {}
+        "dependencies": {
+                "@tensorflow/tfjs": "^3.19.0"
+        }
 }

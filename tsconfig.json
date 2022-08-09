@@ -1,5 +1,7 @@
 {
   "compilerOptions": {
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
     "target": "esnext",
     "esModuleInterop": true,
     "moduleResolution": "node",
@@ -9,6 +11,7 @@
     "alwaysStrict": true,
     "noFallthroughCasesInSwitch": true,
     "noUnusedLocals": true,
-    "strictFunctionTypes": true
+    "strictFunctionTypes": true,
+    "module": "ES2022"
   }
 }

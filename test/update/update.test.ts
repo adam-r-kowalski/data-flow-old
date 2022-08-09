@@ -1,5 +1,5 @@
 import { addNodeToGraph, EventKind, openFinder, openNumericKeyboard, update } from "../../src/update"
-import { Operations } from "../../src/model/graph"
+import { BodyKind, Operations } from "../../src/model/graph"
 import { addEdge, changeNodePosition } from "../../src/update/graph"
 import { translate } from "../../src/linear_algebra/matrix3x3"
 import { Model } from "../../src/model"
@@ -1390,6 +1390,7 @@ test("pressing number on keyboard appends to number node", () => {
             ...model0.graph,
             bodys: {
                 [body]: {
+                    kind: BodyKind.NUMBER,
                     uuid: body,
                     node,
                     value: 1234567890
@@ -1445,6 +1446,7 @@ test("pressing backspace on keyboard deletes from number node", () => {
             ...model0.graph,
             bodys: {
                 [body]: {
+                    kind: BodyKind.NUMBER,
                     uuid: body,
                     node,
                     value: 123456789
@@ -1495,6 +1497,7 @@ test("pressing backspace when number node value is 0 has no effect", () => {
             ...model0.graph,
             bodys: {
                 [body]: {
+                    kind: BodyKind.NUMBER,
                     uuid: body,
                     node,
                     value: 0
@@ -1544,6 +1547,7 @@ test("pressing del on virtual keyboard when number node value is 0 has no effect
             ...model0.graph,
             bodys: {
                 [body]: {
+                    kind: BodyKind.NUMBER,
                     uuid: body,
                     node,
                     value: 0
@@ -1593,6 +1597,7 @@ test("pressing number on virtual keyboard appends to number node", () => {
             ...model0.graph,
             bodys: {
                 [body]: {
+                    kind: BodyKind.NUMBER,
                     uuid: body,
                     node,
                     value: 1234567890
@@ -1646,6 +1651,7 @@ test("pressing del on virtual keyboard deletes from number node", () => {
             ...model0.graph,
             bodys: {
                 [body]: {
+                    kind: BodyKind.NUMBER,
                     uuid: body,
                     node,
                     value: 123456789
@@ -1696,6 +1702,7 @@ test("pressing enter on keyboard while editing number node exits virtual keyboar
             ...model0.graph,
             bodys: {
                 [body]: {
+                    kind: BodyKind.NUMBER,
                     uuid: body,
                     node,
                     value: 1234567890
@@ -1744,6 +1751,7 @@ test("pressing ret on virtual keyboard while editing number node exits virtual k
             ...model0.graph,
             bodys: {
                 [body]: {
+                    kind: BodyKind.NUMBER,
                     uuid: body,
                     node,
                     value: 1234567890
@@ -1790,6 +1798,7 @@ test("pressing non number on keyboard while editing number node is ignored", () 
             ...model0.graph,
             bodys: {
                 [body]: {
+                    kind: BodyKind.NUMBER,
                     uuid: body,
                     node,
                     value: 0
@@ -1835,6 +1844,7 @@ test("pressing non number on virtual keyboard while editing number node is ignor
             ...model0.graph,
             bodys: {
                 [body]: {
+                    kind: BodyKind.NUMBER,
                     uuid: body,
                     node,
                     value: 0

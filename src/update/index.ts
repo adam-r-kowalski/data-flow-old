@@ -412,11 +412,11 @@ const updateFinderSearch = (model: Model, focus: FocusFinder, transform: (search
     }
 }
 
-const updateBodyNumber = (model: Model, body: UUID, transform: (value: tf.TensorLike) => tf.TensorLike): UpdateResult<Model, AppEvent> => {
+const updateBodyNumber = (model: Model, body: UUID, transform: (value: tf.TensorLike) => tf.TensorLike, generateUUID: GenerateUUID): UpdateResult<Model, AppEvent> => {
     return {
         model: {
             ...model,
-            graph: changeBodyValue(model.graph, body, transform)
+            graph: changeBodyValue(model.graph, body, transform, generateUUID)
         },
         render: true
     }
@@ -494,7 +494,7 @@ const keyDown = (model: Model, event: KeyDown, { generateUUID, currentTime }: Ef
                             return updateBodyNumber(model, model.focus.body, value => {
                                 let newValue = value.toString().slice(0, -1)
                                 return newValue === '' ? 0 : parseFloat(newValue)
-                            })
+                            }, generateUUID)
                         case '1':
                         case '2':
                         case '3':
@@ -505,7 +505,7 @@ const keyDown = (model: Model, event: KeyDown, { generateUUID, currentTime }: Ef
                         case '8':
                         case '9':
                         case '0':
-                            return updateBodyNumber(model, model.focus.body, value => parseFloat(value.toString() + key))
+                            return updateBodyNumber(model, model.focus.body, value => parseFloat(value.toString() + key), generateUUID)
                         case 'Enter':
                         case 'Escape':
                             return {
@@ -626,7 +626,7 @@ const virtualKeyDown = (model: Model, { key }: VirtualKeyDown, generateUUID: Gen
                     return updateBodyNumber(model, model.focus.body, value => {
                         let newValue = value.toString().slice(0, -1)
                         return newValue === '' ? 0 : parseFloat(newValue)
-                    })
+                    }, generateUUID)
                 case '1':
                 case '2':
                 case '3':
@@ -638,7 +638,7 @@ const virtualKeyDown = (model: Model, { key }: VirtualKeyDown, generateUUID: Gen
                 case '9':
                 case '0':
                 case '.':
-                    return updateBodyNumber(model, model.focus.body, value => parseFloat(value.toString() + key))
+                    return updateBodyNumber(model, model.focus.body, value => parseFloat(value.toString() + key), generateUUID)
                 case 'ret':
                     return {
                         model: clearFocus(model),

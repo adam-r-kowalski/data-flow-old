@@ -180,6 +180,65 @@ export const removeOutputEdges = (graph: Graph, output: UUID): Graph => {
 }
 
 
+const evaluateNodeOutputs = (graph: Graph, node: Node, generateUUID: GenerateUUID): Graph =>
+    node.outputs.reduce((graph1: Graph, output: UUID): Graph => {
+        return graph1.outputs[output].edges.reduce((graph2: Graph, edge: UUID): Graph => {
+            const input = graph2.edges[edge].input
+            const node = graph2.inputs[input].node
+            return evaluateNode(graph2, node, generateUUID)
+        }, graph1)
+    }, graph)
+
+
+const evaluateNode = (graph: Graph, nodeUUID: UUID, generateUUID: GenerateUUID): Graph => {
+    const node = graph.nodes[nodeUUID]
+    if (node.inputs.length === 0) {
+        return evaluateNodeOutputs(graph, node, generateUUID)
+    } else {
+        const values = node.inputs
+            .map(input => graph.inputs[input].edge)
+            .filter(edgeUUID => edgeUUID !== undefined)
+            .map(edgeUUID => {
+                const edge = graph.edges[edgeUUID!]
+                const output = graph.outputs[edge.output]
+                return graph.nodes[output.node].body
+            })
+            .filter(bodyUUID => bodyUUID !== undefined)
+            .map(bodyUUID => graph.bodys[bodyUUID!].value)
+        if (values.length > 0 && values.length === node.inputs.length) {
+            const body: Body = {
+                uuid: generateUUID(),
+                node: node.uuid,
+                value: node.operation!.apply(this, values).arraySync(),
+                editable: false
+            }
+            const graph1 = {
+                ...graph,
+                nodes: {
+                    ...graph.nodes,
+                    [node.uuid]: {
+                        ...node,
+                        body: body.uuid
+                    }
+                },
+                bodys: {
+                    ...graph.bodys,
+                    [body.uuid]: body
+                }
+            }
+            if (node.body === undefined) {
+                return evaluateNodeOutputs(graph1, node, generateUUID)
+            } else {
+                delete graph1.bodys[node.body]
+                return evaluateNodeOutputs(graph1, node, generateUUID)
+            }
+        } else {
+            return graph
+        }
+    }
+}
+
+
 interface AddEdgeInputs {
     graph: Graph
     input: UUID
@@ -222,48 +281,9 @@ export const addEdge = ({ graph, input, output, generateUUID }: AddEdgeInputs): 
             [edge.uuid]: edge
         }
     }
-    const nodeUUID = graph1.inputs[input].node
-    const node = graph1.nodes[nodeUUID]
-    const values = node.inputs
-        .map(input => graph1.inputs[input].edge)
-        .filter(edgeUUID => edgeUUID !== undefined)
-        .map(edgeUUID => {
-            const edge = graph1.edges[edgeUUID!]
-            const output = graph1.outputs[edge.output]
-            return graph1.nodes[output.node].body
-        })
-        .filter(bodyUUID => bodyUUID !== undefined)
-        .map(bodyUUID => graph1.bodys[bodyUUID!].value)
-    if (values.length > 0 && values.length === node.inputs.length) {
-        const body: Body = {
-            uuid: generateUUID(),
-            node: node.uuid,
-            value: node.operation!.apply(this, values).arraySync(),
-            editable: false
-        }
-        const graph2: Graph = {
-            ...graph1,
-            nodes: {
-                ...graph1.nodes,
-                [node.uuid]: {
-                    ...node,
-                    body: body.uuid
-                }
-            },
-            bodys: {
-                ...graph1.bodys,
-                [body.uuid]: body
-            }
-        }
-        return {
-            graph: graph2,
-            edge: edge.uuid
-        }
-    } else {
-        return {
-            graph: graph1,
-            edge: edge.uuid
-        }
+    return {
+        graph: evaluateNode(graph1, graph1.inputs[input].node, generateUUID),
+        edge: edge.uuid
     }
 }
 
@@ -281,9 +301,9 @@ export const changeNodePosition = (graph: Graph, node: UUID, transform: (positio
     }
 }
 
-export const changeBodyValue = (graph: Graph, body: UUID, transform: (value: tf.TensorLike) => tf.TensorLike): Graph => {
+export const changeBodyValue = (graph: Graph, body: UUID, transform: (value: tf.TensorLike) => tf.TensorLike, generateUUID: GenerateUUID): Graph => {
     const currentBody = graph.bodys[body]
-    return {
+    const graph1 = {
         ...graph,
         bodys: {
             ...graph.bodys,
@@ -293,4 +313,6 @@ export const changeBodyValue = (graph: Graph, body: UUID, transform: (value: tf.
             }
         }
     }
+    const node = graph1.bodys[body].node
+    return evaluateNode(graph1, node, generateUUID)
 }

@@ -60,14 +60,14 @@ export const demoModel = (window: Window, generateUUID: GenerateUUID): Model => 
         position: { x: 25, y: 20 },
         generateUUID
     })
-    const graph1 = changeBodyValue(graph0, graph0.nodes[number0].body!, () => 10)
+    const graph1 = changeBodyValue(graph0, graph0.nodes[number0].body!, () => 10, generateUUID)
     const { graph: graph2, node: number1 } = addNode({
         graph: graph1,
         operation: model.operations["Number"],
         position: { x: 55, y: 105 },
         generateUUID
     })
-    const graph3 = changeBodyValue(graph2, graph2.nodes[number1].body!, () => 25)
+    const graph3 = changeBodyValue(graph2, graph2.nodes[number1].body!, () => 25, generateUUID)
     const { graph: graph4, node: add } = addNode({
         graph: graph3,
         operation: model.operations["Add"],
@@ -92,7 +92,7 @@ export const demoModel = (window: Window, generateUUID: GenerateUUID): Model => 
         position: { x: 225, y: 145 },
         generateUUID
     })
-    const graph8 = changeBodyValue(graph7, graph7.nodes[number2].body!, () => 5)
+    const graph8 = changeBodyValue(graph7, graph7.nodes[number2].body!, () => 5, generateUUID)
     const { graph: graph9, node: div } = addNode({
         graph: graph8,
         operation: model.operations["Divide"],

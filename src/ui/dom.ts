@@ -1,8 +1,9 @@
-export interface Style {
+export interface CanvasStyle {
     touchAction: 'none'
     width: string
     height: string
     display: 'block'
+    userSelect: 'none'
 }
 
 export interface Buffer {
@@ -151,14 +152,19 @@ export type GetContext = {
 }
 
 export interface Canvas {
-    style: Style
+    style: CanvasStyle
     getContext: GetContext
     width: number
     height: number
 }
 
+export interface BodyStyle {
+    cursor: 'auto' | 'none'
+}
+
 export interface Body {
     appendChild: (canvas: Canvas) => void
+    style: BodyStyle
 }
 
 export interface PointerEvent {

@@ -1,4 +1,4 @@
-import { Canvas, PointerEvent, Style, TexImage2D } from "./dom"
+import { Body, Canvas, PointerEvent, CanvasStyle, TexImage2D } from "./dom"
 
 export class MockBuffer {
 
@@ -123,7 +123,7 @@ export class MockCanvasContext {
 }
 
 export class MockCanvas {
-    style: Style = { width: '0px', height: '0px', touchAction: 'none', display: 'block' }
+    style: CanvasStyle = { width: '0px', height: '0px', touchAction: 'none', display: 'block', userSelect: 'none' }
     width: number = 0
     height: number = 0
 
@@ -143,14 +143,18 @@ export class MockCanvas {
 
 export const mockDocument = (simulate_failure: boolean = false) => {
     const callbacks: ((p: PointerEvent) => void)[] = []
+    const body: Body = {
+        appendChild: (canvas: Canvas) => { },
+        style: {
+            cursor: 'auto',
+        }
+    }
     return {
         createElement: (tagName: 'canvas') => new MockCanvas(simulate_failure),
         addEventListener: (event: "pointerdown", callback: (p: PointerEvent) => void) => {
             callbacks.push(callback)
         },
-        body: {
-            appendChild: (canvas: Canvas) => { }
-        },
+        body,
         fireEvent: (_: 'pointerdown', p: PointerEvent) => {
             for (const callback of callbacks) {
                 callback(p)

@@ -28,6 +28,7 @@ export interface UpdateResult<Model, AppEvent> {
     render?: boolean
     schedule?: Scheduled<AppEvent>[]
     dispatch?: AppEvent[]
+    cursor?: boolean
 }
 
 export type CurrentTime = () => number
@@ -84,7 +85,8 @@ export const run = <Model, AppEvent>(properties: Properties<Model, AppEvent>): S
                     model: newModel,
                     render,
                     schedule,
-                    dispatch: dispatchEvents
+                    dispatch: dispatchEvents,
+                    cursor
                 } = update(effects, model, event)
                 model = newModel
                 if (render) scheduleRender()
@@ -93,6 +95,9 @@ export const run = <Model, AppEvent>(properties: Properties<Model, AppEvent>): S
                     setTimeout(() => dispatch(event), milliseconds)
                 }
                 for (const event of dispatchEvents ?? []) dispatch(event)
+                if (cursor !== undefined) {
+                    document.body.style.cursor = cursor ? 'auto' : 'none'
+                }
             }
             renderer.dispatch = dispatch
             document.body.appendChild(renderer.canvas)

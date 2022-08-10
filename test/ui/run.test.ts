@@ -282,3 +282,52 @@ test("simulate failure", () => {
         fragmentInfoLog: null,
     })
 })
+
+test("hide the cursor", () => {
+    type Model = number
+    type AppEvent = boolean
+    const model: Model = 0
+    const view = (model: Model): UI<AppEvent> => text(model.toString())
+    const update = (_: Effects, model: Model, _0: AppEvent) => ({ model, cursor: false })
+    const window = mockWindow()
+    const document = mockDocument()
+    const dispatch = extractDispatch(run({
+        model,
+        view,
+        update,
+        window,
+        document,
+        requestAnimationFrame: mockRequestAnimationFrame,
+        setTimeout: mockSetTimeout,
+        pointerDown: () => { },
+        effects: makeEffects()
+    }))
+    expect(document.body.style.cursor).toEqual('auto')
+    dispatch(true)
+    expect(document.body.style.cursor).toEqual('none')
+})
+
+test("show the cursor", () => {
+    type Model = number
+    type AppEvent = boolean
+    const model: Model = 0
+    const view = (model: Model): UI<AppEvent> => text(model.toString())
+    const update = (_: Effects, model: Model, _0: AppEvent) => ({ model, cursor: true })
+    const window = mockWindow()
+    const document = mockDocument()
+    document.body.style.cursor = 'none'
+    const dispatch = extractDispatch(run({
+        model,
+        view,
+        update,
+        window,
+        document,
+        requestAnimationFrame: mockRequestAnimationFrame,
+        setTimeout: mockSetTimeout,
+        pointerDown: () => { },
+        effects: makeEffects()
+    }))
+    expect(document.body.style.cursor).toEqual('none')
+    dispatch(true)
+    expect(document.body.style.cursor).toEqual('auto')
+})

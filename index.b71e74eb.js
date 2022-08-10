@@ -607,9 +607,11 @@ document.addEventListener("keydown", (e)=>{
         case "j":
         case "k":
             e.preventDefault();
-            return;
+            break;
         case "l":
             return;
+        default:
+            break;
     }
     dispatch({
         kind: (0, _update.EventKind).KEYDOWN,
@@ -2811,8 +2813,8 @@ parcelHelpers.export(exports, "getGlobalNamespace", ()=>getGlobalNamespace);
  * @param init a function to initialize to initialize this object
  *             the first time it is fetched.
  */ parcelHelpers.export(exports, "getGlobal", ()=>getGlobal);
-var process = require("process");
 var global = arguments[3];
+var process = require("process");
 /**
  * @license
  * Copyright 2020 Google LLC. All Rights Reserved.

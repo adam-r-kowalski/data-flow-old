@@ -7,6 +7,7 @@ export const maybeStartMoveCamera = (model: Model, { key, ctrl }: KeyDown, curre
     interface Result {
         now: number
         dispatch?: AppEvent[]
+        cursor?: boolean
     }
     const panDispatch = (): Result => {
         const { left, down, up, right } = model.panCamera
@@ -14,7 +15,8 @@ export const maybeStartMoveCamera = (model: Model, { key, ctrl }: KeyDown, curre
         return notMoving ?
             {
                 now: currentTime(),
-                dispatch: [{ kind: EventKind.PAN_CAMERA }]
+                dispatch: [{ kind: EventKind.PAN_CAMERA }],
+                cursor: false
             } :
             { now: model.panCamera.now }
     }
@@ -35,14 +37,15 @@ export const maybeStartMoveCamera = (model: Model, { key, ctrl }: KeyDown, curre
     switch (key) {
         case 'h':
         case 'ArrowLeft': {
-            const { now, dispatch } = panDispatch()
+            const { now, dispatch, cursor } = panDispatch()
             return {
                 model: {
                     ...model,
                     panCamera: { ...model.panCamera, left: true, now },
                     nodePlacementLocation,
                 },
-                dispatch
+                dispatch,
+                cursor
             }
         }
         case 'j':
@@ -59,7 +62,7 @@ export const maybeStartMoveCamera = (model: Model, { key, ctrl }: KeyDown, curre
                     dispatch
                 }
             } else {
-                const { now, dispatch } = panDispatch()
+                const { now, dispatch, cursor } = panDispatch()
                 return {
                     model: {
                         ...model,
@@ -67,7 +70,8 @@ export const maybeStartMoveCamera = (model: Model, { key, ctrl }: KeyDown, curre
                         panCamera: { ...model.panCamera, down: true, now },
                         nodePlacementLocation,
                     },
-                    dispatch
+                    dispatch,
+                    cursor
                 }
             }
         }
@@ -85,7 +89,7 @@ export const maybeStartMoveCamera = (model: Model, { key, ctrl }: KeyDown, curre
                     dispatch
                 }
             } else {
-                const { now, dispatch } = panDispatch()
+                const { now, dispatch, cursor } = panDispatch()
                 return {
                     model: {
                         ...model,
@@ -93,20 +97,22 @@ export const maybeStartMoveCamera = (model: Model, { key, ctrl }: KeyDown, curre
                         panCamera: { ...model.panCamera, up: true, now },
                         nodePlacementLocation,
                     },
-                    dispatch
+                    dispatch,
+                    cursor
                 }
             }
         }
         case 'l':
         case 'ArrowRight': {
-            const { now, dispatch } = panDispatch()
+            const { now, dispatch, cursor } = panDispatch()
             return {
                 model: {
                     ...model,
                     panCamera: { ...model.panCamera, right: true, now },
                     nodePlacementLocation,
                 },
-                dispatch
+                dispatch,
+                cursor
             }
         }
         default:

@@ -402,6 +402,7 @@ interface Parameters<AppEvent> {
 export const webGL2Renderer = <AppEvent>({ width, height, document, window, dispatch }: Parameters<AppEvent>): WebGL2Renderer<AppEvent> | ProgramError => {
     const canvas = document.createElement('canvas')
     canvas.style.touchAction = 'none'
+    canvas.style.userSelect = 'none'
     const gl = canvas.getContext('webgl2')!
     gl.enable(gl.BLEND)
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)

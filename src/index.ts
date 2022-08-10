@@ -1,3 +1,5 @@
+import '@tensorflow/tfjs-backend-cpu'
+
 import { EventKind, update } from "./update"
 import { run, transformPointer } from "./ui/run"
 import { view } from './view'
@@ -76,9 +78,13 @@ document.addEventListener('touchend', () => {
 document.addEventListener('keydown', e => {
     if (e.ctrlKey) {
         switch (e.key) {
+            case 'h':
             case 'j':
             case 'k':
                 e.preventDefault()
+                return
+            case 'l':
+                return
         }
     }
     dispatch({

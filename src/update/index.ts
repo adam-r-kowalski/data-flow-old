@@ -729,7 +729,7 @@ export const update = (effects: Effects, model: Model, event: AppEvent): UpdateR
     switch (event.kind) {
         case EventKind.POINTER_DOWN: return pointerDown(model, event)
         case EventKind.POINTER_UP: return pointerUp(model, event)
-        case EventKind.POINTER_MOVE: return pointerMove(model, event)
+        case EventKind.POINTER_MOVE: return { ...pointerMove(model, event), cursor: true }
         case EventKind.CLICKED_NODE: return clickedNode(model, event)
         case EventKind.WHEEL: return wheel(model, event)
         case EventKind.CLICKED_INPUT: return clickedInput(model, event, effects.generateUUID)

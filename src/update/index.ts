@@ -245,6 +245,7 @@ export const changeNth = <T>(xs: Readonly<T[]>, i: number, x: T): T[] =>
     [...xs.slice(0, i), x, ...xs.slice(i + 1)]
 
 const pointerMove = (model: Model, event: PointerMove): UpdateResult<Model, AppEvent> => {
+    const result = (() => {
     const index = model.pointers.findIndex(p => p.id === event.pointer.id)
     const pointer = model.pointers[index]
     const pointers = index === -1 ? model.pointers : changeNth(model.pointers, index, event.pointer)
@@ -322,6 +323,8 @@ const pointerMove = (model: Model, event: PointerMove): UpdateResult<Model, AppE
         case FocusKind.FINDER:
             return { model: { ...model, pointers } }
     }
+    })()
+    return {...result, cursor: true}
 }
 
 const clickedNode = (model: Model, event: ClickedNode): UpdateResult<Model, AppEvent> => {
@@ -546,7 +549,7 @@ const keyDown = (model: Model, event: KeyDown, { generateUUID, currentTime }: Ef
                             return {
                                 model: clearFocus({
                                     ...model,
-                                    graph: removeInputEdge(model.graph, model.focus.input),
+                                    graph: removeInputEdge(model.graph, model.focus.input, generateUUID),
                                 }),
                                 render: true
                             }
@@ -565,7 +568,7 @@ const keyDown = (model: Model, event: KeyDown, { generateUUID, currentTime }: Ef
                             return {
                                 model: clearFocus({
                                     ...model,
-                                    graph: removeOutputEdges(model.graph, model.focus.output),
+                                    graph: removeOutputEdges(model.graph, model.focus.output, generateUUID),
                                 }),
                                 render: true
                             }
@@ -709,18 +712,18 @@ const deleteNode = (model: Model, { node }: DeleteNode): UpdateResult<Model, App
     render: true
 })
 
-const deleteInputEdge = (model: Model, { input }: DeleteInputEdge): UpdateResult<Model, AppEvent> => ({
+const deleteInputEdge = (model: Model, { input }: DeleteInputEdge, generateUUID: GenerateUUID): UpdateResult<Model, AppEvent> => ({
     model: clearFocus({
         ...model,
-        graph: removeInputEdge(model.graph, input),
+        graph: removeInputEdge(model.graph, input, generateUUID),
     }),
     render: true
 })
 
-const deleteOutputEdges = (model: Model, { output }: DeleteOutputEdges): UpdateResult<Model, AppEvent> => ({
+const deleteOutputEdges = (model: Model, { output }: DeleteOutputEdges, generateUUID: GenerateUUID): UpdateResult<Model, AppEvent> => ({
     model: clearFocus({
         ...model,
-        graph: removeOutputEdges(model.graph, output),
+        graph: removeOutputEdges(model.graph, output, generateUUID),
     }),
     render: true
 })
@@ -729,7 +732,7 @@ export const update = (effects: Effects, model: Model, event: AppEvent): UpdateR
     switch (event.kind) {
         case EventKind.POINTER_DOWN: return pointerDown(model, event)
         case EventKind.POINTER_UP: return pointerUp(model, event)
-        case EventKind.POINTER_MOVE: return { ...pointerMove(model, event), cursor: true }
+        case EventKind.POINTER_MOVE: return pointerMove(model, event)
         case EventKind.CLICKED_NODE: return clickedNode(model, event)
         case EventKind.WHEEL: return wheel(model, event)
         case EventKind.CLICKED_INPUT: return clickedInput(model, event, effects.generateUUID)
@@ -742,8 +745,8 @@ export const update = (effects: Effects, model: Model, event: AppEvent): UpdateR
         case EventKind.CLICKED_BODY: return clickedNumber(model, event)
         case EventKind.CLICKED_BACKGROUND: return clickedBackground(model)
         case EventKind.DELETE_NODE: return deleteNode(model, event)
-        case EventKind.DELETE_INPUT_EDGE: return deleteInputEdge(model, event)
-        case EventKind.DELETE_OUTPUT_EDGES: return deleteOutputEdges(model, event)
+        case EventKind.DELETE_INPUT_EDGE: return deleteInputEdge(model, event, effects.generateUUID)
+        case EventKind.DELETE_OUTPUT_EDGES: return deleteOutputEdges(model, event, effects.generateUUID)
         case EventKind.PAN_CAMERA: return panCamera(model, effects.currentTime)
         case EventKind.ZOOM_CAMERA: return zoomCamera(model, effects.currentTime)
         case EventKind.MOVE_NODE: return moveNode(model, effects.currentTime)

@@ -119,7 +119,7 @@ export const removeNode = (graph: Graph, node: UUID): Graph => {
     }
 }
 
-export const removeInputEdge = (graph: Graph, input: UUID): Graph => {
+export const removeInputEdge = (graph: Graph, input: UUID, generateUUID: GenerateUUID): Graph => {
     const edgeUUID = graph.inputs[input].edge
     if (edgeUUID) {
         const edge = graph.edges[edgeUUID]
@@ -141,25 +141,27 @@ export const removeInputEdge = (graph: Graph, input: UUID): Graph => {
         }
         const edges = { ...graph.edges }
         delete edges[edgeUUID]
-        return {
+        const graph1 = {
             ...graph,
             outputs,
             inputs,
             edges
         }
+        return evaluateNode(graph1, input.node, generateUUID)
     } else {
         return graph
     }
 }
 
-
-export const removeOutputEdges = (graph: Graph, output: UUID): Graph => {
+export const removeOutputEdges = (graph: Graph, output: UUID, generateUUID: GenerateUUID): Graph => {
     const edges = { ...graph.edges }
     const inputs = { ...graph.inputs }
     const outputs = { ...graph.outputs }
+    const nodes: UUID[] = []
     for (const uuid of graph.outputs[output].edges) {
         const edge = graph.edges[uuid]
         const input = inputs[edge.input]
+        nodes.push(input.node)
         inputs[edge.input] = {
             ...input,
             edge: undefined
@@ -171,14 +173,14 @@ export const removeOutputEdges = (graph: Graph, output: UUID): Graph => {
         }
         delete edges[uuid]
     }
-    return {
+    const graph1 = {
         ...graph,
         outputs,
         inputs,
         edges
     }
+    return nodes.reduce((graph, node) => evaluateNode(graph, node, generateUUID), graph1)
 }
-
 
 const evaluateNodeOutputs = (graph: Graph, node: Node, generateUUID: GenerateUUID): Graph =>
     node.outputs.reduce((graph1: Graph, output: UUID): Graph => {
@@ -232,6 +234,21 @@ const evaluateNode = (graph: Graph, nodeUUID: UUID, generateUUID: GenerateUUID):
                 delete graph1.bodys[node.body]
                 return evaluateNodeOutputs(graph1, node, generateUUID)
             }
+        } else if (node.body !== undefined) {
+            const bodys = { ...graph.bodys }
+            delete bodys[node.body]
+            const graph1 = {
+                ...graph,
+                nodes: {
+                    ...graph.nodes,
+                    [node.uuid]: {
+                        ...node,
+                        body: undefined
+                    }
+                },
+                bodys
+            }
+            return evaluateNodeOutputs(graph1, node, generateUUID)
         } else {
             return graph
         }

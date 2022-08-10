@@ -25,7 +25,7 @@ export const selectInput = (model: Model, inputUUID: UUID, generateUUID: Generat
             return { model }
         } else {
             const graph0 = input.edge !== undefined ?
-                removeInputEdge(model.graph, input.uuid) :
+                removeInputEdge(model.graph, input.uuid, generateUUID) :
                 model.graph
             const { graph: graph1 } = addEdge({
                 graph: graph0,
@@ -61,7 +61,7 @@ export const selectOutput = (model: Model, outputUUID: UUID, generateUUID: Gener
             return { model }
         } else {
             const graph0 = input.edge !== undefined ?
-                removeInputEdge(model.graph, input.uuid) :
+                removeInputEdge(model.graph, input.uuid, generateUUID) :
                 model.graph
             const { graph: graph1 } = addEdge({
                 graph: graph0,

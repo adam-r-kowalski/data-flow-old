@@ -82,9 +82,11 @@ document.addEventListener('keydown', e => {
             case 'j':
             case 'k':
                 e.preventDefault()
-                return
+                break
             case 'l':
                 return
+            default:
+                break
         }
     }
     dispatch({

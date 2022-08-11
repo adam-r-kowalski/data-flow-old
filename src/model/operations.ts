@@ -151,7 +151,7 @@ export const operations: Operations = {
     },
     "leaky relu": {
         name: "leaky relu",
-        inputs: ["leaky relu"],
+        inputs: ["x"],
         outputs: ["out"],
         operation: tf.leakyRelu as Operation
     },
@@ -166,6 +166,12 @@ export const operations: Operations = {
         inputs: ["x", "y"],
         outputs: ["out"],
         operation: tf.lessEqual
+    },
+    "linspace": {
+        name: "linspace",
+        inputs: ["start", "stop", "num"],
+        outputs: ["out"],
+        operation: tf.linspace as Operation
     },
     "log": {
         name: "log",

@@ -10,66 +10,79 @@ export const demoModel = (window: Window, generateUUID: GenerateUUID): Model => 
         ...emptyModel(window),
         operations
     }
-    const { graph: graph0, node: number0 } = addNode({
+    const { graph: graph0, node: start } = addNode({
         graph: model.graph,
         operation: model.operations["number"],
         position: { x: 25, y: 20 },
         generateUUID
     })
-    const graph1 = changeBodyValue(graph0, graph0.nodes[number0].body!, () => 10, generateUUID)
-    const { graph: graph2, node: number1 } = addNode({
+    const graph1 = changeBodyValue(graph0, graph0.nodes[start].body!, () => -5, generateUUID)
+    const { graph: graph2, node: stop } = addNode({
         graph: graph1,
         operation: model.operations["number"],
-        position: { x: 25, y: 105 },
+        position: { x: 25, y: 90 },
         generateUUID
     })
-    const graph3 = changeBodyValue(graph2, graph2.nodes[number1].body!, () => 25, generateUUID)
-    const { graph: graph4, node: add } = addNode({
+    const graph3 = changeBodyValue(graph2, graph2.nodes[stop].body!, () => 5, generateUUID)
+    const { graph: graph4, node: num } = addNode({
         graph: graph3,
-        operation: model.operations["add"],
+        operation: model.operations["number"],
+        position: { x: 25, y: 160 },
+        generateUUID
+    })
+    const graph5 = changeBodyValue(graph4, graph4.nodes[num].body!, () => 11, generateUUID)
+    const { graph: graph6, node: linspace } = addNode({
+        graph: graph5,
+        operation: model.operations["linspace"],
         position: { x: 175, y: 20 },
         generateUUID
     })
-    const { graph: graph5 } = addEdge({
-        graph: graph4,
-        input: graph4.nodes[add].inputs[0],
-        output: graph4.nodes[number0].outputs[0],
-        generateUUID
-    })
-    const { graph: graph6 } = addEdge({
-        graph: graph5,
-        input: graph5.nodes[add].inputs[1],
-        output: graph5.nodes[number1].outputs[0],
-        generateUUID
-    })
-    const { graph: graph7, node: number2 } = addNode({
+    const { graph: graph7 } = addEdge({
         graph: graph6,
-        operation: model.operations["number"],
-        position: { x: 227, y: 115 },
+        input: graph6.nodes[linspace].inputs[0],
+        output: graph6.nodes[start].outputs[0],
         generateUUID
     })
-    const graph8 = changeBodyValue(graph7, graph7.nodes[number2].body!, () => 5, generateUUID)
-    const { graph: graph9, node: div } = addNode({
+    const { graph: graph8 } = addEdge({
+        graph: graph7,
+        input: graph7.nodes[linspace].inputs[1],
+        output: graph7.nodes[stop].outputs[0],
+        generateUUID
+    })
+    const { graph: graph9 } = addEdge({
         graph: graph8,
-        operation: model.operations["div"],
-        position: { x: 370, y: 20 },
+        input: graph8.nodes[linspace].inputs[2],
+        output: graph8.nodes[num].outputs[0],
         generateUUID
     })
-    const { graph: graph10 } = addEdge({
+    const { graph: graph10, node: by } = addNode({
         graph: graph9,
-        input: graph9.nodes[div].inputs[0],
-        output: graph9.nodes[add].outputs[0],
+        operation: model.operations["number"],
+        position: { x: 255, y: 350 },
         generateUUID
     })
-    const { graph: graph11 } = addEdge({
-        graph: graph10,
-        input: graph10.nodes[div].inputs[1],
-        output: graph10.nodes[number2].outputs[0],
+    const graph11 = changeBodyValue(graph10, graph10.nodes[by].body!, () => 10, generateUUID)
+    const { graph: graph12, node: mul } = addNode({
+        graph: graph11,
+        operation: model.operations["mul"],
+        position: { x: 425, y: 20 },
+        generateUUID
+    })
+    const { graph: graph13 } = addEdge({
+        graph: graph12,
+        input: graph12.nodes[mul].inputs[0],
+        output: graph12.nodes[linspace].outputs[0],
+        generateUUID
+    })
+    const { graph: graph14 } = addEdge({
+        graph: graph13,
+        input: graph13.nodes[mul].inputs[1],
+        output: graph13.nodes[by].outputs[0],
         generateUUID
     })
     return {
         ...model,
-        graph: graph11,
-        nodeOrder: [number0, number1, add, number2, div]
+        graph: graph14,
+        nodeOrder: [start, stop, num, linspace, by, mul]
     }
 }

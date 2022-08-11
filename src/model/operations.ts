@@ -47,6 +47,18 @@ export const operations: Operations = {
         outputs: ["out"],
         operation: tf.any as Operation
     },
+    "arg max": {
+        name: "arg max",
+        inputs: ["x"],
+        outputs: ["out"],
+        operation: tf.argMax as Operation
+    },
+    "arg min": {
+        name: "arg min",
+        inputs: ["x"],
+        outputs: ["out"],
+        operation: tf.argMin as Operation
+    },
     "asin": {
         name: "asin",
         inputs: ["x"],
@@ -83,6 +95,12 @@ export const operations: Operations = {
         outputs: ["out"],
         operation: tf.clipByValue as Operation
     },
+    "complex": {
+        name: "complex",
+        inputs: ["real", "imag"],
+        outputs: ["out"],
+        operation: tf.complex
+    },
     "concat": {
         name: "concat",
         inputs: ["x", "y"],
@@ -101,6 +119,18 @@ export const operations: Operations = {
         outputs: ["out"],
         operation: tf.cosh
     },
+    "cumsum": {
+        name: "cumsum",
+        inputs: ["x"],
+        outputs: ["out"],
+        operation: tf.cumsum as Operation
+    },
+    "cumprod": {
+        name: "cumprod",
+        inputs: ["x"],
+        outputs: ["out"],
+        operation: tf.cumprod as Operation
+    },
     "div": {
         name: "div",
         inputs: ["x", "y"],
@@ -112,6 +142,12 @@ export const operations: Operations = {
         inputs: ["x", "y"],
         outputs: ["out"],
         operation: tf.divNoNan
+    },
+    "dot": {
+        name: "dot",
+        inputs: ["x", "y"],
+        outputs: ["out"],
+        operation: tf.dot
     },
     "elu": {
         name: "elu",
@@ -130,6 +166,12 @@ export const operations: Operations = {
         inputs: ["x", "y"],
         outputs: ["out"],
         operation: tf.equal
+    },
+    "euclideanNorm": {
+        name: "euclideanNorm",
+        inputs: ["x"],
+        outputs: ["out"],
+        operation: tf.euclideanNorm as Operation
     },
     "exp": {
         name: "exp",
@@ -269,6 +311,18 @@ export const operations: Operations = {
         outputs: ["out"],
         operation: tf.logicalXor
     },
+    "mat mul": {
+        name: "mat mul",
+        inputs: ["x", "y"],
+        outputs: ["out"],
+        operation: tf.matMul as Operation
+    },
+    "max": {
+        name: "max",
+        inputs: ["x"],
+        outputs: ["out"],
+        operation: tf.max as Operation
+    },
     "maximum": {
         name: "maximum",
         inputs: ["x", "y"],
@@ -280,6 +334,18 @@ export const operations: Operations = {
         inputs: ["x", "y"],
         outputs: ["out"],
         operation: tf.minimum
+    },
+    "min": {
+        name: "min",
+        inputs: ["x"],
+        outputs: ["out"],
+        operation: tf.min as Operation
+    },
+    "mean": {
+        name: "mean",
+        inputs: ["x"],
+        outputs: ["out"],
+        operation: tf.mean as Operation
     },
     "mod": {
         name: "mod",
@@ -311,6 +377,18 @@ export const operations: Operations = {
         outputs: ["out"],
         operation: tf.notEqual
     },
+    "norm": {
+        name: "norm",
+        inputs: ["x"],
+        outputs: ["out"],
+        operation: tf.norm as Operation
+    },
+    "outer product": {
+        name: "outer product",
+        inputs: ["x", "y"],
+        outputs: ["out"],
+        operation: tf.outerProduct as Operation
+    },
     "pow": {
         name: "pow",
         inputs: ["base", "exp"],
@@ -322,6 +400,12 @@ export const operations: Operations = {
         inputs: ["x", "alpha"],
         outputs: ["out"],
         operation: tf.prelu
+    },
+    "prod": {
+        name: "prod",
+        inputs: ["x"],
+        outputs: ["out"],
+        operation: tf.prod as Operation
     },
     "range": {
         name: "range",
@@ -431,6 +515,12 @@ export const operations: Operations = {
         outputs: ["out"],
         operation: tf.sub
     },
+    "sum": {
+        name: "sum",
+        inputs: ["x"],
+        outputs: ["out"],
+        operation: tf.sum as Operation
+    },
     "step": {
         name: "step",
         inputs: ["x", "alpha"],
@@ -454,6 +544,12 @@ export const operations: Operations = {
         inputs: ["x", "reps"],
         outputs: ["out"],
         operation: ((x, reps: number) => tf.tile(x, [reps])) as Operation
+    },
+    "transpose": {
+        name: "transpose",
+        inputs: ["x"],
+        outputs: ["out"],
+        operation: tf.transpose as Operation
     },
     "where": {
         name: "where",

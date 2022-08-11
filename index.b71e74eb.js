@@ -48785,6 +48785,26 @@ const operations = {
         ],
         operation: _tfjsCore.any
     },
+    "arg max": {
+        name: "arg max",
+        inputs: [
+            "x"
+        ],
+        outputs: [
+            "out"
+        ],
+        operation: _tfjsCore.argMax
+    },
+    "arg min": {
+        name: "arg min",
+        inputs: [
+            "x"
+        ],
+        outputs: [
+            "out"
+        ],
+        operation: _tfjsCore.argMin
+    },
     "asin": {
         name: "asin",
         inputs: [
@@ -48835,6 +48855,43 @@ const operations = {
         ],
         operation: _tfjsCore.ceil
     },
+    "clip": {
+        name: "clip",
+        inputs: [
+            "x",
+            "min",
+            "max"
+        ],
+        outputs: [
+            "out"
+        ],
+        operation: _tfjsCore.clipByValue
+    },
+    "complex": {
+        name: "complex",
+        inputs: [
+            "real",
+            "imag"
+        ],
+        outputs: [
+            "out"
+        ],
+        operation: _tfjsCore.complex
+    },
+    "concat": {
+        name: "concat",
+        inputs: [
+            "x",
+            "y"
+        ],
+        outputs: [
+            "out"
+        ],
+        operation: (x, y)=>_tfjsCore.concat([
+                x,
+                y
+            ])
+    },
     "cos": {
         name: "cos",
         inputs: [
@@ -48855,6 +48912,26 @@ const operations = {
         ],
         operation: _tfjsCore.cosh
     },
+    "cumsum": {
+        name: "cumsum",
+        inputs: [
+            "x"
+        ],
+        outputs: [
+            "out"
+        ],
+        operation: _tfjsCore.cumsum
+    },
+    "cumprod": {
+        name: "cumprod",
+        inputs: [
+            "x"
+        ],
+        outputs: [
+            "out"
+        ],
+        operation: _tfjsCore.cumprod
+    },
     "div": {
         name: "div",
         inputs: [
@@ -48866,6 +48943,28 @@ const operations = {
         ],
         operation: _tfjsCore.div
     },
+    "div no nan": {
+        name: "div no nan",
+        inputs: [
+            "x",
+            "y"
+        ],
+        outputs: [
+            "out"
+        ],
+        operation: _tfjsCore.divNoNan
+    },
+    "dot": {
+        name: "dot",
+        inputs: [
+            "x",
+            "y"
+        ],
+        outputs: [
+            "out"
+        ],
+        operation: _tfjsCore.dot
+    },
     "elu": {
         name: "elu",
         inputs: [
@@ -48875,6 +48974,16 @@ const operations = {
             "out"
         ],
         operation: _tfjsCore.elu
+    },
+    "erf": {
+        name: "erf",
+        inputs: [
+            "x"
+        ],
+        outputs: [
+            "out"
+        ],
+        operation: _tfjsCore.erf
     },
     "equal": {
         name: "equal",
@@ -48887,6 +48996,16 @@ const operations = {
         ],
         operation: _tfjsCore.equal
     },
+    "euclideanNorm": {
+        name: "euclideanNorm",
+        inputs: [
+            "x"
+        ],
+        outputs: [
+            "out"
+        ],
+        operation: _tfjsCore.euclideanNorm
+    },
     "exp": {
         name: "exp",
         inputs: [
@@ -48897,6 +49016,16 @@ const operations = {
         ],
         operation: _tfjsCore.exp
     },
+    "expm1": {
+        name: "expm1",
+        inputs: [
+            "x"
+        ],
+        outputs: [
+            "out"
+        ],
+        operation: _tfjsCore.expm1
+    },
     "floor": {
         name: "floor",
         inputs: [
@@ -48906,6 +49035,28 @@ const operations = {
             "out"
         ],
         operation: _tfjsCore.floor
+    },
+    "floor div": {
+        name: "floor div",
+        inputs: [
+            "x",
+            "y"
+        ],
+        outputs: [
+            "out"
+        ],
+        operation: _tfjsCore.floorDiv
+    },
+    "gather": {
+        name: "gather",
+        inputs: [
+            "x",
+            "indices"
+        ],
+        outputs: [
+            "out"
+        ],
+        operation: _tfjsCore.gather
     },
     "greater": {
         name: "greater",
@@ -49013,6 +49164,16 @@ const operations = {
         ],
         operation: _tfjsCore.log
     },
+    "log1p": {
+        name: "log1p",
+        inputs: [
+            "x"
+        ],
+        outputs: [
+            "out"
+        ],
+        operation: _tfjsCore.log1p
+    },
     "log sigmoid": {
         name: "log sigmoid",
         inputs: [
@@ -49086,6 +49247,27 @@ const operations = {
         ],
         operation: _tfjsCore.logicalXor
     },
+    "mat mul": {
+        name: "mat mul",
+        inputs: [
+            "x",
+            "y"
+        ],
+        outputs: [
+            "out"
+        ],
+        operation: _tfjsCore.matMul
+    },
+    "max": {
+        name: "max",
+        inputs: [
+            "x"
+        ],
+        outputs: [
+            "out"
+        ],
+        operation: _tfjsCore.max
+    },
     "maximum": {
         name: "maximum",
         inputs: [
@@ -49107,6 +49289,26 @@ const operations = {
             "out"
         ],
         operation: _tfjsCore.minimum
+    },
+    "min": {
+        name: "min",
+        inputs: [
+            "x"
+        ],
+        outputs: [
+            "out"
+        ],
+        operation: _tfjsCore.min
+    },
+    "mean": {
+        name: "mean",
+        inputs: [
+            "x"
+        ],
+        outputs: [
+            "out"
+        ],
+        operation: _tfjsCore.mean
     },
     "mod": {
         name: "mod",
@@ -49130,6 +49332,17 @@ const operations = {
         ],
         operation: _tfjsCore.mul
     },
+    "multinomial": {
+        name: "multinomial",
+        inputs: [
+            "logits",
+            "num samples"
+        ],
+        outputs: [
+            "out"
+        ],
+        operation: _tfjsCore.multinomial
+    },
     "neg": {
         name: "neg",
         inputs: [
@@ -49151,6 +49364,81 @@ const operations = {
         ],
         operation: _tfjsCore.notEqual
     },
+    "norm": {
+        name: "norm",
+        inputs: [
+            "x"
+        ],
+        outputs: [
+            "out"
+        ],
+        operation: _tfjsCore.norm
+    },
+    "outer product": {
+        name: "outer product",
+        inputs: [
+            "x",
+            "y"
+        ],
+        outputs: [
+            "out"
+        ],
+        operation: _tfjsCore.outerProduct
+    },
+    "pow": {
+        name: "pow",
+        inputs: [
+            "base",
+            "exp"
+        ],
+        outputs: [
+            "out"
+        ],
+        operation: _tfjsCore.pow
+    },
+    "prelu": {
+        name: "prelu",
+        inputs: [
+            "x",
+            "alpha"
+        ],
+        outputs: [
+            "out"
+        ],
+        operation: _tfjsCore.prelu
+    },
+    "prod": {
+        name: "prod",
+        inputs: [
+            "x"
+        ],
+        outputs: [
+            "out"
+        ],
+        operation: _tfjsCore.prod
+    },
+    "range": {
+        name: "range",
+        inputs: [
+            "start",
+            "stop",
+            "step"
+        ],
+        outputs: [
+            "out"
+        ],
+        operation: _tfjsCore.range
+    },
+    "reciprocal": {
+        name: "reciprocal",
+        inputs: [
+            "x"
+        ],
+        outputs: [
+            "out"
+        ],
+        operation: _tfjsCore.reciprocal
+    },
     "relu": {
         name: "relu",
         inputs: [
@@ -49160,6 +49448,46 @@ const operations = {
             "out"
         ],
         operation: _tfjsCore.relu
+    },
+    "relu6": {
+        name: "relu6",
+        inputs: [
+            "x"
+        ],
+        outputs: [
+            "out"
+        ],
+        operation: _tfjsCore.relu6
+    },
+    "reverse": {
+        name: "reverse",
+        inputs: [
+            "x"
+        ],
+        outputs: [
+            "out"
+        ],
+        operation: _tfjsCore.reverse
+    },
+    "round": {
+        name: "round",
+        inputs: [
+            "x"
+        ],
+        outputs: [
+            "out"
+        ],
+        operation: _tfjsCore.round
+    },
+    "rsqrt": {
+        name: "rsqrt",
+        inputs: [
+            "x"
+        ],
+        outputs: [
+            "out"
+        ],
+        operation: _tfjsCore.rsqrt
     },
     "selu": {
         name: "selu",
@@ -49211,6 +49539,18 @@ const operations = {
         ],
         operation: _tfjsCore.sin
     },
+    "slice": {
+        name: "slice",
+        inputs: [
+            "x",
+            "begin",
+            "size"
+        ],
+        outputs: [
+            "out"
+        ],
+        operation: _tfjsCore.slice
+    },
     "softplus": {
         name: "softplus",
         inputs: [
@@ -49241,6 +49581,17 @@ const operations = {
         ],
         operation: _tfjsCore.square
     },
+    "squared difference": {
+        name: "squared difference",
+        inputs: [
+            "x",
+            "y"
+        ],
+        outputs: [
+            "out"
+        ],
+        operation: _tfjsCore.squaredDifference
+    },
     "sub": {
         name: "sub",
         inputs: [
@@ -49251,6 +49602,27 @@ const operations = {
             "out"
         ],
         operation: _tfjsCore.sub
+    },
+    "sum": {
+        name: "sum",
+        inputs: [
+            "x"
+        ],
+        outputs: [
+            "out"
+        ],
+        operation: _tfjsCore.sum
+    },
+    "step": {
+        name: "step",
+        inputs: [
+            "x",
+            "alpha"
+        ],
+        outputs: [
+            "out"
+        ],
+        operation: _tfjsCore.step
     },
     "tan": {
         name: "tan",
@@ -49271,6 +49643,29 @@ const operations = {
             "out"
         ],
         operation: _tfjsCore.tanh
+    },
+    "tile": {
+        name: "tile",
+        inputs: [
+            "x",
+            "reps"
+        ],
+        outputs: [
+            "out"
+        ],
+        operation: (x, reps)=>_tfjsCore.tile(x, [
+                reps
+            ])
+    },
+    "transpose": {
+        name: "transpose",
+        inputs: [
+            "x"
+        ],
+        outputs: [
+            "out"
+        ],
+        operation: _tfjsCore.transpose
     },
     "where": {
         name: "where",

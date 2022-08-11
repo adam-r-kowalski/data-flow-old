@@ -2813,8 +2813,8 @@ parcelHelpers.export(exports, "getGlobalNamespace", ()=>getGlobalNamespace);
  * @param init a function to initialize to initialize this object
  *             the first time it is fetched.
  */ parcelHelpers.export(exports, "getGlobal", ()=>getGlobal);
-var global = arguments[3];
 var process = require("process");
+var global = arguments[3];
 /**
  * @license
  * Copyright 2020 Google LLC. All Rights Reserved.
@@ -45095,7 +45095,7 @@ const update = (effects, model, event)=>{
     }
 };
 
-},{"../fuzzy_find":"9hQgB","../linear_algebra/matrix3x3":"aZqnw","../model/focus":"4HSqF","../model/pointer_action":"dtHMy","./graph":"kDSit","./quick_select":"2jbfz","../model/quick_select":"imfkP","./focus":"aoUv6","./move_camera":"eH2Wm","./move_node":"7Le2a","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","../linear_algebra/vector3":"kGcgk"}],"9hQgB":[function(require,module,exports) {
+},{"../fuzzy_find":"9hQgB","../linear_algebra/matrix3x3":"aZqnw","../linear_algebra/vector3":"kGcgk","../model/focus":"4HSqF","../model/pointer_action":"dtHMy","./graph":"kDSit","./quick_select":"2jbfz","../model/quick_select":"imfkP","./focus":"aoUv6","./move_camera":"eH2Wm","./move_node":"7Le2a","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"9hQgB":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "fuzzyFind", ()=>fuzzyFind);
@@ -45280,6 +45280,12 @@ const inverse = (a)=>{
     ];
 };
 
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"kGcgk":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "length", ()=>length);
+const length = ([a, b, c])=>Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2) + Math.pow(c, 2));
+
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"4HSqF":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
@@ -45357,6 +45363,7 @@ const addNode = ({ graph , operation , position , generateUUID  })=>{
             uuid: generateUUID(),
             node: nodeUUID,
             value: operation.body,
+            rank: 0,
             editable: true
         };
         return {
@@ -45520,10 +45527,12 @@ const evaluateNode = (graph, nodeUUID, generateUUID)=>{
             return graph.nodes[output.node].body;
         }).filter((bodyUUID)=>bodyUUID !== undefined).map((bodyUUID)=>graph.bodys[bodyUUID].value);
         if (values.length > 0 && values.length === node.inputs.length) {
+            const result = node.operation.apply(undefined, values);
             const body = {
                 uuid: generateUUID(),
                 node: node.uuid,
-                value: node.operation.apply(undefined, values).arraySync(),
+                value: result.arraySync(),
+                rank: result.rank,
                 editable: false
             };
             const graph1 = {
@@ -46499,13 +46508,7 @@ const moveNode = (model, currentTime)=>{
     }
 };
 
-},{".":"ilzHD","../linear_algebra/matrix3x3":"aZqnw","../linear_algebra/vector3":"kGcgk","../model/focus":"4HSqF","./graph":"kDSit","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"kGcgk":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "length", ()=>length);
-const length = ([a, b, c])=>Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2) + Math.pow(c, 2));
-
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"e5SKV":[function(require,module,exports) {
+},{".":"ilzHD","../linear_algebra/matrix3x3":"aZqnw","../linear_algebra/vector3":"kGcgk","../model/focus":"4HSqF","./graph":"kDSit","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"e5SKV":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "transformPointer", ()=>transformPointer);
@@ -48163,15 +48166,29 @@ const outputUi = (theme, { name , uuid  }, focus)=>(0, _ui.container)({
     ]));
 const outputsUi = (theme, outputs, focus)=>(0, _ui.column)(intersperse(outputs.map((output)=>outputUi(theme, output, focus)), spacer(4)));
 const bodyUi = (theme, body, focus)=>{
-    const value = focus.quickSelect.kind === (0, _quickSelect.QuickSelectKind).BODY ? focus.quickSelect.hotkeys[body.uuid] ?? body.value.toString() : body.value.toString();
-    return (0, _ui.container)({
-        color: isFocused(focus, body.uuid) ? theme.focusInput : theme.background,
-        padding: 5,
-        onClick: {
-            kind: (0, _update.EventKind).CLICKED_BODY,
-            body: body.uuid
-        }
-    }, (0, _ui.text)(value));
+    switch(body.rank){
+        case 0:
+            {
+                const value = focus.quickSelect.kind === (0, _quickSelect.QuickSelectKind).BODY ? focus.quickSelect.hotkeys[body.uuid] ?? body.value.toString() : body.value.toString();
+                const onClick = body.editable ? {
+                    kind: (0, _update.EventKind).CLICKED_BODY,
+                    body: body.uuid
+                } : undefined;
+                return (0, _ui.container)({
+                    color: isFocused(focus, body.uuid) ? theme.focusInput : theme.background,
+                    padding: 5,
+                    onClick
+                }, (0, _ui.text)(value));
+            }
+        case 1:
+            return (0, _ui.container)({
+                color: theme.background
+            }, (0, _ui.column)(body.value.map((value)=>(0, _ui.container)({
+                    padding: 5
+                }, (0, _ui.text)(value.toString())))));
+        default:
+            return (0, _ui.text)("no view for this rank yet");
+    }
 };
 const nodeUi = (theme, nodeUUID, graph, focus)=>{
     const node = graph.nodes[nodeUUID];
@@ -48490,7 +48507,7 @@ const demoModel = (window, generateUUID)=>{
         ...(0, _empty.emptyModel)(window),
         operations: (0, _operations.operations)
     };
-    const { graph: graph0 , node: number0  } = (0, _graph.addNode)({
+    const { graph: graph0 , node: start  } = (0, _graph.addNode)({
         graph: model.graph,
         operation: model.operations["number"],
         position: {
@@ -48499,78 +48516,95 @@ const demoModel = (window, generateUUID)=>{
         },
         generateUUID
     });
-    const graph1 = (0, _graph.changeBodyValue)(graph0, graph0.nodes[number0].body, ()=>10, generateUUID);
-    const { graph: graph2 , node: number1  } = (0, _graph.addNode)({
+    const graph1 = (0, _graph.changeBodyValue)(graph0, graph0.nodes[start].body, ()=>-5, generateUUID);
+    const { graph: graph2 , node: stop  } = (0, _graph.addNode)({
         graph: graph1,
         operation: model.operations["number"],
         position: {
             x: 25,
-            y: 105
+            y: 90
         },
         generateUUID
     });
-    const graph3 = (0, _graph.changeBodyValue)(graph2, graph2.nodes[number1].body, ()=>25, generateUUID);
-    const { graph: graph4 , node: add  } = (0, _graph.addNode)({
+    const graph3 = (0, _graph.changeBodyValue)(graph2, graph2.nodes[stop].body, ()=>5, generateUUID);
+    const { graph: graph4 , node: num  } = (0, _graph.addNode)({
         graph: graph3,
-        operation: model.operations["add"],
+        operation: model.operations["number"],
+        position: {
+            x: 25,
+            y: 160
+        },
+        generateUUID
+    });
+    const graph5 = (0, _graph.changeBodyValue)(graph4, graph4.nodes[num].body, ()=>11, generateUUID);
+    const { graph: graph6 , node: linspace  } = (0, _graph.addNode)({
+        graph: graph5,
+        operation: model.operations["linspace"],
         position: {
             x: 175,
             y: 20
         },
         generateUUID
     });
-    const { graph: graph5  } = (0, _graph.addEdge)({
-        graph: graph4,
-        input: graph4.nodes[add].inputs[0],
-        output: graph4.nodes[number0].outputs[0],
-        generateUUID
-    });
-    const { graph: graph6  } = (0, _graph.addEdge)({
-        graph: graph5,
-        input: graph5.nodes[add].inputs[1],
-        output: graph5.nodes[number1].outputs[0],
-        generateUUID
-    });
-    const { graph: graph7 , node: number2  } = (0, _graph.addNode)({
+    const { graph: graph7  } = (0, _graph.addEdge)({
         graph: graph6,
+        input: graph6.nodes[linspace].inputs[0],
+        output: graph6.nodes[start].outputs[0],
+        generateUUID
+    });
+    const { graph: graph8  } = (0, _graph.addEdge)({
+        graph: graph7,
+        input: graph7.nodes[linspace].inputs[1],
+        output: graph7.nodes[stop].outputs[0],
+        generateUUID
+    });
+    const { graph: graph9  } = (0, _graph.addEdge)({
+        graph: graph8,
+        input: graph8.nodes[linspace].inputs[2],
+        output: graph8.nodes[num].outputs[0],
+        generateUUID
+    });
+    const { graph: graph10 , node: by  } = (0, _graph.addNode)({
+        graph: graph9,
         operation: model.operations["number"],
         position: {
-            x: 227,
-            y: 115
+            x: 255,
+            y: 350
         },
         generateUUID
     });
-    const graph8 = (0, _graph.changeBodyValue)(graph7, graph7.nodes[number2].body, ()=>5, generateUUID);
-    const { graph: graph9 , node: div  } = (0, _graph.addNode)({
-        graph: graph8,
-        operation: model.operations["div"],
+    const graph11 = (0, _graph.changeBodyValue)(graph10, graph10.nodes[by].body, ()=>10, generateUUID);
+    const { graph: graph12 , node: mul  } = (0, _graph.addNode)({
+        graph: graph11,
+        operation: model.operations["mul"],
         position: {
-            x: 370,
+            x: 425,
             y: 20
         },
         generateUUID
     });
-    const { graph: graph10  } = (0, _graph.addEdge)({
-        graph: graph9,
-        input: graph9.nodes[div].inputs[0],
-        output: graph9.nodes[add].outputs[0],
+    const { graph: graph13  } = (0, _graph.addEdge)({
+        graph: graph12,
+        input: graph12.nodes[mul].inputs[0],
+        output: graph12.nodes[linspace].outputs[0],
         generateUUID
     });
-    const { graph: graph11  } = (0, _graph.addEdge)({
-        graph: graph10,
-        input: graph10.nodes[div].inputs[1],
-        output: graph10.nodes[number2].outputs[0],
+    const { graph: graph14  } = (0, _graph.addEdge)({
+        graph: graph13,
+        input: graph13.nodes[mul].inputs[1],
+        output: graph13.nodes[by].outputs[0],
         generateUUID
     });
     return {
         ...model,
-        graph: graph11,
+        graph: graph14,
         nodeOrder: [
-            number0,
-            number1,
-            add,
-            number2,
-            div
+            start,
+            stop,
+            num,
+            linspace,
+            by,
+            mul
         ]
     };
 };
@@ -48928,7 +48962,7 @@ const operations = {
     "leaky relu": {
         name: "leaky relu",
         inputs: [
-            "leaky relu"
+            "x"
         ],
         outputs: [
             "out"
@@ -48956,6 +48990,18 @@ const operations = {
             "out"
         ],
         operation: _tfjsCore.lessEqual
+    },
+    "linspace": {
+        name: "linspace",
+        inputs: [
+            "start",
+            "stop",
+            "num"
+        ],
+        outputs: [
+            "out"
+        ],
+        operation: _tfjsCore.linspace
     },
     "log": {
         name: "log",

@@ -77,6 +77,18 @@ export const operations: Operations = {
         outputs: ["out"],
         operation: tf.ceil
     },
+    "clip": {
+        name: "clip",
+        inputs: ["x", "min", "max"],
+        outputs: ["out"],
+        operation: tf.clipByValue as Operation
+    },
+    "concat": {
+        name: "concat",
+        inputs: ["x", "y"],
+        outputs: ["out"],
+        operation: (x, y) => tf.concat([x, y])
+    },
     "cos": {
         name: "cos",
         inputs: ["x"],
@@ -95,11 +107,23 @@ export const operations: Operations = {
         outputs: ["out"],
         operation: tf.div
     },
+    "div no nan": {
+        name: "div no nan",
+        inputs: ["x", "y"],
+        outputs: ["out"],
+        operation: tf.divNoNan
+    },
     "elu": {
         name: "elu",
         inputs: ["x"],
         outputs: ["out"],
         operation: tf.elu
+    },
+    "erf": {
+        name: "erf",
+        inputs: ["x"],
+        outputs: ["out"],
+        operation: tf.erf
     },
     "equal": {
         name: "equal",
@@ -113,11 +137,29 @@ export const operations: Operations = {
         outputs: ["out"],
         operation: tf.exp
     },
+    "expm1": {
+        name: "expm1",
+        inputs: ["x"],
+        outputs: ["out"],
+        operation: tf.expm1
+    },
     "floor": {
         name: "floor",
         inputs: ["x"],
         outputs: ["out"],
         operation: tf.floor
+    },
+    "floor div": {
+        name: "floor div",
+        inputs: ["x", "y"],
+        outputs: ["out"],
+        operation: tf.floorDiv
+    },
+    "gather": {
+        name: "gather",
+        inputs: ["x", "indices"],
+        outputs: ["out"],
+        operation: tf.gather as Operation
     },
     "greater": {
         name: "greater",
@@ -178,6 +220,12 @@ export const operations: Operations = {
         inputs: ["x"],
         outputs: ["out"],
         operation: tf.log
+    },
+    "log1p": {
+        name: "log1p",
+        inputs: ["x"],
+        outputs: ["out"],
+        operation: tf.log1p
     },
     "log sigmoid": {
         name: "log sigmoid",
@@ -245,6 +293,12 @@ export const operations: Operations = {
         outputs: ["out"],
         operation: tf.mul
     },
+    "multinomial": {
+        name: "multinomial",
+        inputs: ["logits", "num samples"],
+        outputs: ["out"],
+        operation: tf.multinomial as Operation
+    },
     "neg": {
         name: "neg",
         inputs: ["x"],
@@ -257,11 +311,59 @@ export const operations: Operations = {
         outputs: ["out"],
         operation: tf.notEqual
     },
+    "pow": {
+        name: "pow",
+        inputs: ["base", "exp"],
+        outputs: ["out"],
+        operation: tf.pow
+    },
+    "prelu": {
+        name: "prelu",
+        inputs: ["x", "alpha"],
+        outputs: ["out"],
+        operation: tf.prelu
+    },
+    "range": {
+        name: "range",
+        inputs: ["start", "stop", "step"],
+        outputs: ["out"],
+        operation: tf.range as Operation
+    },
+    "reciprocal": {
+        name: "reciprocal",
+        inputs: ["x"],
+        outputs: ["out"],
+        operation: tf.reciprocal
+    },
     "relu": {
         name: "relu",
         inputs: ["x"],
         outputs: ["out"],
         operation: tf.relu
+    },
+    "relu6": {
+        name: "relu6",
+        inputs: ["x"],
+        outputs: ["out"],
+        operation: tf.relu6
+    },
+    "reverse": {
+        name: "reverse",
+        inputs: ["x"],
+        outputs: ["out"],
+        operation: tf.reverse as Operation
+    },
+    "round": {
+        name: "round",
+        inputs: ["x"],
+        outputs: ["out"],
+        operation: tf.round
+    },
+    "rsqrt": {
+        name: "rsqrt",
+        inputs: ["x"],
+        outputs: ["out"],
+        operation: tf.rsqrt
     },
     "selu": {
         name: "selu",
@@ -293,6 +395,12 @@ export const operations: Operations = {
         outputs: ["out"],
         operation: tf.sin
     },
+    "slice": {
+        name: "slice",
+        inputs: ["x", "begin", "size"],
+        outputs: ["out"],
+        operation: tf.slice as Operation
+    },
     "softplus": {
         name: "softplus",
         inputs: ["x"],
@@ -311,11 +419,23 @@ export const operations: Operations = {
         outputs: ["out"],
         operation: tf.square
     },
+    "squared difference": {
+        name: "squared difference",
+        inputs: ["x", "y"],
+        outputs: ["out"],
+        operation: tf.squaredDifference
+    },
     "sub": {
         name: "sub",
         inputs: ["x", "y"],
         outputs: ["out"],
         operation: tf.sub
+    },
+    "step": {
+        name: "step",
+        inputs: ["x", "alpha"],
+        outputs: ["out"],
+        operation: tf.step as Operation
     },
     "tan": {
         name: "tan",
@@ -328,6 +448,12 @@ export const operations: Operations = {
         inputs: ["x"],
         outputs: ["out"],
         operation: tf.tanh
+    },
+    "tile": {
+        name: "tile",
+        inputs: ["x", "reps"],
+        outputs: ["out"],
+        operation: ((x, reps: number) => tf.tile(x, [reps])) as Operation
     },
     "where": {
         name: "where",

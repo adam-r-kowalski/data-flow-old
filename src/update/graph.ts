@@ -52,6 +52,7 @@ export const addNode = ({ graph, operation, position, generateUUID }: AddNodeInp
             uuid: generateUUID(),
             node: nodeUUID,
             value: operation.body,
+            rank: 0,
             editable: true
         }
         return {
@@ -208,11 +209,13 @@ const evaluateNode = (graph: Graph, nodeUUID: UUID, generateUUID: GenerateUUID):
             .filter(bodyUUID => bodyUUID !== undefined)
             .map(bodyUUID => graph.bodys[bodyUUID!].value)
         if (values.length > 0 && values.length === node.inputs.length) {
+            const result = node.operation!.apply(this, values)
             const body: Body = {
                 uuid: generateUUID(),
                 node: node.uuid,
-                value: node.operation!.apply(this, values).arraySync(),
-                editable: false
+                value: result.arraySync(),
+                rank: result.rank,
+                editable: false,
             }
             const graph1 = {
                 ...graph,

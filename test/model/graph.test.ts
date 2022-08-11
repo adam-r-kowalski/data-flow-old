@@ -116,7 +116,8 @@ test("add operation with body to graph", () => {
         uuid: bodyUUID,
         node: numberUUID,
         value: 0,
-        editable: true
+        editable: true,
+        rank: 0,
     }
     expect(graph1).toEqual({
         nodes: { [number.uuid]: number },

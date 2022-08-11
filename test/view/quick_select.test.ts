@@ -141,6 +141,7 @@ test("bodyUi quick select", () => {
         node: 'node',
         value: 0,
         editable: true,
+        rank: 0,
     }
     const focus: Focus = {
         kind: FocusKind.NONE,
@@ -168,6 +169,7 @@ test("bodyUi quick select non editable", () => {
         uuid: 'body uuid',
         node: 'node',
         value: 0,
+        rank: 0,
         editable: false,
     }
     const focus: Focus = {
@@ -181,11 +183,7 @@ test("bodyUi quick select non editable", () => {
     const actual = bodyUi(theme, body, focus)
     const expected = container({
         color: theme.background,
-        padding: 5,
-        onClick: {
-            kind: EventKind.CLICKED_BODY,
-            body: 'body uuid'
-        }
+        padding: 5
     },
         text('0'))
     expect(actual).toEqual(expected)

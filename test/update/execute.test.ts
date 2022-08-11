@@ -145,18 +145,21 @@ test("connecting all inputs for node evaluates operation", () => {
                     node: x,
                     value: 5,
                     editable: true,
+                    rank: 0,
                 },
                 [model4.graph.nodes[y].body!]: {
                     uuid: model4.graph.nodes[y].body!,
                     node: y,
                     value: 5,
                     editable: true,
+                    rank: 0,
                 },
                 '12': {
                     uuid: '12',
                     node: add,
                     value: 10,
                     editable: false,
+                    rank: 0,
                 },
             }
         },
@@ -311,18 +314,21 @@ test("clicking output after clicking input adds connection", () => {
                     node: x,
                     value: 0,
                     editable: true,
+                    rank: 0,
                 },
                 [model4.graph.nodes[y].body!]: {
                     uuid: model4.graph.nodes[y].body!,
                     node: y,
                     value: 5,
                     editable: true,
+                    rank: 0,
                 },
                 '13': {
                     uuid: '13',
                     node: add,
                     value: 5,
                     editable: false,
+                    rank: 0,
                 },
             }
         },
@@ -473,12 +479,14 @@ test("deleting input edge deletes body in associated input node and propagates o
                     node: x,
                     value: 5,
                     editable: true,
+                    rank: 0,
                 },
                 [model4.graph.nodes[y].body!]: {
                     uuid: model4.graph.nodes[y].body!,
                     node: y,
                     value: 5,
                     editable: true,
+                    rank: 0,
                 },
             }
         },
@@ -624,12 +632,14 @@ test("deleting output edge deletes body in associated input node and propagates 
                     node: x,
                     value: 5,
                     editable: true,
+                    rank: 0,
                 },
                 [model4.graph.nodes[y].body!]: {
                     uuid: model4.graph.nodes[y].body!,
                     node: y,
                     value: 5,
                     editable: true,
+                    rank: 0,
                 },
             }
         },

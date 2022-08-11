@@ -22,6 +22,7 @@ export interface Body {
     readonly uuid: UUID
     readonly node: UUID
     readonly value: tf.TensorLike
+    readonly rank: number
     readonly editable: boolean
 }
 

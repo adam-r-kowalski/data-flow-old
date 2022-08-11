@@ -89,18 +89,35 @@ export const outputsUi = (theme: Theme, outputs: Output[], focus: Focus) =>
 
 
 export const bodyUi = (theme: Theme, body: Body, focus: Focus): UI<AppEvent> => {
-    const value = focus.quickSelect.kind === QuickSelectKind.BODY ?
-        (focus.quickSelect.hotkeys[body.uuid] ?? body.value.toString()) :
-        body.value.toString()
-    return container({
-        color: isFocused(focus, body.uuid) ? theme.focusInput : theme.background,
-        padding: 5,
-        onClick: {
-            kind: EventKind.CLICKED_BODY,
-            body: body.uuid
+    switch (body.rank) {
+        case 0: {
+            const value = focus.quickSelect.kind === QuickSelectKind.BODY ?
+                (focus.quickSelect.hotkeys[body.uuid] ?? body.value.toString()) :
+                body.value.toString()
+            const onClick: AppEvent | undefined = body.editable ? 
+                {
+                    kind: EventKind.CLICKED_BODY,
+                    body: body.uuid
+                } :
+                undefined
+            return container({
+                color: isFocused(focus, body.uuid) ? theme.focusInput : theme.background,
+                padding: 5,
+                onClick
+            },
+                text(value))
         }
-    },
-        text(value))
+        case 1: {
+            return container({ color: theme.background },
+                column(
+                    (body.value as number[]).map(value => container({ padding: 5 }, text(value.toString())))
+                )
+            )
+        }
+        default: {
+            return text("no view for this rank yet")
+        }
+    }
 }
 
 

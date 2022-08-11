@@ -245,6 +245,7 @@ test("bodyUi not focused", () => {
         node: 'node',
         value: 0,
         editable: true,
+        rank: 0,
     }
     const focus: Focus = {
         kind: FocusKind.NONE,
@@ -270,6 +271,7 @@ test("bodyUi editing", () => {
         node: 'node',
         value: 0,
         editable: true,
+        rank: 0,
     }
     const actual = bodyUi(theme, body, {
         kind: FocusKind.BODY,
@@ -287,6 +289,31 @@ test("bodyUi editing", () => {
         text(body.value.toString()))
     expect(actual).toEqual(expected)
 })
+
+test("bodyUi with vector", () => {
+    const body: Body = {
+        uuid: 'body uuid',
+        node: 'node',
+        value: [0, 1, 2],
+        rank: 1,
+        editable: false,
+    }
+    const focus: Focus = {
+        kind: FocusKind.NONE,
+        pointerAction: { kind: PointerActionKind.NONE },
+        quickSelect: { kind: QuickSelectKind.NONE }
+    }
+    const actual = bodyUi(theme, body, focus)
+    const expected = container({ color: theme.background },
+        column([
+            container({ padding: 5 }, text("0")),
+            container({ padding: 5 }, text("1")),
+            container({ padding: 5 }, text("2")),
+        ])
+        )
+    expect(actual).toEqual(expected)
+})
+
 
 test("nodeUi no inputs body or outputs", () => {
     const node: Node = {
@@ -429,6 +456,7 @@ test("nodeUi no inputs or outputs but body defined", () => {
         node: 'node',
         value: 0,
         editable: true,
+        rank: 0,
     }
     const graph: Graph = {
         ...emptyGraph(),
@@ -535,6 +563,7 @@ test("nodeUi 1 input body but no outputs", () => {
         node: 'node uuid',
         value: 0,
         editable: true,
+        rank: 0,
     }
     const graph: Graph = {
         ...emptyGraph(),
@@ -592,6 +621,7 @@ test("nodeUi 1 output body but no inputs", () => {
         node: 'node uuid',
         value: 0,
         editable: true,
+        rank: 0,
     }
     const graph: Graph = {
         ...emptyGraph(),
@@ -655,6 +685,7 @@ test("nodeUi 1 input body and 1 output", () => {
         node: 'node uuid',
         value: 0,
         editable: true,
+        rank: 0,
     }
     const graph: Graph = {
         ...emptyGraph(),
@@ -1151,6 +1182,7 @@ test("view with body selected", () => {
                     node: "number",
                     value: 0,
                     editable: true,
+                    rank: 0,
                 }
             }
         },

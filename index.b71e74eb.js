@@ -45364,6 +45364,7 @@ const addNode = ({ graph , operation , position , generateUUID  })=>{
             node: nodeUUID,
             value: operation.body,
             rank: 0,
+            shape: [],
             editable: true
         };
         return {
@@ -45533,6 +45534,7 @@ const evaluateNode = (graph, nodeUUID, generateUUID)=>{
                 node: node.uuid,
                 value: result.arraySync(),
                 rank: result.rank,
+                shape: result.shape,
                 editable: false
             };
             const graph1 = {
@@ -48186,6 +48188,19 @@ const bodyUi = (theme, body, focus)=>{
             }, (0, _ui.column)(body.value.map((value)=>(0, _ui.container)({
                     padding: 5
                 }, (0, _ui.text)(value.toString())))));
+        case 2:
+            {
+                const value = body.value;
+                return (0, _ui.container)({
+                    color: theme.background
+                }, (0, _ui.row)(value[0].map((_, i)=>(0, _ui.container)({
+                        padding: 5
+                    }, (0, _ui.column)({
+                        crossAxisAlignment: (0, _alignment.CrossAxisAlignment).END
+                    }, value.map((row)=>(0, _ui.container)({
+                            padding: 5
+                        }, (0, _ui.text)(row[i].toString()))))))));
+            }
         default:
             return (0, _ui.text)("no view for this rank yet");
     }
@@ -48564,47 +48579,30 @@ const demoModel = (window, generateUUID)=>{
         output: graph8.nodes[num].outputs[0],
         generateUUID
     });
-    const { graph: graph10 , node: by  } = (0, _graph.addNode)({
+    const { graph: graph10 , node: diag  } = (0, _graph.addNode)({
         graph: graph9,
-        operation: model.operations["number"],
+        operation: model.operations["diag"],
         position: {
-            x: 255,
-            y: 350
-        },
-        generateUUID
-    });
-    const graph11 = (0, _graph.changeBodyValue)(graph10, graph10.nodes[by].body, ()=>10, generateUUID);
-    const { graph: graph12 , node: mul  } = (0, _graph.addNode)({
-        graph: graph11,
-        operation: model.operations["mul"],
-        position: {
-            x: 425,
+            x: 400,
             y: 20
         },
         generateUUID
     });
-    const { graph: graph13  } = (0, _graph.addEdge)({
-        graph: graph12,
-        input: graph12.nodes[mul].inputs[0],
-        output: graph12.nodes[linspace].outputs[0],
-        generateUUID
-    });
-    const { graph: graph14  } = (0, _graph.addEdge)({
-        graph: graph13,
-        input: graph13.nodes[mul].inputs[1],
-        output: graph13.nodes[by].outputs[0],
+    const { graph: graph11  } = (0, _graph.addEdge)({
+        graph: graph10,
+        input: graph10.nodes[diag].inputs[0],
+        output: graph10.nodes[linspace].outputs[0],
         generateUUID
     });
     return {
         ...model,
-        graph: graph14,
+        graph: graph11,
         nodeOrder: [
             start,
             stop,
             num,
             linspace,
-            by,
-            mul
+            diag
         ]
     };
 };
@@ -48932,6 +48930,16 @@ const operations = {
         ],
         operation: _tfjsCore.cumprod
     },
+    "diag": {
+        name: "diag",
+        inputs: [
+            "x"
+        ],
+        outputs: [
+            "out"
+        ],
+        operation: _tfjsCore.diag
+    },
     "div": {
         name: "div",
         inputs: [
@@ -49026,6 +49034,27 @@ const operations = {
         ],
         operation: _tfjsCore.expm1
     },
+    "eye": {
+        name: "eye",
+        inputs: [
+            "size"
+        ],
+        outputs: [
+            "out"
+        ],
+        operation: _tfjsCore.eye
+    },
+    "fill": {
+        name: "fill",
+        inputs: [
+            "shape",
+            "value"
+        ],
+        outputs: [
+            "out"
+        ],
+        operation: _tfjsCore.fill
+    },
     "floor": {
         name: "floor",
         inputs: [
@@ -49079,6 +49108,16 @@ const operations = {
             "out"
         ],
         operation: _tfjsCore.greaterEqual
+    },
+    "imag": {
+        name: "imag",
+        inputs: [
+            "x"
+        ],
+        outputs: [
+            "out"
+        ],
+        operation: _tfjsCore.imag
     },
     "is finite": {
         name: "is finite",
@@ -49224,6 +49263,37 @@ const operations = {
             "out"
         ],
         operation: _tfjsCore.logicalNot
+    },
+    "oneHot": {
+        name: "oneHot",
+        inputs: [
+            "indices",
+            "depth"
+        ],
+        outputs: [
+            "out"
+        ],
+        operation: _tfjsCore.oneHot
+    },
+    "ones": {
+        name: "ones",
+        inputs: [
+            "shape"
+        ],
+        outputs: [
+            "out"
+        ],
+        operation: _tfjsCore.ones
+    },
+    "ones like": {
+        name: "ones like",
+        inputs: [
+            "x"
+        ],
+        outputs: [
+            "out"
+        ],
+        operation: _tfjsCore.onesLike
     },
     "or": {
         name: "or",
@@ -49438,6 +49508,16 @@ const operations = {
             "out"
         ],
         operation: _tfjsCore.reciprocal
+    },
+    "real": {
+        name: "real",
+        inputs: [
+            "x"
+        ],
+        outputs: [
+            "out"
+        ],
+        operation: _tfjsCore.real
     },
     "relu": {
         name: "relu",
@@ -49678,6 +49758,26 @@ const operations = {
             "out"
         ],
         operation: _tfjsCore.where
+    },
+    "zeros": {
+        name: "zeros",
+        inputs: [
+            "shape"
+        ],
+        outputs: [
+            "out"
+        ],
+        operation: _tfjsCore.zeros
+    },
+    "zeros like": {
+        name: "zeros like",
+        inputs: [
+            "x"
+        ],
+        outputs: [
+            "out"
+        ],
+        operation: _tfjsCore.zerosLike
     }
 };
 

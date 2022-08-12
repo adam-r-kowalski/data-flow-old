@@ -244,6 +244,7 @@ test("bodyUi not focused", () => {
         uuid: 'body uuid',
         node: 'node',
         value: 0,
+        shape: [],
         editable: true,
         rank: 0,
     }
@@ -270,6 +271,7 @@ test("bodyUi editing", () => {
         uuid: 'body uuid',
         node: 'node',
         value: 0,
+        shape: [],
         editable: true,
         rank: 0,
     }
@@ -295,6 +297,7 @@ test("bodyUi with vector", () => {
         uuid: 'body uuid',
         node: 'node',
         value: [0, 1, 2],
+        shape: [3],
         rank: 1,
         editable: false,
     }
@@ -310,10 +313,49 @@ test("bodyUi with vector", () => {
             container({ padding: 5 }, text("1")),
             container({ padding: 5 }, text("2")),
         ])
-        )
+    )
     expect(actual).toEqual(expected)
 })
 
+test("bodyUi with matrix", () => {
+    const body: Body = {
+        uuid: 'body uuid',
+        node: 'node',
+        value: [[0, 1, 2], [4, 5, 6]],
+        rank: 2,
+        shape: [2, 3],
+        editable: false,
+    }
+    const focus: Focus = {
+        kind: FocusKind.NONE,
+        pointerAction: { kind: PointerActionKind.NONE },
+        quickSelect: { kind: QuickSelectKind.NONE }
+    }
+    const actual = bodyUi(theme, body, focus)
+    const expected = container({ color: theme.background },
+        row([
+            container({ padding: 5 },
+                column({ crossAxisAlignment: CrossAxisAlignment.END }, [
+                    container({ padding: 5 }, text("0")),
+                    container({ padding: 5 }, text("4")),
+                ])
+            ),
+            container({ padding: 5 },
+                column({ crossAxisAlignment: CrossAxisAlignment.END }, [
+                    container({ padding: 5 }, text("1")),
+                    container({ padding: 5 }, text("5")),
+                ])
+            ),
+            container({ padding: 5 },
+                column({ crossAxisAlignment: CrossAxisAlignment.END }, [
+                    container({ padding: 5 }, text("2")),
+                    container({ padding: 5 }, text("6")),
+                ])
+            )
+        ])
+    )
+    expect(actual).toEqual(expected)
+})
 
 test("nodeUi no inputs body or outputs", () => {
     const node: Node = {
@@ -455,6 +497,7 @@ test("nodeUi no inputs or outputs but body defined", () => {
         uuid: 'body uuid',
         node: 'node',
         value: 0,
+        shape: [],
         editable: true,
         rank: 0,
     }
@@ -562,6 +605,7 @@ test("nodeUi 1 input body but no outputs", () => {
         uuid: 'body uuid',
         node: 'node uuid',
         value: 0,
+        shape: [],
         editable: true,
         rank: 0,
     }
@@ -620,6 +664,7 @@ test("nodeUi 1 output body but no inputs", () => {
         uuid: 'body uuid',
         node: 'node uuid',
         value: 0,
+        shape: [],
         editable: true,
         rank: 0,
     }
@@ -684,6 +729,7 @@ test("nodeUi 1 input body and 1 output", () => {
         uuid: 'body uuid',
         node: 'node uuid',
         value: 0,
+        shape: [],
         editable: true,
         rank: 0,
     }
@@ -1181,6 +1227,7 @@ test("view with body selected", () => {
                     uuid: "body",
                     node: "number",
                     value: 0,
+                    shape: [],
                     editable: true,
                     rank: 0,
                 }

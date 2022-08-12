@@ -53,6 +53,7 @@ export const addNode = ({ graph, operation, position, generateUUID }: AddNodeInp
             node: nodeUUID,
             value: operation.body,
             rank: 0,
+            shape: [],
             editable: true
         }
         return {
@@ -215,6 +216,7 @@ const evaluateNode = (graph: Graph, nodeUUID: UUID, generateUUID: GenerateUUID):
                 node: node.uuid,
                 value: result.arraySync(),
                 rank: result.rank,
+                shape: result.shape,
                 editable: false,
             }
             const graph1 = {

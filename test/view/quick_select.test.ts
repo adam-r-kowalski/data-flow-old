@@ -140,6 +140,7 @@ test("bodyUi quick select", () => {
         uuid: 'body uuid',
         node: 'node',
         value: 0,
+        shape: [],
         editable: true,
         rank: 0,
     }
@@ -169,6 +170,7 @@ test("bodyUi quick select non editable", () => {
         uuid: 'body uuid',
         node: 'node',
         value: 0,
+        shape: [],
         rank: 0,
         editable: false,
     }

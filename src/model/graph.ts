@@ -23,6 +23,7 @@ export interface Body {
     readonly node: UUID
     readonly value: tf.TensorLike
     readonly rank: number
+    readonly shape: number[]
     readonly editable: boolean
 }
 

@@ -131,6 +131,12 @@ export const operations: Operations = {
         outputs: ["out"],
         operation: tf.cumprod as Operation
     },
+    "diag": {
+        name: "diag",
+        inputs: ["x"],
+        outputs: ["out"],
+        operation: tf.diag as Operation
+    },
     "div": {
         name: "div",
         inputs: ["x", "y"],
@@ -185,6 +191,18 @@ export const operations: Operations = {
         outputs: ["out"],
         operation: tf.expm1
     },
+    "eye": {
+        name: "eye",
+        inputs: ["size"],
+        outputs: ["out"],
+        operation: tf.eye as Operation
+    },
+    "fill": {
+        name: "fill",
+        inputs: ["shape", "value"],
+        outputs: ["out"],
+        operation: tf.fill as Operation
+    },
     "floor": {
         name: "floor",
         inputs: ["x"],
@@ -214,6 +232,12 @@ export const operations: Operations = {
         inputs: ["x", "y"],
         outputs: ["out"],
         operation: tf.greaterEqual
+    },
+    "imag": {
+        name: "imag",
+        inputs: ["x"],
+        outputs: ["out"],
+        operation: tf.imag
     },
     "is finite": {
         name: "is finite",
@@ -298,6 +322,24 @@ export const operations: Operations = {
         inputs: ["x"],
         outputs: ["out"],
         operation: tf.logicalNot
+    },
+    "oneHot": {
+        name: "oneHot",
+        inputs: ["indices", "depth"],
+        outputs: ["out"],
+        operation: tf.oneHot as Operation
+    },
+    "ones": {
+        name: "ones",
+        inputs: ["shape"],
+        outputs: ["out"],
+        operation: tf.ones as Operation
+    },
+    "ones like": {
+        name: "ones like",
+        inputs: ["x"],
+        outputs: ["out"],
+        operation: tf.onesLike
     },
     "or": {
         name: "or",
@@ -418,6 +460,12 @@ export const operations: Operations = {
         inputs: ["x"],
         outputs: ["out"],
         operation: tf.reciprocal
+    },
+    "real": {
+        name: "real",
+        inputs: ["x"],
+        outputs: ["out"],
+        operation: tf.real
     },
     "relu": {
         name: "relu",
@@ -556,5 +604,17 @@ export const operations: Operations = {
         inputs: ["condition", "true", "false"],
         outputs: ["out"],
         operation: tf.where
-    }
+    },
+    "zeros": {
+        name: "zeros",
+        inputs: ["shape"],
+        outputs: ["out"],
+        operation: tf.zeros as Operation
+    },
+    "zeros like": {
+        name: "zeros like",
+        inputs: ["x"],
+        outputs: ["out"],
+        operation: tf.zerosLike
+    },
 }

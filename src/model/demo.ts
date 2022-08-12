@@ -55,34 +55,21 @@ export const demoModel = (window: Window, generateUUID: GenerateUUID): Model => 
         output: graph8.nodes[num].outputs[0],
         generateUUID
     })
-    const { graph: graph10, node: by } = addNode({
+    const { graph: graph10, node: diag } = addNode({
         graph: graph9,
-        operation: model.operations["number"],
-        position: { x: 255, y: 350 },
+        operation: model.operations["diag"],
+        position: { x: 400, y: 20 },
         generateUUID
     })
-    const graph11 = changeBodyValue(graph10, graph10.nodes[by].body!, () => 10, generateUUID)
-    const { graph: graph12, node: mul } = addNode({
-        graph: graph11,
-        operation: model.operations["mul"],
-        position: { x: 425, y: 20 },
-        generateUUID
-    })
-    const { graph: graph13 } = addEdge({
-        graph: graph12,
-        input: graph12.nodes[mul].inputs[0],
-        output: graph12.nodes[linspace].outputs[0],
-        generateUUID
-    })
-    const { graph: graph14 } = addEdge({
-        graph: graph13,
-        input: graph13.nodes[mul].inputs[1],
-        output: graph13.nodes[by].outputs[0],
+    const { graph: graph11 } = addEdge({
+        graph: graph10,
+        input: graph10.nodes[diag].inputs[0],
+        output: graph10.nodes[linspace].outputs[0],
         generateUUID
     })
     return {
         ...model,
-        graph: graph14,
-        nodeOrder: [start, stop, num, linspace, by, mul]
+        graph: graph11,
+        nodeOrder: [start, stop, num, linspace, diag]
     }
 }

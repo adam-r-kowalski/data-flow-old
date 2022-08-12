@@ -1393,6 +1393,7 @@ test("pressing number on keyboard appends to number node", () => {
                     uuid: body,
                     node,
                     value: 1234567890,
+                    shape: [],
                     editable: true,
                     rank: 0,
                 }
@@ -1450,6 +1451,7 @@ test("pressing backspace on keyboard deletes from number node", () => {
                     uuid: body,
                     node,
                     value: 123456789,
+                    shape: [],
                     editable: true,
                     rank: 0,
                 }
@@ -1502,6 +1504,7 @@ test("pressing backspace when number node value is 0 has no effect", () => {
                     uuid: body,
                     node,
                     value: 0,
+                    shape: [],
                     editable: true,
                     rank: 0,
                 }
@@ -1553,6 +1556,7 @@ test("pressing del on virtual keyboard when number node value is 0 has no effect
                     uuid: body,
                     node,
                     value: 0,
+                    shape: [],
                     editable: true,
                     rank: 0,
                 }
@@ -1604,6 +1608,7 @@ test("pressing number on virtual keyboard appends to number node", () => {
                     uuid: body,
                     node,
                     value: 1234567890,
+                    shape: [],
                     editable: true,
                     rank: 0,
                 }
@@ -1659,6 +1664,7 @@ test("pressing del on virtual keyboard deletes from number node", () => {
                     uuid: body,
                     node,
                     value: 123456789,
+                    shape: [],
                     editable: true,
                     rank: 0,
                 }
@@ -1711,6 +1717,7 @@ test("pressing enter on keyboard while editing number node exits virtual keyboar
                     uuid: body,
                     node,
                     value: 1234567890,
+                    shape: [],
                     editable: true,
                     rank: 0,
                 }
@@ -1761,6 +1768,7 @@ test("pressing ret on virtual keyboard while editing number node exits virtual k
                     uuid: body,
                     node,
                     value: 1234567890,
+                    shape: [],
                     editable: true,
                     rank: 0,
                 }
@@ -1809,6 +1817,7 @@ test("pressing non number on keyboard while editing number node is ignored", () 
                     uuid: body,
                     node,
                     value: 0,
+                    shape: [],
                     editable: true,
                     rank: 0,
                 }
@@ -1856,6 +1865,7 @@ test("pressing non number on virtual keyboard while editing number node is ignor
                     uuid: body,
                     node,
                     value: 0,
+                    shape: [],
                     editable: true,
                     rank: 0,
                 }

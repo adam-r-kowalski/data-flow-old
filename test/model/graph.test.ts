@@ -116,6 +116,7 @@ test("add operation with body to graph", () => {
         uuid: bodyUUID,
         node: numberUUID,
         value: 0,
+        shape: [],
         editable: true,
         rank: 0,
     }

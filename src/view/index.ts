@@ -94,7 +94,7 @@ export const bodyUi = (theme: Theme, body: Body, focus: Focus): UI<AppEvent> => 
             const value = focus.quickSelect.kind === QuickSelectKind.BODY ?
                 (focus.quickSelect.hotkeys[body.uuid] ?? body.value.toString()) :
                 body.value.toString()
-            const onClick: AppEvent | undefined = body.editable ? 
+            const onClick: AppEvent | undefined = body.editable ?
                 {
                     kind: EventKind.CLICKED_BODY,
                     body: body.uuid
@@ -112,6 +112,19 @@ export const bodyUi = (theme: Theme, body: Body, focus: Focus): UI<AppEvent> => 
                 column(
                     (body.value as number[]).map(value => container({ padding: 5 }, text(value.toString())))
                 )
+            )
+        }
+        case 2: {
+            const value = body.value as number[][]
+            return container({ color: theme.background },
+                row(value[0].map((_, i) =>
+                    container({ padding: 5 },
+                        column({ crossAxisAlignment: CrossAxisAlignment.END },
+                            value.map(row =>
+                                container({ padding: 5 }, text(row[i].toString())))
+                        )
+                    )
+                ))
             )
         }
         default: {

@@ -1,5 +1,5 @@
 import { Focus, FocusKind } from "../../src/model/focus"
-import { Body, emptyGraph, Graph, Input, Node, Output } from "../../src/model/graph"
+import { Body, BodyKind, emptyGraph, Graph, Input, Node, Output } from "../../src/model/graph"
 import { PointerActionKind } from "../../src/model/pointer_action"
 import { QuickSelectKind } from "../../src/model/quick_select"
 import { Theme } from "../../src/model/theme"
@@ -98,11 +98,19 @@ test("nodeUi with quick select", () => {
         name: "node",
         position: { x: 0, y: 0 },
         inputs: [],
+        body: 'body uuid',
         outputs: [],
+    }
+    const body: Body = {
+        kind: BodyKind.NO,
+        uuid: 'body uuid',
+        node: 'uuid',
+        editable: false
     }
     const graph: Graph = {
         ...emptyGraph(),
-        nodes: { [node.uuid]: node }
+        nodes: { [node.uuid]: node },
+        bodys: { [body.uuid]: body }
     }
     const focus: Focus = {
         kind: FocusKind.NONE,
@@ -137,6 +145,7 @@ test("nodeUi with quick select", () => {
 
 test("bodyUi quick select", () => {
     const body: Body = {
+        kind: BodyKind.TENSOR,
         uuid: 'body uuid',
         node: 'node',
         value: 0,
@@ -167,6 +176,7 @@ test("bodyUi quick select", () => {
 
 test("bodyUi quick select non editable", () => {
     const body: Body = {
+        kind: BodyKind.TENSOR,
         uuid: 'body uuid',
         node: 'node',
         value: 0,

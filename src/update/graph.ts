@@ -1,6 +1,6 @@
 import * as tf from '@tensorflow/tfjs'
 
-import { Body, Edge, GenerateUUID, Graph, Inputs, Node, Operation, Outputs, Position, UUID } from "../model/graph"
+import { Body, BodyKind, Edge, GenerateUUID, Graph, Inputs, Node, Operation, Outputs, Position, TensorBody, UUID } from "../model/graph"
 
 interface AddNodeInputs {
     graph: Graph
@@ -39,43 +39,41 @@ export const addNode = ({ graph, operation, position, generateUUID }: AddNodeInp
         }
         outputUUIDs.push(uuid)
     }
-    const node: Node = {
-        uuid: nodeUUID,
-        name: operation.name,
-        inputs: inputUUIDs,
-        outputs: outputUUIDs,
-        position,
-        operation: operation.operation
-    }
-    if (operation.body !== undefined) {
-        const body: Body = {
-            uuid: generateUUID(),
+    const uuid = generateUUID()
+    const body: Body = operation.body !== undefined ?
+        {
+            kind: BodyKind.TENSOR,
+            uuid,
             node: nodeUUID,
             value: operation.body,
             rank: 0,
             shape: [],
             editable: true
+        } :
+        {
+            kind: BodyKind.NO,
+            uuid,
+            node: nodeUUID,
+            editable: false
         }
-        return {
-            graph: {
-                ...graph,
-                nodes: { ...graph.nodes, [node.uuid]: { ...node, body: body.uuid } },
-                inputs,
-                outputs,
-                bodys: { ...graph.bodys, [body.uuid]: body }
-            },
-            node: nodeUUID
-        }
-    } else {
-        return {
-            graph: {
-                ...graph,
-                nodes: { ...graph.nodes, [node.uuid]: node },
-                inputs,
-                outputs
-            },
-            node: nodeUUID
-        }
+    const node: Node = {
+        uuid: nodeUUID,
+        name: operation.name,
+        inputs: inputUUIDs,
+        outputs: outputUUIDs,
+        body: uuid,
+        position,
+        operation: operation.operation
+    }
+    return {
+        graph: {
+            ...graph,
+            nodes: { ...graph.nodes, [node.uuid]: { ...node, body: body.uuid } },
+            inputs,
+            outputs,
+            bodys: { ...graph.bodys, [body.uuid]: body }
+        },
+        node: nodeUUID
     }
 }
 
@@ -112,12 +110,14 @@ export const removeNode = (graph: Graph, node: UUID): Graph => {
     }
     for (const input of removedNode.inputs) delete inputs[input]
     for (const output of removedNode.outputs) delete outputs[output]
+    const bodys = { ...graph.bodys }
+    delete bodys[removedNode.body]
     return {
-        ...graph,
         nodes,
         edges,
         inputs,
-        outputs
+        outputs,
+        bodys
     }
 }
 
@@ -149,13 +149,13 @@ export const removeInputEdge = (graph: Graph, input: UUID, generateUUID: Generat
             inputs,
             edges
         }
-        return evaluateNode(graph1, input.node, generateUUID)
+        return evaluateNode(graph1, input.node)
     } else {
         return graph
     }
 }
 
-export const removeOutputEdges = (graph: Graph, output: UUID, generateUUID: GenerateUUID): Graph => {
+export const removeOutputEdges = (graph: Graph, output: UUID): Graph => {
     const edges = { ...graph.edges }
     const inputs = { ...graph.inputs }
     const outputs = { ...graph.outputs }
@@ -181,23 +181,23 @@ export const removeOutputEdges = (graph: Graph, output: UUID, generateUUID: Gene
         inputs,
         edges
     }
-    return nodes.reduce((graph, node) => evaluateNode(graph, node, generateUUID), graph1)
+    return nodes.reduce((graph, node) => evaluateNode(graph, node), graph1)
 }
 
-const evaluateNodeOutputs = (graph: Graph, node: Node, generateUUID: GenerateUUID): Graph =>
+const evaluateNodeOutputs = (graph: Graph, node: Node): Graph =>
     node.outputs.reduce((graph1: Graph, output: UUID): Graph => {
         return graph1.outputs[output].edges.reduce((graph2: Graph, edge: UUID): Graph => {
             const input = graph2.edges[edge].input
             const node = graph2.inputs[input].node
-            return evaluateNode(graph2, node, generateUUID)
+            return evaluateNode(graph2, node)
         }, graph1)
     }, graph)
 
 
-const evaluateNode = (graph: Graph, nodeUUID: UUID, generateUUID: GenerateUUID): Graph => {
+const evaluateNode = (graph: Graph, nodeUUID: UUID): Graph => {
     const node = graph.nodes[nodeUUID]
     if (node.inputs.length === 0) {
-        return evaluateNodeOutputs(graph, node, generateUUID)
+        return evaluateNodeOutputs(graph, node)
     } else {
         const values = node.inputs
             .map(input => graph.inputs[input].edge)
@@ -208,52 +208,43 @@ const evaluateNode = (graph: Graph, nodeUUID: UUID, generateUUID: GenerateUUID):
                 return graph.nodes[output.node].body
             })
             .filter(bodyUUID => bodyUUID !== undefined)
-            .map(bodyUUID => graph.bodys[bodyUUID!].value)
+            .map(bodyUUID => graph.bodys[bodyUUID!])
+            .filter(body => body.kind === BodyKind.TENSOR)
+            .map(body => (body as TensorBody).value)
         if (values.length > 0 && values.length === node.inputs.length) {
             const result = node.operation!.apply(this, values)
             const body: Body = {
-                uuid: generateUUID(),
+                kind: BodyKind.TENSOR,
+                uuid: node.body,
                 node: node.uuid,
                 value: result.arraySync(),
                 rank: result.rank,
                 shape: result.shape,
                 editable: false,
             }
-            const graph1 = {
+            const graph1: Graph = {
                 ...graph,
-                nodes: {
-                    ...graph.nodes,
-                    [node.uuid]: {
-                        ...node,
-                        body: body.uuid
-                    }
-                },
                 bodys: {
                     ...graph.bodys,
                     [body.uuid]: body
                 }
             }
-            if (node.body === undefined) {
-                return evaluateNodeOutputs(graph1, node, generateUUID)
-            } else {
-                delete graph1.bodys[node.body]
-                return evaluateNodeOutputs(graph1, node, generateUUID)
+            return evaluateNodeOutputs(graph1, node)
+        } else if (graph.bodys[node.body].kind !== BodyKind.NO) {
+            const body: Body = {
+                kind: BodyKind.NO,
+                uuid: node.body,
+                node: node.uuid,
+                editable: false
             }
-        } else if (node.body !== undefined) {
-            const bodys = { ...graph.bodys }
-            delete bodys[node.body]
-            const graph1 = {
+            const graph1: Graph = {
                 ...graph,
-                nodes: {
-                    ...graph.nodes,
-                    [node.uuid]: {
-                        ...node,
-                        body: undefined
-                    }
-                },
-                bodys
+                bodys: {
+                    ...graph.bodys,
+                    [body.uuid]: body
+                }
             }
-            return evaluateNodeOutputs(graph1, node, generateUUID)
+            return evaluateNodeOutputs(graph1, node)
         } else {
             return graph
         }
@@ -304,7 +295,7 @@ export const addEdge = ({ graph, input, output, generateUUID }: AddEdgeInputs): 
         }
     }
     return {
-        graph: evaluateNode(graph1, graph1.inputs[input].node, generateUUID),
+        graph: evaluateNode(graph1, graph1.inputs[input].node),
         edge: edge.uuid
     }
 }
@@ -323,18 +314,23 @@ export const changeNodePosition = (graph: Graph, node: UUID, transform: (positio
     }
 }
 
-export const changeBodyValue = (graph: Graph, body: UUID, transform: (value: tf.TensorLike) => tf.TensorLike, generateUUID: GenerateUUID): Graph => {
+export const changeBodyValue = (graph: Graph, body: UUID, transform: (value: tf.TensorLike) => tf.TensorLike): Graph => {
     const currentBody = graph.bodys[body]
-    const graph1 = {
-        ...graph,
-        bodys: {
-            ...graph.bodys,
-            [body]: {
-                ...currentBody,
-                value: transform(currentBody.value)
+    switch (currentBody.kind) {
+        case BodyKind.TENSOR:
+            const graph1 = {
+                ...graph,
+                bodys: {
+                    ...graph.bodys,
+                    [body]: {
+                        ...currentBody,
+                        value: transform(currentBody.value)
+                    }
+                }
             }
-        }
+            const node = graph1.bodys[body].node
+            return evaluateNode(graph1, node)
+        default:
+            return graph
     }
-    const node = graph1.bodys[body].node
-    return evaluateNode(graph1, node, generateUUID)
 }

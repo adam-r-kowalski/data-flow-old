@@ -4,7 +4,7 @@ import { Model } from "../model"
 import { Theme } from '../model/theme'
 import { Focus, FocusFinder, FocusKind } from "../model/focus"
 import { text, stack, scene, row, container, column, Connection, UI } from '../ui'
-import { Body, Graph, Input, Output, UUID } from "../model/graph"
+import { Body, BodyKind, Graph, Input, NoBody, Output, TensorBody, UUID } from "../model/graph"
 import { contextMenu } from "./context_menu"
 import { QuickSelectKind } from "../model/quick_select"
 import { identity } from "../linear_algebra/matrix3x3"
@@ -60,8 +60,9 @@ export const inputsUi = (theme: Theme, inputs: Input[], focus: Focus) =>
     )
 
 
-export const outputUi = (theme: Theme, { name, uuid }: Output, focus: Focus): UI<AppEvent> =>
-    container({
+export const outputUi = (theme: Theme, { name, uuid }: Output, focus: Focus): UI<AppEvent> => {
+    const value = focus.quickSelect.kind === QuickSelectKind.OUTPUT ? focus.quickSelect.hotkeys[uuid] : ' '
+    return container({
         onClick: {
             kind: EventKind.CLICKED_OUTPUT,
             output: uuid
@@ -74,10 +75,11 @@ export const outputUi = (theme: Theme, { name, uuid }: Output, focus: Focus): UI
                 id: uuid,
                 color: isFocused(focus, uuid) ? theme.focusInput : theme.input,
                 padding: { top: 2, right: 4, bottom: 2, left: 4 }
-            }, text({ color: theme.background }, focus.quickSelect.kind === QuickSelectKind.OUTPUT ? focus.quickSelect.hotkeys[uuid] : ' ')),
+            }, text({ color: theme.background }, value)),
         ])
     )
 
+}
 
 export const outputsUi = (theme: Theme, outputs: Output[], focus: Focus) =>
     column(
@@ -87,8 +89,7 @@ export const outputsUi = (theme: Theme, outputs: Output[], focus: Focus) =>
         )
     )
 
-
-export const bodyUi = (theme: Theme, body: Body, focus: Focus): UI<AppEvent> => {
+export const tensorBody = (theme: Theme, body: TensorBody, focus: Focus): UI<AppEvent> => {
     switch (body.rank) {
         case 0: {
             const value = focus.quickSelect.kind === QuickSelectKind.BODY ?
@@ -133,6 +134,13 @@ export const bodyUi = (theme: Theme, body: Body, focus: Focus): UI<AppEvent> => 
     }
 }
 
+export const bodyUi = (theme: Theme, body: Exclude<Body, NoBody>, focus: Focus): UI<AppEvent> => {
+    switch (body.kind) {
+        case BodyKind.TENSOR: return tensorBody(theme, body, focus)
+        default: return text("no body yet")
+    }
+}
+
 
 export const nodeUi = (theme: Theme, nodeUUID: UUID, graph: Graph, focus: Focus): UI<AppEvent> => {
     const node = graph.nodes[nodeUUID]
@@ -143,8 +151,9 @@ export const nodeUi = (theme: Theme, nodeUUID: UUID, graph: Graph, focus: Focus)
     if (node.inputs.length && node.outputs.length) {
         rowEntries.push(spacer(15))
     }
-    if (node.body) {
-        rowEntries.push(bodyUi(theme, graph.bodys[node.body], focus), spacer(15))
+    const body = graph.bodys[node.body]
+    if (body.kind !== BodyKind.NO) {
+        rowEntries.push(bodyUi(theme, body, focus), spacer(15))
     }
     if (node.outputs.length) {
         rowEntries.push(outputsUi(theme, node.outputs.map(o => graph.outputs[o]), focus))

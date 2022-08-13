@@ -18,7 +18,21 @@ export interface Output {
     readonly edges: Readonly<UUID[]>
 }
 
-export interface Body {
+export enum BodyKind {
+    NO,
+    TENSOR,
+    SCATTER
+}
+
+export interface NoBody {
+    readonly kind: BodyKind.NO
+    readonly uuid: UUID
+    readonly node: UUID
+    readonly editable: boolean
+}
+
+export interface TensorBody {
+    readonly kind: BodyKind.TENSOR
     readonly uuid: UUID
     readonly node: UUID
     readonly value: tf.TensorLike
@@ -26,6 +40,20 @@ export interface Body {
     readonly shape: number[]
     readonly editable: boolean
 }
+
+export interface ScatterBody {
+    readonly kind: BodyKind.SCATTER
+    readonly uuid: UUID
+    readonly node: UUID
+    readonly x: tf.TensorLike
+    readonly y: tf.TensorLike
+    readonly editable: boolean
+}
+
+export type Body =
+    | NoBody
+    | TensorBody
+    | ScatterBody
 
 export interface Position {
     readonly x: number
@@ -36,7 +64,7 @@ export interface Node {
     readonly uuid: UUID
     readonly name: string
     readonly inputs: Readonly<UUID[]>
-    readonly body?: UUID
+    readonly body: UUID
     readonly outputs: Readonly<UUID[]>
     readonly position: Position
     readonly operation?: (...inputs: Tensor[]) => tf.Tensor<tf.Rank>

@@ -16,21 +16,21 @@ export const demoModel = (window: Window, generateUUID: GenerateUUID): Model => 
         position: { x: 25, y: 20 },
         generateUUID
     })
-    const graph1 = changeBodyValue(graph0, graph0.nodes[start].body!, () => -5, generateUUID)
+    const graph1 = changeBodyValue(graph0, graph0.nodes[start].body!, () => -5)
     const { graph: graph2, node: stop } = addNode({
         graph: graph1,
         operation: model.operations["number"],
         position: { x: 25, y: 90 },
         generateUUID
     })
-    const graph3 = changeBodyValue(graph2, graph2.nodes[stop].body!, () => 5, generateUUID)
+    const graph3 = changeBodyValue(graph2, graph2.nodes[stop].body!, () => 5)
     const { graph: graph4, node: num } = addNode({
         graph: graph3,
         operation: model.operations["number"],
         position: { x: 25, y: 160 },
         generateUUID
     })
-    const graph5 = changeBodyValue(graph4, graph4.nodes[num].body!, () => 11, generateUUID)
+    const graph5 = changeBodyValue(graph4, graph4.nodes[num].body!, () => 11)
     const { graph: graph6, node: linspace } = addNode({
         graph: graph5,
         operation: model.operations["linspace"],

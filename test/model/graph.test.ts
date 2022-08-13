@@ -1,4 +1,4 @@
-import { emptyGraph, Input, Node, Output, Edge, Body } from "../../src/model/graph"
+import { emptyGraph, Input, Node, Output, Edge, Body, BodyKind } from "../../src/model/graph"
 import { addNode, addEdge, changeNodePosition, removeNode, removeInputEdge, removeOutputEdges } from "../../src/update/graph"
 
 const generateUUID = () => {
@@ -39,10 +39,12 @@ test("add operation to graph", () => {
     const xUUID = generateUUID1()
     const yUUID = generateUUID1()
     const outUUID = generateUUID1()
+    const bodyUUID = generateUUID1()
     const add: Node = {
         uuid: addUUID,
         name: 'Add',
         inputs: [xUUID, yUUID],
+        body: bodyUUID,
         outputs: [outUUID],
         position: { x: 0, y: 0 },
     }
@@ -62,6 +64,12 @@ test("add operation to graph", () => {
         name: 'out',
         edges: []
     }
+    const body: Body = {
+        kind: BodyKind.NO,
+        uuid: bodyUUID,
+        node: addUUID,
+        editable: false
+    }
     expect(graph1).toEqual({
         nodes: {
             [add.uuid]: add
@@ -71,7 +79,7 @@ test("add operation to graph", () => {
             [x.uuid]: x,
             [y.uuid]: y,
         },
-        bodys: {},
+        bodys: { [body.uuid]: body },
         outputs: {
             [out.uuid]: out
         },
@@ -113,6 +121,7 @@ test("add operation with body to graph", () => {
         edges: []
     }
     const body: Body = {
+        kind: BodyKind.TENSOR,
         uuid: bodyUUID,
         node: numberUUID,
         value: 0,
@@ -160,10 +169,12 @@ test("add two operations to graph", () => {
     const xUUID = generateUUID1()
     const yUUID = generateUUID1()
     const outUUID = generateUUID1()
+    const addBodyUUID = generateUUID1()
     const add: Node = {
         uuid: addUUID,
         name: 'Add',
         inputs: [xUUID, yUUID],
+        body: addBodyUUID,
         outputs: [outUUID],
         position: { x: 0, y: 0 },
     }
@@ -183,12 +194,20 @@ test("add two operations to graph", () => {
         name: 'out',
         edges: []
     }
+    const addBody: Body = {
+        kind: BodyKind.NO,
+        uuid: addBodyUUID,
+        node: addUUID,
+        editable: false
+    }
     const logUUID = generateUUID1()
     const valueUUID = generateUUID1()
+    const logBodyUUID = generateUUID1()
     const log: Node = {
         uuid: logUUID,
         name: 'Log To Console',
         inputs: [valueUUID],
+        body: logBodyUUID,
         outputs: [],
         position: { x: 50, y: 50 }
     }
@@ -196,6 +215,12 @@ test("add two operations to graph", () => {
         uuid: valueUUID,
         node: logUUID,
         name: 'value'
+    }
+    const logBody: Body = {
+        kind: BodyKind.NO,
+        uuid: logBodyUUID,
+        node: logUUID,
+        editable: false
     }
     expect(graph1).toEqual({
         nodes: {
@@ -206,7 +231,7 @@ test("add two operations to graph", () => {
             [x.uuid]: x,
             [y.uuid]: y,
         },
-        bodys: {},
+        bodys: { [addBody.uuid]: addBody },
         outputs: {
             [out.uuid]: out
         },
@@ -223,7 +248,10 @@ test("add two operations to graph", () => {
             [y.uuid]: y,
             [value.uuid]: value,
         },
-        bodys: {},
+        bodys: {
+            [addBody.uuid]: addBody,
+            [logBody.uuid]: logBody,
+        },
         outputs: {
             [out.uuid]: out
         },
@@ -269,13 +297,16 @@ test("add edge between two operations", () => {
     const xUUID = generateUUID1()
     const yUUID = generateUUID1()
     const outUUID = generateUUID1()
+    const addBodyUUID = generateUUID1()
     const logUUID = generateUUID1()
     const valueUUID = generateUUID1()
+    const logBodyUUID = generateUUID1()
     const edgeUUID = generateUUID1()
     const add: Node = {
         uuid: addUUID,
         name: 'Add',
         inputs: [xUUID, yUUID],
+        body: addBodyUUID,
         outputs: [outUUID],
         position: { x: 0, y: 0 },
     }
@@ -295,10 +326,17 @@ test("add edge between two operations", () => {
         name: 'out',
         edges: [edgeUUID]
     }
+    const addBody: Body = {
+        kind: BodyKind.NO,
+        uuid: addBodyUUID,
+        node: add.uuid,
+        editable: false
+    }
     const log: Node = {
         uuid: logUUID,
         name: 'Log To Console',
         inputs: [valueUUID],
+        body: logBodyUUID,
         outputs: [],
         position: { x: 50, y: 50 }
     }
@@ -307,6 +345,12 @@ test("add edge between two operations", () => {
         node: logUUID,
         name: 'value',
         edge: edgeUUID
+    }
+    const logBody: Body = {
+        kind: BodyKind.NO,
+        uuid: logBodyUUID,
+        node: log.uuid,
+        editable: false
     }
     const edge: Edge = {
         uuid: edgeUUID,
@@ -326,7 +370,10 @@ test("add edge between two operations", () => {
             [y.uuid]: y,
             [value.uuid]: value,
         },
-        bodys: {},
+        bodys: {
+            [addBody.uuid]: addBody,
+            [logBody.uuid]: logBody,
+        },
         outputs: {
             [out.uuid]: out
         },
@@ -353,10 +400,12 @@ test("change node position", () => {
     const xUUID = generateUUID1()
     const yUUID = generateUUID1()
     const outUUID = generateUUID1()
+    const bodyUUID = generateUUID1()
     const add: Node = {
         uuid: addUUID,
         name: 'Add',
         inputs: [xUUID, yUUID],
+        body: bodyUUID,
         outputs: [outUUID],
         position: { x: 0, y: 0 },
     }
@@ -376,6 +425,12 @@ test("change node position", () => {
         name: 'out',
         edges: []
     }
+    const body: Body = {
+        kind: BodyKind.NO,
+        uuid: bodyUUID,
+        node: add.uuid,
+        editable: false
+    }
     expect(graph).toEqual(emptyGraph())
     expect(graph1).toEqual({
         nodes: {
@@ -386,7 +441,7 @@ test("change node position", () => {
             [x.uuid]: x,
             [y.uuid]: y,
         },
-        bodys: {},
+        bodys: { [bodyUUID]: body },
         outputs: {
             [out.uuid]: out
         },
@@ -397,6 +452,7 @@ test("change node position", () => {
                 uuid: addUUID,
                 name: 'Add',
                 inputs: [xUUID, yUUID],
+                body: bodyUUID,
                 outputs: [outUUID],
                 position: { x: 25, y: -25 },
             }
@@ -406,7 +462,7 @@ test("change node position", () => {
             [x.uuid]: x,
             [y.uuid]: y,
         },
-        bodys: {},
+        bodys: { [bodyUUID]: body },
         outputs: {
             [out.uuid]: out
         },
@@ -451,13 +507,16 @@ test("remove node from graph", () => {
         const xUUID = generateUUID1()
         const yUUID = generateUUID1()
         const outUUID = generateUUID1()
+        const addBodyUUID = generateUUID1()
         const logUUID = generateUUID1()
         const valueUUID = generateUUID1()
+        const logBodyUUID = generateUUID1()
         const edgeUUID = generateUUID1()
         const add: Node = {
             uuid: addUUID,
             name: 'Add',
             inputs: [xUUID, yUUID],
+            body: addBodyUUID,
             outputs: [outUUID],
             position: { x: 0, y: 0 },
         }
@@ -477,10 +536,17 @@ test("remove node from graph", () => {
             name: 'out',
             edges: [edgeUUID]
         }
+        const addBody: Body = {
+            kind: BodyKind.NO,
+            uuid: addBodyUUID,
+            node: add.uuid,
+            editable: false
+        }
         const log: Node = {
             uuid: logUUID,
             name: 'Log To Console',
             inputs: [valueUUID],
+            body: logBodyUUID,
             outputs: [],
             position: { x: 50, y: 50 }
         }
@@ -489,6 +555,12 @@ test("remove node from graph", () => {
             node: logUUID,
             name: 'value',
             edge: edgeUUID
+        }
+        const logBody: Body = {
+            kind: BodyKind.NO,
+            uuid: logBodyUUID,
+            node: log.uuid,
+            editable: false
         }
         const edge: Edge = {
             uuid: edgeUUID,
@@ -508,7 +580,10 @@ test("remove node from graph", () => {
                 [y.uuid]: y,
                 [value.uuid]: value,
             },
-            bodys: {},
+            bodys: {
+                [addBodyUUID]: addBody,
+                [logBodyUUID]: logBody,
+            },
             outputs: {
                 [out.uuid]: out
             },
@@ -525,7 +600,9 @@ test("remove node from graph", () => {
                     name: 'value',
                 },
             },
-            bodys: {},
+            bodys: {
+                [logBodyUUID]: logBody,
+            },
             outputs: {},
         })
     }
@@ -569,13 +646,16 @@ test("remove input edge", () => {
         const xUUID = generateUUID1()
         const yUUID = generateUUID1()
         const outUUID = generateUUID1()
+        const addBodyUUID = generateUUID1()
         const logUUID = generateUUID1()
         const valueUUID = generateUUID1()
+        const logBodyUUID = generateUUID1()
         const edgeUUID = generateUUID1()
         const add: Node = {
             uuid: addUUID,
             name: 'Add',
             inputs: [xUUID, yUUID],
+            body: addBodyUUID,
             outputs: [outUUID],
             position: { x: 0, y: 0 },
         }
@@ -595,10 +675,17 @@ test("remove input edge", () => {
             name: 'out',
             edges: [edgeUUID]
         }
+        const addBody: Body = {
+            kind: BodyKind.NO,
+            uuid: addBodyUUID,
+            node: add.uuid,
+            editable: false
+        }
         const log: Node = {
             uuid: logUUID,
             name: 'Log To Console',
             inputs: [valueUUID],
+            body: logBodyUUID,
             outputs: [],
             position: { x: 50, y: 50 }
         }
@@ -607,6 +694,12 @@ test("remove input edge", () => {
             node: logUUID,
             name: 'value',
             edge: edgeUUID
+        }
+        const logBody: Body = {
+            kind: BodyKind.NO,
+            uuid: logBodyUUID,
+            node: log.uuid,
+            editable: false
         }
         const edge: Edge = {
             uuid: edgeUUID,
@@ -626,7 +719,10 @@ test("remove input edge", () => {
                 [y.uuid]: y,
                 [value.uuid]: value,
             },
-            bodys: {},
+            bodys: {
+                [addBody.uuid]: addBody,
+                [logBody.uuid]: logBody,
+            },
             outputs: {
                 [out.uuid]: out
             },
@@ -646,7 +742,10 @@ test("remove input edge", () => {
                     name: 'value',
                 },
             },
-            bodys: {},
+            bodys: {
+                [addBody.uuid]: addBody,
+                [logBody.uuid]: logBody,
+            },
             outputs: {
                 [out.uuid]: {
                     ...out,
@@ -695,13 +794,16 @@ test("remove node with input edge", () => {
         const xUUID = generateUUID1()
         const yUUID = generateUUID1()
         const outUUID = generateUUID1()
+        const addBodyUUID = generateUUID1()
         const logUUID = generateUUID1()
         const valueUUID = generateUUID1()
+        const logBodyUUID = generateUUID1()
         const edgeUUID = generateUUID1()
         const add: Node = {
             uuid: addUUID,
             name: 'Add',
             inputs: [xUUID, yUUID],
+            body: addBodyUUID,
             outputs: [outUUID],
             position: { x: 0, y: 0 },
         }
@@ -721,10 +823,17 @@ test("remove node with input edge", () => {
             name: 'out',
             edges: [edgeUUID]
         }
+        const addBody: Body = {
+            kind: BodyKind.NO,
+            uuid: addBodyUUID,
+            node: add.uuid,
+            editable: false
+        }
         const log: Node = {
             uuid: logUUID,
             name: 'Log To Console',
             inputs: [valueUUID],
+            body: logBodyUUID,
             outputs: [],
             position: { x: 50, y: 50 }
         }
@@ -733,6 +842,12 @@ test("remove node with input edge", () => {
             node: logUUID,
             name: 'value',
             edge: edgeUUID
+        }
+        const logBody: Body = {
+            kind: BodyKind.NO,
+            uuid: logBodyUUID,
+            node: log.uuid,
+            editable: false
         }
         const edge: Edge = {
             uuid: edgeUUID,
@@ -752,7 +867,10 @@ test("remove node with input edge", () => {
                 [y.uuid]: y,
                 [value.uuid]: value,
             },
-            bodys: {},
+            bodys: {
+                [addBodyUUID]: addBody,
+                [logBodyUUID]: logBody,
+            },
             outputs: {
                 [out.uuid]: out
             },
@@ -766,7 +884,9 @@ test("remove node with input edge", () => {
                 [x.uuid]: x,
                 [y.uuid]: y,
             },
-            bodys: {},
+            bodys: {
+                [addBodyUUID]: addBody,
+            },
             outputs: {
                 [out.uuid]: {
                     ...out,
@@ -809,12 +929,15 @@ test("remove input edge when node has no inputs nothing changes", () => {
         const xUUID = generateUUID1()
         const yUUID = generateUUID1()
         const outUUID = generateUUID1()
+        const addBodyUUID = generateUUID1()
         const logUUID = generateUUID1()
         const valueUUID = generateUUID1()
+        const logBodyUUID = generateUUID1()
         const add: Node = {
             uuid: addUUID,
             name: 'Add',
             inputs: [xUUID, yUUID],
+            body: addBodyUUID,
             outputs: [outUUID],
             position: { x: 0, y: 0 },
         }
@@ -828,6 +951,12 @@ test("remove input edge when node has no inputs nothing changes", () => {
             node: addUUID,
             name: 'y'
         }
+        const addBody: Body = {
+            kind: BodyKind.NO,
+            uuid: addBodyUUID,
+            node: add.uuid,
+            editable: false
+        }
         const out: Output = {
             uuid: outUUID,
             node: addUUID,
@@ -838,6 +967,7 @@ test("remove input edge when node has no inputs nothing changes", () => {
             uuid: logUUID,
             name: 'Log To Console',
             inputs: [valueUUID],
+            body: logBodyUUID,
             outputs: [],
             position: { x: 50, y: 50 }
         }
@@ -845,6 +975,12 @@ test("remove input edge when node has no inputs nothing changes", () => {
             uuid: valueUUID,
             node: logUUID,
             name: 'value',
+        }
+        const logBody: Body = {
+            kind: BodyKind.NO,
+            uuid: logBodyUUID,
+            node: log.uuid,
+            editable: false
         }
         expect(graph2).toEqual({
             nodes: {
@@ -857,7 +993,10 @@ test("remove input edge when node has no inputs nothing changes", () => {
                 [y.uuid]: y,
                 [value.uuid]: value,
             },
-            bodys: {},
+            bodys: {
+                [addBody.uuid]: addBody,
+                [logBody.uuid]: logBody,
+            },
             outputs: {
                 [out.uuid]: out
             },
@@ -899,19 +1038,22 @@ test("remove output edge", () => {
         output: out,
         generateUUID: generateUUID0
     })
-    const graph4 = removeOutputEdges(graph3, out, generateUUID0)
+    const graph4 = removeOutputEdges(graph3, out)
     {
         const addUUID = generateUUID1()
         const xUUID = generateUUID1()
         const yUUID = generateUUID1()
         const outUUID = generateUUID1()
+        const addBodyUUID = generateUUID1()
         const logUUID = generateUUID1()
         const valueUUID = generateUUID1()
+        const logBodyUUID = generateUUID1()
         const edgeUUID = generateUUID1()
         const add: Node = {
             uuid: addUUID,
             name: 'Add',
             inputs: [xUUID, yUUID],
+            body: addBodyUUID,
             outputs: [outUUID],
             position: { x: 0, y: 0 },
         }
@@ -931,10 +1073,17 @@ test("remove output edge", () => {
             name: 'out',
             edges: [edgeUUID]
         }
+        const addBody: Body = {
+            kind: BodyKind.NO,
+            uuid: addBodyUUID,
+            node: add.uuid,
+            editable: false
+        }
         const log: Node = {
             uuid: logUUID,
             name: 'Log To Console',
             inputs: [valueUUID],
+            body: logBodyUUID,
             outputs: [],
             position: { x: 50, y: 50 }
         }
@@ -943,6 +1092,12 @@ test("remove output edge", () => {
             node: logUUID,
             name: 'value',
             edge: edgeUUID
+        }
+        const logBody: Body = {
+            kind: BodyKind.NO,
+            uuid: logBodyUUID,
+            node: log.uuid,
+            editable: false
         }
         const edge: Edge = {
             uuid: edgeUUID,
@@ -962,7 +1117,10 @@ test("remove output edge", () => {
                 [y.uuid]: y,
                 [value.uuid]: value,
             },
-            bodys: {},
+            bodys: {
+                [addBody.uuid]: addBody,
+                [logBody.uuid]: logBody,
+            },
             outputs: {
                 [out.uuid]: out
             },
@@ -982,7 +1140,10 @@ test("remove output edge", () => {
                     name: 'value',
                 },
             },
-            bodys: {},
+            bodys: {
+                [addBody.uuid]: addBody,
+                [logBody.uuid]: logBody,
+            },
             outputs: {
                 [out.uuid]: {
                     ...out,

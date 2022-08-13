@@ -4,7 +4,7 @@ import '@tensorflow/tfjs-backend-cpu'
 import { Model } from '../../src/model'
 import { emptyModel } from '../../src/model/empty'
 import { FocusKind } from '../../src/model/focus'
-import { Operations } from "../../src/model/graph"
+import { BodyKind, Operations } from "../../src/model/graph"
 import { QuickSelectKind } from '../../src/model/quick_select'
 import { addNodeToGraph, EventKind, update } from '../../src/update'
 import { EffectModel, makeEffects } from "../mock_effects"
@@ -71,7 +71,7 @@ test("connecting all inputs for node evaluates operation", () => {
                     uuid: x,
                     name: "Number",
                     inputs: [],
-                    body: model4.graph.nodes[x].body!,
+                    body: model4.graph.nodes[x].body,
                     outputs: model4.graph.nodes[x].outputs,
                     position: { x: 0, y: 0 }
                 },
@@ -79,7 +79,7 @@ test("connecting all inputs for node evaluates operation", () => {
                     uuid: y,
                     name: "Number",
                     inputs: [],
-                    body: model4.graph.nodes[y].body!,
+                    body: model4.graph.nodes[y].body,
                     outputs: model4.graph.nodes[y].outputs,
                     position: { x: 0, y: 0 }
                 },
@@ -87,20 +87,20 @@ test("connecting all inputs for node evaluates operation", () => {
                     uuid: add,
                     name: "Add",
                     inputs: model4.graph.nodes[add].inputs,
-                    body: '12',
+                    body: model4.graph.nodes[add].body,
                     outputs: model4.graph.nodes[add].outputs,
                     position: { x: 0, y: 0 },
                     operation: tf.add
                 },
             },
             edges: {
-                "10": {
-                    uuid: "10",
+                "11": {
+                    uuid: "11",
                     input: model4.graph.nodes[add].inputs[0],
                     output: "1",
                 },
-                "11": {
-                    uuid: "11",
+                "12": {
+                    uuid: "12",
                     input: model4.graph.nodes[add].inputs[1],
                     output: "4",
                 }
@@ -110,13 +110,13 @@ test("connecting all inputs for node evaluates operation", () => {
                     uuid: model4.graph.nodes[add].inputs[0],
                     name: "x",
                     node: add,
-                    edge: "10"
+                    edge: "11"
                 },
                 [model4.graph.nodes[add].inputs[1]]: {
                     uuid: model4.graph.nodes[add].inputs[1],
                     name: "y",
                     node: add,
-                    edge: "11"
+                    edge: "12"
                 }
             },
             outputs: {
@@ -124,13 +124,13 @@ test("connecting all inputs for node evaluates operation", () => {
                     uuid: model4.graph.nodes[x].outputs[0],
                     name: "out",
                     node: x,
-                    edges: ["10"]
+                    edges: ["11"]
                 },
                 [model4.graph.nodes[y].outputs[0]]: {
                     uuid: model4.graph.nodes[y].outputs[0],
                     name: "out",
                     node: y,
-                    edges: ["11"]
+                    edges: ["12"]
                 },
                 [model4.graph.nodes[add].outputs[0]]: {
                     uuid: model4.graph.nodes[add].outputs[0],
@@ -140,7 +140,8 @@ test("connecting all inputs for node evaluates operation", () => {
                 },
             },
             bodys: {
-                [model4.graph.nodes[x].body!]: {
+                [model4.graph.nodes[x].body]: {
+                    kind: BodyKind.TENSOR,
                     uuid: model4.graph.nodes[x].body!,
                     node: x,
                     value: 5,
@@ -148,7 +149,8 @@ test("connecting all inputs for node evaluates operation", () => {
                     editable: true,
                     rank: 0,
                 },
-                [model4.graph.nodes[y].body!]: {
+                [model4.graph.nodes[y].body]: {
+                    kind: BodyKind.TENSOR,
                     uuid: model4.graph.nodes[y].body!,
                     node: y,
                     value: 5,
@@ -156,8 +158,9 @@ test("connecting all inputs for node evaluates operation", () => {
                     editable: true,
                     rank: 0,
                 },
-                '12': {
-                    uuid: '12',
+                [model4.graph.nodes[add].body]: {
+                    kind: BodyKind.TENSOR,
+                    uuid: model4.graph.nodes[add].body,
                     node: add,
                     value: 10,
                     shape: [],
@@ -243,7 +246,7 @@ test("clicking output after clicking input adds connection", () => {
                     uuid: x,
                     name: "Number",
                     inputs: [],
-                    body: model4.graph.nodes[x].body!,
+                    body: model4.graph.nodes[x].body,
                     outputs: model4.graph.nodes[x].outputs,
                     position: { x: 0, y: 0 }
                 },
@@ -251,7 +254,7 @@ test("clicking output after clicking input adds connection", () => {
                     uuid: y,
                     name: "Number",
                     inputs: [],
-                    body: model4.graph.nodes[y].body!,
+                    body: model4.graph.nodes[y].body,
                     outputs: model4.graph.nodes[y].outputs,
                     position: { x: 0, y: 0 }
                 },
@@ -259,20 +262,20 @@ test("clicking output after clicking input adds connection", () => {
                     uuid: add,
                     name: "Add",
                     inputs: model4.graph.nodes[add].inputs,
-                    body: '13',
+                    body: model4.graph.nodes[add].body,
                     outputs: model4.graph.nodes[add].outputs,
                     position: { x: 0, y: 0 },
                     operation: tf.add
                 },
             },
             edges: {
-                "10": {
-                    uuid: "10",
+                "11": {
+                    uuid: "11",
                     input: model4.graph.nodes[add].inputs[0],
                     output: "1",
                 },
-                "11": {
-                    uuid: "11",
+                "12": {
+                    uuid: "12",
                     input: model4.graph.nodes[add].inputs[1],
                     output: "4",
                 }
@@ -282,13 +285,13 @@ test("clicking output after clicking input adds connection", () => {
                     uuid: model4.graph.nodes[add].inputs[0],
                     name: "x",
                     node: add,
-                    edge: "10"
+                    edge: "11"
                 },
                 [model4.graph.nodes[add].inputs[1]]: {
                     uuid: model4.graph.nodes[add].inputs[1],
                     name: "y",
                     node: add,
-                    edge: "11"
+                    edge: "12"
                 }
             },
             outputs: {
@@ -296,13 +299,13 @@ test("clicking output after clicking input adds connection", () => {
                     uuid: model4.graph.nodes[x].outputs[0],
                     name: "out",
                     node: x,
-                    edges: ["10"]
+                    edges: ["11"]
                 },
                 [model4.graph.nodes[y].outputs[0]]: {
                     uuid: model4.graph.nodes[y].outputs[0],
                     name: "out",
                     node: y,
-                    edges: ["11"]
+                    edges: ["12"]
                 },
                 [model4.graph.nodes[add].outputs[0]]: {
                     uuid: model4.graph.nodes[add].outputs[0],
@@ -312,7 +315,8 @@ test("clicking output after clicking input adds connection", () => {
                 },
             },
             bodys: {
-                [model4.graph.nodes[x].body!]: {
+                [model4.graph.nodes[x].body]: {
+                    kind: BodyKind.TENSOR,
                     uuid: model4.graph.nodes[x].body!,
                     node: x,
                     value: 0,
@@ -320,7 +324,8 @@ test("clicking output after clicking input adds connection", () => {
                     editable: true,
                     rank: 0,
                 },
-                [model4.graph.nodes[y].body!]: {
+                [model4.graph.nodes[y].body]: {
+                    kind: BodyKind.TENSOR,
                     uuid: model4.graph.nodes[y].body!,
                     node: y,
                     value: 5,
@@ -328,8 +333,9 @@ test("clicking output after clicking input adds connection", () => {
                     editable: true,
                     rank: 0,
                 },
-                '13': {
-                    uuid: '13',
+                [model4.graph.nodes[add].body]: {
+                    kind: BodyKind.TENSOR,
+                    uuid: model4.graph.nodes[add].body,
                     node: add,
                     value: 5,
                     shape: [],
@@ -418,7 +424,7 @@ test("deleting input edge deletes body in associated input node and propagates o
                     uuid: x,
                     name: "Number",
                     inputs: [],
-                    body: model4.graph.nodes[x].body!,
+                    body: model4.graph.nodes[x].body,
                     outputs: model4.graph.nodes[x].outputs,
                     position: { x: 0, y: 0 }
                 },
@@ -426,7 +432,7 @@ test("deleting input edge deletes body in associated input node and propagates o
                     uuid: y,
                     name: "Number",
                     inputs: [],
-                    body: model4.graph.nodes[y].body!,
+                    body: model4.graph.nodes[y].body,
                     outputs: model4.graph.nodes[y].outputs,
                     position: { x: 0, y: 0 }
                 },
@@ -434,14 +440,15 @@ test("deleting input edge deletes body in associated input node and propagates o
                     uuid: add,
                     name: "Add",
                     inputs: model4.graph.nodes[add].inputs,
+                    body: model4.graph.nodes[add].body,
                     outputs: model4.graph.nodes[add].outputs,
                     position: { x: 0, y: 0 },
                     operation: tf.add
                 },
             },
             edges: {
-                "10": {
-                    uuid: "10",
+                "11": {
+                    uuid: "11",
                     input: model4.graph.nodes[add].inputs[0],
                     output: "1",
                 },
@@ -451,7 +458,7 @@ test("deleting input edge deletes body in associated input node and propagates o
                     uuid: model4.graph.nodes[add].inputs[0],
                     name: "x",
                     node: add,
-                    edge: "10"
+                    edge: "11"
                 },
                 [model4.graph.nodes[add].inputs[1]]: {
                     uuid: model4.graph.nodes[add].inputs[1],
@@ -464,7 +471,7 @@ test("deleting input edge deletes body in associated input node and propagates o
                     uuid: model4.graph.nodes[x].outputs[0],
                     name: "out",
                     node: x,
-                    edges: ["10"]
+                    edges: ["11"]
                 },
                 [model4.graph.nodes[y].outputs[0]]: {
                     uuid: model4.graph.nodes[y].outputs[0],
@@ -480,7 +487,8 @@ test("deleting input edge deletes body in associated input node and propagates o
                 },
             },
             bodys: {
-                [model4.graph.nodes[x].body!]: {
+                [model4.graph.nodes[x].body]: {
+                    kind: BodyKind.TENSOR,
                     uuid: model4.graph.nodes[x].body!,
                     node: x,
                     value: 5,
@@ -488,13 +496,20 @@ test("deleting input edge deletes body in associated input node and propagates o
                     editable: true,
                     rank: 0,
                 },
-                [model4.graph.nodes[y].body!]: {
+                [model4.graph.nodes[y].body]: {
+                    kind: BodyKind.TENSOR,
                     uuid: model4.graph.nodes[y].body!,
                     node: y,
                     value: 5,
                     shape: [],
                     editable: true,
                     rank: 0,
+                },
+                [model4.graph.nodes[add].body]: {
+                    kind: BodyKind.NO,
+                    uuid: model4.graph.nodes[add].body,
+                    node: add,
+                    editable: false,
                 },
             }
         },
@@ -573,7 +588,7 @@ test("deleting output edge deletes body in associated input node and propagates 
                     uuid: x,
                     name: "Number",
                     inputs: [],
-                    body: model4.graph.nodes[x].body!,
+                    body: model4.graph.nodes[x].body,
                     outputs: model4.graph.nodes[x].outputs,
                     position: { x: 0, y: 0 }
                 },
@@ -581,7 +596,7 @@ test("deleting output edge deletes body in associated input node and propagates 
                     uuid: y,
                     name: "Number",
                     inputs: [],
-                    body: model4.graph.nodes[y].body!,
+                    body: model4.graph.nodes[y].body,
                     outputs: model4.graph.nodes[y].outputs,
                     position: { x: 0, y: 0 }
                 },
@@ -589,14 +604,15 @@ test("deleting output edge deletes body in associated input node and propagates 
                     uuid: add,
                     name: "Add",
                     inputs: model4.graph.nodes[add].inputs,
+                    body: model4.graph.nodes[add].body,
                     outputs: model4.graph.nodes[add].outputs,
                     position: { x: 0, y: 0 },
                     operation: tf.add
                 },
             },
             edges: {
-                "10": {
-                    uuid: "10",
+                "11": {
+                    uuid: "11",
                     input: model4.graph.nodes[add].inputs[0],
                     output: "1",
                 },
@@ -606,7 +622,7 @@ test("deleting output edge deletes body in associated input node and propagates 
                     uuid: model4.graph.nodes[add].inputs[0],
                     name: "x",
                     node: add,
-                    edge: "10"
+                    edge: "11"
                 },
                 [model4.graph.nodes[add].inputs[1]]: {
                     uuid: model4.graph.nodes[add].inputs[1],
@@ -619,7 +635,7 @@ test("deleting output edge deletes body in associated input node and propagates 
                     uuid: model4.graph.nodes[x].outputs[0],
                     name: "out",
                     node: x,
-                    edges: ["10"]
+                    edges: ["11"]
                 },
                 [model4.graph.nodes[y].outputs[0]]: {
                     uuid: model4.graph.nodes[y].outputs[0],
@@ -635,21 +651,29 @@ test("deleting output edge deletes body in associated input node and propagates 
                 },
             },
             bodys: {
-                [model4.graph.nodes[x].body!]: {
-                    uuid: model4.graph.nodes[x].body!,
+                [model4.graph.nodes[x].body]: {
+                    kind: BodyKind.TENSOR,
+                    uuid: model4.graph.nodes[x].body,
                     node: x,
                     value: 5,
                     shape: [],
                     editable: true,
                     rank: 0,
                 },
-                [model4.graph.nodes[y].body!]: {
-                    uuid: model4.graph.nodes[y].body!,
+                [model4.graph.nodes[y].body]: {
+                    kind: BodyKind.TENSOR,
+                    uuid: model4.graph.nodes[y].body,
                     node: y,
                     value: 5,
                     shape: [],
                     editable: true,
                     rank: 0,
+                },
+                [model4.graph.nodes[add].body]: {
+                    kind: BodyKind.NO,
+                    uuid: model4.graph.nodes[add].body,
+                    node: add,
+                    editable: false,
                 },
             }
         },

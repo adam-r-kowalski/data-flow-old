@@ -5,11 +5,14 @@ import { Model } from '../../src/model'
 import { emptyModel } from '../../src/model/empty'
 import { FocusKind } from '../../src/model/focus'
 import { BodyKind, Operations } from "../../src/model/graph"
+import { tensorOperation } from '../../src/model/operations'
 import { QuickSelectKind } from '../../src/model/quick_select'
 import { addNodeToGraph, EventKind, update } from '../../src/update'
 import { EffectModel, makeEffects } from "../mock_effects"
 
 const model = emptyModel({ width: 500, height: 500 })
+
+const addOp = tensorOperation(tf.add)
 
 test("connecting all inputs for node evaluates operation", () => {
     const effectModel: EffectModel = { uuid: 0, time: 0 }
@@ -25,7 +28,7 @@ test("connecting all inputs for node evaluates operation", () => {
             name: 'Add',
             inputs: ['x', 'y'],
             outputs: ['out'],
-            operation: tf.add
+            operation: addOp
         },
     }
     const model0: Model = { ...model, operations }
@@ -90,7 +93,7 @@ test("connecting all inputs for node evaluates operation", () => {
                     body: model4.graph.nodes[add].body,
                     outputs: model4.graph.nodes[add].outputs,
                     position: { x: 0, y: 0 },
-                    operation: tf.add
+                    operation: addOp
                 },
             },
             edges: {
@@ -191,7 +194,7 @@ test("clicking output after clicking input adds connection", () => {
             name: 'Add',
             inputs: ['x', 'y'],
             outputs: ['out'],
-            operation: tf.add
+            operation: addOp
         },
     }
     const model0: Model = { ...model, operations }
@@ -265,7 +268,7 @@ test("clicking output after clicking input adds connection", () => {
                     body: model4.graph.nodes[add].body,
                     outputs: model4.graph.nodes[add].outputs,
                     position: { x: 0, y: 0 },
-                    operation: tf.add
+                    operation: addOp
                 },
             },
             edges: {
@@ -369,7 +372,7 @@ test("deleting input edge deletes body in associated input node and propagates o
             name: 'Add',
             inputs: ['x', 'y'],
             outputs: ['out'],
-            operation: tf.add
+            operation: addOp
         },
     }
     const model0: Model = { ...model, operations }
@@ -443,7 +446,7 @@ test("deleting input edge deletes body in associated input node and propagates o
                     body: model4.graph.nodes[add].body,
                     outputs: model4.graph.nodes[add].outputs,
                     position: { x: 0, y: 0 },
-                    operation: tf.add
+                    operation: addOp
                 },
             },
             edges: {
@@ -533,7 +536,7 @@ test("deleting output edge deletes body in associated input node and propagates 
             name: 'Add',
             inputs: ['x', 'y'],
             outputs: ['out'],
-            operation: tf.add
+            operation: addOp
         },
     }
     const model0: Model = { ...model, operations }
@@ -607,7 +610,7 @@ test("deleting output edge deletes body in associated input node and propagates 
                     body: model4.graph.nodes[add].body,
                     outputs: model4.graph.nodes[add].outputs,
                     position: { x: 0, y: 0 },
-                    operation: tf.add
+                    operation: addOp
                 },
             },
             edges: {

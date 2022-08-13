@@ -1,6 +1,6 @@
 import * as tf from '@tensorflow/tfjs'
 
-import { Body, BodyKind, Edge, GenerateUUID, Graph, Inputs, Node, Operation, Outputs, Position, TensorBody, UUID } from "../model/graph"
+import { Body, BodyKind, Edge, GenerateUUID, Graph, Inputs, Node, Operation, Outputs, Position, UUID } from "../model/graph"
 
 interface AddNodeInputs {
     graph: Graph
@@ -209,19 +209,9 @@ const evaluateNode = (graph: Graph, nodeUUID: UUID): Graph => {
             })
             .filter(bodyUUID => bodyUUID !== undefined)
             .map(bodyUUID => graph.bodys[bodyUUID!])
-            .filter(body => body.kind === BodyKind.TENSOR)
-            .map(body => (body as TensorBody).value)
+            .filter(body => body.kind !== BodyKind.NO)
         if (values.length > 0 && values.length === node.inputs.length) {
-            const result = node.operation!.apply(this, values)
-            const body: Body = {
-                kind: BodyKind.TENSOR,
-                uuid: node.body,
-                node: node.uuid,
-                value: result.arraySync(),
-                rank: result.rank,
-                shape: result.shape,
-                editable: false,
-            }
+            const body = node.operation!(graph.bodys[node.body], ...values)
             const graph1: Graph = {
                 ...graph,
                 bodys: {

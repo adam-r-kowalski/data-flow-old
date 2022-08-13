@@ -67,7 +67,7 @@ export interface Node {
     readonly body: UUID
     readonly outputs: Readonly<UUID[]>
     readonly position: Position
-    readonly operation?: (...inputs: Tensor[]) => tf.Tensor<tf.Rank>
+    readonly operation?: (currentBody: Body, ...inputs: Body[]) => Body
 }
 
 export interface Edge {
@@ -97,7 +97,7 @@ export interface Operation {
     readonly inputs: Readonly<string[]>
     readonly body?: number
     readonly outputs: Readonly<string[]>
-    readonly operation?: (...inputs: Tensor[]) => tf.Tensor<tf.Rank>
+    readonly operation?: (currentBody: Body, ...inputs: Body[]) => Body
 }
 
 export type Operations = { [name: string]: Operation }

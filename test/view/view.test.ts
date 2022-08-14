@@ -25,6 +25,7 @@ import {
 } from "../../src/view"
 import { contextMenu } from "../../src/view/context_menu"
 import { QuickSelectKind } from "../../src/model/quick_select"
+import { normalize } from "../../src/normalize"
 
 test("spacer", () => {
     expect(spacer(10)).toEqual(container({ width: 10, height: 10 }))
@@ -366,8 +367,8 @@ test("bodyUi with scatter plot", () => {
         kind: BodyKind.SCATTER,
         uuid: 'body uuid',
         node: 'node',
-        x: [0, 1, 2],
-        y: [3, 5, 7],
+        x: normalize([0, 1, 2], [10, 280]),
+        y: normalize([3, 5, 7], [10, 280]),
         editable: false,
     }
     const focus: Focus = {
@@ -376,7 +377,31 @@ test("bodyUi with scatter plot", () => {
         quickSelect: { kind: QuickSelectKind.NONE }
     }
     const actual = bodyUi(theme, body, focus)
-    const expected = text("no body yet")
+    const expected = container({ width: 300, height: 300, color: theme.background },
+        stack([
+            container({
+                x: 10,
+                y: 280,
+                width: 10,
+                height: 10,
+                color: theme.focusInput
+            }),
+            container({
+                x: 145,
+                y: 145,
+                width: 10,
+                height: 10,
+                color: theme.focusInput
+            }),
+            container({
+                x: 280,
+                y: 10,
+                width: 10,
+                height: 10,
+                color: theme.focusInput
+            }),
+        ])
+    )
     expect(actual).toEqual(expected)
 })
 

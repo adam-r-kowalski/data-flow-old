@@ -4,7 +4,7 @@ import { Model } from "../model"
 import { Theme } from '../model/theme'
 import { Focus, FocusFinder, FocusKind } from "../model/focus"
 import { text, stack, scene, row, container, column, Connection, UI } from '../ui'
-import { Body, BodyKind, Graph, Input, NoBody, Output, TensorBody, UUID } from "../model/graph"
+import { Body, BodyKind, Graph, Input, NoBody, Output, ScatterBody, TensorBody, UUID } from "../model/graph"
 import { contextMenu } from "./context_menu"
 import { QuickSelectKind } from "../model/quick_select"
 import { identity } from "../linear_algebra/matrix3x3"
@@ -134,10 +134,24 @@ export const tensorBody = (theme: Theme, body: TensorBody, focus: Focus): UI<App
     }
 }
 
+export const scatterBody = (theme: Theme, body: ScatterBody): UI<AppEvent> => {
+    return container({ width: 300, height: 300, color: theme.background },
+        stack(
+            body.x.map((x, i) => container({
+                x: x,
+                y: 290 - body.y[i],
+                width: 10,
+                height: 10,
+                color: theme.focusInput
+            }))
+        )
+    )
+}
+
 export const bodyUi = (theme: Theme, body: Exclude<Body, NoBody>, focus: Focus): UI<AppEvent> => {
     switch (body.kind) {
         case BodyKind.TENSOR: return tensorBody(theme, body, focus)
-        default: return text("no body yet")
+        case BodyKind.SCATTER: return scatterBody(theme, body)
     }
 }
 

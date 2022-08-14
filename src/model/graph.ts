@@ -45,8 +45,8 @@ export interface ScatterBody {
     readonly kind: BodyKind.SCATTER
     readonly uuid: UUID
     readonly node: UUID
-    readonly x: tf.TensorLike
-    readonly y: tf.TensorLike
+    readonly x: number[]
+    readonly y: number[]
     readonly editable: boolean
 }
 

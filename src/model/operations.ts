@@ -1,4 +1,5 @@
 import * as tf from '@tensorflow/tfjs-core';
+import { normalize } from '../normalize';
 
 import { Operations, Body, Tensor, BodyKind, TensorBody } from "./graph"
 
@@ -21,6 +22,19 @@ export const tensorOperation = (f: TensorOperation): Operation => {
             shape: result.shape,
             editable: false,
         }
+    }
+}
+
+export const scatter = ({ uuid, node }: Body, ...inputs: Body[]): Body => {
+    const x = normalize((inputs[0] as TensorBody).value as number[], [10, 280])
+    const y = normalize((inputs[1] as TensorBody).value as number[], [10, 280])
+    return {
+        kind: BodyKind.SCATTER,
+        uuid: uuid,
+        node: node,
+        x,
+        y,
+        editable: false,
     }
 }
 
@@ -517,6 +531,12 @@ export const operations: Operations = {
         outputs: ["out"],
         operation: tensorOperation(tf.rsqrt)
     },
+    "scatter": {
+        name: "scatter",
+        inputs: ["x", "y"],
+        outputs: ["plot"],
+        operation: scatter
+    },
     "selu": {
         name: "selu",
         inputs: ["x"],
@@ -588,6 +608,12 @@ export const operations: Operations = {
         inputs: ["x"],
         outputs: ["out"],
         operation: tensorOperation(tf.sum as TensorOperation)
+    },
+    "stack": {
+        name: "stack",
+        inputs: ["x", "y"],
+        outputs: ["out"],
+        operation: tensorOperation((x, y) => tf.stack([x, y], 1))
     },
     "step": {
         name: "step",

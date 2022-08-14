@@ -14,11 +14,12 @@ import {
     inputUi,
     intersperse,
     nodeUi,
-    bodyUi,
     numericVirtualKeyboard,
     outputsUi,
     outputUi,
     spacer,
+    tensorBody,
+    scatterBody,
     view,
     virtualKey,
     virtualKeys,
@@ -43,6 +44,7 @@ const theme: Theme = {
     input: { red: 188, green: 240, blue: 192, alpha: 255 },
     focusInput: { red: 175, green: 122, blue: 208, alpha: 255 },
     connection: { red: 255, green: 255, blue: 255, alpha: 255 },
+    error: { red: 199, green: 56, blue: 65, alpha: 255 },
 }
 
 test("inputUi not focused", () => {
@@ -240,7 +242,7 @@ test("outputsUi", () => {
     expect(actual).toEqual(expected)
 })
 
-test("bodyUi not focused", () => {
+test("tensorBody not focused", () => {
     const body: Body = {
         kind: BodyKind.TENSOR,
         uuid: 'body uuid',
@@ -255,7 +257,7 @@ test("bodyUi not focused", () => {
         pointerAction: { kind: PointerActionKind.NONE },
         quickSelect: { kind: QuickSelectKind.NONE }
     }
-    const actual = bodyUi(theme, body, focus)
+    const actual = tensorBody(theme, body, focus)
     const expected = container({
         color: theme.background,
         padding: 5,
@@ -278,7 +280,7 @@ test("bodyUi editing", () => {
         editable: true,
         rank: 0,
     }
-    const actual = bodyUi(theme, body, {
+    const actual = tensorBody(theme, body, {
         kind: FocusKind.BODY,
         body: 'body uuid',
         quickSelect: { kind: QuickSelectKind.NONE }
@@ -310,7 +312,7 @@ test("bodyUi with vector", () => {
         pointerAction: { kind: PointerActionKind.NONE },
         quickSelect: { kind: QuickSelectKind.NONE }
     }
-    const actual = bodyUi(theme, body, focus)
+    const actual = tensorBody(theme, body, focus)
     const expected = container({ color: theme.background },
         column([
             container({ padding: 5 }, text("0")),
@@ -336,7 +338,7 @@ test("bodyUi with matrix", () => {
         pointerAction: { kind: PointerActionKind.NONE },
         quickSelect: { kind: QuickSelectKind.NONE }
     }
-    const actual = bodyUi(theme, body, focus)
+    const actual = tensorBody(theme, body, focus)
     const expected = container({ color: theme.background },
         row([
             container({ padding: 5 },
@@ -371,12 +373,7 @@ test("bodyUi with scatter plot", () => {
         y: normalize([3, 5, 7], [10, 280]),
         editable: false,
     }
-    const focus: Focus = {
-        kind: FocusKind.NONE,
-        pointerAction: { kind: PointerActionKind.NONE },
-        quickSelect: { kind: QuickSelectKind.NONE }
-    }
-    const actual = bodyUi(theme, body, focus)
+    const actual = scatterBody(theme, body)
     const expected = container({ width: 300, height: 300, color: theme.background },
         stack([
             container({
@@ -600,7 +597,7 @@ test("nodeUi no inputs or outputs but body defined", () => {
         column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             text("node"),
             spacer(4),
-            row([bodyUi(theme, body, focus), spacer(15)])
+            row([tensorBody(theme, body, focus), spacer(15)])
         ])
     )
     expect(actual).toEqual(expected)
@@ -720,7 +717,7 @@ test("nodeUi 1 input body but no outputs", () => {
             spacer(4),
             row([
                 inputsUi(theme, node.inputs.map(i => graph.inputs[i]), focus),
-                bodyUi(theme, body, focus),
+                tensorBody(theme, body, focus),
                 spacer(15),
             ])
         ])
@@ -779,7 +776,7 @@ test("nodeUi 1 output body but no inputs", () => {
             text("node"),
             spacer(4),
             row([
-                bodyUi(theme, body, focus),
+                tensorBody(theme, body, focus),
                 spacer(15),
                 outputsUi(theme, node.outputs.map(o => graph.outputs[o]), focus),
             ])
@@ -848,7 +845,7 @@ test("nodeUi 1 input body and 1 output", () => {
             row([
                 inputsUi(theme, node.inputs.map(i => graph.inputs[i]), focus),
                 spacer(15),
-                bodyUi(theme, body, focus),
+                tensorBody(theme, body, focus),
                 spacer(15),
                 outputsUi(theme, node.outputs.map(o => graph.outputs[o]), focus),
             ])

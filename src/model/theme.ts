@@ -8,4 +8,5 @@ export interface Theme {
     readonly input: Color
     readonly focusInput: Color
     readonly connection: Color
+    readonly error: Color
 }

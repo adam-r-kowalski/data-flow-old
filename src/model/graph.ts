@@ -21,14 +21,15 @@ export interface Output {
 export enum BodyKind {
     NO,
     TENSOR,
-    SCATTER
+    SCATTER,
+    ERROR,
 }
 
 export interface NoBody {
     readonly kind: BodyKind.NO
     readonly uuid: UUID
     readonly node: UUID
-    readonly editable: boolean
+    readonly editable: false
 }
 
 export interface TensorBody {
@@ -47,13 +48,21 @@ export interface ScatterBody {
     readonly node: UUID
     readonly x: number[]
     readonly y: number[]
-    readonly editable: boolean
+    readonly editable: false
+}
+
+export interface ErrorBody {
+    readonly kind: BodyKind.ERROR
+    readonly uuid: UUID
+    readonly node: UUID
+    readonly editable: false
 }
 
 export type Body =
     | NoBody
     | TensorBody
     | ScatterBody
+    | ErrorBody
 
 export interface Position {
     readonly x: number

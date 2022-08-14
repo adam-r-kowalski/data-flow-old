@@ -4,7 +4,7 @@ import { Model } from "../model"
 import { Theme } from '../model/theme'
 import { Focus, FocusFinder, FocusKind } from "../model/focus"
 import { text, stack, scene, row, container, column, Connection, UI } from '../ui'
-import { Body, BodyKind, Graph, Input, NoBody, Output, ScatterBody, TensorBody, UUID } from "../model/graph"
+import { BodyKind, Graph, Input, Output, ScatterBody, TensorBody, UUID } from "../model/graph"
 import { contextMenu } from "./context_menu"
 import { QuickSelectKind } from "../model/quick_select"
 import { identity } from "../linear_algebra/matrix3x3"
@@ -89,12 +89,15 @@ export const outputsUi = (theme: Theme, outputs: Output[], focus: Focus) =>
         )
     )
 
+const formatNumber = (value: Number): string =>
+    Number.isInteger(value) ? value.toString() : value.toFixed(2)
+
 export const tensorBody = (theme: Theme, body: TensorBody, focus: Focus): UI<AppEvent> => {
     switch (body.rank) {
         case 0: {
             const value = focus.quickSelect.kind === QuickSelectKind.BODY ?
-                (focus.quickSelect.hotkeys[body.uuid] ?? body.value.toString()) :
-                body.value.toString()
+                (focus.quickSelect.hotkeys[body.uuid] ?? formatNumber(body.value as Number)) :
+                formatNumber(body.value as Number)
             const onClick: AppEvent | undefined = body.editable ?
                 {
                     kind: EventKind.CLICKED_BODY,
@@ -111,7 +114,7 @@ export const tensorBody = (theme: Theme, body: TensorBody, focus: Focus): UI<App
         case 1: {
             return container({ color: theme.background },
                 column(
-                    (body.value as number[]).map(value => container({ padding: 5 }, text(value.toString())))
+                    (body.value as number[]).map(value => container({ padding: 5 }, text(formatNumber(value))))
                 )
             )
         }
@@ -122,7 +125,7 @@ export const tensorBody = (theme: Theme, body: TensorBody, focus: Focus): UI<App
                     container({ padding: 5 },
                         column({ crossAxisAlignment: CrossAxisAlignment.END },
                             value.map(row =>
-                                container({ padding: 5 }, text(row[i].toString())))
+                                container({ padding: 5 }, text(formatNumber(row[i]))))
                         )
                     )
                 ))
@@ -148,14 +151,6 @@ export const scatterBody = (theme: Theme, body: ScatterBody): UI<AppEvent> => {
     )
 }
 
-export const bodyUi = (theme: Theme, body: Exclude<Body, NoBody>, focus: Focus): UI<AppEvent> => {
-    switch (body.kind) {
-        case BodyKind.TENSOR: return tensorBody(theme, body, focus)
-        case BodyKind.SCATTER: return scatterBody(theme, body)
-    }
-}
-
-
 export const nodeUi = (theme: Theme, nodeUUID: UUID, graph: Graph, focus: Focus): UI<AppEvent> => {
     const node = graph.nodes[nodeUUID]
     const rowEntries: UI<AppEvent>[] = []
@@ -166,8 +161,15 @@ export const nodeUi = (theme: Theme, nodeUUID: UUID, graph: Graph, focus: Focus)
         rowEntries.push(spacer(15))
     }
     const body = graph.bodys[node.body]
-    if (body.kind !== BodyKind.NO) {
-        rowEntries.push(bodyUi(theme, body, focus), spacer(15))
+    switch (body.kind) {
+        case BodyKind.TENSOR:
+            rowEntries.push(tensorBody(theme, body, focus), spacer(15))
+            break
+        case BodyKind.SCATTER:
+            rowEntries.push(scatterBody(theme, body), spacer(15))
+            break
+        default:
+            break
     }
     if (node.outputs.length) {
         rowEntries.push(outputsUi(theme, node.outputs.map(o => graph.outputs[o]), focus))
@@ -175,9 +177,14 @@ export const nodeUi = (theme: Theme, nodeUUID: UUID, graph: Graph, focus: Focus)
     const name = focus.quickSelect.kind === QuickSelectKind.NODE ?
         focus.quickSelect.hotkeys[node.uuid] :
         node.name
+    const color = (() => {
+        if (isFocused(focus, node.uuid)) return theme.focusNode
+        else if (body.kind === BodyKind.ERROR) return theme.error
+        else return theme.node
+    })()
     return container(
         {
-            color: isFocused(focus, node.uuid) ? theme.focusNode : theme.node,
+            color,
             padding: 4,
             x: node.position.x,
             y: node.position.y,

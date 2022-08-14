@@ -29,5 +29,6 @@ export const emptyModel = (window: Window): Model => ({
         input: { red: 188, green: 240, blue: 192, alpha: 255 },
         focusInput: { red: 175, green: 122, blue: 208, alpha: 255 },
         connection: { red: 255, green: 255, blue: 255, alpha: 255 },
+        error: { red: 199, green: 56, blue: 65, alpha: 255 },
     },
 })

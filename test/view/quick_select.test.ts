@@ -6,7 +6,7 @@ import { Theme } from "../../src/model/theme"
 import { column, container, row, text } from "../../src/ui"
 import { CrossAxisAlignment } from "../../src/ui/alignment"
 import { AppEvent, EventKind } from "../../src/update"
-import { inputUi, nodeUi, bodyUi, outputUi, spacer } from "../../src/view"
+import { inputUi, nodeUi, outputUi, spacer, tensorBody } from "../../src/view"
 
 const theme: Theme = {
     background: { red: 2, green: 22, blue: 39, alpha: 255 },
@@ -16,6 +16,7 @@ const theme: Theme = {
     input: { red: 188, green: 240, blue: 192, alpha: 255 },
     focusInput: { red: 175, green: 122, blue: 208, alpha: 255 },
     connection: { red: 255, green: 255, blue: 255, alpha: 255 },
+    error: { red: 199, green: 56, blue: 65, alpha: 255 },
 }
 
 
@@ -161,7 +162,7 @@ test("bodyUi quick select", () => {
             hotkeys: { 'body uuid': 'a' }
         }
     }
-    const actual = bodyUi(theme, body, focus)
+    const actual = tensorBody(theme, body, focus)
     const expected = container({
         color: theme.background,
         padding: 5,
@@ -192,7 +193,7 @@ test("bodyUi quick select non editable", () => {
             hotkeys: {}
         }
     }
-    const actual = bodyUi(theme, body, focus)
+    const actual = tensorBody(theme, body, focus)
     const expected = container({
         color: theme.background,
         padding: 5

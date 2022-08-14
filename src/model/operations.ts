@@ -12,15 +12,24 @@ export const tensorOperation = (f: TensorOperation): Operation => {
         const tensors = inputs
             .filter(body => body.kind === BodyKind.TENSOR)
             .map(body => (body as TensorBody).value)
-        const result = f(...tensors)
-        return {
-            kind: BodyKind.TENSOR,
-            uuid: uuid,
-            node: node,
-            value: result.arraySync(),
-            rank: result.rank,
-            shape: result.shape,
-            editable: false,
+        try {
+            const result = f(...tensors)
+            return {
+                kind: BodyKind.TENSOR,
+                uuid: uuid,
+                node: node,
+                value: result.arraySync(),
+                rank: result.rank,
+                shape: result.shape,
+                editable: false,
+            }
+        } catch (e) {
+            return {
+                kind: BodyKind.ERROR,
+                uuid: uuid,
+                node: node,
+                editable: false,
+            }
         }
     }
 }

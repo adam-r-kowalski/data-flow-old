@@ -209,7 +209,15 @@ const evaluateNode = (graph: Graph, nodeUUID: UUID): Graph => {
             })
             .filter(bodyUUID => bodyUUID !== undefined)
             .map(bodyUUID => graph.bodys[bodyUUID!])
-            .filter(body => body.kind !== BodyKind.NO)
+            .filter(body => {
+                switch (body.kind) {
+                    case BodyKind.NO:
+                    case BodyKind.ERROR:
+                        return false
+                    default:
+                        return true
+                }
+            })
         if (values.length > 0 && values.length === node.inputs.length) {
             const body = node.operation!(graph.bodys[node.body], ...values)
             const graph1: Graph = {

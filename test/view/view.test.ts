@@ -1,5 +1,5 @@
 import { AppEvent, EventKind } from "../../src/update"
-import { Body, emptyGraph, Graph, Input, Node, Output } from "../../src/model/graph"
+import { Body, BodyKind, emptyGraph, Graph, Input, Node, Output } from "../../src/model/graph"
 import { identity } from "../../src/linear_algebra/matrix3x3"
 import { Model } from "../../src/model"
 import { Theme } from "../../src/model/theme"
@@ -25,6 +25,7 @@ import {
 } from "../../src/view"
 import { contextMenu } from "../../src/view/context_menu"
 import { QuickSelectKind } from "../../src/model/quick_select"
+import { normalize } from "../../src/normalize"
 
 test("spacer", () => {
     expect(spacer(10)).toEqual(container({ width: 10, height: 10 }))
@@ -241,6 +242,7 @@ test("outputsUi", () => {
 
 test("bodyUi not focused", () => {
     const body: Body = {
+        kind: BodyKind.TENSOR,
         uuid: 'body uuid',
         node: 'node',
         value: 0,
@@ -268,6 +270,7 @@ test("bodyUi not focused", () => {
 
 test("bodyUi editing", () => {
     const body: Body = {
+        kind: BodyKind.TENSOR,
         uuid: 'body uuid',
         node: 'node',
         value: 0,
@@ -294,6 +297,7 @@ test("bodyUi editing", () => {
 
 test("bodyUi with vector", () => {
     const body: Body = {
+        kind: BodyKind.TENSOR,
         uuid: 'body uuid',
         node: 'node',
         value: [0, 1, 2],
@@ -319,6 +323,7 @@ test("bodyUi with vector", () => {
 
 test("bodyUi with matrix", () => {
     const body: Body = {
+        kind: BodyKind.TENSOR,
         uuid: 'body uuid',
         node: 'node',
         value: [[0, 1, 2], [4, 5, 6]],
@@ -357,17 +362,69 @@ test("bodyUi with matrix", () => {
     expect(actual).toEqual(expected)
 })
 
+test("bodyUi with scatter plot", () => {
+    const body: Body = {
+        kind: BodyKind.SCATTER,
+        uuid: 'body uuid',
+        node: 'node',
+        x: normalize([0, 1, 2], [10, 280]),
+        y: normalize([3, 5, 7], [10, 280]),
+        editable: false,
+    }
+    const focus: Focus = {
+        kind: FocusKind.NONE,
+        pointerAction: { kind: PointerActionKind.NONE },
+        quickSelect: { kind: QuickSelectKind.NONE }
+    }
+    const actual = bodyUi(theme, body, focus)
+    const expected = container({ width: 300, height: 300, color: theme.background },
+        stack([
+            container({
+                x: 10,
+                y: 280,
+                width: 10,
+                height: 10,
+                color: theme.focusInput
+            }),
+            container({
+                x: 145,
+                y: 145,
+                width: 10,
+                height: 10,
+                color: theme.focusInput
+            }),
+            container({
+                x: 280,
+                y: 10,
+                width: 10,
+                height: 10,
+                color: theme.focusInput
+            }),
+        ])
+    )
+    expect(actual).toEqual(expected)
+})
+
+
 test("nodeUi no inputs body or outputs", () => {
     const node: Node = {
         uuid: 'uuid',
         name: "node",
         position: { x: 0, y: 0 },
         inputs: [],
+        body: 'body uuid',
         outputs: [],
+    }
+    const body: Body = {
+        kind: BodyKind.NO,
+        uuid: 'body uuid',
+        node: 'uuid',
+        editable: false
     }
     const graph: Graph = {
         ...emptyGraph(),
-        nodes: { [node.uuid]: node }
+        nodes: { [node.uuid]: node },
+        bodys: { [body.uuid]: body },
     }
     const focus: Focus = {
         kind: FocusKind.NONE,
@@ -401,6 +458,7 @@ test("nodeUi 1 input, no body and no outputs", () => {
         name: "node",
         position: { x: 0, y: 0 },
         inputs: ['input uuid'],
+        body: 'body uuid',
         outputs: [],
     }
     const input: Input = {
@@ -408,10 +466,17 @@ test("nodeUi 1 input, no body and no outputs", () => {
         node: 'node',
         name: 'first'
     }
+    const body: Body = {
+        kind: BodyKind.NO,
+        uuid: 'body uuid',
+        node: 'node',
+        editable: false
+    }
     const graph: Graph = {
         ...emptyGraph(),
         nodes: { [node.uuid]: node },
-        inputs: { [input.uuid]: input }
+        inputs: { [input.uuid]: input },
+        bodys: { [body.uuid]: body },
     }
     const focus: Focus = {
         kind: FocusKind.NONE,
@@ -445,6 +510,7 @@ test("nodeUi 1 output, no body and no inputs", () => {
         name: "node",
         position: { x: 0, y: 0 },
         inputs: [],
+        body: 'body uuid',
         outputs: ['output uuid'],
     }
     const output: Output = {
@@ -453,10 +519,17 @@ test("nodeUi 1 output, no body and no inputs", () => {
         name: 'first',
         edges: []
     }
+    const body: Body = {
+        kind: BodyKind.NO,
+        uuid: 'body uuid',
+        node: 'node',
+        editable: false
+    }
     const graph: Graph = {
         ...emptyGraph(),
         nodes: { [node.uuid]: node },
-        outputs: { [output.uuid]: output }
+        outputs: { [output.uuid]: output },
+        bodys: { [body.uuid]: body }
     }
     const focus: Focus = {
         kind: FocusKind.NONE,
@@ -494,6 +567,7 @@ test("nodeUi no inputs or outputs but body defined", () => {
         outputs: [],
     }
     const body: Body = {
+        kind: BodyKind.TENSOR,
         uuid: 'body uuid',
         node: 'node',
         value: 0,
@@ -538,6 +612,7 @@ test("nodeUi 1 input and 1 output but no body", () => {
         name: "node",
         position: { x: 0, y: 0 },
         inputs: ['input uuid'],
+        body: 'body uuid',
         outputs: ['output uuid'],
     }
     const input: Input = {
@@ -551,11 +626,18 @@ test("nodeUi 1 input and 1 output but no body", () => {
         name: 'first',
         edges: []
     }
+    const body: Body = {
+        kind: BodyKind.NO,
+        uuid: 'body uuid',
+        node: 'node',
+        editable: false
+    }
     const graph: Graph = {
         ...emptyGraph(),
         nodes: { [node.uuid]: node },
         inputs: { [input.uuid]: input },
-        outputs: { [output.uuid]: output }
+        outputs: { [output.uuid]: output },
+        bodys: { [body.uuid]: body },
     }
     const focus: Focus = {
         kind: FocusKind.NONE,
@@ -602,6 +684,7 @@ test("nodeUi 1 input body but no outputs", () => {
         name: 'first'
     }
     const body: Body = {
+        kind: BodyKind.TENSOR,
         uuid: 'body uuid',
         node: 'node uuid',
         value: 0,
@@ -661,6 +744,7 @@ test("nodeUi 1 output body but no inputs", () => {
         edges: []
     }
     const body: Body = {
+        kind: BodyKind.TENSOR,
         uuid: 'body uuid',
         node: 'node uuid',
         value: 0,
@@ -726,6 +810,7 @@ test("nodeUi 1 input body and 1 output", () => {
         edges: []
     }
     const body: Body = {
+        kind: BodyKind.TENSOR,
         uuid: 'body uuid',
         node: 'node uuid',
         value: 0,
@@ -978,6 +1063,7 @@ test("view with three nodes and no edges", () => {
                     uuid: "first",
                     name: "first",
                     inputs: [],
+                    body: 'first body uuid',
                     outputs: [],
                     position: { x: 0, y: 0 }
                 },
@@ -985,6 +1071,7 @@ test("view with three nodes and no edges", () => {
                     uuid: "second",
                     name: "second",
                     inputs: [],
+                    body: 'second body uuid',
                     outputs: [],
                     position: { x: 0, y: 0 }
                 },
@@ -992,6 +1079,7 @@ test("view with three nodes and no edges", () => {
                     uuid: "thrid",
                     name: "thrid",
                     inputs: [],
+                    body: 'third body uuid',
                     outputs: [],
                     position: { x: 0, y: 0 }
                 }
@@ -999,7 +1087,26 @@ test("view with three nodes and no edges", () => {
             edges: {},
             inputs: {},
             outputs: {},
-            bodys: {}
+            bodys: {
+                'first body uuid': {
+                    kind: BodyKind.NO,
+                    uuid: 'first body uuid',
+                    node: 'first',
+                    editable: false
+                },
+                'second body uuid': {
+                    kind: BodyKind.NO,
+                    uuid: 'second body uuid',
+                    node: 'second',
+                    editable: false
+                },
+                'third body uuid': {
+                    kind: BodyKind.NO,
+                    uuid: 'third body uuid',
+                    node: 'third',
+                    editable: false
+                },
+            }
         },
         nodeOrder: ["first", "second", "third"],
         pointers: [],
@@ -1041,6 +1148,7 @@ test("view with three nodes and no edges", () => {
                     uuid: "first",
                     name: "first",
                     inputs: [],
+                    body: 'first body uuid',
                     outputs: [],
                     position: { x: 0, y: 0 },
                 },
@@ -1048,6 +1156,7 @@ test("view with three nodes and no edges", () => {
                     uuid: "second",
                     name: "second",
                     inputs: [],
+                    body: 'second body uuid',
                     outputs: [],
                     position: { x: 0, y: 0 },
                 },
@@ -1055,6 +1164,7 @@ test("view with three nodes and no edges", () => {
                     uuid: "thrid",
                     name: "thrid",
                     inputs: [],
+                    body: 'third body uuid',
                     outputs: [],
                     position: { x: 0, y: 0 },
                 }
@@ -1062,7 +1172,26 @@ test("view with three nodes and no edges", () => {
             edges: {},
             inputs: {},
             outputs: {},
-            bodys: {}
+            bodys: {
+                'first body uuid': {
+                    kind: BodyKind.NO,
+                    uuid: 'first body uuid',
+                    node: 'first',
+                    editable: false
+                },
+                'second body uuid': {
+                    kind: BodyKind.NO,
+                    uuid: 'second body uuid',
+                    node: 'second',
+                    editable: false
+                },
+                'third body uuid': {
+                    kind: BodyKind.NO,
+                    uuid: 'third body uuid',
+                    node: 'third',
+                    editable: false
+                }
+            }
         },
         nodeOrder: ["first", "second", "third"],
         pointers: [],
@@ -1118,6 +1247,7 @@ test("view with three nodes and one edges", () => {
                     uuid: "first",
                     name: "first",
                     inputs: [],
+                    body: 'first body uuid',
                     outputs: ['output uuid'],
                     position: { x: 0, y: 0 }
                 },
@@ -1125,6 +1255,7 @@ test("view with three nodes and one edges", () => {
                     uuid: "second",
                     name: "second",
                     inputs: ['input uuid'],
+                    body: 'second body uuid',
                     outputs: [],
                     position: { x: 0, y: 0 }
                 },
@@ -1132,6 +1263,7 @@ test("view with three nodes and one edges", () => {
                     uuid: "third",
                     name: "third",
                     inputs: [],
+                    body: 'third body uuid',
                     outputs: [],
                     position: { x: 0, y: 0 }
                 },
@@ -1159,7 +1291,26 @@ test("view with three nodes and one edges", () => {
                     edges: ['edge uuid']
                 }
             },
-            bodys: {}
+            bodys: {
+                'first body uuid': {
+                    kind: BodyKind.NO,
+                    uuid: 'first body uuid',
+                    node: 'first',
+                    editable: false
+                },
+                'second body uuid': {
+                    kind: BodyKind.NO,
+                    uuid: 'second body uuid',
+                    node: 'second',
+                    editable: false
+                },
+                'third body uuid': {
+                    kind: BodyKind.NO,
+                    uuid: 'third body uuid',
+                    node: 'third',
+                    editable: false
+                },
+            }
         },
         nodeOrder: ["first", "second", "third"],
         pointers: [],
@@ -1224,6 +1375,7 @@ test("view with body selected", () => {
             },
             bodys: {
                 "body": {
+                    kind: BodyKind.TENSOR,
                     uuid: "body",
                     node: "number",
                     value: 0,
@@ -1272,6 +1424,7 @@ test("view with input selected", () => {
                     uuid: "add",
                     name: "add",
                     inputs: ["x0", "y0"],
+                    body: 'add body uuid',
                     outputs: ["out0"],
                     position: { x: 0, y: 0 }
                 },
@@ -1279,6 +1432,7 @@ test("view with input selected", () => {
                     uuid: "sub",
                     name: "sub",
                     inputs: ["x1", "y1"],
+                    body: 'sub body uuid',
                     outputs: ["out1"],
                     position: { x: 0, y: 0 }
                 }
@@ -1327,7 +1481,20 @@ test("view with input selected", () => {
                     node: "sub"
                 }
             },
-            bodys: {}
+            bodys: {
+                'add body uuid': {
+                    kind: BodyKind.NO,
+                    uuid: 'add body uuid',
+                    node: 'add',
+                    editable: false
+                },
+                'sub body uuid': {
+                    kind: BodyKind.NO,
+                    uuid: 'sub body uuid',
+                    node: 'sub',
+                    editable: false
+                }
+            }
         },
         nodeOrder: ["add", "sub"],
         pointers: [],
@@ -1386,6 +1553,7 @@ test("view with output selected", () => {
                     uuid: "add",
                     name: "add",
                     inputs: ["x0", "y0"],
+                    body: 'add body uuid',
                     outputs: ["out0"],
                     position: { x: 0, y: 0 }
                 },
@@ -1393,6 +1561,7 @@ test("view with output selected", () => {
                     uuid: "sub",
                     name: "sub",
                     inputs: ["x1", "y1"],
+                    body: 'sub body uuid',
                     outputs: ["out1"],
                     position: { x: 0, y: 0 }
                 }
@@ -1441,7 +1610,20 @@ test("view with output selected", () => {
                     node: "sub"
                 }
             },
-            bodys: {}
+            bodys: {
+                'add body uuid': {
+                    kind: BodyKind.NO,
+                    uuid: 'add body uuid',
+                    node: 'add',
+                    editable: false
+                },
+                'sub body uuid': {
+                    kind: BodyKind.NO,
+                    uuid: 'sub body uuid',
+                    node: 'sub',
+                    editable: false
+                }
+            }
         },
         nodeOrder: ["add", "sub"],
         pointers: [],

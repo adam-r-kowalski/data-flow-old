@@ -16,21 +16,21 @@ export const demoModel = (window: Window, generateUUID: GenerateUUID): Model => 
         position: { x: 25, y: 20 },
         generateUUID
     })
-    const graph1 = changeBodyValue(graph0, graph0.nodes[start].body!, () => -5, generateUUID)
+    const graph1 = changeBodyValue(graph0, graph0.nodes[start].body!, () => -5)
     const { graph: graph2, node: stop } = addNode({
         graph: graph1,
         operation: model.operations["number"],
         position: { x: 25, y: 90 },
         generateUUID
     })
-    const graph3 = changeBodyValue(graph2, graph2.nodes[stop].body!, () => 5, generateUUID)
+    const graph3 = changeBodyValue(graph2, graph2.nodes[stop].body!, () => 5)
     const { graph: graph4, node: num } = addNode({
         graph: graph3,
         operation: model.operations["number"],
         position: { x: 25, y: 160 },
         generateUUID
     })
-    const graph5 = changeBodyValue(graph4, graph4.nodes[num].body!, () => 11, generateUUID)
+    const graph5 = changeBodyValue(graph4, graph4.nodes[num].body!, () => 11)
     const { graph: graph6, node: linspace } = addNode({
         graph: graph5,
         operation: model.operations["linspace"],
@@ -55,21 +55,57 @@ export const demoModel = (window: Window, generateUUID: GenerateUUID): Model => 
         output: graph8.nodes[num].outputs[0],
         generateUUID
     })
-    const { graph: graph10, node: diag } = addNode({
+    const { graph: graph10, node: square } = addNode({
         graph: graph9,
-        operation: model.operations["diag"],
-        position: { x: 400, y: 20 },
+        operation: model.operations["square"],
+        position: { x: 400, y: 325 },
         generateUUID
     })
     const { graph: graph11 } = addEdge({
         graph: graph10,
-        input: graph10.nodes[diag].inputs[0],
+        input: graph10.nodes[square].inputs[0],
         output: graph10.nodes[linspace].outputs[0],
+        generateUUID
+    })
+    const { graph: graph12, node: scatter } = addNode({
+        graph: graph11,
+        operation: model.operations["scatter"],
+        position: { x: 700, y: 20 },
+        generateUUID
+    })
+    const { graph: graph13 } = addEdge({
+        graph: graph12,
+        input: graph12.nodes[scatter].inputs[0],
+        output: graph12.nodes[linspace].outputs[0],
+        generateUUID
+    })
+    const { graph: graph14 } = addEdge({
+        graph: graph13,
+        input: graph13.nodes[scatter].inputs[1],
+        output: graph13.nodes[square].outputs[0],
+        generateUUID
+    })
+    const { graph: graph15, node: stack } = addNode({
+        graph: graph14,
+        operation: model.operations["stack"],
+        position: { x: 700, y: 400 },
+        generateUUID
+    })
+    const { graph: graph16 } = addEdge({
+        graph: graph15,
+        input: graph15.nodes[stack].inputs[0],
+        output: graph15.nodes[linspace].outputs[0],
+        generateUUID
+    })
+    const { graph: graph17 } = addEdge({
+        graph: graph16,
+        input: graph16.nodes[stack].inputs[1],
+        output: graph16.nodes[square].outputs[0],
         generateUUID
     })
     return {
         ...model,
-        graph: graph11,
-        nodeOrder: [start, stop, num, linspace, diag]
+        graph: graph17,
+        nodeOrder: [start, stop, num, linspace, square, scatter, stack]
     }
 }

@@ -44715,7 +44715,7 @@ const updateBodyNumber = (model, body, transform, generateUUID)=>{
     return {
         model: {
             ...model,
-            graph: (0, _graph.changeBodyValue)(model.graph, body, transform, generateUUID)
+            graph: (0, _graph.changeBodyValue)(model.graph, body, transform)
         },
         render: true
     };
@@ -44874,7 +44874,7 @@ const keyDown = (model, event, { generateUUID , currentTime  })=>{
                             return {
                                 model: (0, _focus1.clearFocus)({
                                     ...model,
-                                    graph: (0, _graph.removeOutputEdges)(model.graph, model.focus.output, generateUUID)
+                                    graph: (0, _graph.removeOutputEdges)(model.graph, model.focus.output)
                                 }),
                                 render: true
                             };
@@ -45046,7 +45046,7 @@ const deleteInputEdge = (model, { input  }, generateUUID)=>({
 const deleteOutputEdges = (model, { output  }, generateUUID)=>({
         model: (0, _focus1.clearFocus)({
             ...model,
-            graph: (0, _graph.removeOutputEdges)(model.graph, output, generateUUID)
+            graph: (0, _graph.removeOutputEdges)(model.graph, output)
         }),
         render: true
     });
@@ -45321,6 +45321,7 @@ parcelHelpers.export(exports, "removeOutputEdges", ()=>removeOutputEdges);
 parcelHelpers.export(exports, "addEdge", ()=>addEdge);
 parcelHelpers.export(exports, "changeNodePosition", ()=>changeNodePosition);
 parcelHelpers.export(exports, "changeBodyValue", ()=>changeBodyValue);
+var _graph = require("../model/graph");
 const addNode = ({ graph , operation , position , generateUUID  })=>{
     const nodeUUID = generateUUID();
     const inputs = {
@@ -45350,51 +45351,46 @@ const addNode = ({ graph , operation , position , generateUUID  })=>{
         };
         outputUUIDs.push(uuid);
     }
+    const uuid = generateUUID();
+    const body = operation.body !== undefined ? {
+        kind: (0, _graph.BodyKind).TENSOR,
+        uuid,
+        node: nodeUUID,
+        value: operation.body,
+        rank: 0,
+        shape: [],
+        editable: true
+    } : {
+        kind: (0, _graph.BodyKind).NO,
+        uuid,
+        node: nodeUUID,
+        editable: false
+    };
     const node = {
         uuid: nodeUUID,
         name: operation.name,
         inputs: inputUUIDs,
         outputs: outputUUIDs,
+        body: uuid,
         position,
         operation: operation.operation
     };
-    if (operation.body !== undefined) {
-        const body = {
-            uuid: generateUUID(),
-            node: nodeUUID,
-            value: operation.body,
-            rank: 0,
-            shape: [],
-            editable: true
-        };
-        return {
-            graph: {
-                ...graph,
-                nodes: {
-                    ...graph.nodes,
-                    [node.uuid]: {
-                        ...node,
-                        body: body.uuid
-                    }
-                },
-                inputs,
-                outputs,
-                bodys: {
-                    ...graph.bodys,
-                    [body.uuid]: body
-                }
-            },
-            node: nodeUUID
-        };
-    } else return {
+    return {
         graph: {
             ...graph,
             nodes: {
                 ...graph.nodes,
-                [node.uuid]: node
+                [node.uuid]: {
+                    ...node,
+                    body: body.uuid
+                }
             },
             inputs,
-            outputs
+            outputs,
+            bodys: {
+                ...graph.bodys,
+                [body.uuid]: body
+            }
         },
         node: nodeUUID
     };
@@ -45436,12 +45432,16 @@ const removeNode = (graph, node)=>{
     }
     for (const input1 of removedNode.inputs)delete inputs[input1];
     for (const output1 of removedNode.outputs)delete outputs[output1];
+    const bodys = {
+        ...graph.bodys
+    };
+    delete bodys[removedNode.body];
     return {
-        ...graph,
         nodes,
         edges,
         inputs,
-        outputs
+        outputs,
+        bodys
     };
 };
 const removeInputEdge = (graph, input, generateUUID)=>{
@@ -45474,10 +45474,10 @@ const removeInputEdge = (graph, input, generateUUID)=>{
             inputs,
             edges
         };
-        return evaluateNode(graph1, input.node, generateUUID);
+        return evaluateNode(graph1, input.node);
     } else return graph;
 };
-const removeOutputEdges = (graph2, output, generateUUID)=>{
+const removeOutputEdges = (graph2, output)=>{
     const edges = {
         ...graph2.edges
     };
@@ -45509,70 +45509,49 @@ const removeOutputEdges = (graph2, output, generateUUID)=>{
         inputs,
         edges
     };
-    return nodes.reduce((graph, node)=>evaluateNode(graph, node, generateUUID), graph1);
+    return nodes.reduce((graph, node)=>evaluateNode(graph, node), graph1);
 };
-const evaluateNodeOutputs = (graph, node1, generateUUID)=>node1.outputs.reduce((graph1, output)=>{
+const evaluateNodeOutputs = (graph, node1)=>node1.outputs.reduce((graph1, output)=>{
         return graph1.outputs[output].edges.reduce((graph2, edge)=>{
             const input = graph2.edges[edge].input;
             const node = graph2.inputs[input].node;
-            return evaluateNode(graph2, node, generateUUID);
+            return evaluateNode(graph2, node);
         }, graph1);
     }, graph);
-const evaluateNode = (graph, nodeUUID, generateUUID)=>{
+const evaluateNode = (graph, nodeUUID)=>{
     const node = graph.nodes[nodeUUID];
-    if (node.inputs.length === 0) return evaluateNodeOutputs(graph, node, generateUUID);
+    if (node.inputs.length === 0) return evaluateNodeOutputs(graph, node);
     else {
         const values = node.inputs.map((input)=>graph.inputs[input].edge).filter((edgeUUID)=>edgeUUID !== undefined).map((edgeUUID)=>{
             const edge = graph.edges[edgeUUID];
             const output = graph.outputs[edge.output];
             return graph.nodes[output.node].body;
-        }).filter((bodyUUID)=>bodyUUID !== undefined).map((bodyUUID)=>graph.bodys[bodyUUID].value);
+        }).filter((bodyUUID)=>bodyUUID !== undefined).map((bodyUUID)=>graph.bodys[bodyUUID]).filter((body)=>body.kind !== (0, _graph.BodyKind).NO);
         if (values.length > 0 && values.length === node.inputs.length) {
-            const result = node.operation.apply(undefined, values);
-            const body = {
-                uuid: generateUUID(),
-                node: node.uuid,
-                value: result.arraySync(),
-                rank: result.rank,
-                shape: result.shape,
-                editable: false
-            };
+            const body = node.operation(graph.bodys[node.body], ...values);
             const graph1 = {
                 ...graph,
-                nodes: {
-                    ...graph.nodes,
-                    [node.uuid]: {
-                        ...node,
-                        body: body.uuid
-                    }
-                },
                 bodys: {
                     ...graph.bodys,
                     [body.uuid]: body
                 }
             };
-            if (node.body === undefined) return evaluateNodeOutputs(graph1, node, generateUUID);
-            else {
-                delete graph1.bodys[node.body];
-                return evaluateNodeOutputs(graph1, node, generateUUID);
-            }
-        } else if (node.body !== undefined) {
-            const bodys = {
-                ...graph.bodys
+            return evaluateNodeOutputs(graph1, node);
+        } else if (graph.bodys[node.body].kind !== (0, _graph.BodyKind).NO) {
+            const body = {
+                kind: (0, _graph.BodyKind).NO,
+                uuid: node.body,
+                node: node.uuid,
+                editable: false
             };
-            delete bodys[node.body];
             const graph1 = {
                 ...graph,
-                nodes: {
-                    ...graph.nodes,
-                    [node.uuid]: {
-                        ...node,
-                        body: undefined
-                    }
-                },
-                bodys
+                bodys: {
+                    ...graph.bodys,
+                    [body.uuid]: body
+                }
             };
-            return evaluateNodeOutputs(graph1, node, generateUUID);
+            return evaluateNodeOutputs(graph1, node);
         } else return graph;
     }
 };
@@ -45610,7 +45589,7 @@ const addEdge = ({ graph , input , output , generateUUID  })=>{
         }
     };
     return {
-        graph: evaluateNode(graph1, graph1.inputs[input].node, generateUUID),
+        graph: evaluateNode(graph1, graph1.inputs[input].node),
         edge: edge.uuid
     };
 };
@@ -45627,21 +45606,45 @@ const changeNodePosition = (graph, node, transform)=>{
         }
     };
 };
-const changeBodyValue = (graph, body, transform, generateUUID)=>{
+const changeBodyValue = (graph, body, transform)=>{
     const currentBody = graph.bodys[body];
-    const graph1 = {
-        ...graph,
-        bodys: {
-            ...graph.bodys,
-            [body]: {
-                ...currentBody,
-                value: transform(currentBody.value)
-            }
-        }
-    };
-    const node = graph1.bodys[body].node;
-    return evaluateNode(graph1, node, generateUUID);
+    switch(currentBody.kind){
+        case (0, _graph.BodyKind).TENSOR:
+            const graph1 = {
+                ...graph,
+                bodys: {
+                    ...graph.bodys,
+                    [body]: {
+                        ...currentBody,
+                        value: transform(currentBody.value)
+                    }
+                }
+            };
+            const node = graph1.bodys[body].node;
+            return evaluateNode(graph1, node);
+        default:
+            return graph;
+    }
 };
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","../model/graph":"j9QYs"}],"j9QYs":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "BodyKind", ()=>BodyKind);
+parcelHelpers.export(exports, "emptyGraph", ()=>emptyGraph);
+let BodyKind;
+(function(BodyKind1) {
+    BodyKind1[BodyKind1["NO"] = 0] = "NO";
+    BodyKind1[BodyKind1["TENSOR"] = 1] = "TENSOR";
+    BodyKind1[BodyKind1["SCATTER"] = 2] = "SCATTER";
+})(BodyKind || (BodyKind = {}));
+const emptyGraph = ()=>({
+        nodes: {},
+        edges: {},
+        inputs: {},
+        bodys: {},
+        outputs: {}
+    });
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"2jbfz":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
@@ -48079,6 +48082,8 @@ parcelHelpers.export(exports, "inputUi", ()=>inputUi);
 parcelHelpers.export(exports, "inputsUi", ()=>inputsUi);
 parcelHelpers.export(exports, "outputUi", ()=>outputUi);
 parcelHelpers.export(exports, "outputsUi", ()=>outputsUi);
+parcelHelpers.export(exports, "tensorBody", ()=>tensorBody);
+parcelHelpers.export(exports, "scatterBody", ()=>scatterBody);
 parcelHelpers.export(exports, "bodyUi", ()=>bodyUi);
 parcelHelpers.export(exports, "nodeUi", ()=>nodeUi);
 parcelHelpers.export(exports, "finder", ()=>finder);
@@ -48091,6 +48096,7 @@ var _alignment = require("../ui/alignment");
 var _update = require("../update");
 var _focus = require("../model/focus");
 var _ui = require("../ui");
+var _graph = require("../model/graph");
 var _contextMenu = require("./context_menu");
 var _quickSelect = require("../model/quick_select");
 var _matrix3X3 = require("../linear_algebra/matrix3x3");
@@ -48143,7 +48149,9 @@ const inputUi = (theme, { name , uuid  }, focus)=>(0, _ui.container)({
         (0, _ui.text)(name)
     ]));
 const inputsUi = (theme, inputs, focus)=>(0, _ui.column)(intersperse(inputs.map((input)=>inputUi(theme, input, focus)), spacer(4)));
-const outputUi = (theme, { name , uuid  }, focus)=>(0, _ui.container)({
+const outputUi = (theme, { name , uuid  }, focus)=>{
+    const value = focus.quickSelect.kind === (0, _quickSelect.QuickSelectKind).OUTPUT ? focus.quickSelect.hotkeys[uuid] : " ";
+    return (0, _ui.container)({
         onClick: {
             kind: (0, _update.EventKind).CLICKED_OUTPUT,
             output: uuid
@@ -48164,10 +48172,11 @@ const outputUi = (theme, { name , uuid  }, focus)=>(0, _ui.container)({
             }
         }, (0, _ui.text)({
             color: theme.background
-        }, focus.quickSelect.kind === (0, _quickSelect.QuickSelectKind).OUTPUT ? focus.quickSelect.hotkeys[uuid] : " ")), 
+        }, value)), 
     ]));
+};
 const outputsUi = (theme, outputs, focus)=>(0, _ui.column)(intersperse(outputs.map((output)=>outputUi(theme, output, focus)), spacer(4)));
-const bodyUi = (theme, body, focus)=>{
+const tensorBody = (theme, body, focus)=>{
     switch(body.rank){
         case 0:
             {
@@ -48205,12 +48214,34 @@ const bodyUi = (theme, body, focus)=>{
             return (0, _ui.text)("no view for this rank yet");
     }
 };
+const scatterBody = (theme, body)=>{
+    return (0, _ui.container)({
+        width: 300,
+        height: 300,
+        color: theme.background
+    }, (0, _ui.stack)(body.x.map((x, i)=>(0, _ui.container)({
+            x: x,
+            y: 290 - body.y[i],
+            width: 10,
+            height: 10,
+            color: theme.focusInput
+        }))));
+};
+const bodyUi = (theme, body, focus)=>{
+    switch(body.kind){
+        case (0, _graph.BodyKind).TENSOR:
+            return tensorBody(theme, body, focus);
+        case (0, _graph.BodyKind).SCATTER:
+            return scatterBody(theme, body);
+    }
+};
 const nodeUi = (theme, nodeUUID, graph, focus)=>{
     const node = graph.nodes[nodeUUID];
     const rowEntries = [];
     if (node.inputs.length) rowEntries.push(inputsUi(theme, node.inputs.map((i)=>graph.inputs[i]), focus));
     if (node.inputs.length && node.outputs.length) rowEntries.push(spacer(15));
-    if (node.body) rowEntries.push(bodyUi(theme, graph.bodys[node.body], focus), spacer(15));
+    const body = graph.bodys[node.body];
+    if (body.kind !== (0, _graph.BodyKind).NO) rowEntries.push(bodyUi(theme, body, focus), spacer(15));
     if (node.outputs.length) rowEntries.push(outputsUi(theme, node.outputs.map((o)=>graph.outputs[o]), focus));
     const name = focus.quickSelect.kind === (0, _quickSelect.QuickSelectKind).NODE ? focus.quickSelect.hotkeys[node.uuid] : node.name;
     return (0, _ui.container)({
@@ -48486,7 +48517,7 @@ const view = (model)=>{
     return (0, _ui.stack)(stacked);
 };
 
-},{"../ui/alignment":"eEpxz","../update":"ilzHD","../model/focus":"4HSqF","../ui":"cOWCo","./context_menu":"kv4Be","../model/quick_select":"imfkP","../linear_algebra/matrix3x3":"aZqnw","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"kv4Be":[function(require,module,exports) {
+},{"../ui/alignment":"eEpxz","../update":"ilzHD","../model/focus":"4HSqF","../ui":"cOWCo","./context_menu":"kv4Be","../model/quick_select":"imfkP","../linear_algebra/matrix3x3":"aZqnw","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","../model/graph":"j9QYs"}],"kv4Be":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "contextMenu", ()=>contextMenu);
@@ -48531,7 +48562,7 @@ const demoModel = (window, generateUUID)=>{
         },
         generateUUID
     });
-    const graph1 = (0, _graph.changeBodyValue)(graph0, graph0.nodes[start].body, ()=>-5, generateUUID);
+    const graph1 = (0, _graph.changeBodyValue)(graph0, graph0.nodes[start].body, ()=>-5);
     const { graph: graph2 , node: stop  } = (0, _graph.addNode)({
         graph: graph1,
         operation: model.operations["number"],
@@ -48541,7 +48572,7 @@ const demoModel = (window, generateUUID)=>{
         },
         generateUUID
     });
-    const graph3 = (0, _graph.changeBodyValue)(graph2, graph2.nodes[stop].body, ()=>5, generateUUID);
+    const graph3 = (0, _graph.changeBodyValue)(graph2, graph2.nodes[stop].body, ()=>5);
     const { graph: graph4 , node: num  } = (0, _graph.addNode)({
         graph: graph3,
         operation: model.operations["number"],
@@ -48551,7 +48582,7 @@ const demoModel = (window, generateUUID)=>{
         },
         generateUUID
     });
-    const graph5 = (0, _graph.changeBodyValue)(graph4, graph4.nodes[num].body, ()=>11, generateUUID);
+    const graph5 = (0, _graph.changeBodyValue)(graph4, graph4.nodes[num].body, ()=>11);
     const { graph: graph6 , node: linspace  } = (0, _graph.addNode)({
         graph: graph5,
         operation: model.operations["linspace"],
@@ -48579,30 +48610,74 @@ const demoModel = (window, generateUUID)=>{
         output: graph8.nodes[num].outputs[0],
         generateUUID
     });
-    const { graph: graph10 , node: diag  } = (0, _graph.addNode)({
+    const { graph: graph10 , node: square  } = (0, _graph.addNode)({
         graph: graph9,
-        operation: model.operations["diag"],
+        operation: model.operations["square"],
         position: {
             x: 400,
-            y: 20
+            y: 325
         },
         generateUUID
     });
     const { graph: graph11  } = (0, _graph.addEdge)({
         graph: graph10,
-        input: graph10.nodes[diag].inputs[0],
+        input: graph10.nodes[square].inputs[0],
         output: graph10.nodes[linspace].outputs[0],
+        generateUUID
+    });
+    const { graph: graph12 , node: scatter  } = (0, _graph.addNode)({
+        graph: graph11,
+        operation: model.operations["scatter"],
+        position: {
+            x: 700,
+            y: 20
+        },
+        generateUUID
+    });
+    const { graph: graph13  } = (0, _graph.addEdge)({
+        graph: graph12,
+        input: graph12.nodes[scatter].inputs[0],
+        output: graph12.nodes[linspace].outputs[0],
+        generateUUID
+    });
+    const { graph: graph14  } = (0, _graph.addEdge)({
+        graph: graph13,
+        input: graph13.nodes[scatter].inputs[1],
+        output: graph13.nodes[square].outputs[0],
+        generateUUID
+    });
+    const { graph: graph15 , node: stack  } = (0, _graph.addNode)({
+        graph: graph14,
+        operation: model.operations["stack"],
+        position: {
+            x: 700,
+            y: 400
+        },
+        generateUUID
+    });
+    const { graph: graph16  } = (0, _graph.addEdge)({
+        graph: graph15,
+        input: graph15.nodes[stack].inputs[0],
+        output: graph15.nodes[linspace].outputs[0],
+        generateUUID
+    });
+    const { graph: graph17  } = (0, _graph.addEdge)({
+        graph: graph16,
+        input: graph16.nodes[stack].inputs[1],
+        output: graph16.nodes[square].outputs[0],
         generateUUID
     });
     return {
         ...model,
-        graph: graph11,
+        graph: graph17,
         nodeOrder: [
             start,
             stop,
             num,
             linspace,
-            diag
+            square,
+            scatter,
+            stack
         ]
     };
 };
@@ -48696,23 +48771,48 @@ const emptyModel = (window)=>({
         }
     });
 
-},{"./focus":"4HSqF","./pointer_action":"dtHMy","../linear_algebra/matrix3x3":"aZqnw","./graph":"j9QYs","./quick_select":"imfkP","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"j9QYs":[function(require,module,exports) {
+},{"./focus":"4HSqF","./pointer_action":"dtHMy","../linear_algebra/matrix3x3":"aZqnw","./graph":"j9QYs","./quick_select":"imfkP","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"bjcGR":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "emptyGraph", ()=>emptyGraph);
-const emptyGraph = ()=>({
-        nodes: {},
-        edges: {},
-        inputs: {},
-        bodys: {},
-        outputs: {}
-    });
-
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"bjcGR":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "tensorOperation", ()=>tensorOperation);
+parcelHelpers.export(exports, "scatter", ()=>scatter);
 parcelHelpers.export(exports, "operations", ()=>operations);
 var _tfjsCore = require("@tensorflow/tfjs-core");
+var _normalize = require("../normalize");
+var _graph = require("./graph");
+const tensorOperation = (f)=>{
+    return ({ uuid , node  }, ...inputs)=>{
+        const tensors = inputs.filter((body)=>body.kind === (0, _graph.BodyKind).TENSOR).map((body)=>body.value);
+        const result = f(...tensors);
+        return {
+            kind: (0, _graph.BodyKind).TENSOR,
+            uuid: uuid,
+            node: node,
+            value: result.arraySync(),
+            rank: result.rank,
+            shape: result.shape,
+            editable: false
+        };
+    };
+};
+const scatter = ({ uuid , node  }, ...inputs)=>{
+    const x = (0, _normalize.normalize)(inputs[0].value, [
+        10,
+        280
+    ]);
+    const y = (0, _normalize.normalize)(inputs[1].value, [
+        10,
+        280
+    ]);
+    return {
+        kind: (0, _graph.BodyKind).SCATTER,
+        uuid: uuid,
+        node: node,
+        x,
+        y,
+        editable: false
+    };
+};
 const operations = {
     "number": {
         name: "number",
@@ -48730,7 +48830,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.abs
+        operation: tensorOperation(_tfjsCore.abs)
     },
     "acos": {
         name: "acos",
@@ -48740,7 +48840,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.acos
+        operation: tensorOperation(_tfjsCore.acos)
     },
     "acosh": {
         name: "acosh",
@@ -48750,7 +48850,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.acosh
+        operation: tensorOperation(_tfjsCore.acosh)
     },
     "add": {
         name: "add",
@@ -48761,7 +48861,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.add
+        operation: tensorOperation(_tfjsCore.add)
     },
     "all": {
         name: "all",
@@ -48771,7 +48871,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.all
+        operation: tensorOperation(_tfjsCore.all)
     },
     "any": {
         name: "any",
@@ -48781,7 +48881,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.any
+        operation: tensorOperation(_tfjsCore.any)
     },
     "arg max": {
         name: "arg max",
@@ -48791,7 +48891,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.argMax
+        operation: tensorOperation(_tfjsCore.argMax)
     },
     "arg min": {
         name: "arg min",
@@ -48801,7 +48901,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.argMin
+        operation: tensorOperation(_tfjsCore.argMin)
     },
     "asin": {
         name: "asin",
@@ -48811,7 +48911,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.asin
+        operation: tensorOperation(_tfjsCore.asin)
     },
     "asinh": {
         name: "asinh",
@@ -48821,7 +48921,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.asinh
+        operation: tensorOperation(_tfjsCore.asinh)
     },
     "atan": {
         name: "atan",
@@ -48831,7 +48931,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.atan
+        operation: tensorOperation(_tfjsCore.atan)
     },
     "atanh": {
         name: "atanh",
@@ -48841,7 +48941,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.atanh
+        operation: tensorOperation(_tfjsCore.atanh)
     },
     "ceil": {
         name: "ceil",
@@ -48851,7 +48951,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.ceil
+        operation: tensorOperation(_tfjsCore.ceil)
     },
     "clip": {
         name: "clip",
@@ -48863,7 +48963,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.clipByValue
+        operation: tensorOperation(_tfjsCore.clipByValue)
     },
     "complex": {
         name: "complex",
@@ -48874,7 +48974,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.complex
+        operation: tensorOperation(_tfjsCore.complex)
     },
     "concat": {
         name: "concat",
@@ -48885,10 +48985,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: (x, y)=>_tfjsCore.concat([
+        operation: tensorOperation((x, y)=>_tfjsCore.concat([
                 x,
                 y
-            ])
+            ]))
     },
     "cos": {
         name: "cos",
@@ -48898,7 +48998,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.cos
+        operation: tensorOperation(_tfjsCore.cos)
     },
     "cosh": {
         name: "cosh",
@@ -48908,7 +49008,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.cosh
+        operation: tensorOperation(_tfjsCore.cosh)
     },
     "cumsum": {
         name: "cumsum",
@@ -48918,7 +49018,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.cumsum
+        operation: tensorOperation(_tfjsCore.cumsum)
     },
     "cumprod": {
         name: "cumprod",
@@ -48928,7 +49028,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.cumprod
+        operation: tensorOperation(_tfjsCore.cumprod)
     },
     "diag": {
         name: "diag",
@@ -48938,7 +49038,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.diag
+        operation: tensorOperation(_tfjsCore.diag)
     },
     "div": {
         name: "div",
@@ -48949,7 +49049,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.div
+        operation: tensorOperation(_tfjsCore.div)
     },
     "div no nan": {
         name: "div no nan",
@@ -48960,7 +49060,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.divNoNan
+        operation: tensorOperation(_tfjsCore.divNoNan)
     },
     "dot": {
         name: "dot",
@@ -48971,7 +49071,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.dot
+        operation: tensorOperation(_tfjsCore.dot)
     },
     "elu": {
         name: "elu",
@@ -48981,7 +49081,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.elu
+        operation: tensorOperation(_tfjsCore.elu)
     },
     "erf": {
         name: "erf",
@@ -48991,7 +49091,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.erf
+        operation: tensorOperation(_tfjsCore.erf)
     },
     "equal": {
         name: "equal",
@@ -49002,7 +49102,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.equal
+        operation: tensorOperation(_tfjsCore.equal)
     },
     "euclideanNorm": {
         name: "euclideanNorm",
@@ -49012,7 +49112,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.euclideanNorm
+        operation: tensorOperation(_tfjsCore.euclideanNorm)
     },
     "exp": {
         name: "exp",
@@ -49022,7 +49122,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.exp
+        operation: tensorOperation(_tfjsCore.exp)
     },
     "expm1": {
         name: "expm1",
@@ -49032,7 +49132,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.expm1
+        operation: tensorOperation(_tfjsCore.expm1)
     },
     "eye": {
         name: "eye",
@@ -49042,7 +49142,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.eye
+        operation: tensorOperation(_tfjsCore.eye)
     },
     "fill": {
         name: "fill",
@@ -49053,7 +49153,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.fill
+        operation: tensorOperation(_tfjsCore.fill)
     },
     "floor": {
         name: "floor",
@@ -49063,7 +49163,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.floor
+        operation: tensorOperation(_tfjsCore.floor)
     },
     "floor div": {
         name: "floor div",
@@ -49074,7 +49174,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.floorDiv
+        operation: tensorOperation(_tfjsCore.floorDiv)
     },
     "gather": {
         name: "gather",
@@ -49085,7 +49185,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.gather
+        operation: tensorOperation(_tfjsCore.gather)
     },
     "greater": {
         name: "greater",
@@ -49096,7 +49196,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.greater
+        operation: tensorOperation(_tfjsCore.greater)
     },
     "greater equal": {
         name: "greater equal",
@@ -49107,7 +49207,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.greaterEqual
+        operation: tensorOperation(_tfjsCore.greaterEqual)
     },
     "imag": {
         name: "imag",
@@ -49117,7 +49217,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.imag
+        operation: tensorOperation(_tfjsCore.imag)
     },
     "is finite": {
         name: "is finite",
@@ -49127,7 +49227,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.isFinite
+        operation: tensorOperation(_tfjsCore.isFinite)
     },
     "is inf": {
         name: "is inf",
@@ -49137,7 +49237,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.isInf
+        operation: tensorOperation(_tfjsCore.isInf)
     },
     "is nan": {
         name: "is nan",
@@ -49147,7 +49247,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.isNaN
+        operation: tensorOperation(_tfjsCore.isNaN)
     },
     "leaky relu": {
         name: "leaky relu",
@@ -49157,7 +49257,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.leakyRelu
+        operation: tensorOperation(_tfjsCore.leakyRelu)
     },
     "less": {
         name: "less",
@@ -49168,7 +49268,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.less
+        operation: tensorOperation(_tfjsCore.less)
     },
     "less equal": {
         name: "less equal",
@@ -49179,7 +49279,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.lessEqual
+        operation: tensorOperation(_tfjsCore.lessEqual)
     },
     "linspace": {
         name: "linspace",
@@ -49191,7 +49291,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.linspace
+        operation: tensorOperation(_tfjsCore.linspace)
     },
     "log": {
         name: "log",
@@ -49201,7 +49301,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.log
+        operation: tensorOperation(_tfjsCore.log)
     },
     "log1p": {
         name: "log1p",
@@ -49211,7 +49311,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.log1p
+        operation: tensorOperation(_tfjsCore.log1p)
     },
     "log sigmoid": {
         name: "log sigmoid",
@@ -49221,7 +49321,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.logSigmoid
+        operation: tensorOperation(_tfjsCore.logSigmoid)
     },
     "log softmax": {
         name: "log softmax",
@@ -49231,7 +49331,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.logSoftmax
+        operation: tensorOperation(_tfjsCore.logSoftmax)
     },
     "log sum exp": {
         name: "log sum exp",
@@ -49241,7 +49341,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.logSumExp
+        operation: tensorOperation(_tfjsCore.logSumExp)
     },
     "and": {
         name: "and",
@@ -49252,7 +49352,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.logicalAnd
+        operation: tensorOperation(_tfjsCore.logicalAnd)
     },
     "not": {
         name: "not",
@@ -49262,7 +49362,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.logicalNot
+        operation: tensorOperation(_tfjsCore.logicalNot)
     },
     "oneHot": {
         name: "oneHot",
@@ -49273,7 +49373,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.oneHot
+        operation: tensorOperation(_tfjsCore.oneHot)
     },
     "ones": {
         name: "ones",
@@ -49283,7 +49383,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.ones
+        operation: tensorOperation(_tfjsCore.ones)
     },
     "ones like": {
         name: "ones like",
@@ -49293,7 +49393,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.onesLike
+        operation: tensorOperation(_tfjsCore.onesLike)
     },
     "or": {
         name: "or",
@@ -49304,7 +49404,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.logicalOr
+        operation: tensorOperation(_tfjsCore.logicalOr)
     },
     "xor": {
         name: "xor",
@@ -49315,7 +49415,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.logicalXor
+        operation: tensorOperation(_tfjsCore.logicalXor)
     },
     "mat mul": {
         name: "mat mul",
@@ -49326,7 +49426,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.matMul
+        operation: tensorOperation(_tfjsCore.matMul)
     },
     "max": {
         name: "max",
@@ -49336,7 +49436,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.max
+        operation: tensorOperation(_tfjsCore.max)
     },
     "maximum": {
         name: "maximum",
@@ -49347,7 +49447,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.maximum
+        operation: tensorOperation(_tfjsCore.maximum)
     },
     "minimum": {
         name: "minimum",
@@ -49358,7 +49458,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.minimum
+        operation: tensorOperation(_tfjsCore.minimum)
     },
     "min": {
         name: "min",
@@ -49368,7 +49468,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.min
+        operation: tensorOperation(_tfjsCore.min)
     },
     "mean": {
         name: "mean",
@@ -49378,7 +49478,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.mean
+        operation: tensorOperation(_tfjsCore.mean)
     },
     "mod": {
         name: "mod",
@@ -49389,7 +49489,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.mod
+        operation: tensorOperation(_tfjsCore.mod)
     },
     "mul": {
         name: "mul",
@@ -49400,7 +49500,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.mul
+        operation: tensorOperation(_tfjsCore.mul)
     },
     "multinomial": {
         name: "multinomial",
@@ -49411,7 +49511,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.multinomial
+        operation: tensorOperation(_tfjsCore.multinomial)
     },
     "neg": {
         name: "neg",
@@ -49421,7 +49521,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.neg
+        operation: tensorOperation(_tfjsCore.neg)
     },
     "not equal": {
         name: "not equal",
@@ -49432,7 +49532,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.notEqual
+        operation: tensorOperation(_tfjsCore.notEqual)
     },
     "norm": {
         name: "norm",
@@ -49442,7 +49542,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.norm
+        operation: tensorOperation(_tfjsCore.norm)
     },
     "outer product": {
         name: "outer product",
@@ -49453,7 +49553,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.outerProduct
+        operation: tensorOperation(_tfjsCore.outerProduct)
     },
     "pow": {
         name: "pow",
@@ -49464,7 +49564,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.pow
+        operation: tensorOperation(_tfjsCore.pow)
     },
     "prelu": {
         name: "prelu",
@@ -49475,7 +49575,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.prelu
+        operation: tensorOperation(_tfjsCore.prelu)
     },
     "prod": {
         name: "prod",
@@ -49485,7 +49585,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.prod
+        operation: tensorOperation(_tfjsCore.prod)
     },
     "range": {
         name: "range",
@@ -49497,7 +49597,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.range
+        operation: tensorOperation(_tfjsCore.range)
     },
     "reciprocal": {
         name: "reciprocal",
@@ -49507,7 +49607,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.reciprocal
+        operation: tensorOperation(_tfjsCore.reciprocal)
     },
     "real": {
         name: "real",
@@ -49517,7 +49617,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.real
+        operation: tensorOperation(_tfjsCore.real)
     },
     "relu": {
         name: "relu",
@@ -49527,7 +49627,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.relu
+        operation: tensorOperation(_tfjsCore.relu)
     },
     "relu6": {
         name: "relu6",
@@ -49537,7 +49637,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.relu6
+        operation: tensorOperation(_tfjsCore.relu6)
     },
     "reverse": {
         name: "reverse",
@@ -49547,7 +49647,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.reverse
+        operation: tensorOperation(_tfjsCore.reverse)
     },
     "round": {
         name: "round",
@@ -49557,7 +49657,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.round
+        operation: tensorOperation(_tfjsCore.round)
     },
     "rsqrt": {
         name: "rsqrt",
@@ -49567,7 +49667,18 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.rsqrt
+        operation: tensorOperation(_tfjsCore.rsqrt)
+    },
+    "scatter": {
+        name: "scatter",
+        inputs: [
+            "x",
+            "y"
+        ],
+        outputs: [
+            "plot"
+        ],
+        operation: scatter
     },
     "selu": {
         name: "selu",
@@ -49577,7 +49688,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.selu
+        operation: tensorOperation(_tfjsCore.selu)
     },
     "sigmoid": {
         name: "sigmoid",
@@ -49587,7 +49698,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.sigmoid
+        operation: tensorOperation(_tfjsCore.sigmoid)
     },
     "sign": {
         name: "sign",
@@ -49597,7 +49708,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.sign
+        operation: tensorOperation(_tfjsCore.sign)
     },
     "sin": {
         name: "sin",
@@ -49607,7 +49718,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.sin
+        operation: tensorOperation(_tfjsCore.sin)
     },
     "sinh": {
         name: "sinh",
@@ -49617,7 +49728,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.sin
+        operation: tensorOperation(_tfjsCore.sin)
     },
     "slice": {
         name: "slice",
@@ -49629,7 +49740,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.slice
+        operation: tensorOperation(_tfjsCore.slice)
     },
     "softplus": {
         name: "softplus",
@@ -49639,7 +49750,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.softplus
+        operation: tensorOperation(_tfjsCore.softplus)
     },
     "sqrt": {
         name: "sqrt",
@@ -49649,7 +49760,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.sqrt
+        operation: tensorOperation(_tfjsCore.sqrt)
     },
     "square": {
         name: "square",
@@ -49659,7 +49770,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.square
+        operation: tensorOperation(_tfjsCore.square)
     },
     "squared difference": {
         name: "squared difference",
@@ -49670,7 +49781,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.squaredDifference
+        operation: tensorOperation(_tfjsCore.squaredDifference)
     },
     "sub": {
         name: "sub",
@@ -49681,7 +49792,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.sub
+        operation: tensorOperation(_tfjsCore.sub)
     },
     "sum": {
         name: "sum",
@@ -49691,7 +49802,21 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.sum
+        operation: tensorOperation(_tfjsCore.sum)
+    },
+    "stack": {
+        name: "stack",
+        inputs: [
+            "x",
+            "y"
+        ],
+        outputs: [
+            "out"
+        ],
+        operation: tensorOperation((x, y)=>_tfjsCore.stack([
+                x,
+                y
+            ], 1))
     },
     "step": {
         name: "step",
@@ -49702,7 +49827,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.step
+        operation: tensorOperation(_tfjsCore.step)
     },
     "tan": {
         name: "tan",
@@ -49712,7 +49837,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.tan
+        operation: tensorOperation(_tfjsCore.tan)
     },
     "tanh": {
         name: "tanh",
@@ -49722,7 +49847,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.tanh
+        operation: tensorOperation(_tfjsCore.tanh)
     },
     "tile": {
         name: "tile",
@@ -49733,9 +49858,9 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: (x, reps)=>_tfjsCore.tile(x, [
+        operation: tensorOperation((x, reps)=>_tfjsCore.tile(x, [
                 reps
-            ])
+            ]))
     },
     "transpose": {
         name: "transpose",
@@ -49745,7 +49870,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.transpose
+        operation: tensorOperation(_tfjsCore.transpose)
     },
     "where": {
         name: "where",
@@ -49757,7 +49882,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.where
+        operation: tensorOperation(_tfjsCore.where)
     },
     "zeros": {
         name: "zeros",
@@ -49767,7 +49892,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.zeros
+        operation: tensorOperation(_tfjsCore.zeros)
     },
     "zeros like": {
         name: "zeros like",
@@ -49777,11 +49902,28 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: _tfjsCore.zerosLike
+        operation: tensorOperation(_tfjsCore.zerosLike)
     }
 };
 
-},{"@tensorflow/tfjs-core":"2votT","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"3aGm3":[function(require,module,exports) {
+},{"@tensorflow/tfjs-core":"2votT","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","../normalize":"kgH6L","./graph":"j9QYs"}],"kgH6L":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "normalize", ()=>normalize);
+const normalize = (values, [t_min, t_max])=>{
+    const [r_min1, r_max1] = values.reduce(([r_min, r_max], val)=>[
+            Math.min(r_min, val),
+            Math.max(r_max, val)
+        ], [
+        Infinity,
+        -Infinity
+    ]);
+    const delta_r = r_max1 - r_min1;
+    const delta_t = t_max - t_min;
+    return values.map((val)=>(val - r_min1) / delta_r * delta_t + t_min);
+};
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"3aGm3":[function(require,module,exports) {
 module.exports = require("./helpers/bundle-url").getBundleURL("7UhFu") + "src/service_worker.js" + "?" + Date.now();
 
 },{"./helpers/bundle-url":"lgJ39"}],"lgJ39":[function(require,module,exports) {

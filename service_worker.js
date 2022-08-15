@@ -1,0 +1,2 @@
+(()=>{var e,t,n,a,l,r={};e=r,Object.defineProperty(e,"__esModule",{value:!0,configurable:!0}),t=r,n="default",a=()=>s,Object.defineProperty(t,n,{get:a,set:l,enumerable:!0,configurable:!0});var s=null;self.addEventListener("install",(e=>{e.waitUntil(caches.open("studio").then((e=>e.addAll([]))))})),self.addEventListener("fetch",(e=>{e.respondWith(caches.match(e.request).then((t=>t||fetch(e.request))))}))})();
+//# sourceMappingURL=service_worker.js.map

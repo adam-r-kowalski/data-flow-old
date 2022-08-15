@@ -1,6 +1,6 @@
 {
     "name": "Studio",
-    "description": "Empowering automaters everywhere.",
+    "description": "Empowering creators everywhere.",
     "icons": [
         {
             "src": "icons/favicon-16x16.png",
@@ -21,6 +21,23 @@
             "src": "icons/favicon-196x196.png",
             "type": "image/png",
             "sizes": "196x196"
+        },
+        {
+            "src": "icons/favicon-512x512.png",
+            "type": "image/png",
+            "sizes": "512x512"
+        },
+        {
+            "src": "icons/maskable_icon_x192.png",
+            "type": "image/png",
+            "sizes": "192x192",
+            "purpose": "maskable"
+        },
+        {
+            "src": "icons/maskable_icon_x512.png",
+            "type": "image/png",
+            "sizes": "512x512",
+            "purpose": "maskable"
         }
     ],
     "start_url": "/",

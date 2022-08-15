@@ -12,6 +12,10 @@
     "noFallthroughCasesInSwitch": true,
     "noUnusedLocals": true,
     "strictFunctionTypes": true,
-    "module": "ES2022"
+    "module": "ES2022",
+    "lib": [
+      "DOM",
+      "WebWorker"
+    ]
   }
 }

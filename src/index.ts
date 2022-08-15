@@ -71,10 +71,6 @@ document.addEventListener('contextmenu', e => {
     e.preventDefault()
 })
 
-document.addEventListener('touchend', () => {
-    document.body.requestFullscreen()
-})
-
 document.addEventListener('keydown', e => {
     if (e.ctrlKey) {
         switch (e.key) {

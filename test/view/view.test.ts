@@ -314,7 +314,7 @@ test("bodyUi with vector", () => {
     }
     const actual = tensorBody(theme, body, focus)
     const expected = container({ color: theme.background },
-        column([
+        column({ crossAxisAlignment: CrossAxisAlignment.END }, [
             container({ padding: 5 }, text("0")),
             container({ padding: 5 }, text("1")),
             container({ padding: 5 }, text("2")),
@@ -967,15 +967,15 @@ test("alphabetic virtual keyboard", () => {
 })
 
 test("numeric virtual keyboard", () => {
-    const actual = numericVirtualKeyboard(theme)
+    const actual = numericVirtualKeyboard(theme, '-')
     const expected = column({ mainAxisAlignment: MainAxisAlignment.END }, [
         row({ mainAxisAlignment: MainAxisAlignment.END }, [
             container({ padding: 4, color: theme.node },
                 column({ crossAxisAlignment: CrossAxisAlignment.END }, [
-                    virtualKeys(['1', '2', '3', '4']),
-                    virtualKeys(['5', '6', '7', '8']),
-                    virtualKeys(['9', '0', 'del']),
-                    virtualKeys(['.', 'ret']),
+                    virtualKeys(['1', '2', '3', 'clr']),
+                    virtualKeys(['4', '5', '6', 'del']),
+                    virtualKeys(['7', '8', '9', '   ']),
+                    virtualKeys(['-', '0', '.', 'ret']),
                 ])
             ),
         ]),
@@ -1408,7 +1408,7 @@ test("view with body selected", () => {
             ],
             connections: []
         }),
-        numericVirtualKeyboard(model.theme)
+        numericVirtualKeyboard(model.theme, '-')
     ])
     expect(actual).toEqual(expected)
 })

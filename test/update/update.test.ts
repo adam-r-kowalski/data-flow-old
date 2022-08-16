@@ -1806,7 +1806,7 @@ test("pressing non number on keyboard while editing number node is ignored", () 
     })
     const model1 = openNumericKeyboard(model0, node)
     let model2 = model1
-    for (const key of 'qwertyuiopasdfghjklzxcvbnm') {
+    for (const key of 'qwertyuiopasfghjklzxcvbnm') {
         const { model: model } = update(effects, model2, {
             kind: EventKind.KEYDOWN,
             key,
@@ -1884,6 +1884,306 @@ test("pressing non number on virtual keyboard while editing number node is ignor
     }
     expect(model2).toEqual(expectedModel)
 })
+
+test("pressing - on keyboard while editing number node makes the number negative", () => {
+    const effectModel = defaultEffectModel()
+    const effects = makeEffects(effectModel)
+    const operations: Operations = {
+        'Number': {
+            name: 'Number',
+            inputs: [],
+            body: 10,
+            outputs: ['out']
+        }
+    }
+    const { model: model0, node } = addNodeToGraph({
+        model: { ...model, operations },
+        operation: operations['Number'],
+        position: { x: 0, y: 0 },
+        generateUUID: effects.generateUUID
+    })
+    const model1 = openNumericKeyboard(model0, model0.graph.nodes[node].body!)
+    const { model: model2 } = update(effects, model1, {
+        kind: EventKind.KEYDOWN,
+        key: '-',
+        ctrl: false
+    })
+    const body = makeEffects({ ...effectModel, uuid: effectModel.uuid - 1 }).generateUUID()
+    const expectedModel: Model = {
+        ...model0,
+        operations,
+        graph: {
+            ...model0.graph,
+            bodys: {
+                [body]: {
+                    kind: BodyKind.TENSOR,
+                    uuid: body,
+                    node,
+                    value: -10,
+                    shape: [],
+                    editable: true,
+                    rank: 0,
+                }
+            }
+        },
+        focus: {
+            kind: FocusKind.BODY,
+            body,
+            quickSelect: { kind: QuickSelectKind.NONE }
+        }
+    }
+    expect(model2).toEqual(expectedModel)
+})
+
+test("pressing + on keyboard while editing number node makes the number negative", () => {
+    const effectModel = defaultEffectModel()
+    const effects = makeEffects(effectModel)
+    const operations: Operations = {
+        'Number': {
+            name: 'Number',
+            inputs: [],
+            body: -10,
+            outputs: ['out']
+        }
+    }
+    const { model: model0, node } = addNodeToGraph({
+        model: { ...model, operations },
+        operation: operations['Number'],
+        position: { x: 0, y: 0 },
+        generateUUID: effects.generateUUID
+    })
+    const model1 = openNumericKeyboard(model0, model0.graph.nodes[node].body!)
+    const { model: model2 } = update(effects, model1, {
+        kind: EventKind.KEYDOWN,
+        key: '+',
+        ctrl: false
+    })
+    const body = makeEffects({ ...effectModel, uuid: effectModel.uuid - 1 }).generateUUID()
+    const expectedModel: Model = {
+        ...model0,
+        operations,
+        graph: {
+            ...model0.graph,
+            bodys: {
+                [body]: {
+                    kind: BodyKind.TENSOR,
+                    uuid: body,
+                    node,
+                    value: 10,
+                    shape: [],
+                    editable: true,
+                    rank: 0,
+                }
+            }
+        },
+        focus: {
+            kind: FocusKind.BODY,
+            body,
+            quickSelect: { kind: QuickSelectKind.NONE }
+        }
+    }
+    expect(model2).toEqual(expectedModel)
+})
+
+
+test("pressing - on virtual keyboard while editing number node makes the number negative", () => {
+    const effectModel = defaultEffectModel()
+    const effects = makeEffects(effectModel)
+    const operations: Operations = {
+        'Number': {
+            name: 'Number',
+            inputs: [],
+            body: 10,
+            outputs: ['out']
+        }
+    }
+    const { model: model0, node } = addNodeToGraph({
+        model: { ...model, operations },
+        operation: operations['Number'],
+        position: { x: 0, y: 0 },
+        generateUUID: effects.generateUUID
+    })
+    const model1 = openNumericKeyboard(model0, model0.graph.nodes[node].body!)
+    const { model: model2 } = update(effects, model1, {
+        kind: EventKind.VIRTUAL_KEYDOWN,
+        key: '-'
+    })
+    const body = makeEffects({ ...effectModel, uuid: effectModel.uuid - 1 }).generateUUID()
+    const expectedModel: Model = {
+        ...model0,
+        operations,
+        graph: {
+            ...model0.graph,
+            bodys: {
+                [body]: {
+                    kind: BodyKind.TENSOR,
+                    uuid: body,
+                    node,
+                    value: -10,
+                    shape: [],
+                    editable: true,
+                    rank: 0,
+                }
+            }
+        },
+        focus: {
+            kind: FocusKind.BODY,
+            body,
+            quickSelect: { kind: QuickSelectKind.NONE }
+        }
+    }
+    expect(model2).toEqual(expectedModel)
+})
+
+test("pressing + on virtual keyboard while editing number node makes the number positive", () => {
+    const effectModel = defaultEffectModel()
+    const effects = makeEffects(effectModel)
+    const operations: Operations = {
+        'Number': {
+            name: 'Number',
+            inputs: [],
+            body: -10,
+            outputs: ['out']
+        }
+    }
+    const { model: model0, node } = addNodeToGraph({
+        model: { ...model, operations },
+        operation: operations['Number'],
+        position: { x: 0, y: 0 },
+        generateUUID: effects.generateUUID
+    })
+    const model1 = openNumericKeyboard(model0, model0.graph.nodes[node].body!)
+    const { model: model2 } = update(effects, model1, {
+        kind: EventKind.VIRTUAL_KEYDOWN,
+        key: '+'
+    })
+    const body = makeEffects({ ...effectModel, uuid: effectModel.uuid - 1 }).generateUUID()
+    const expectedModel: Model = {
+        ...model0,
+        operations,
+        graph: {
+            ...model0.graph,
+            bodys: {
+                [body]: {
+                    kind: BodyKind.TENSOR,
+                    uuid: body,
+                    node,
+                    value: 10,
+                    shape: [],
+                    editable: true,
+                    rank: 0,
+                }
+            }
+        },
+        focus: {
+            kind: FocusKind.BODY,
+            body,
+            quickSelect: { kind: QuickSelectKind.NONE }
+        }
+    }
+    expect(model2).toEqual(expectedModel)
+})
+
+test("pressing d on keyboard while editing number node makes the number 0", () => {
+    const effectModel = defaultEffectModel()
+    const effects = makeEffects(effectModel)
+    const operations: Operations = {
+        'Number': {
+            name: 'Number',
+            inputs: [],
+            body: 10,
+            outputs: ['out']
+        }
+    }
+    const { model: model0, node } = addNodeToGraph({
+        model: { ...model, operations },
+        operation: operations['Number'],
+        position: { x: 0, y: 0 },
+        generateUUID: effects.generateUUID
+    })
+    const model1 = openNumericKeyboard(model0, model0.graph.nodes[node].body!)
+    const { model: model2 } = update(effects, model1, {
+        kind: EventKind.KEYDOWN,
+        key: 'd',
+        ctrl: false
+    })
+    const body = makeEffects({ ...effectModel, uuid: effectModel.uuid - 1 }).generateUUID()
+    const expectedModel: Model = {
+        ...model0,
+        operations,
+        graph: {
+            ...model0.graph,
+            bodys: {
+                [body]: {
+                    kind: BodyKind.TENSOR,
+                    uuid: body,
+                    node,
+                    value: 0,
+                    shape: [],
+                    editable: true,
+                    rank: 0,
+                }
+            }
+        },
+        focus: {
+            kind: FocusKind.BODY,
+            body,
+            quickSelect: { kind: QuickSelectKind.NONE }
+        }
+    }
+    expect(model2).toEqual(expectedModel)
+})
+
+test("pressing clr on virtual keyboard while editing number node makes the number 0", () => {
+    const effectModel = defaultEffectModel()
+    const effects = makeEffects(effectModel)
+    const operations: Operations = {
+        'Number': {
+            name: 'Number',
+            inputs: [],
+            body: 10,
+            outputs: ['out']
+        }
+    }
+    const { model: model0, node } = addNodeToGraph({
+        model: { ...model, operations },
+        operation: operations['Number'],
+        position: { x: 0, y: 0 },
+        generateUUID: effects.generateUUID
+    })
+    const model1 = openNumericKeyboard(model0, model0.graph.nodes[node].body!)
+    const { model: model2 } = update(effects, model1, {
+        kind: EventKind.VIRTUAL_KEYDOWN,
+        key: 'clr',
+    })
+    const body = makeEffects({ ...effectModel, uuid: effectModel.uuid - 1 }).generateUUID()
+    const expectedModel: Model = {
+        ...model0,
+        operations,
+        graph: {
+            ...model0.graph,
+            bodys: {
+                [body]: {
+                    kind: BodyKind.TENSOR,
+                    uuid: body,
+                    node,
+                    value: 0,
+                    shape: [],
+                    editable: true,
+                    rank: 0,
+                }
+            }
+        },
+        focus: {
+            kind: FocusKind.BODY,
+            body,
+            quickSelect: { kind: QuickSelectKind.NONE }
+        }
+    }
+    expect(model2).toEqual(expectedModel)
+})
+
+
 
 test("pressing a key on virtual keyboard while no input target selected doesn't change the model", () => {
     const effects = makeEffects()

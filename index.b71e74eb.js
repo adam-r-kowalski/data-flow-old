@@ -281,7 +281,7 @@ function removeErrorOverlay() {
     var overlay = document.getElementById(OVERLAY_ID);
     if (overlay) {
         overlay.remove();
-        console.log("[parcel] \u2728 Error resolved");
+        console.log("[parcel] ✨ Error resolved");
     }
 }
 function createErrorOverlay(diagnostics) {
@@ -452,23 +452,23 @@ function hmrApply(bundle, asset) {
         } else if (bundle.parent) hmrApply(bundle.parent, asset);
     }
 }
-function hmrDelete(bundle, id1) {
+function hmrDelete(bundle, id) {
     let modules = bundle.modules;
     if (!modules) return;
-    if (modules[id1]) {
+    if (modules[id]) {
         // Collect dependencies that will become orphaned when this module is deleted.
-        let deps = modules[id1][1];
+        let deps = modules[id][1];
         let orphans = [];
         for(let dep in deps){
             let parents = getParents(module.bundle.root, deps[dep]);
             if (parents.length === 1) orphans.push(deps[dep]);
         } // Delete the module. This must be done before deleting dependencies in case of circular dependencies.
-        delete modules[id1];
-        delete bundle.cache[id1]; // Now delete the orphans.
+        delete modules[id];
+        delete bundle.cache[id]; // Now delete the orphans.
         orphans.forEach((id)=>{
             hmrDelete(module.bundle.root, id);
         });
-    } else if (bundle.parent) hmrDelete(bundle.parent, id1);
+    } else if (bundle.parent) hmrDelete(bundle.parent, id);
 }
 function hmrAcceptCheck(bundle, id, depsByBundle) {
     if (hmrAcceptCheckOne(bundle, id, depsByBundle)) return true;
@@ -551,8 +551,8 @@ const success_or_error = (0, _run.run)({
     document: document,
     requestAnimationFrame,
     setTimeout,
-    pointerDown: (dispatch1, pointer)=>{
-        dispatch1({
+    pointerDown: (dispatch, pointer)=>{
+        dispatch({
             kind: (0, _update.EventKind).POINTER_DOWN,
             pointer
         });
@@ -625,7 +625,7 @@ document.addEventListener("keyup", (e)=>{
 });
 if ("serviceWorker" in navigator) navigator.serviceWorker.register(require("24a5b8c3f264d2d2"));
 
-},{"@tensorflow/tfjs-backend-cpu":"alTEC","./update":"ilzHD","./ui/run":"e5SKV","./view":"kkyMT","./model/demo":"5AK9F","./ui/webgl2":"gDI6s","24a5b8c3f264d2d2":"1mLYK"}],"alTEC":[function(require,module,exports) {
+},{"@tensorflow/tfjs-backend-cpu":"alTEC","./update":"ilzHD","./ui/run":"e5SKV","./view":"kkyMT","./ui/webgl2":"gDI6s","24a5b8c3f264d2d2":"1mLYK","./model/demo":"5AK9F"}],"alTEC":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _registerAllKernels = require("./register_all_kernels");
@@ -1538,26 +1538,26 @@ class Engine {
         //
         // Run the kernelFunc. Optionally profiling it.
         //
-        const { inputs , attrs  } = kernelParams;
+        const { inputs: inputs1 , attrs: attrs1  } = kernelParams;
         const backwardsFunc = isRegisteredKernelInvocation(kernelParams) ? null : kernelParams.backwardsFunc;
         let kernelProfile;
         this.scopedRun(// Stop recording to a tape when running a kernel.
         ()=>this.state.kernelDepth++, ()=>this.state.kernelDepth--, ()=>{
             if (!this.ENV.getBool("DEBUG") && !this.state.profiling) outputs = kernelFunc();
             else {
-                kernelProfile = this.profiler.profileKernel(kernelOrScopeName, inputs, ()=>kernelFunc());
+                kernelProfile = this.profiler.profileKernel(kernelOrScopeName, inputs1, ()=>kernelFunc());
                 if (this.ENV.getBool("DEBUG")) this.profiler.logKernelProfile(kernelProfile);
                 outputs = kernelProfile.outputs;
             }
         });
-        if (isTapeOn) this.addTapeNode(kernelOrScopeName, inputs, outputs, backwardsFunc, saved, attrs);
+        if (isTapeOn) this.addTapeNode(kernelOrScopeName, inputs1, outputs, backwardsFunc, saved, attrs1);
         if (this.state.profiling) this.state.activeProfile.kernels.push({
             name: kernelOrScopeName,
             bytesAdded: this.state.numBytes - startingBytecount,
             totalBytesSnapshot: this.state.numBytes,
             tensorsAdded: this.state.numTensors - startingNumTensors,
             totalTensorsSnapshot: this.state.numTensors,
-            inputShapes: Object.keys(inputs).map((key)=>inputs[key] != null ? inputs[key].shape : null),
+            inputShapes: Object.keys(inputs1).map((key)=>inputs1[key] != null ? inputs1[key].shape : null),
             outputShapes: outputs.map((item)=>item.shape),
             kernelTimeMs: kernelProfile.timeMs,
             extraInfo: kernelProfile.extraInfo
@@ -1827,10 +1827,10 @@ class Engine {
      * returned are of the same length as `xs`, but some might be null if `f`
      * was not a function of that `x`. It also takes optional dy to multiply the
      * gradient, which defaults to `1`.
-     */ gradients(f1, xs, dy, allowNoGradients = false) {
+     */ gradients(f, xs, dy, allowNoGradients = false) {
         _util.assert(xs.length > 0, ()=>"gradients() received an empty list of xs.");
         if (dy != null && dy.dtype !== "float32") throw new Error(`dy must have 'float32' dtype, but has '${dy.dtype}'`);
-        const y = this.scopedRun(()=>this.startTape(), ()=>this.endTape(), ()=>this.tidy("forward", f1));
+        const y = this.scopedRun(()=>this.startTape(), ()=>this.endTape(), ()=>this.tidy("forward", f));
         _util.assert(y instanceof (0, _tensor.Tensor), ()=>"The result y returned by f() must be a tensor.");
         // Filter out the nodes that don't connect x => y.
         const filteredTape = (0, _tape.getFilteredNodesXToY)(this.state.activeTape, xs, y);
@@ -2482,9 +2482,9 @@ function swap(object, left, right) {
     object[right] = temp;
 }
 function sum(arr) {
-    let sum1 = 0;
-    for(let i = 0; i < arr.length; i++)sum1 += arr[i];
-    return sum1;
+    let sum = 0;
+    for(let i = 0; i < arr.length; i++)sum += arr[i];
+    return sum;
 }
 function randUniform(a, b) {
     const r = Math.random();
@@ -2729,10 +2729,10 @@ function createNestedArray(offset, shape, a, isComplex = false) {
         const d = shape[0] * (isComplex ? 2 : 1);
         for(let i = 0; i < d; i++)ret[i] = a[offset + i];
     } else {
-        const d = shape[0];
+        const d1 = shape[0];
         const rest = shape.slice(1);
         const len = rest.reduce((acc, c)=>acc * c) * (isComplex ? 2 : 1);
-        for(let i = 0; i < d; i++)ret[i] = createNestedArray(offset + i * len, rest, a, isComplex);
+        for(let i1 = 0; i1 < d1; i1++)ret[i1] = createNestedArray(offset + i1 * len, rest, a, isComplex);
     }
     return ret;
 }
@@ -2905,7 +2905,7 @@ function runTimeout(fun) {
         try {
             // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
             return cachedSetTimeout.call(null, fun, 0);
-        } catch (e) {
+        } catch (e1) {
             // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
             return cachedSetTimeout.call(this, fun, 0);
         }
@@ -2926,7 +2926,7 @@ function runClearTimeout(marker) {
         try {
             // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
             return cachedClearTimeout.call(null, marker);
-        } catch (e) {
+        } catch (e1) {
             // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
             // Some versions of I.E. have different rules for clearTimeout vs setTimeout
             return cachedClearTimeout.call(this, marker);
@@ -3550,11 +3550,11 @@ class Profiler {
             });
         }
         if ((0, _environment.env)().getBool("CHECK_COMPUTATION_FOR_ERRORS")) for(let i = 0; i < outputs.length; i++){
-            const output = outputs[i];
+            const output1 = outputs[i];
             // Dangling promise here because we don't want to propagate up
             // asynchronicity.
-            output.data().then((tensorVals)=>{
-                checkComputationForErrors(tensorVals, output.dtype, kernelName);
+            output1.data().then((tensorVals)=>{
+                checkComputationForErrors(tensorVals, output1.dtype, kernelName);
             });
         }
         const kernelProfile = {
@@ -3810,16 +3810,16 @@ function hashLen0to16(s, len = s.length) {
         return hashLen16(c, d, mul);
     }
     if (len >= 4) {
-        const mul = k2.add(len * 2);
-        const a = fetch32(s, 0);
-        return hashLen16(a.shl(3).add(len), fetch32(s, len - 4), mul);
+        const mul1 = k2.add(len * 2);
+        const a1 = fetch32(s, 0);
+        return hashLen16(a1.shl(3).add(len), fetch32(s, len - 4), mul1);
     }
     if (len > 0) {
-        const a = s[0];
-        const b = s[len >> 1];
-        const c = s[len - 1];
-        const y = a + (b << 8);
-        const z = len + (c << 2);
+        const a2 = s[0];
+        const b1 = s[len >> 1];
+        const c1 = s[len - 1];
+        const y = a2 + (b1 << 8);
+        const z = len + (c1 << 2);
         return shiftMix(k2.mul(y).xor(k0.mul(z))).mul(k2);
     }
     return k2;
@@ -5205,13 +5205,13 @@ function getFilteredNodesXToY(tape, xs, y) {
     tensorsLeadToY[y.id] = true;
     const nodesToY = {};
     for(let i2 = tape.length - 1; i2 >= 0; i2--){
-        const node = tape[i2];
-        const nodeInputs = node.inputs;
+        const node1 = tape[i2];
+        const nodeInputs1 = node1.inputs;
         // If any of the outputs lead to y, mark all of the inputs as leading to y.
-        for(let j = 0; j < node.outputs.length; j++)if (tensorsLeadToY[node.outputs[j].id]) {
-            for(const inputName in nodeInputs){
-                tensorsLeadToY[nodeInputs[inputName].id] = true;
-                nodesToY[node.id] = true;
+        for(let j1 = 0; j1 < node1.outputs.length; j1++)if (tensorsLeadToY[node1.outputs[j1].id]) {
+            for(const inputName1 in nodeInputs1){
+                tensorsLeadToY[nodeInputs1[inputName1].id] = true;
+                nodesToY[node1.id] = true;
             }
             break;
         }
@@ -5219,18 +5219,18 @@ function getFilteredNodesXToY(tape, xs, y) {
     // Return the paths that come from x and lead to y.
     const filteredTape = [];
     for(let i3 = 0; i3 < tape.length; i3++){
-        const node = tape[i3];
-        if (nodesFromX[node.id] && nodesToY[node.id]) {
+        const node2 = tape[i3];
+        if (nodesFromX[node2.id] && nodesToY[node2.id]) {
             // Prune the inputs from the node that aren't a function of x.
             const prunedInputs = {};
-            for(const inputName in node.inputs){
-                const nodeInput = node.inputs[inputName];
-                if (tensorsFromX[nodeInput.id]) prunedInputs[inputName] = nodeInput;
+            for(const inputName2 in node2.inputs){
+                const nodeInput = node2.inputs[inputName2];
+                if (tensorsFromX[nodeInput.id]) prunedInputs[inputName2] = nodeInput;
             }
             // Copy the node and overwrite inputsAndArgs to the pruned version.
-            const prunedNode = Object.assign({}, node);
+            const prunedNode = Object.assign({}, node2);
             prunedNode.inputs = prunedInputs;
-            prunedNode.outputs = node.outputs;
+            prunedNode.outputs = node2.outputs;
             filteredTape.push(prunedNode);
         }
     }
@@ -5767,21 +5767,21 @@ function subTensorToString(vals, shape, dtype, strides, padPerCol, isLast = true
             lines.push(...subTensorToString(vals.slice(start, end), subshape, dtype, substrides, padPerCol, false));
         }
         lines.push("...");
-        for(let i4 = size - FORMAT_NUM_FIRST_LAST_VALS; i4 < size; i4++){
-            const start = i4 * stride;
-            const end = start + stride;
-            lines.push(...subTensorToString(vals.slice(start, end), subshape, dtype, substrides, padPerCol, i4 === size - 1 /* isLast */ ));
+        for(let i1 = size - FORMAT_NUM_FIRST_LAST_VALS; i1 < size; i1++){
+            const start1 = i1 * stride;
+            const end1 = start1 + stride;
+            lines.push(...subTensorToString(vals.slice(start1, end1), subshape, dtype, substrides, padPerCol, i1 === size - 1 /* isLast */ ));
         }
-    } else for(let i3 = 0; i3 < size; i3++){
-        const start = i3 * stride;
-        const end = start + stride;
-        lines.push(...subTensorToString(vals.slice(start, end), subshape, dtype, substrides, padPerCol, i3 === size - 1 /* isLast */ ));
+    } else for(let i2 = 0; i2 < size; i2++){
+        const start2 = i2 * stride;
+        const end2 = start2 + stride;
+        lines.push(...subTensorToString(vals.slice(start2, end2), subshape, dtype, substrides, padPerCol, i2 === size - 1 /* isLast */ ));
     }
     const sep = rank === 2 ? "," : "";
     lines[0] = "[" + lines[0] + sep;
-    for(let i1 = 1; i1 < lines.length - 1; i1++)lines[i1] = " " + lines[i1] + sep;
+    for(let i3 = 1; i3 < lines.length - 1; i3++)lines[i3] = " " + lines[i3] + sep;
     let newLineSep = ",\n";
-    for(let i2 = 2; i2 < rank; i2++)newLineSep += "\n";
+    for(let i4 = 2; i4 < rank; i4++)newLineSep += "\n";
     lines[lines.length - 1] = " " + lines[lines.length - 1] + "]" + (isLast ? "" : newLineSep);
     return lines;
 }
@@ -5882,44 +5882,44 @@ parcelHelpers.export(exports, "Rank", ()=>Rank);
 parcelHelpers.export(exports, "upcastType", ()=>upcastType);
 /** Returns the output type after summation. */ parcelHelpers.export(exports, "sumOutType", ()=>sumOutType);
 var Rank;
-(function(Rank1) {
-    Rank1["R0"] = "R0";
-    Rank1["R1"] = "R1";
-    Rank1["R2"] = "R2";
-    Rank1["R3"] = "R3";
-    Rank1["R4"] = "R4";
-    Rank1["R5"] = "R5";
-    Rank1["R6"] = "R6";
+(function(Rank) {
+    Rank["R0"] = "R0";
+    Rank["R1"] = "R1";
+    Rank["R2"] = "R2";
+    Rank["R3"] = "R3";
+    Rank["R4"] = "R4";
+    Rank["R5"] = "R5";
+    Rank["R6"] = "R6";
 })(Rank || (Rank = {}));
 // Looks for upcasting types. Used, for example, in operations with mixed dtype
 // inputs.
 var UpcastInt32AndMap;
-(function(UpcastInt32AndMap1) {
-    UpcastInt32AndMap1["float32"] = "float32";
-    UpcastInt32AndMap1["int32"] = "int32";
-    UpcastInt32AndMap1["bool"] = "int32";
-    UpcastInt32AndMap1["complex64"] = "complex64";
+(function(UpcastInt32AndMap) {
+    UpcastInt32AndMap["float32"] = "float32";
+    UpcastInt32AndMap["int32"] = "int32";
+    UpcastInt32AndMap["bool"] = "int32";
+    UpcastInt32AndMap["complex64"] = "complex64";
 })(UpcastInt32AndMap || (UpcastInt32AndMap = {}));
 var UpcastBoolAndMap;
-(function(UpcastBoolAndMap1) {
-    UpcastBoolAndMap1["float32"] = "float32";
-    UpcastBoolAndMap1["int32"] = "int32";
-    UpcastBoolAndMap1["bool"] = "bool";
-    UpcastBoolAndMap1["complex64"] = "complex64";
+(function(UpcastBoolAndMap) {
+    UpcastBoolAndMap["float32"] = "float32";
+    UpcastBoolAndMap["int32"] = "int32";
+    UpcastBoolAndMap["bool"] = "bool";
+    UpcastBoolAndMap["complex64"] = "complex64";
 })(UpcastBoolAndMap || (UpcastBoolAndMap = {}));
 var UpcastFloat32AndMap;
-(function(UpcastFloat32AndMap1) {
-    UpcastFloat32AndMap1["float32"] = "float32";
-    UpcastFloat32AndMap1["int32"] = "float32";
-    UpcastFloat32AndMap1["bool"] = "float32";
-    UpcastFloat32AndMap1["complex64"] = "complex64";
+(function(UpcastFloat32AndMap) {
+    UpcastFloat32AndMap["float32"] = "float32";
+    UpcastFloat32AndMap["int32"] = "float32";
+    UpcastFloat32AndMap["bool"] = "float32";
+    UpcastFloat32AndMap["complex64"] = "complex64";
 })(UpcastFloat32AndMap || (UpcastFloat32AndMap = {}));
 var UpcastComplex64AndMap;
-(function(UpcastComplex64AndMap1) {
-    UpcastComplex64AndMap1["float32"] = "complex64";
-    UpcastComplex64AndMap1["int32"] = "complex64";
-    UpcastComplex64AndMap1["bool"] = "complex64";
-    UpcastComplex64AndMap1["complex64"] = "complex64";
+(function(UpcastComplex64AndMap) {
+    UpcastComplex64AndMap["float32"] = "complex64";
+    UpcastComplex64AndMap["int32"] = "complex64";
+    UpcastComplex64AndMap["bool"] = "complex64";
+    UpcastComplex64AndMap["complex64"] = "complex64";
 })(UpcastComplex64AndMap || (UpcastComplex64AndMap = {}));
 const upcastTypeMap = {
     "float32": UpcastFloat32AndMap,
@@ -6230,11 +6230,11 @@ class BrowserIndexedDB {
                         modelPath: this.modelPath,
                         modelArtifactsInfo
                     });
-                    let modelTx;
+                    let modelTx1;
                     putInfoRequest.onsuccess = ()=>{
                         // Second, put model data into model store.
-                        modelTx = db.transaction(MODEL_STORE_NAME, "readwrite");
-                        const modelStore = modelTx.objectStore(MODEL_STORE_NAME);
+                        modelTx1 = db.transaction(MODEL_STORE_NAME, "readwrite");
+                        const modelStore = modelTx1.objectStore(MODEL_STORE_NAME);
                         const putModelRequest = modelStore.put({
                             modelPath: this.modelPath,
                             modelArtifacts,
@@ -6263,8 +6263,8 @@ class BrowserIndexedDB {
                         return reject(putInfoRequest.error);
                     };
                     infoTx.oncomplete = ()=>{
-                        if (modelTx == null) db.close();
-                        else modelTx.oncomplete = ()=>db.close();
+                        if (modelTx1 == null) db.close();
+                        else modelTx1.oncomplete = ()=>db.close();
                     };
                 }
             };
@@ -6501,9 +6501,9 @@ async function encodeWeights(tensors, group) {
     const specs = [];
     const dataPromises = [];
     const names = Array.isArray(tensors) ? tensors.map((tensor)=>tensor.name) : Object.keys(tensors);
-    for(let i1 = 0; i1 < names.length; ++i1){
-        const name = names[i1];
-        const t = Array.isArray(tensors) ? tensors[i1].tensor : tensors[name];
+    for(let i = 0; i < names.length; ++i){
+        const name = names[i];
+        const t = Array.isArray(tensors) ? tensors[i].tensor : tensors[name];
         if (t.dtype !== "float32" && t.dtype !== "int32" && t.dtype !== "bool" && t.dtype !== "string" && t.dtype !== "complex64") throw new Error(`Unsupported dtype in weight '${name}': ${t.dtype}`);
         const spec = {
             name,
@@ -6574,16 +6574,16 @@ function decodeWeights(buffer, specs) {
             } else if (dtype === "int32") {
                 if (quantization.dtype !== "uint8" && quantization.dtype !== "uint16") throw new Error(`Unsupported quantization type ${quantization.dtype} ` + `for weight type int32.`);
                 values = new Int32Array(quantizedArray.length);
-                for(let i = 0; i < quantizedArray.length; i++){
-                    const v = quantizedArray[i];
-                    values[i] = Math.round(v * quantization.scale + quantization.min);
+                for(let i1 = 0; i1 < quantizedArray.length; i1++){
+                    const v1 = quantizedArray[i1];
+                    values[i1] = Math.round(v1 * quantization.scale + quantization.min);
                 }
             } else throw new Error(`Unsupported dtype in weight '${name}': ${dtype}`);
             offset += size * quantizationSizeFactor;
         } else if (dtype === "string") {
-            const size = (0, _util.sizeFromShape)(spec.shape);
+            const size1 = (0, _util.sizeFromShape)(spec.shape);
             values = [];
-            for(let i = 0; i < size; i++){
+            for(let i2 = 0; i2 < size1; i2++){
                 const byteLength = new Uint32Array(buffer.slice(offset, offset + NUM_BYTES_STRING_LENGTH))[0];
                 offset += NUM_BYTES_STRING_LENGTH;
                 const bytes = new Uint8Array(buffer.slice(offset, offset + byteLength));
@@ -6592,17 +6592,17 @@ function decodeWeights(buffer, specs) {
             }
         } else {
             const dtypeFactor = (0, _types.DTYPE_VALUE_SIZE_MAP)[dtype];
-            const byteBuffer = buffer.slice(offset, offset + size * dtypeFactor);
-            if (dtype === "float32") values = new Float32Array(byteBuffer);
-            else if (dtype === "int32") values = new Int32Array(byteBuffer);
-            else if (dtype === "bool") values = new Uint8Array(byteBuffer);
+            const byteBuffer1 = buffer.slice(offset, offset + size * dtypeFactor);
+            if (dtype === "float32") values = new Float32Array(byteBuffer1);
+            else if (dtype === "int32") values = new Int32Array(byteBuffer1);
+            else if (dtype === "bool") values = new Uint8Array(byteBuffer1);
             else if (dtype === "complex64") {
-                values = new Float32Array(byteBuffer);
+                values = new Float32Array(byteBuffer1);
                 const real = new Float32Array(values.length / 2);
                 const image = new Float32Array(values.length / 2);
-                for(let i = 0; i < real.length; i++){
-                    real[i] = values[i * 2];
-                    image[i] = values[i * 2 + 1];
+                for(let i3 = 0; i3 < real.length; i3++){
+                    real[i3] = values[i3 * 2];
+                    image[i3] = values[i3 * 2 + 1];
                 }
                 const realTensor = (0, _tensor.tensor)(real, shape, "float32");
                 const imageTensor = (0, _tensor.tensor)(image, shape, "float32");
@@ -6752,8 +6752,8 @@ function getModelArtifactsInfoForJSON(modelArtifacts) {
     };
     const mantisaTable = new Uint32Array(2048);
     mantisaTable[0] = 0;
-    for(let i3 = 1; i3 < 1024; i3++)mantisaTable[i3] = convertMantissa(i3);
-    for(let i2 = 1024; i2 < 2048; i2++)mantisaTable[i2] = 0x38000000 + (i2 - 1024 << 13);
+    for(let i = 1; i < 1024; i++)mantisaTable[i] = convertMantissa(i);
+    for(let i1 = 1024; i1 < 2048; i1++)mantisaTable[i1] = 0x38000000 + (i1 - 1024 << 13);
     return mantisaTable;
 }
 /**
@@ -6768,7 +6768,7 @@ function getModelArtifactsInfoForJSON(modelArtifacts) {
     exponentTable[32] = 0x80000000;
     exponentTable[63] = 0xc7800000;
     for(let i = 1; i < 31; i++)exponentTable[i] = i << 23;
-    for(let i4 = 33; i4 < 63; i4++)exponentTable[i4] = 0x80000000 + (i4 - 32 << 23);
+    for(let i1 = 33; i1 < 63; i1++)exponentTable[i1] = 0x80000000 + (i1 - 32 << 23);
     return exponentTable;
 }
 /**
@@ -7616,25 +7616,25 @@ function arrayIndexOf(arr, val, byteOffset, encoding, dir) {
         if (indexSize === 1) return buf[i];
         else return buf.readUInt16BE(i * indexSize);
     }
-    let i1;
+    let i;
     if (dir) {
         let foundIndex = -1;
-        for(i1 = byteOffset; i1 < arrLength; i1++)if (read(arr, i1) === read(val, foundIndex === -1 ? 0 : i1 - foundIndex)) {
-            if (foundIndex === -1) foundIndex = i1;
-            if (i1 - foundIndex + 1 === valLength) return foundIndex * indexSize;
+        for(i = byteOffset; i < arrLength; i++)if (read(arr, i) === read(val, foundIndex === -1 ? 0 : i - foundIndex)) {
+            if (foundIndex === -1) foundIndex = i;
+            if (i - foundIndex + 1 === valLength) return foundIndex * indexSize;
         } else {
-            if (foundIndex !== -1) i1 -= i1 - foundIndex;
+            if (foundIndex !== -1) i -= i - foundIndex;
             foundIndex = -1;
         }
     } else {
         if (byteOffset + valLength > arrLength) byteOffset = arrLength - valLength;
-        for(i1 = byteOffset; i1 >= 0; i1--){
+        for(i = byteOffset; i >= 0; i--){
             let found = true;
-            for(let j = 0; j < valLength; j++)if (read(arr, i1 + j) !== read(val, j)) {
+            for(let j = 0; j < valLength; j++)if (read(arr, i + j) !== read(val, j)) {
                 found = false;
                 break;
             }
-            if (found) return i1;
+            if (found) return i;
         }
     }
     return -1;
@@ -7859,23 +7859,23 @@ Buffer.prototype.slice = function slice(start, end) {
     if (offset % 1 !== 0 || offset < 0) throw new RangeError("offset is not uint");
     if (offset + ext > length) throw new RangeError("Trying to access beyond buffer length");
 }
-Buffer.prototype.readUintLE = Buffer.prototype.readUIntLE = function readUIntLE(offset, byteLength1, noAssert) {
+Buffer.prototype.readUintLE = Buffer.prototype.readUIntLE = function readUIntLE(offset, byteLength, noAssert) {
     offset = offset >>> 0;
-    byteLength1 = byteLength1 >>> 0;
-    if (!noAssert) checkOffset(offset, byteLength1, this.length);
+    byteLength = byteLength >>> 0;
+    if (!noAssert) checkOffset(offset, byteLength, this.length);
     let val = this[offset];
     let mul = 1;
     let i = 0;
-    while(++i < byteLength1 && (mul *= 0x100))val += this[offset + i] * mul;
+    while(++i < byteLength && (mul *= 0x100))val += this[offset + i] * mul;
     return val;
 };
-Buffer.prototype.readUintBE = Buffer.prototype.readUIntBE = function readUIntBE(offset, byteLength2, noAssert) {
+Buffer.prototype.readUintBE = Buffer.prototype.readUIntBE = function readUIntBE(offset, byteLength, noAssert) {
     offset = offset >>> 0;
-    byteLength2 = byteLength2 >>> 0;
-    if (!noAssert) checkOffset(offset, byteLength2, this.length);
-    let val = this[offset + --byteLength2];
+    byteLength = byteLength >>> 0;
+    if (!noAssert) checkOffset(offset, byteLength, this.length);
+    let val = this[offset + --byteLength];
     let mul = 1;
-    while(byteLength2 > 0 && (mul *= 0x100))val += this[offset + --byteLength2] * mul;
+    while(byteLength > 0 && (mul *= 0x100))val += this[offset + --byteLength] * mul;
     return val;
 };
 Buffer.prototype.readUint8 = Buffer.prototype.readUInt8 = function readUInt8(offset, noAssert) {
@@ -7923,28 +7923,28 @@ Buffer.prototype.readBigUInt64BE = defineBigIntMethod(function readBigUInt64BE(o
     const lo = this[++offset] * 2 ** 24 + this[++offset] * 65536 + this[++offset] * 256 + last;
     return (BigInt(hi) << BigInt(32)) + BigInt(lo);
 });
-Buffer.prototype.readIntLE = function readIntLE(offset, byteLength3, noAssert) {
+Buffer.prototype.readIntLE = function readIntLE(offset, byteLength, noAssert) {
     offset = offset >>> 0;
-    byteLength3 = byteLength3 >>> 0;
-    if (!noAssert) checkOffset(offset, byteLength3, this.length);
+    byteLength = byteLength >>> 0;
+    if (!noAssert) checkOffset(offset, byteLength, this.length);
     let val = this[offset];
     let mul = 1;
     let i = 0;
-    while(++i < byteLength3 && (mul *= 0x100))val += this[offset + i] * mul;
+    while(++i < byteLength && (mul *= 0x100))val += this[offset + i] * mul;
     mul *= 0x80;
-    if (val >= mul) val -= Math.pow(2, 8 * byteLength3);
+    if (val >= mul) val -= Math.pow(2, 8 * byteLength);
     return val;
 };
-Buffer.prototype.readIntBE = function readIntBE(offset, byteLength4, noAssert) {
+Buffer.prototype.readIntBE = function readIntBE(offset, byteLength, noAssert) {
     offset = offset >>> 0;
-    byteLength4 = byteLength4 >>> 0;
-    if (!noAssert) checkOffset(offset, byteLength4, this.length);
-    let i = byteLength4;
+    byteLength = byteLength >>> 0;
+    if (!noAssert) checkOffset(offset, byteLength, this.length);
+    let i = byteLength;
     let mul = 1;
     let val = this[offset + --i];
     while(i > 0 && (mul *= 0x100))val += this[offset + --i] * mul;
     mul *= 0x80;
-    if (val >= mul) val -= Math.pow(2, 8 * byteLength4);
+    if (val >= mul) val -= Math.pow(2, 8 * byteLength);
     return val;
 };
 Buffer.prototype.readInt8 = function readInt8(offset, noAssert) {
@@ -8019,33 +8019,33 @@ function checkInt(buf, value, offset, ext, max, min) {
     if (value > max || value < min) throw new RangeError('"value" argument is out of bounds');
     if (offset + ext > buf.length) throw new RangeError("Index out of range");
 }
-Buffer.prototype.writeUintLE = Buffer.prototype.writeUIntLE = function writeUIntLE(value, offset, byteLength5, noAssert) {
+Buffer.prototype.writeUintLE = Buffer.prototype.writeUIntLE = function writeUIntLE(value, offset, byteLength, noAssert) {
     value = +value;
     offset = offset >>> 0;
-    byteLength5 = byteLength5 >>> 0;
+    byteLength = byteLength >>> 0;
     if (!noAssert) {
-        const maxBytes = Math.pow(2, 8 * byteLength5) - 1;
-        checkInt(this, value, offset, byteLength5, maxBytes, 0);
+        const maxBytes = Math.pow(2, 8 * byteLength) - 1;
+        checkInt(this, value, offset, byteLength, maxBytes, 0);
     }
     let mul = 1;
     let i = 0;
     this[offset] = value & 0xFF;
-    while(++i < byteLength5 && (mul *= 0x100))this[offset + i] = value / mul & 0xFF;
-    return offset + byteLength5;
+    while(++i < byteLength && (mul *= 0x100))this[offset + i] = value / mul & 0xFF;
+    return offset + byteLength;
 };
-Buffer.prototype.writeUintBE = Buffer.prototype.writeUIntBE = function writeUIntBE(value, offset, byteLength6, noAssert) {
+Buffer.prototype.writeUintBE = Buffer.prototype.writeUIntBE = function writeUIntBE(value, offset, byteLength, noAssert) {
     value = +value;
     offset = offset >>> 0;
-    byteLength6 = byteLength6 >>> 0;
+    byteLength = byteLength >>> 0;
     if (!noAssert) {
-        const maxBytes = Math.pow(2, 8 * byteLength6) - 1;
-        checkInt(this, value, offset, byteLength6, maxBytes, 0);
+        const maxBytes = Math.pow(2, 8 * byteLength) - 1;
+        checkInt(this, value, offset, byteLength, maxBytes, 0);
     }
-    let i = byteLength6 - 1;
+    let i = byteLength - 1;
     let mul = 1;
     this[offset + i] = value & 0xFF;
     while(--i >= 0 && (mul *= 0x100))this[offset + i] = value / mul & 0xFF;
-    return offset + byteLength6;
+    return offset + byteLength;
 };
 Buffer.prototype.writeUint8 = Buffer.prototype.writeUInt8 = function writeUInt8(value, offset, noAssert) {
     value = +value;
@@ -8136,31 +8136,31 @@ Buffer.prototype.writeBigUInt64LE = defineBigIntMethod(function writeBigUInt64LE
 Buffer.prototype.writeBigUInt64BE = defineBigIntMethod(function writeBigUInt64BE(value, offset = 0) {
     return wrtBigUInt64BE(this, value, offset, BigInt(0), BigInt("0xffffffffffffffff"));
 });
-Buffer.prototype.writeIntLE = function writeIntLE(value, offset, byteLength7, noAssert) {
+Buffer.prototype.writeIntLE = function writeIntLE(value, offset, byteLength, noAssert) {
     value = +value;
     offset = offset >>> 0;
     if (!noAssert) {
-        const limit = Math.pow(2, 8 * byteLength7 - 1);
-        checkInt(this, value, offset, byteLength7, limit - 1, -limit);
+        const limit = Math.pow(2, 8 * byteLength - 1);
+        checkInt(this, value, offset, byteLength, limit - 1, -limit);
     }
     let i = 0;
     let mul = 1;
     let sub = 0;
     this[offset] = value & 0xFF;
-    while(++i < byteLength7 && (mul *= 0x100)){
+    while(++i < byteLength && (mul *= 0x100)){
         if (value < 0 && sub === 0 && this[offset + i - 1] !== 0) sub = 1;
         this[offset + i] = (value / mul >> 0) - sub & 0xFF;
     }
-    return offset + byteLength7;
+    return offset + byteLength;
 };
-Buffer.prototype.writeIntBE = function writeIntBE(value, offset, byteLength8, noAssert) {
+Buffer.prototype.writeIntBE = function writeIntBE(value, offset, byteLength, noAssert) {
     value = +value;
     offset = offset >>> 0;
     if (!noAssert) {
-        const limit = Math.pow(2, 8 * byteLength8 - 1);
-        checkInt(this, value, offset, byteLength8, limit - 1, -limit);
+        const limit = Math.pow(2, 8 * byteLength - 1);
+        checkInt(this, value, offset, byteLength, limit - 1, -limit);
     }
-    let i = byteLength8 - 1;
+    let i = byteLength - 1;
     let mul = 1;
     let sub = 0;
     this[offset + i] = value & 0xFF;
@@ -8168,7 +8168,7 @@ Buffer.prototype.writeIntBE = function writeIntBE(value, offset, byteLength8, no
         if (value < 0 && sub === 0 && this[offset + i + 1] !== 0) sub = 1;
         this[offset + i] = (value / mul >> 0) - sub & 0xFF;
     }
-    return offset + byteLength8;
+    return offset + byteLength;
 };
 Buffer.prototype.writeInt8 = function writeInt8(value, offset, noAssert) {
     value = +value;
@@ -8381,21 +8381,21 @@ function addNumericalSeparator(val) {
 }
 // CHECK FUNCTIONS
 // ===============
-function checkBounds(buf, offset, byteLength9) {
+function checkBounds(buf, offset, byteLength) {
     validateNumber(offset, "offset");
-    if (buf[offset] === undefined || buf[offset + byteLength9] === undefined) boundsError(offset, buf.length - (byteLength9 + 1));
+    if (buf[offset] === undefined || buf[offset + byteLength] === undefined) boundsError(offset, buf.length - (byteLength + 1));
 }
-function checkIntBI(value, min, max, buf, offset, byteLength10) {
+function checkIntBI(value, min, max, buf, offset, byteLength) {
     if (value > max || value < min) {
         const n = typeof min === "bigint" ? "n" : "";
         let range;
-        if (byteLength10 > 3) {
-            if (min === 0 || min === BigInt(0)) range = `>= 0${n} and < 2${n} ** ${(byteLength10 + 1) * 8}${n}`;
-            else range = `>= -(2${n} ** ${(byteLength10 + 1) * 8 - 1}${n}) and < 2 ** ` + `${(byteLength10 + 1) * 8 - 1}${n}`;
+        if (byteLength > 3) {
+            if (min === 0 || min === BigInt(0)) range = `>= 0${n} and < 2${n} ** ${(byteLength + 1) * 8}${n}`;
+            else range = `>= -(2${n} ** ${(byteLength + 1) * 8 - 1}${n}) and < 2 ** ` + `${(byteLength + 1) * 8 - 1}${n}`;
         } else range = `>= ${min}${n} and <= ${max}${n}`;
         throw new errors.ERR_OUT_OF_RANGE("value", range, value);
     }
-    checkBounds(buf, offset, byteLength10);
+    checkBounds(buf, offset, byteLength);
 }
 function validateNumber(value, name) {
     if (typeof value !== "number") throw new errors.ERR_INVALID_ARG_TYPE(name, "number", value);
@@ -8556,13 +8556,13 @@ for(var i = 0, len = code.length; i < len; ++i){
 revLookup["-".charCodeAt(0)] = 62;
 revLookup["_".charCodeAt(0)] = 63;
 function getLens(b64) {
-    var len1 = b64.length;
-    if (len1 % 4 > 0) throw new Error("Invalid string. Length must be a multiple of 4");
+    var len = b64.length;
+    if (len % 4 > 0) throw new Error("Invalid string. Length must be a multiple of 4");
     // Trim off extra bytes after placeholder bytes are found
     // See: https://github.com/beatgammit/base64-js/issues/42
     var validLen = b64.indexOf("=");
-    if (validLen === -1) validLen = len1;
-    var placeHoldersLen = validLen === len1 ? 0 : 4 - validLen % 4;
+    if (validLen === -1) validLen = len;
+    var placeHoldersLen = validLen === len ? 0 : 4 - validLen % 4;
     return [
         validLen,
         placeHoldersLen
@@ -8586,20 +8586,20 @@ function toByteArray(b64) {
     var arr = new Arr(_byteLength(b64, validLen, placeHoldersLen));
     var curByte = 0;
     // if there are placeholders, only get up to the last complete 4 chars
-    var len2 = placeHoldersLen > 0 ? validLen - 4 : validLen;
-    var i1;
-    for(i1 = 0; i1 < len2; i1 += 4){
-        tmp = revLookup[b64.charCodeAt(i1)] << 18 | revLookup[b64.charCodeAt(i1 + 1)] << 12 | revLookup[b64.charCodeAt(i1 + 2)] << 6 | revLookup[b64.charCodeAt(i1 + 3)];
+    var len = placeHoldersLen > 0 ? validLen - 4 : validLen;
+    var i;
+    for(i = 0; i < len; i += 4){
+        tmp = revLookup[b64.charCodeAt(i)] << 18 | revLookup[b64.charCodeAt(i + 1)] << 12 | revLookup[b64.charCodeAt(i + 2)] << 6 | revLookup[b64.charCodeAt(i + 3)];
         arr[curByte++] = tmp >> 16 & 0xFF;
         arr[curByte++] = tmp >> 8 & 0xFF;
         arr[curByte++] = tmp & 0xFF;
     }
     if (placeHoldersLen === 2) {
-        tmp = revLookup[b64.charCodeAt(i1)] << 2 | revLookup[b64.charCodeAt(i1 + 1)] >> 4;
+        tmp = revLookup[b64.charCodeAt(i)] << 2 | revLookup[b64.charCodeAt(i + 1)] >> 4;
         arr[curByte++] = tmp & 0xFF;
     }
     if (placeHoldersLen === 1) {
-        tmp = revLookup[b64.charCodeAt(i1)] << 10 | revLookup[b64.charCodeAt(i1 + 1)] << 4 | revLookup[b64.charCodeAt(i1 + 2)] >> 2;
+        tmp = revLookup[b64.charCodeAt(i)] << 10 | revLookup[b64.charCodeAt(i + 1)] << 4 | revLookup[b64.charCodeAt(i + 2)] >> 2;
         arr[curByte++] = tmp >> 8 & 0xFF;
         arr[curByte++] = tmp & 0xFF;
     }
@@ -8611,28 +8611,28 @@ function tripletToBase64(num) {
 function encodeChunk(uint8, start, end) {
     var tmp;
     var output = [];
-    for(var i2 = start; i2 < end; i2 += 3){
-        tmp = (uint8[i2] << 16 & 0xFF0000) + (uint8[i2 + 1] << 8 & 0xFF00) + (uint8[i2 + 2] & 0xFF);
+    for(var i = start; i < end; i += 3){
+        tmp = (uint8[i] << 16 & 0xFF0000) + (uint8[i + 1] << 8 & 0xFF00) + (uint8[i + 2] & 0xFF);
         output.push(tripletToBase64(tmp));
     }
     return output.join("");
 }
 function fromByteArray(uint8) {
     var tmp;
-    var len3 = uint8.length;
-    var extraBytes = len3 % 3 // if we have 1 byte left, pad 2 bytes
+    var len = uint8.length;
+    var extraBytes = len % 3 // if we have 1 byte left, pad 2 bytes
     ;
     var parts = [];
     var maxChunkLength = 16383 // must be multiple of 3
     ;
     // go through the array every three bytes, we'll deal with trailing stuff later
-    for(var i3 = 0, len2 = len3 - extraBytes; i3 < len2; i3 += maxChunkLength)parts.push(encodeChunk(uint8, i3, i3 + maxChunkLength > len2 ? len2 : i3 + maxChunkLength));
+    for(var i = 0, len2 = len - extraBytes; i < len2; i += maxChunkLength)parts.push(encodeChunk(uint8, i, i + maxChunkLength > len2 ? len2 : i + maxChunkLength));
     // pad the end with zeros, but make sure to not forget the extra bytes
     if (extraBytes === 1) {
-        tmp = uint8[len3 - 1];
+        tmp = uint8[len - 1];
         parts.push(lookup[tmp >> 2] + lookup[tmp << 4 & 0x3F] + "==");
     } else if (extraBytes === 2) {
-        tmp = (uint8[len3 - 2] << 8) + uint8[len3 - 1];
+        tmp = (uint8[len - 2] << 8) + uint8[len - 1];
         parts.push(lookup[tmp >> 10] + lookup[tmp >> 4 & 0x3F] + lookup[tmp << 2 & 0x3F] + "=");
     }
     return parts.join("");
@@ -9956,8 +9956,8 @@ class BrowserFiles {
                     reject(new Error(`modelTopology field is missing from file ${this.jsonFile.name}`));
                     return;
                 }
-                const weightsManifest1 = modelJSON.weightsManifest;
-                if (weightsManifest1 == null) {
+                const weightsManifest = modelJSON.weightsManifest;
+                if (weightsManifest == null) {
                     reject(new Error(`weightManifest field is missing from file ${this.jsonFile.name}`));
                     return;
                 }
@@ -10224,8 +10224,8 @@ class HTTPRequest {
         }
         // We do not allow both modelTopology and weightsManifest to be missing.
         const modelTopology = modelJSON.modelTopology;
-        const weightsManifest1 = modelJSON.weightsManifest;
-        if (modelTopology == null && weightsManifest1 == null) throw new Error(`The JSON from HTTP path ${this.path} contains neither model ` + `topology or manifest for weights.`);
+        const weightsManifest = modelJSON.weightsManifest;
+        if (modelTopology == null && weightsManifest == null) throw new Error(`The JSON from HTTP path ${this.path} contains neither model ` + `topology or manifest for weights.`);
         return (0, _ioUtils.getModelArtifactsForJSON)(modelJSON, (weightsManifest)=>this.loadWeights(weightsManifest));
     }
     async loadWeights(weightsManifest) {
@@ -10380,8 +10380,8 @@ async function loadWeights(manifest, filePathPrefix = "", weightNames, requestIn
     const fetchWeights = (fetchUrls)=>loadWeightsAsArrayBuffer(fetchUrls, {
             requestInit
         });
-    const loadWeights1 = weightsLoaderFactory(fetchWeights);
-    return loadWeights1(manifest, filePathPrefix, weightNames);
+    const loadWeights = weightsLoaderFactory(fetchWeights);
+    return loadWeights(manifest, filePathPrefix, weightNames);
 }
 function weightsLoaderFactory(fetchWeightsFunction) {
     return async (manifest, filePathPrefix = "", weightNames)=>{
@@ -10490,15 +10490,15 @@ parcelHelpers.defineInteropFlag(exports);
  * limitations under the License.
  * =============================================================================
  */ var _util = require("../util");
-function monitorPromisesProgress(promises1, onProgress, startFraction1, endFraction1) {
-    checkPromises(promises1);
-    startFraction1 = startFraction1 == null ? 0 : startFraction1;
-    endFraction1 = endFraction1 == null ? 1 : endFraction1;
-    checkFraction(startFraction1, endFraction1);
+function monitorPromisesProgress(promises, onProgress, startFraction, endFraction) {
+    checkPromises(promises);
+    startFraction = startFraction == null ? 0 : startFraction;
+    endFraction = endFraction == null ? 1 : endFraction;
+    checkFraction(startFraction, endFraction);
     let resolvedPromise = 0;
     const registerMonitor = (promise)=>{
         promise.then((value)=>{
-            const fraction = startFraction1 + ++resolvedPromise / promises1.length * (endFraction1 - startFraction1);
+            const fraction = startFraction + ++resolvedPromise / promises.length * (endFraction - startFraction);
             // pass fraction as parameter to callback function.
             onProgress(fraction);
             return value;
@@ -10513,7 +10513,7 @@ function monitorPromisesProgress(promises1, onProgress, startFraction1, endFract
         (0, _util.assert)(endFraction >= 0 && endFraction <= 1, ()=>`Progress fraction must be in range [0, 1], but ` + `got endFraction ${endFraction}`);
         (0, _util.assert)(endFraction >= startFraction, ()=>`startFraction must be no more than endFraction, but ` + `got startFraction ${startFraction} and endFraction ` + `${endFraction}`);
     }
-    return Promise.all(promises1.map(registerMonitor));
+    return Promise.all(promises.map(registerMonitor));
 }
 
 },{"../util":"9v6Fb","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"9R8iF":[function(require,module,exports) {
@@ -11634,13 +11634,13 @@ let fromPixels2DContext;
     // Sanity checks.
     if (numChannels > 4) throw new Error("Cannot construct Tensor with more than 4 channels from pixels.");
     if (pixels == null) throw new Error("pixels passed to tf.browser.fromPixels() can not be null");
-    let isPixelData1 = false;
+    let isPixelData = false;
     let isImageData = false;
     let isVideo = false;
     let isImage = false;
     let isCanvasLike = false;
     let isImageBitmap = false;
-    if (pixels.data instanceof Uint8Array) isPixelData1 = true;
+    if (pixels.data instanceof Uint8Array) isPixelData = true;
     else if (typeof ImageData !== "undefined" && pixels instanceof ImageData) isImageData = true;
     else if (typeof HTMLVideoElement !== "undefined" && pixels instanceof HTMLVideoElement) isVideo = true;
     else if (typeof HTMLImageElement !== "undefined" && pixels instanceof HTMLImageElement) isImage = true;
@@ -11673,7 +11673,7 @@ let fromPixels2DContext;
     let vals;
     if (isCanvasLike) vals = // tslint:disable-next-line:no-any
     pixels.getContext("2d").getImageData(0, 0, width, height).data;
-    else if (isImageData || isPixelData1) vals = pixels.data;
+    else if (isImageData || isPixelData) vals = pixels.data;
     else if (isImage || isVideo || isImageBitmap) {
         if (fromPixels2DContext == null) {
             if (typeof document === "undefined") {
@@ -12182,8 +12182,8 @@ function isSliceContinous(shape, begin, size) {
         firstNonOneAxis = i;
         break;
     }
-    for(let i2 = firstNonOneAxis + 1; i2 < size.length; i2++){
-        if (begin[i2] > 0 || size[i2] !== shape[i2]) return false;
+    for(let i1 = firstNonOneAxis + 1; i1 < size.length; i1++){
+        if (begin[i1] > 0 || size[i1] !== shape[i1]) return false;
     }
     return true;
 }
@@ -12252,9 +12252,9 @@ function sliceInfo(xShape, begin, end, strides, beginMask, endMask, ellipsisMask
         newAxisMask,
         shrinkAxisMask
     };
-    for(let i4 = 0; i4 < sparseSpec.dims; i4++){
-        if (ellipsisSeen && (1 << i4 & newAxisMask) !== 0) sparseSpec.numAddAxisAfterEllipsis++;
-        if (1 << i4 & ellipsisMask) ellipsisSeen = true;
+    for(let i = 0; i < sparseSpec.dims; i++){
+        if (ellipsisSeen && (1 << i & newAxisMask) !== 0) sparseSpec.numAddAxisAfterEllipsis++;
+        if (1 << i & ellipsisMask) ellipsisSeen = true;
     }
     // If no ellipsis insert one at the end.
     if (!ellipsisSeen) {
@@ -12285,52 +12285,52 @@ function sliceInfo(xShape, begin, end, strides, beginMask, endMask, ellipsisMask
     let isSimpleSlice = true;
     const processingShape = [];
     const finalShape = [];
-    for(let i3 = 0; i3 < xShape.length; ++i3){
-        if (denseSpec.strides[i3] === 0) throw Error(`strides[${i3}] must be non-zero`);
-        const shrinkI = !!(denseSpec.shrinkAxisMask & 1 << i3);
-        const dimI = xShape[i3];
+    for(let i1 = 0; i1 < xShape.length; ++i1){
+        if (denseSpec.strides[i1] === 0) throw Error(`strides[${i1}] must be non-zero`);
+        const shrinkI = !!(denseSpec.shrinkAxisMask & 1 << i1);
+        const dimI = xShape[i1];
         if (dimI === -1) {
             processingShape.push(shrinkI ? 1 : -1);
             continue;
         }
         const masks = [
-            denseSpec.beginMask & 1 << i3,
-            denseSpec.endMask & 1 << i3
+            denseSpec.beginMask & 1 << i1,
+            denseSpec.endMask & 1 << i1
         ];
         const validRange = [
-            denseSpec.strides[i3] > 0 ? 0 : -1,
-            denseSpec.strides[i3] > 0 ? dimI : dimI - 1
+            denseSpec.strides[i1] > 0 ? 0 : -1,
+            denseSpec.strides[i1] > 0 ? dimI : dimI - 1
         ];
-        if (shrinkI && denseSpec.strides[i3] <= 0) throw Error("only stride 1 allowed on non-range indexing.");
-        isSimpleSlice = isSimpleSlice && denseSpec.strides[i3] === 1;
-        const beginAndEndMasked = !!(denseSpec.beginMask & 1 << i3 && denseSpec.endMask & 1 << i3);
+        if (shrinkI && denseSpec.strides[i1] <= 0) throw Error("only stride 1 allowed on non-range indexing.");
+        isSimpleSlice = isSimpleSlice && denseSpec.strides[i1] === 1;
+        const beginAndEndMasked = !!(denseSpec.beginMask & 1 << i1 && denseSpec.endMask & 1 << i1);
         if (denseSpec.beginValid && denseSpec.endValid) {
             if (shrinkI) {
                 // If we are shrinking, the end index is now possibly incorrect. In
                 // particular foo[-1] produces sparseBegin = -1, sparseEnd = 0.
                 // and canonical puts these to n-1 and 0, which implies a degenerate
                 // interval. Fortunately, it is now safe to re-create end as begin + 1.
-                const xFwd = denseSpec.begin[i3] < 0 ? dimI + denseSpec.begin[i3] : denseSpec.begin[i3];
-                denseSpec.begin[i3] = xFwd;
-                denseSpec.end[i3] = denseSpec.begin[i3] + 1;
-                if (xFwd < 0 || xFwd >= dimI) throw Error(`slice index ${denseSpec.begin[i3]} of dimension ${i3} out of bounds.`);
+                const xFwd = denseSpec.begin[i1] < 0 ? dimI + denseSpec.begin[i1] : denseSpec.begin[i1];
+                denseSpec.begin[i1] = xFwd;
+                denseSpec.end[i1] = denseSpec.begin[i1] + 1;
+                if (xFwd < 0 || xFwd >= dimI) throw Error(`slice index ${denseSpec.begin[i1]} of dimension ${i1} out of bounds.`);
             } else {
-                denseSpec.begin[i3] = canonical(denseSpec.begin[i3], 0, denseSpec.strides[i3], dimI, masks, validRange);
-                denseSpec.end[i3] = canonical(denseSpec.end[i3], 1, denseSpec.strides[i3], dimI, masks, validRange);
+                denseSpec.begin[i1] = canonical(denseSpec.begin[i1], 0, denseSpec.strides[i1], dimI, masks, validRange);
+                denseSpec.end[i1] = canonical(denseSpec.end[i1], 1, denseSpec.strides[i1], dimI, masks, validRange);
             }
             // Update optimization values
-            const takeAllInDimension = denseSpec.strides[i3] === 1 && denseSpec.begin[i3] === 0 && denseSpec.end[i3] === dimI;
+            const takeAllInDimension = denseSpec.strides[i1] === 1 && denseSpec.begin[i1] === 0 && denseSpec.end[i1] === dimI;
             isIdentity = isIdentity && takeAllInDimension;
-            sliceDim0 = sliceDim0 && (i3 === 0 && denseSpec.strides[i3] === 1 || takeAllInDimension);
+            sliceDim0 = sliceDim0 && (i1 === 0 && denseSpec.strides[i1] === 1 || takeAllInDimension);
         } else {
-            isIdentity = isIdentity && denseSpec.strides[i3] === 1 && beginAndEndMasked;
-            sliceDim0 = sliceDim0 && (i3 === 0 && denseSpec.strides[i3] === 1 || beginAndEndMasked);
+            isIdentity = isIdentity && denseSpec.strides[i1] === 1 && beginAndEndMasked;
+            sliceDim0 = sliceDim0 && (i1 === 0 && denseSpec.strides[i1] === 1 || beginAndEndMasked);
         }
         // Compute the processing shape (the intermediate Eigen will produce)
         let intervalLength;
         let knownInterval = false;
         if (denseSpec.beginValid && denseSpec.endValid) {
-            intervalLength = denseSpec.end[i3] - denseSpec.begin[i3];
+            intervalLength = denseSpec.end[i1] - denseSpec.begin[i1];
             knownInterval = true;
         } else if (shrinkI) {
             // The dimension is still known as 1 for the processingShape, but will be
@@ -12342,7 +12342,7 @@ function sliceInfo(xShape, begin, end, strides, beginMask, endMask, ellipsisMask
         // this dimension, that tells us the interval length.
         {
             if (dimI >= 0) {
-                if (denseSpec.strides[i3] < 0) intervalLength = -dimI;
+                if (denseSpec.strides[i1] < 0) intervalLength = -dimI;
                 else intervalLength = dimI;
                 knownInterval = true;
             }
@@ -12351,8 +12351,8 @@ function sliceInfo(xShape, begin, end, strides, beginMask, endMask, ellipsisMask
             let sizeI;
             // Hold zero if the interval is degenerate, otherwise account for
             // remainder
-            if (intervalLength === 0 || intervalLength < 0 !== denseSpec.strides[i3] < 0) sizeI = 0;
-            else sizeI = Math.trunc(intervalLength / denseSpec.strides[i3]) + (intervalLength % denseSpec.strides[i3] !== 0 ? 1 : 0);
+            if (intervalLength === 0 || intervalLength < 0 !== denseSpec.strides[i1] < 0) sizeI = 0;
+            else sizeI = Math.trunc(intervalLength / denseSpec.strides[i1]) + (intervalLength % denseSpec.strides[i1] !== 0 ? 1 : 0);
             processingShape.push(sizeI);
         } else processingShape.push(-1);
     }
@@ -12907,7 +12907,7 @@ function combineLocations(outputLoc, reduceLoc, axes) {
 function computeOutAndReduceShapes(aShape, axes) {
     const outShape = [];
     const rank = aShape.length;
-    for(let dim1 = 0; dim1 < rank; dim1++)if (axes.indexOf(dim1) === -1) outShape.push(aShape[dim1]);
+    for(let dim = 0; dim < rank; dim++)if (axes.indexOf(dim) === -1) outShape.push(aShape[dim]);
     const reduceShape = axes.map((dim)=>aShape[dim]);
     return [
         outShape,
@@ -13340,20 +13340,20 @@ function getPadAndOutInfo(pad, inHeight, inWidth, strideHeight, strideWidth, fil
         outHeight = Math.ceil((inHeight - filterHeight + 1) / strideHeight);
         outWidth = Math.ceil((inWidth - filterWidth + 1) / strideWidth);
     } else if (typeof pad === "object") {
-        const top = dataFormat === "channelsLast" ? pad[1][0] : pad[2][0];
-        const bottom = dataFormat === "channelsLast" ? pad[1][1] : pad[2][1];
-        const left = dataFormat === "channelsLast" ? pad[2][0] : pad[3][0];
-        const right = dataFormat === "channelsLast" ? pad[2][1] : pad[3][1];
-        const padType = top === 0 && bottom === 0 && left === 0 && right === 0 ? "VALID" : "EXPLICIT";
+        const top1 = dataFormat === "channelsLast" ? pad[1][0] : pad[2][0];
+        const bottom1 = dataFormat === "channelsLast" ? pad[1][1] : pad[2][1];
+        const left1 = dataFormat === "channelsLast" ? pad[2][0] : pad[3][0];
+        const right1 = dataFormat === "channelsLast" ? pad[2][1] : pad[3][1];
+        const padType1 = top1 === 0 && bottom1 === 0 && left1 === 0 && right1 === 0 ? "VALID" : "EXPLICIT";
         padInfo = {
-            top,
-            bottom,
-            left,
-            right,
-            type: padType
+            top: top1,
+            bottom: bottom1,
+            left: left1,
+            right: right1,
+            type: padType1
         };
-        outHeight = round((inHeight - filterHeight + top + bottom) / strideHeight + 1, roundingMode);
-        outWidth = round((inWidth - filterWidth + left + right) / strideWidth + 1, roundingMode);
+        outHeight = round((inHeight - filterHeight + top1 + bottom1) / strideHeight + 1, roundingMode);
+        outWidth = round((inWidth - filterWidth + left1 + right1) / strideWidth + 1, roundingMode);
     } else throw Error(`Unknown padding parameter: ${pad}`);
     return {
         padInfo,
@@ -14179,8 +14179,8 @@ function getPermuted(reshapedRank, blockShapeRank, batchToSpace = true) {
     } else {
         const permutedBeforeBatch = [];
         const permutedAfterBatch = [];
-        for(let i = 1; i < reshapedRank; ++i)if (i >= blockShapeRank * 2 + 1 || i % 2 === 1) permutedAfterBatch.push(i);
-        else permutedBeforeBatch.push(i);
+        for(let i1 = 1; i1 < reshapedRank; ++i1)if (i1 >= blockShapeRank * 2 + 1 || i1 % 2 === 1) permutedAfterBatch.push(i1);
+        else permutedBeforeBatch.push(i1);
         permuted.push(...permutedBeforeBatch);
         permuted.push(0);
         permuted.push(...permutedAfterBatch);
@@ -14472,8 +14472,8 @@ function decodeEinsumEquation(equation, numTensors) {
         if (allDims.indexOf(dimName) === -1) allDims.push(dimName);
     }
     for(let i1 = 0; i1 < inputString.length; ++i1){
-        const dimName = inputString[i1];
-        if (allDims.indexOf(dimName) === -1 && dimName !== COMMA) allDims.push(dimName);
+        const dimName1 = inputString[i1];
+        if (allDims.indexOf(dimName1) === -1 && dimName1 !== COMMA) allDims.push(dimName1);
     }
     const idDims = new Array(inputTerms.length);
     for(let i2 = 0; i2 < numInputs; ++i2){
@@ -14496,7 +14496,7 @@ function getEinsumPermutation(nDims, idDims) {
     permutationIndices.fill(-1);
     for(let i = 0; i < idDims.length; ++i)permutationIndices[idDims[i]] = i;
     const expandDims = [];
-    for(let i4 = 0; i4 < nDims; ++i4)if (permutationIndices[i4] === -1) expandDims.push(i4);
+    for(let i1 = 0; i1 < nDims; ++i1)if (permutationIndices[i1] === -1) expandDims.push(i1);
     permutationIndices = permutationIndices.filter((d)=>d !== -1);
     return {
         permutationIndices,
@@ -14520,11 +14520,11 @@ function getEinsumComputePath(summedDims, idDims) {
     nSteps = summedDims.length + 1;
     for(let i = 0; i < nSteps; ++i)steps.push([]);
     const computedTermIndices = [];
-    for(let i5 = 0; i5 < path.length; ++i5){
-        const summedDim = path[i5];
+    for(let i1 = 0; i1 < path.length; ++i1){
+        const summedDim = path[i1];
         const termIndices = findTermsWithDim(idDims, summedDim);
         for (const termIndex of termIndices)if (computedTermIndices.indexOf(termIndex) === -1) {
-            steps[i5].push(termIndex);
+            steps[i1].push(termIndex);
             computedTermIndices.push(termIndex);
         }
     }
@@ -16453,20 +16453,20 @@ var _ifft = require("./ifft");
             imagInput,
             imagConjugate
         ], 1);
-        const complexInput = (0, _reshape.reshape)((0, _complex.complex)(r, i), [
+        const complexInput1 = (0, _reshape.reshape)((0, _complex.complex)(r, i), [
             outputShape[0],
             outputShape[1]
         ]);
-        ret = (0, _ifft.ifft)(complexInput);
+        ret = (0, _ifft.ifft)(complexInput1);
     }
     ret = (0, _real.real)(ret);
     // reshape the result if the input is 3D tensor.
     if (input.rank === 3 && input.shape[0] !== 0) {
         const temp = ret;
-        const batch = input.shape[0];
+        const batch1 = input.shape[0];
         ret = (0, _reshape.reshape)(ret, [
-            batch,
-            ret.shape[0] / batch,
+            batch1,
+            ret.shape[0] / batch1,
             ret.shape[1]
         ]);
         temp.dispose();
@@ -16702,53 +16702,53 @@ var _reshape = require("../reshape");
  *     of a `prelu` activation, typically the same shape as `x`.
  * @param leakyreluAlpha Optional. Alpha to be applied as part of a `leakyrelu`
  *     activation.
- */ function fusedConv2d_({ x , filter: filter1 , strides , pad , dataFormat ="NHWC" , dilations =[
+ */ function fusedConv2d_({ x , filter , strides , pad , dataFormat ="NHWC" , dilations =[
     1,
     1
-] , dimRoundingMode , bias: bias1 , activation ="linear" , preluActivationWeights , leakyreluAlpha  }) {
+] , dimRoundingMode , bias , activation ="linear" , preluActivationWeights , leakyreluAlpha  }) {
     activation = activation || "linear";
     if ((0, _fusedUtil.shouldFuse)((0, _engine.ENGINE).state.gradientDepth, activation) === false) {
         // TODO: Transpose bias and preluActivationWeights properly for NCHW
         // format before computation.
         _util.assert(dataFormat === "NHWC", ()=>`Error in fused conv2d: got dataFormat of ${dataFormat} but ` + `only NHWC is currently supported for the case of gradient depth ` + `is 0 and the activation is not linear.`);
-        let result = (0, _conv2D.conv2d)(x, filter1, strides, pad, dataFormat, dilations, dimRoundingMode);
-        if (bias1 != null) result = (0, _add.add)(result, bias1);
+        let result = (0, _conv2D.conv2d)(x, filter, strides, pad, dataFormat, dilations, dimRoundingMode);
+        if (bias != null) result = (0, _add.add)(result, bias);
         return (0, _fusedUtil.applyActivation)(result, activation, preluActivationWeights, leakyreluAlpha);
     }
     const $x = (0, _tensorUtilEnv.convertToTensor)(x, "x", "conv2d", "float32");
-    const $filter1 = (0, _tensorUtilEnv.convertToTensor)(filter1, "filter", "conv2d", "float32");
-    let x4D1 = $x;
+    const $filter = (0, _tensorUtilEnv.convertToTensor)(filter, "filter", "conv2d", "float32");
+    let x4D = $x;
     let reshapedTo4D = false;
     if ($x.rank === 3) {
         reshapedTo4D = true;
-        x4D1 = (0, _reshape.reshape)($x, [
+        x4D = (0, _reshape.reshape)($x, [
             1,
             $x.shape[0],
             $x.shape[1],
             $x.shape[2]
         ]);
     }
-    _util.assert(x4D1.rank === 4, ()=>`Error in fused conv2d: input must be rank 4, but got rank ` + `${x4D1.rank}.`);
-    _util.assert($filter1.rank === 4, ()=>`Error in fused conv2d: filter must be rank 4, but got rank ` + `${$filter1.rank}.`);
+    _util.assert(x4D.rank === 4, ()=>`Error in fused conv2d: input must be rank 4, but got rank ` + `${x4D.rank}.`);
+    _util.assert($filter.rank === 4, ()=>`Error in fused conv2d: filter must be rank 4, but got rank ` + `${$filter.rank}.`);
     _convUtil.checkPadOnDimRoundingMode("fused conv2d", pad, dimRoundingMode);
-    const inputChannels = dataFormat === "NHWC" ? x4D1.shape[3] : x4D1.shape[1];
-    _util.assert($filter1.shape[2] === inputChannels, ()=>`Error in conv2d: depth of input (${inputChannels}) must match ` + `input depth for filter ${$filter1.shape[2]}.`);
+    const inputChannels = dataFormat === "NHWC" ? x4D.shape[3] : x4D.shape[1];
+    _util.assert($filter.shape[2] === inputChannels, ()=>`Error in conv2d: depth of input (${inputChannels}) must match ` + `input depth for filter ${$filter.shape[2]}.`);
     _util.assert(_convUtil.eitherStridesOrDilationsAreOne(strides, dilations), ()=>"Error in conv2D: Either strides or dilations must be 1. " + `Got strides ${strides} and dilations '${dilations}'`);
-    const convInfo = _convUtil.computeConv2DInfo(x4D1.shape, $filter1.shape, strides, dilations, pad, dimRoundingMode);
-    let $bias1;
-    if (bias1 != null) {
-        $bias1 = (0, _tensorUtilEnv.convertToTensor)(bias1, "bias", "fused conv2d");
-        [$bias1] = (0, _tensorUtil.makeTypesMatch)($bias1, $x);
+    const convInfo = _convUtil.computeConv2DInfo(x4D.shape, $filter.shape, strides, dilations, pad, dimRoundingMode);
+    let $bias;
+    if (bias != null) {
+        $bias = (0, _tensorUtilEnv.convertToTensor)(bias, "bias", "fused conv2d");
+        [$bias] = (0, _tensorUtil.makeTypesMatch)($bias, $x);
         // According to TensorFlow, the bias is supposed be a 1-D tensor or a
         // scalar.
         //
         // 3-D or 4-D bias is not disabled for NHWC format, because they are
         // currently being used in some cases. For examplem in our code base,
         // https://github.com/tensorflow/tfjs/blob/b53bd47e880367ae57493f0ea628abaf08db2d5d/tfjs-core/src/ops/fused/fused_conv2d_test.ts#L1972.
-        if (dataFormat === "NHWC") _broadcastUtil.assertAndGetBroadcastShape(convInfo.outShape, $bias1.shape);
+        if (dataFormat === "NHWC") _broadcastUtil.assertAndGetBroadcastShape(convInfo.outShape, $bias.shape);
         else {
-            _util.assert($bias1.shape.length <= 1, ()=>`Error in fused conv2d: only supports scalar or 1-D Tensor ` + `bias for NCHW format but got the bias of ` + `rank-${$bias1.shape.length}.`);
-            _util.assert($bias1.shape.length === 0 || $bias1.shape[0] === convInfo.outChannels || $bias1.shape[0] === 1, ()=>`Error in fused conv2d: bias shape (${$bias1.shape}) is not ` + `compatible with the number of output channels ` + `(${convInfo.outChannels})`);
+            _util.assert($bias.shape.length <= 1, ()=>`Error in fused conv2d: only supports scalar or 1-D Tensor ` + `bias for NCHW format but got the bias of ` + `rank-${$bias.shape.length}.`);
+            _util.assert($bias.shape.length === 0 || $bias.shape[0] === convInfo.outChannels || $bias.shape[0] === 1, ()=>`Error in fused conv2d: bias shape (${$bias.shape}) is not ` + `compatible with the number of output channels ` + `(${convInfo.outChannels})`);
         }
     }
     let $preluActivationWeights;
@@ -16789,9 +16789,9 @@ var _reshape = require("../reshape");
         return der;
     };
     const inputs = {
-        x: x4D1,
-        filter: $filter1,
-        bias: $bias1,
+        x: x4D,
+        filter: $filter,
+        bias: $bias,
         preluActivationWeights: $preluActivationWeights
     };
     const attrs = {
@@ -16805,7 +16805,7 @@ var _reshape = require("../reshape");
     };
     // Depending on the the params passed in we will have different number of
     // inputs and thus a a different number of elements in the gradient.
-    if (bias1 == null) {
+    if (bias == null) {
         const customOp = (0, _gradients.customGrad)((x4D, filter, save)=>{
             let res = // tslint:disable-next-line: no-unnecessary-type-assertion
             (0, _engine.ENGINE).runKernel((0, _kernelNames.FusedConv2D), inputs, attrs);
@@ -16825,7 +16825,7 @@ var _reshape = require("../reshape");
                 gradFunc: grad
             };
         });
-        return customOp(x4D1, $filter1);
+        return customOp(x4D, $filter);
     } else {
         const customOpWithBias = (0, _gradients.customGrad)((x4D, filter, bias, save)=>{
             let res = (0, _engine.ENGINE).runKernel((0, _kernelNames.FusedConv2D), inputs, attrs);
@@ -16846,7 +16846,7 @@ var _reshape = require("../reshape");
                 gradFunc: grad
             };
         });
-        return customOpWithBias(x4D1, $filter1, $bias1);
+        return customOpWithBias(x4D, $filter, $bias);
     }
 }
 const conv2d = (0, _operation.op)({
@@ -16921,12 +16921,12 @@ var _util = require("./util");
         const $x = (0, _tensorUtilEnv.convertToTensor)(x, "x", "tf.grad", "string_or_numeric");
         const $dy = dy != null ? (0, _tensorUtilEnv.convertToTensor)(dy, "dy", "tf.grad") : null;
         return (0, _engine.ENGINE).tidy(()=>{
-            const { value , grads: grads1  } = (0, _engine.ENGINE).gradients(()=>f($x), [
+            const { value , grads  } = (0, _engine.ENGINE).gradients(()=>f($x), [
                 $x
             ], $dy);
             if ($dy != null) _util.assertShapesMatch(value.shape, $dy.shape, "The shape of dy passed in grad(f)(x, dy) must match the shape returned by f(x)");
-            checkGrads(grads1);
-            return grads1[0];
+            checkGrads(grads);
+            return grads[0];
         });
     };
 }
@@ -16966,10 +16966,10 @@ var _util = require("./util");
         const $args = (0, _tensorUtilEnv.convertToTensorArray)(args, "args", "tf.grads", "string_or_numeric");
         const $dy = dy != null ? (0, _tensorUtilEnv.convertToTensor)(dy, "dy", "tf.grads") : null;
         return (0, _engine.ENGINE).tidy(()=>{
-            const { value , grads: grads2  } = (0, _engine.ENGINE).gradients(()=>f(...$args), $args, $dy);
+            const { value , grads  } = (0, _engine.ENGINE).gradients(()=>f(...$args), $args, $dy);
             if ($dy != null) _util.assertShapesMatch(value.shape, $dy.shape, "The shape of dy passed in grads(f)([x1,...], dy) must match the shape returned by f([x1,...])");
-            checkGrads(grads2);
-            return grads2;
+            checkGrads(grads);
+            return grads;
         });
     };
 }
@@ -17002,12 +17002,12 @@ var _util = require("./util");
     return (x, dy)=>{
         _util.assert(x instanceof (0, _tensor.Tensor), ()=>"The x passed in valueAndGrad(f)(x) must be a tensor");
         _util.assert(dy == null || dy instanceof (0, _tensor.Tensor), ()=>"The dy passed in valueAndGrad(f)(x, dy) must be a tensor");
-        const { grads: grads3 , value  } = (0, _engine.ENGINE).gradients(()=>f(x), [
+        const { grads , value  } = (0, _engine.ENGINE).gradients(()=>f(x), [
             x
         ], dy);
-        checkGrads(grads3);
+        checkGrads(grads);
         return {
-            grad: grads3[0],
+            grad: grads[0],
             value
         };
     };
@@ -17097,12 +17097,12 @@ var _util = require("./util");
     varList = varList.filter((variable)=>variable.trainable);
     _util.assert(varList.length > 0, ()=>`variableGrads() expects at least one of the input variables to ` + `be trainable, but none of the ${originalVarCount} variables is ` + `trainable.`);
     const allowNoGradients = true;
-    const { value , grads: grads4  } = (0, _engine.ENGINE).gradients(f, varList, null, allowNoGradients);
-    _util.assert(grads4.some((g)=>g != null), ()=>"Cannot find a connection between any variable and the result of the loss function y=f(x). Please make sure the operations that use variables are inside the function f passed to minimize().");
+    const { value , grads  } = (0, _engine.ENGINE).gradients(f, varList, null, allowNoGradients);
+    _util.assert(grads.some((g)=>g != null), ()=>"Cannot find a connection between any variable and the result of the loss function y=f(x). Please make sure the operations that use variables are inside the function f passed to minimize().");
     _util.assert(value.rank === 0, ()=>`The f passed in variableGrads(f) must return a scalar, but it ` + `returned a rank-${value.rank} tensor`);
     const namedGrads = {};
     varList.forEach((v, i)=>{
-        if (grads4[i] != null) namedGrads[v.name] = grads4[i];
+        if (grads[i] != null) namedGrads[v.name] = grads[i];
     });
     if (specifiedNonTrainable != null) // If varList is explicitly provided and contains non-trainable values,
     // add them to the returned gradients with `null` values.
@@ -17154,8 +17154,8 @@ var _util = require("./util");
  */ function customGrad(f) {
     return (0, _engine.ENGINE).customGrad(f);
 }
-function checkGrads(grads5) {
-    const numNullGradients = grads5.filter((g)=>g == null).length;
+function checkGrads(grads) {
+    const numNullGradients = grads.filter((g)=>g == null).length;
     if (numNullGradients > 0) throw new Error(`Cannot compute gradient of y=f(x) with respect to x. Make sure that
     the f you passed encloses all operations that lead from x to y.`);
 }
@@ -17533,41 +17533,41 @@ var _reshape = require("../reshape");
  *     of a `prelu` activation, typically the same shape as `x`.
  * @param leakyreluAlpha Optional. Alpha to be applied as part of a `leakyrelu`
  *     activation.
- */ function fusedDepthwiseConv2d_({ x , filter: filter1 , strides , pad , dataFormat ="NHWC" , dilations =[
+ */ function fusedDepthwiseConv2d_({ x , filter , strides , pad , dataFormat ="NHWC" , dilations =[
     1,
     1
-] , dimRoundingMode , bias: bias1 , activation ="linear" , preluActivationWeights , leakyreluAlpha  }) {
+] , dimRoundingMode , bias , activation ="linear" , preluActivationWeights , leakyreluAlpha  }) {
     if ((0, _fusedUtil.shouldFuse)((0, _engine.ENGINE).state.gradientDepth, activation) === false) {
-        let result = (0, _depthwiseConv2D.depthwiseConv2d)(x, filter1, strides, pad, dataFormat, dilations, dimRoundingMode);
-        if (bias1 != null) result = (0, _add.add)(result, bias1);
+        let result = (0, _depthwiseConv2D.depthwiseConv2d)(x, filter, strides, pad, dataFormat, dilations, dimRoundingMode);
+        if (bias != null) result = (0, _add.add)(result, bias);
         return (0, _fusedUtil.applyActivation)(result, activation, preluActivationWeights, leakyreluAlpha);
     }
     const $x = (0, _tensorUtilEnv.convertToTensor)(x, "x", "depthwiseConv2d", "float32");
-    const $filter1 = (0, _tensorUtilEnv.convertToTensor)(filter1, "filter", "depthwiseConv2d", "float32");
-    let x4D1 = $x;
+    const $filter = (0, _tensorUtilEnv.convertToTensor)(filter, "filter", "depthwiseConv2d", "float32");
+    let x4D = $x;
     let reshapedTo4D = false;
     if ($x.rank === 3) {
         reshapedTo4D = true;
-        x4D1 = (0, _reshape.reshape)($x, [
+        x4D = (0, _reshape.reshape)($x, [
             1,
             $x.shape[0],
             $x.shape[1],
             $x.shape[2]
         ]);
     }
-    _util.assert(x4D1.rank === 4, ()=>`Error in fused depthwiseConv2d: input must be rank 4, but got ` + `rank ${x4D1.rank}.`);
-    _util.assert($filter1.rank === 4, ()=>`Error in fused depthwiseConv2d: filter must be rank 4, ` + `but got rank ${$filter1.rank}.`);
-    _util.assert(x4D1.shape[3] === $filter1.shape[2], ()=>`Error in fused depthwiseConv2d: number of input channels ` + `(${x4D1.shape[3]}) must match the inChannels dimension in ` + `filter ${$filter1.shape[2]}.`);
+    _util.assert(x4D.rank === 4, ()=>`Error in fused depthwiseConv2d: input must be rank 4, but got ` + `rank ${x4D.rank}.`);
+    _util.assert($filter.rank === 4, ()=>`Error in fused depthwiseConv2d: filter must be rank 4, ` + `but got rank ${$filter.rank}.`);
+    _util.assert(x4D.shape[3] === $filter.shape[2], ()=>`Error in fused depthwiseConv2d: number of input channels ` + `(${x4D.shape[3]}) must match the inChannels dimension in ` + `filter ${$filter.shape[2]}.`);
     if (dilations == null) dilations = [
         1,
         1
     ];
     _util.assert(_convUtil.eitherStridesOrDilationsAreOne(strides, dilations), ()=>"Error in fused depthwiseConv2d: Either strides or dilations must " + `be 1. Got strides ${strides} and dilations '${dilations}'`);
     _convUtil.checkPadOnDimRoundingMode("fused depthwiseConv2d", pad, dimRoundingMode);
-    const convInfo = _convUtil.computeConv2DInfo(x4D1.shape, $filter1.shape, strides, dilations, pad, dimRoundingMode, true);
+    const convInfo = _convUtil.computeConv2DInfo(x4D.shape, $filter.shape, strides, dilations, pad, dimRoundingMode, true);
     let $bias;
-    if (bias1 != null) {
-        $bias = (0, _tensorUtilEnv.convertToTensor)(bias1, "bias", "fused conv2d");
+    if (bias != null) {
+        $bias = (0, _tensorUtilEnv.convertToTensor)(bias, "bias", "fused conv2d");
         [$bias] = (0, _tensorUtil.makeTypesMatch)($bias, $x);
         _broadcastUtil.assertAndGetBroadcastShape(convInfo.outShape, $bias.shape);
     }
@@ -17593,8 +17593,8 @@ var _reshape = require("../reshape");
         ];
     };
     const inputs = {
-        x: x4D1,
-        filter: $filter1,
+        x: x4D,
+        filter: $filter,
         bias: $bias,
         preluActivationWeights: $preluActivationWeights
     };
@@ -17609,7 +17609,7 @@ var _reshape = require("../reshape");
     };
     // Depending on the the params passed in we will have different number of
     // inputs and thus a a different number of elements in the gradient.
-    if (bias1 == null) {
+    if (bias == null) {
         const customOp = (0, _gradients.customGrad)((x4D, filter, save)=>{
             // tslint:disable-next-line: no-unnecessary-type-assertion
             let res = (0, _engine.ENGINE).runKernel((0, _kernelNames.FusedDepthwiseConv2D), inputs, attrs);
@@ -17629,7 +17629,7 @@ var _reshape = require("../reshape");
                 gradFunc: grad
             };
         });
-        return customOp(x4D1, $filter1);
+        return customOp(x4D, $filter);
     } else {
         const customOpWithBias = (0, _gradients.customGrad)((x4D, filter, bias, save)=>{
             // tslint:disable-next-line: no-unnecessary-type-assertion
@@ -17651,7 +17651,7 @@ var _reshape = require("../reshape");
                 gradFunc: grad
             };
         });
-        return customOpWithBias(x4D1, $filter1, $bias);
+        return customOpWithBias(x4D, $filter, $bias);
     }
 }
 const depthwiseConv2d = (0, _operation.op)({
@@ -17969,7 +17969,7 @@ var _reshape = require("../reshape");
         outerShapeA,
         outerShapeB
     ]);
-    const a3D1 = transposeA ? (0, _reshape.reshape)($a, [
+    const a3D = transposeA ? (0, _reshape.reshape)($a, [
         batchDimA,
         innerShapeA,
         outerShapeA
@@ -17978,7 +17978,7 @@ var _reshape = require("../reshape");
         outerShapeA,
         innerShapeA
     ]);
-    const b3D1 = transposeB ? (0, _reshape.reshape)($b, [
+    const b3D = transposeB ? (0, _reshape.reshape)($b, [
         batchDimB,
         outerShapeB,
         innerShapeB
@@ -17987,11 +17987,11 @@ var _reshape = require("../reshape");
         innerShapeB,
         outerShapeB
     ]);
-    let $bias1;
+    let $bias;
     if (bias != null) {
-        $bias1 = (0, _tensorUtilEnv.convertToTensor)(bias, "bias", "fused matMul");
-        [$bias1] = (0, _tensorUtil.makeTypesMatch)($bias1, $a);
-        _broadcastUtil.assertAndGetBroadcastShape(outShape, $bias1.shape);
+        $bias = (0, _tensorUtilEnv.convertToTensor)(bias, "bias", "fused matMul");
+        [$bias] = (0, _tensorUtil.makeTypesMatch)($bias, $a);
+        _broadcastUtil.assertAndGetBroadcastShape(outShape, $bias.shape);
     }
     let $preluActivationWeights;
     if (preluActivationWeights != null) $preluActivationWeights = (0, _tensorUtilEnv.convertToTensor)(preluActivationWeights, "prelu weights", "fused matMul");
@@ -18029,9 +18029,9 @@ var _reshape = require("../reshape");
         ];
     };
     const inputs = {
-        a: a3D1,
-        b: b3D1,
-        bias: $bias1,
+        a: a3D,
+        b: b3D,
+        bias: $bias,
         preluActivationWeights: $preluActivationWeights
     };
     const attrs = {
@@ -18056,7 +18056,7 @@ var _reshape = require("../reshape");
                 gradFunc: grad
             };
         });
-        return customOp(a3D1, b3D1);
+        return customOp(a3D, b3D);
     } else {
         const customOpWithBias = (0, _gradients.customGrad)((a3D, b3D, $bias, save)=>{
             const res = // tslint:disable-next-line: no-unnecessary-type-assertion
@@ -18072,7 +18072,7 @@ var _reshape = require("../reshape");
                 gradFunc: grad
             };
         });
-        return customOpWithBias(a3D1, b3D1, $bias1);
+        return customOpWithBias(a3D, b3D, $bias);
     }
 }
 const matMul = (0, _operation.op)({
@@ -19882,9 +19882,9 @@ var _reshape = require("./reshape");
     }
     const inputShape = input.shape;
     const reps = Array.from(shape);
-    for(let i1 = shape.length - 1; i1 >= 0; i1--){
-        if (inputShape[i1] === shape[i1]) reps[i1] = 1;
-        else if (input.shape[i1] !== 1) throw new Error(`broadcastTo(): [${xShape}] cannot be broadcast to [${shape}].`);
+    for(let i = shape.length - 1; i >= 0; i--){
+        if (inputShape[i] === shape[i]) reps[i] = 1;
+        else if (input.shape[i] !== 1) throw new Error(`broadcastTo(): [${xShape}] cannot be broadcast to [${shape}].`);
     }
     const axes = reps.map((n, i)=>n > 1 ? i : -1).filter((i)=>i >= 0);
     if (axes.length === 0) return (0, _clone.clone)(input);
@@ -20411,9 +20411,9 @@ var _sum = require("../sum");
     (0, _util.assert)(xs.length <= xs[0].shape[0], ()=>`Gram-Schmidt: Number of vectors (${xs.length}) exceeds ` + `number of dimensions (${xs[0].shape[0]}).`);
     const ys = [];
     const xs1d = xs;
-    for(let i = 0; i < xs.length; ++i)ys.push((0, _engine.ENGINE).tidy(()=>{
-        let x = xs1d[i];
-        if (i > 0) for(let j = 0; j < i; ++j){
+    for(let i1 = 0; i1 < xs.length; ++i1)ys.push((0, _engine.ENGINE).tidy(()=>{
+        let x = xs1d[i1];
+        if (i1 > 0) for(let j = 0; j < i1; ++j){
             const proj = (0, _mul.mul)((0, _sum.sum)((0, _mul.mul)(ys[j], x)), ys[j]);
             x = (0, _sub.sub)(x, proj);
         }
@@ -20497,13 +20497,13 @@ var _sum = require("./sum");
  * @doc {heading: 'Operations', subheading: 'Matrices'}
  */ function norm_(x, ord = "euclidean", axis = null, keepDims = false) {
     x = (0, _tensorUtilEnv.convertToTensor)(x, "x", "norm");
-    const norm1 = normImpl(x, ord, axis);
-    let keepDimsShape = norm1.shape;
+    const norm = normImpl(x, ord, axis);
+    let keepDimsShape = norm.shape;
     if (keepDims) {
         const axes = (0, _util.parseAxisParam)(axis, x.shape);
-        keepDimsShape = _axisUtil.expandShapeToKeepDim(norm1.shape, axes);
+        keepDimsShape = _axisUtil.expandShapeToKeepDim(norm.shape, axes);
     }
-    return (0, _reshape.reshape)(norm1, keepDimsShape);
+    return (0, _reshape.reshape)(norm, keepDimsShape);
 }
 function normImpl(x, p, axis = null) {
     if (x.rank === 0) return (0, _abs.abs)(x);
@@ -20577,10 +20577,10 @@ var _operation = require("./operation");
         };
         return (0, _engine.ENGINE).runKernel((0, _kernelNames.ComplexAbs), inputs);
     } else {
-        const inputs = {
+        const inputs1 = {
             x: $x
         };
-        return (0, _engine.ENGINE).runKernel((0, _kernelNames.Abs), inputs);
+        return (0, _engine.ENGINE).runKernel((0, _kernelNames.Abs), inputs1);
     }
 }
 const abs = (0, _operation.op)({
@@ -21369,11 +21369,11 @@ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "Reduction", ()=>Reduction);
 var Reduction;
-(function(Reduction1) {
-    Reduction1[Reduction1["NONE"] = 0] = "NONE";
-    Reduction1[Reduction1["MEAN"] = 1] = "MEAN";
-    Reduction1[Reduction1["SUM"] = 2] = "SUM";
-    Reduction1[Reduction1["SUM_BY_NONZERO_WEIGHTS"] = 3] = "SUM_BY_NONZERO_WEIGHTS";
+(function(Reduction) {
+    Reduction[Reduction["NONE"] = 0] = "NONE";
+    Reduction[Reduction["MEAN"] = 1] = "MEAN";
+    Reduction[Reduction["SUM"] = 2] = "SUM";
+    Reduction[Reduction["SUM_BY_NONZERO_WEIGHTS"] = 3] = "SUM_BY_NONZERO_WEIGHTS";
 })(Reduction || (Reduction = {}));
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"3qnOZ":[function(require,module,exports) {
@@ -22287,11 +22287,11 @@ var _computeWeightedLoss = require("./compute_weighted_loss");
  * @param logits The logits array.
  * @param dim The dimension softmax would be performed on. Defaults to `-1`
  *     which indicates the last dimension.
- */ function softmaxCrossEntropyWithLogits_(labels1, logits1, dim = -1) {
-    if (dim === -1) dim = logits1.rank - 1;
-    if (dim !== logits1.rank - 1) throw Error(`Softmax cross entropy along a non-last dimension is not yet ` + `supported. Labels / logits was rank ${logits1.rank} ` + `and dim was ${dim}`);
+ */ function softmaxCrossEntropyWithLogits_(labels, logits, dim = -1) {
+    if (dim === -1) dim = logits.rank - 1;
+    if (dim !== logits.rank - 1) throw Error(`Softmax cross entropy along a non-last dimension is not yet ` + `supported. Labels / logits was rank ${logits.rank} ` + `and dim was ${dim}`);
     // Use a custom gradient for numerical stability.
-    const customOp = (0, _gradients.customGrad)((labels2, logits, save)=>{
+    const customOp = (0, _gradients.customGrad)((labels, logits, save)=>{
         // Reference:
         //   1. http://cs231n.github.io/linear-classify/#softmax
         //   2. https://blog.feedly.com/tricks-of-the-trade-logsumexp/
@@ -22299,12 +22299,12 @@ var _computeWeightedLoss = require("./compute_weighted_loss");
         const lse = (0, _logSumExp.logSumExp)(logits, [
             dim
         ], keepDims);
-        const logResult1 = (0, _sub.sub)((0, _cast.cast)(logits, "float32"), lse);
+        const logResult = (0, _sub.sub)((0, _cast.cast)(logits, "float32"), lse);
         save([
-            labels2,
-            logResult1
+            labels,
+            logResult
         ]);
-        const costVector = (0, _neg.neg)((0, _mul.mul)(logResult1, labels2));
+        const costVector = (0, _neg.neg)((0, _mul.mul)(logResult, labels));
         const value = (0, _sum.sum)(costVector, [
             dim
         ]);
@@ -22323,7 +22323,7 @@ var _computeWeightedLoss = require("./compute_weighted_loss");
             gradFunc
         };
     });
-    return customOp(labels1, logits1);
+    return customOp(labels, logits);
 }
 /**
  * Computes the softmax cross entropy loss between two tensors.
@@ -25598,34 +25598,34 @@ var _reshape = require("./reshape");
         const t1t2 = (0, _matMul.matMul)(t12D, t22D);
         return (0, _reshape.reshape)(t1t2, []);
     } else if ($t1.rank === 1 && $t2.rank === 2) {
-        const t12D = (0, _reshape.reshape)($t1, [
+        const t12D1 = (0, _reshape.reshape)($t1, [
             1,
             -1
         ]);
-        const t22D = (0, _reshape.reshape)($t2, [
+        const t22D1 = (0, _reshape.reshape)($t2, [
             $t2.shape[0],
             $t2.shape[1]
         ]);
-        const t1t2 = (0, _matMul.matMul)(t12D, t22D);
-        return (0, _reshape.reshape)(t1t2, [
-            t1t2.size
+        const t1t21 = (0, _matMul.matMul)(t12D1, t22D1);
+        return (0, _reshape.reshape)(t1t21, [
+            t1t21.size
         ]);
     } else if ($t1.rank === 2 && $t2.rank === 1) {
-        const t22D = (0, _reshape.reshape)($t2, [
+        const t22D2 = (0, _reshape.reshape)($t2, [
             -1,
             1
         ]);
-        const t1t2 = (0, _matMul.matMul)($t1, t22D);
-        return (0, _reshape.reshape)(t1t2, [
-            t1t2.size
+        const t1t22 = (0, _matMul.matMul)($t1, t22D2);
+        return (0, _reshape.reshape)(t1t22, [
+            t1t22.size
         ]);
     } else {
-        const t22D = (0, _reshape.reshape)($t2, [
+        const t22D3 = (0, _reshape.reshape)($t2, [
             $t2.shape[0],
             $t2.shape[1]
         ]);
-        const t1t2 = (0, _matMul.matMul)($t1, t22D);
-        return t1t2;
+        const t1t23 = (0, _matMul.matMul)($t1, t22D3);
+        return t1t23;
     }
 }
 const dot = (0, _operation.op)({
@@ -26343,8 +26343,8 @@ var _softplus = require("./softplus");
  * @param x The input tensor.
  *
  * @doc {heading: 'Operations', subheading: 'Basic math'}
- */ function logSigmoid_(x1) {
-    const $x = (0, _tensorUtilEnv.convertToTensor)(x1, "x", "logSigmoid");
+ */ function logSigmoid_(x) {
+    const $x = (0, _tensorUtilEnv.convertToTensor)(x, "x", "logSigmoid");
     // Use a custom gradient to maintain previous implementation.
     // There is no LogSigmoid kernel in TF so we can't use engine.runKernel
     // directly
@@ -26462,8 +26462,8 @@ var _sum = require("./sum");
  *     which indicates the last dimension.
  *
  * @doc {heading: 'Operations', subheading: 'Normalization'}
- */ function logSoftmax_(logits1, axis = -1) {
-    const $logits = (0, _tensorUtilEnv.convertToTensor)(logits1, "logits", "logSoftmax");
+ */ function logSoftmax_(logits, axis = -1) {
+    const $logits = (0, _tensorUtilEnv.convertToTensor)(logits, "logits", "logSoftmax");
     if (axis === -1) axis = $logits.rank - 1;
     if (axis !== $logits.rank - 1) throw Error("Log Softmax along a non-last dimension is not yet supported. " + `Logits was rank ${$logits.rank} and axis was ${axis}`);
     // const forward: ForwardFunc<Tensor> = (backend, save) => {
@@ -26478,12 +26478,12 @@ var _sum = require("./sum");
     // };
     // Use a custom gradient for numerical stability.
     const customOp = (0, _gradients.customGrad)((logits, save)=>{
-        const keepDims1 = true;
+        const keepDims = true;
         const xMax = (0, _max.max)(logits, axis, true);
         const shifted = (0, _sub.sub)(logits, xMax);
-        const value1 = (0, _sub.sub)((0, _cast.cast)(shifted, "float32"), (0, _log.log)((0, _sum.sum)((0, _exp.exp)(shifted), axis, keepDims1)));
+        const value = (0, _sub.sub)((0, _cast.cast)(shifted, "float32"), (0, _log.log)((0, _sum.sum)((0, _exp.exp)(shifted), axis, keepDims)));
         save([
-            value1
+            value
         ]);
         const gradFunc = (dy, saved)=>{
             const [value] = saved;
@@ -26492,7 +26492,7 @@ var _sum = require("./sum");
             return (0, _sub.sub)(dy, (0, _mul.mul)((0, _sum.sum)(dy, axis, keepDims), softmax));
         };
         return {
-            value: value1,
+            value,
             gradFunc
         };
     });
@@ -28264,8 +28264,8 @@ parcelHelpers.export(exports, "expectArrayInMeanStdRange", ()=>expectArrayInMean
  */ var _seedrandom = require("seedrandom");
 var _testUtil = require("../test_util");
 class MPRandGauss {
-    constructor(mean1, stdDeviation, dtype, truncated, seed){
-        this.mean = mean1;
+    constructor(mean, stdDeviation, dtype, truncated, seed){
+        this.mean = mean;
         this.stdDev = stdDeviation;
         this.dtype = dtype;
         this.nextVal = NaN;
@@ -28384,10 +28384,10 @@ function mean(values) {
     for(let i = 0; i < values.length; i++)sum += values[i];
     return sum / values.length;
 }
-function standardDeviation(values, mean2) {
+function standardDeviation(values, mean) {
     let squareDiffSum = 0;
     for(let i = 0; i < values.length; i++){
-        const diff = values[i] - mean2;
+        const diff = values[i] - mean;
         squareDiffSum += diff * diff;
     }
     return Math.sqrt(squareDiffSum / values.length);
@@ -28496,7 +28496,7 @@ module.exports = sr;
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-(function(global, module, define) {
+(function(global, module1, define1) {
     function Alea(seed) {
         var me = this, mash = Mash();
         me.next = function() {
@@ -28560,8 +28560,8 @@ module.exports = sr;
         };
         return mash;
     }
-    if (module && module.exports) module.exports = impl;
-    else if (define && define.amd) define(function() {
+    if (module1 && module1.exports) module1.exports = impl;
+    else if (define1 && define1.amd) define1(function() {
         return impl;
     });
     else this.alea = impl;
@@ -28571,7 +28571,7 @@ module.exports = sr;
 },{}],"hy9Go":[function(require,module,exports) {
 // A Javascript implementaion of the "xor128" prng algorithm by
 // George Marsaglia.  See http://www.jstatsoft.org/v08/i14/paper
-(function(global, module, define) {
+(function(global, module1, define1) {
     function XorGen(seed) {
         var me = this, strseed = "";
         me.x = 0;
@@ -28622,8 +28622,8 @@ module.exports = sr;
         }
         return prng;
     }
-    if (module && module.exports) module.exports = impl;
-    else if (define && define.amd) define(function() {
+    if (module1 && module1.exports) module1.exports = impl;
+    else if (define1 && define1.amd) define1(function() {
         return impl;
     });
     else this.xor128 = impl;
@@ -28633,7 +28633,7 @@ module.exports = sr;
 },{}],"8ktBo":[function(require,module,exports) {
 // A Javascript implementaion of the "xorwow" prng algorithm by
 // George Marsaglia.  See http://www.jstatsoft.org/v08/i14/paper
-(function(global, module, define) {
+(function(global, module1, define1) {
     function XorGen(seed) {
         var me = this, strseed = "";
         // Set up generator function.
@@ -28689,8 +28689,8 @@ module.exports = sr;
         }
         return prng;
     }
-    if (module && module.exports) module.exports = impl;
-    else if (define && define.amd) define(function() {
+    if (module1 && module1.exports) module1.exports = impl;
+    else if (define1 && define1.amd) define1(function() {
         return impl;
     });
     else this.xorwow = impl;
@@ -28702,13 +28702,13 @@ module.exports = sr;
 // François Panneton and Pierre L'ecuyer:
 // "On the Xorgshift Random Number Generators"
 // http://saluc.engr.uconn.edu/refs/crypto/rng/panneton05onthexorshift.pdf
-(function(global, module, define) {
-    function XorGen(seed1) {
-        var me1 = this;
+(function(global, module1, define1) {
+    function XorGen(seed) {
+        var me = this;
         // Set up generator function.
-        me1.next = function() {
+        me.next = function() {
             // Update xor generator.
-            var X = me1.x, i = me1.i, t, v, w;
+            var X = me.x, i = me.i, t, v, w;
             t = X[i];
             t ^= t >>> 7;
             v = t ^ t << 24;
@@ -28722,7 +28722,7 @@ module.exports = sr;
             t = t ^ t << 13;
             v ^= t ^ t << 9;
             X[i] = v;
-            me1.i = i + 1 & 7;
+            me.i = i + 1 & 7;
             return v;
         };
         function init(me, seed) {
@@ -28744,7 +28744,7 @@ module.exports = sr;
             // Discard an initial 256 values.
             for(j = 256; j > 0; --j)me.next();
         }
-        init(me1, seed1);
+        init(me, seed);
     }
     function copy(f, t) {
         t.x = f.x.slice();
@@ -28771,8 +28771,8 @@ module.exports = sr;
         }
         return prng;
     }
-    if (module && module.exports) module.exports = impl;
-    else if (define && define.amd) define(function() {
+    if (module1 && module1.exports) module1.exports = impl;
+    else if (define1 && define1.amd) define1(function() {
         return impl;
     });
     else this.xorshift7 = impl;
@@ -28804,14 +28804,14 @@ module.exports = sr;
 //
 // On Chrome, this prng benchmarks about 2.1 times slower than
 // Javascript's built-in Math.random().
-(function(global, module, define) {
-    function XorGen(seed1) {
-        var me1 = this;
+(function(global, module1, define1) {
+    function XorGen(seed) {
+        var me = this;
         // Set up generator function.
-        me1.next = function() {
-            var w = me1.w, X = me1.X, i = me1.i, t, v;
+        me.next = function() {
+            var w = me.w, X = me.X, i = me.i, t, v;
             // Update Weyl generator.
-            me1.w = w = w + 0x61c88647 | 0;
+            me.w = w = w + 0x61c88647 | 0;
             // Update xor generator.
             v = X[i + 34 & 127];
             t = X[i = i + 1 & 127];
@@ -28821,7 +28821,7 @@ module.exports = sr;
             t ^= t >>> 12;
             // Update Xor generator array state.
             v = X[i] = v ^ t;
-            me1.i = i;
+            me.i = i;
             // Result is the combination.
             return v + (w ^ w >>> 16) | 0;
         };
@@ -28873,7 +28873,7 @@ module.exports = sr;
             me.X = X;
             me.i = i;
         }
-        init(me1, seed1);
+        init(me, seed);
     }
     function copy(f, t) {
         t.i = f.i;
@@ -28901,8 +28901,8 @@ module.exports = sr;
         }
         return prng;
     }
-    if (module && module.exports) module.exports = impl;
-    else if (define && define.amd) define(function() {
+    if (module1 && module1.exports) module1.exports = impl;
+    else if (define1 && define1.amd) define1(function() {
         return impl;
     });
     else this.xor4096 = impl;
@@ -28913,7 +28913,7 @@ module.exports = sr;
 // A Javascript implementaion of the "Tyche-i" prng algorithm by
 // Samuel Neves and Filipe Araujo.
 // See https://eden.dei.uc.pt/~sneves/pubs/2011-snfa2.pdf
-(function(global, module, define) {
+(function(global, module1, define1) {
     function XorGen(seed) {
         var me = this, strseed = "";
         // Set up generator function.
@@ -28984,8 +28984,8 @@ module.exports = sr;
         }
         return prng;
     }
-    if (module && module.exports) module.exports = impl;
-    else if (define && define.amd) define(function() {
+    if (module1 && module1.exports) module1.exports = impl;
+    else if (define1 && define1.amd) define1(function() {
         return impl;
     });
     else this.tychei = impl;
@@ -29024,21 +29024,21 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     // seedrandom()
     // This is the seedrandom function described above.
     //
-    function seedrandom(seed1, options, callback) {
+    function seedrandom(seed, options, callback) {
         var key = [];
         options = options == true ? {
             entropy: true
         } : options || {};
         // Flatten the seed string or build one from local entropy if needed.
         var shortseed = mixkey(flatten(options.entropy ? [
-            seed1,
+            seed,
             tostring(pool)
-        ] : seed1 == null ? autoseed() : seed1, 3), key);
+        ] : seed == null ? autoseed() : seed, 3), key);
         // Use the seed to initialize an ARC4 generator.
         var arc4 = new ARC4(key);
         // This function returns a random double in [0, 1) that contains
         // randomness in every bit of the mantissa of the IEEE 754 value.
-        var prng1 = function() {
+        var prng = function() {
             var n = arc4.g(chunks), d = startdenom, x = 0; //   and no 'extra last byte'.
             while(n < significance){
                 n = (n + x) * width; //   shifting numerator and
@@ -29052,13 +29052,13 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             }
             return (n + x) / d; // Form the number within [0, 1).
         };
-        prng1.int32 = function() {
+        prng.int32 = function() {
             return arc4.g(4) | 0;
         };
-        prng1.quick = function() {
+        prng.quick = function() {
             return arc4.g(4) / 0x100000000;
         };
-        prng1.double = prng1;
+        prng.double = prng;
         // Mix the randomness into accumulated entropy.
         mixkey(tostring(arc4.S), pool);
         // Calling convention: what to return as a function of prng, seed, is_math.
@@ -29077,7 +29077,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                 math[rngname] = prng;
                 return seed;
             } else return prng;
-        })(prng1, shortseed, "global" in options ? options.global : this == math, options.state);
+        })(prng, shortseed, "global" in options ? options.global : this == math, options.state);
     }
     //
     // ARC4
@@ -29090,16 +29090,16 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     // that is in the range 0 <= x < (width ^ count).
     //
     function ARC4(key) {
-        var t1, keylen = key.length, me = this, i1 = 0, j1 = me.i = me.j = 0, s1 = me.S = [];
+        var t, keylen = key.length, me = this, i = 0, j = me.i = me.j = 0, s = me.S = [];
         // The empty key [] is treated as [0].
         if (!keylen) key = [
             keylen++
         ];
         // Set up S using the standard key scheduling algorithm.
-        while(i1 < width)s1[i1] = i1++;
-        for(i1 = 0; i1 < width; i1++){
-            s1[i1] = s1[j1 = mask & j1 + key[i1 % keylen] + (t1 = s1[i1])];
-            s1[j1] = t1;
+        while(i < width)s[i] = i++;
+        for(i = 0; i < width; i++){
+            s[i] = s[j = mask & j + key[i % keylen] + (t = s[i])];
+            s[j] = t;
         }
         // The "g" method returns the next (count) outputs as one number.
         (me.g = function(count) {
@@ -31398,8 +31398,8 @@ var _tensor = require("./tensor");
         lastDim
     ];
     const precision = (0, _util.getTypedArrayFromDType)("bool", batch);
-    for(let b1 = 0; b1 < batch; b1++){
-        const offset = b1 * size;
+    for(let b = 0; b < batch; b++){
+        const offset = b * size;
         const vals = predictionsVals.subarray(offset, offset + size);
         const valAndInd = [];
         for(let i = 0; i < vals.length; i++)valAndInd.push({
@@ -31407,9 +31407,9 @@ var _tensor = require("./tensor");
             index: i
         });
         valAndInd.sort((a, b)=>b.value - a.value);
-        precision[b1] = 0;
-        for(let i1 = 0; i1 < k; i1++)if (valAndInd[i1].index === targetsVals[b1]) {
-            precision[b1] = 1;
+        precision[b] = 0;
+        for(let i1 = 0; i1 < k; i1++)if (valAndInd[i1].index === targetsVals[b]) {
+            precision[b] = 1;
             break;
         }
     }
@@ -32295,12 +32295,12 @@ class RMSPropOptimizer extends (0, _optimizer.Optimizer) {
                     value.assign(newValue);
                 } else {
                     // Plain gradient
-                    const newAccumulatedMeanSquare = (0, _add.add)((0, _mul.mul)(accumulatedMeanSquare, this.decay), (0, _mul.mul)((0, _square.square)(gradient), 1 - this.decay));
-                    const newAccumulatedMoments = (0, _add.add)((0, _mul.mul)(accumulatedMoments, this.momentum), (0, _div.div)((0, _mul.mul)(gradient, this.learningRate), (0, _sqrt.sqrt)((0, _add.add)(newAccumulatedMeanSquare, this.epsilon))));
-                    accumulatedMeanSquare.assign(newAccumulatedMeanSquare);
-                    accumulatedMoments.assign(newAccumulatedMoments);
-                    const newValue = (0, _sub.sub)(value, newAccumulatedMoments);
-                    value.assign(newValue);
+                    const newAccumulatedMeanSquare1 = (0, _add.add)((0, _mul.mul)(accumulatedMeanSquare, this.decay), (0, _mul.mul)((0, _square.square)(gradient), 1 - this.decay));
+                    const newAccumulatedMoments1 = (0, _add.add)((0, _mul.mul)(accumulatedMoments, this.momentum), (0, _div.div)((0, _mul.mul)(gradient, this.learningRate), (0, _sqrt.sqrt)((0, _add.add)(newAccumulatedMeanSquare1, this.epsilon))));
+                    accumulatedMeanSquare.assign(newAccumulatedMeanSquare1);
+                    accumulatedMoments.assign(newAccumulatedMoments1);
+                    const newValue1 = (0, _sub.sub)(value, newAccumulatedMoments1);
+                    value.assign(newValue1);
                 }
             });
         });
@@ -33138,8 +33138,8 @@ function binaryKernelFunc(name, simpleImpl, complexImpl, dtype) {
             const aVals = cpuBackend.data.get(a.dataId).values;
             const bVals = cpuBackend.data.get(b.dataId).values;
             const $dtype = dtype || a.dtype;
-            const [resultData, resultShape] = simpleImpl(a.shape, b.shape, aVals, bVals, $dtype);
-            return cpuBackend.makeTensorInfo(resultShape, $dtype, resultData);
+            const [resultData, resultShape1] = simpleImpl(a.shape, b.shape, aVals, bVals, $dtype);
+            return cpuBackend.makeTensorInfo(resultShape1, $dtype, resultData);
         }
     };
 }
@@ -33253,7 +33253,7 @@ function cast(args) {
             },
             backend
         });
-        const result = cast({
+        const result1 = cast({
             inputs: {
                 x: realPart
             },
@@ -33263,20 +33263,20 @@ function cast(args) {
             }
         });
         backend.disposeIntermediateTensorInfo(realPart);
-        return result;
+        return result1;
     }
     if (!(0, _tfjsCore.util).hasEncodingLoss(x.dtype, dtype)) {
         // We don't change the underlying data, since we cast to higher
         // precision.
-        const result = (0, _identity.identity)({
+        const result2 = (0, _identity.identity)({
             inputs: {
                 x
             },
             backend
         });
         return {
-            dataId: result.dataId,
-            shape: result.shape,
+            dataId: result2.dataId,
+            shape: result2.shape,
             dtype
         };
     }
@@ -33373,11 +33373,11 @@ function complex(args) {
     const realVals = backend.data.get(real.dataId).values;
     const imagVals = backend.data.get(imag.dataId).values;
     const complexInfo = backend.makeTensorInfo(real.shape, "complex64");
-    const complex1 = backend.data.get(complexInfo.dataId);
+    const complex = backend.data.get(complexInfo.dataId);
     // The complex tensor owns the underlying real and imag tensorInfos, only the
     // complex tensor tracks refCount, when complexData is disposed the
     // underlying tensorData will be disposed.
-    complex1.complexTensorInfos = {
+    complex.complexTensorInfos = {
         real: backend.makeTensorInfo(real.shape, "float32", realVals),
         imag: backend.makeTensorInfo(imag.shape, "float32", imagVals)
     };
@@ -33413,12 +33413,12 @@ parcelHelpers.export(exports, "realConfig", ()=>realConfig);
 function real(args) {
     const { inputs , backend  } = args;
     const { input  } = inputs;
-    const real1 = backend.data.get(input.dataId).complexTensorInfos.real;
-    const realVal = backend.data.get(real1.dataId).values;
+    const real = backend.data.get(input.dataId).complexTensorInfos.real;
+    const realVal = backend.data.get(real.dataId).values;
     // When complex tensor is disposed, its underlying parts will be disposed too.
     // Make new tensor out of the real value of the complex. This makes sure the
     // value is still accessible even if complex tensor is disposed.
-    return backend.makeTensorInfo(real1.shape, real1.dtype, realVal);
+    return backend.makeTensorInfo(real.shape, real.dtype, realVal);
 }
 const realConfig = {
     kernelName: (0, _tfjsCore.Real),
@@ -33817,12 +33817,12 @@ function all(args) {
     const aVals = backend.data.get($x.dataId).values;
     for(let i = 0; i < vals.length; ++i){
         const offset = i * reduceSize;
-        let all1 = aVals[offset];
+        let all = aVals[offset];
         for(let j = 0; j < reduceSize; ++j){
             const value = aVals[offset + j];
-            all1 = all1 && value;
+            all = all && value;
         }
-        vals[i] = all1;
+        vals[i] = all;
     }
     if (permutedAxes != null) backend.disposeIntermediateTensorInfo($x);
     const result = backend.makeTensorInfo(outShape, $x.dtype, vals);
@@ -34355,8 +34355,8 @@ function avgPool(args) {
     });
     else {
         const xValues = backend.data.get(x.dataId).values;
-        const strides = (0, _tfjsCore.util).computeStrides(x.shape);
-        const buffer = (0, _poolUtils.pool)(xValues, x.shape, x.dtype, strides, convInfo, "avg");
+        const strides1 = (0, _tfjsCore.util).computeStrides(x.shape);
+        const buffer = (0, _poolUtils.pool)(xValues, x.shape, x.dtype, strides1, convInfo, "avg");
         res = backend.makeTensorInfo(convInfo.outShape, x.dtype, buffer.values);
     }
     return res;
@@ -35243,9 +35243,9 @@ const complexAbs = (args)=>{
     const realVals = cpuBackend.data.get(real.dataId).values;
     const imagVals = cpuBackend.data.get(imag.dataId).values;
     for(let i = 0; i < realVals.length; i++){
-        const real = realVals[i];
-        const imag = imagVals[i];
-        resultValues[i] = Math.hypot(real, imag);
+        const real1 = realVals[i];
+        const imag1 = imagVals[i];
+        resultValues[i] = Math.hypot(real1, imag1);
     }
     return cpuBackend.makeOutput(resultValues, x.shape, "float32");
 };
@@ -35451,12 +35451,12 @@ parcelHelpers.export(exports, "imagConfig", ()=>imagConfig);
 function imag(args) {
     const { inputs , backend  } = args;
     const { input  } = inputs;
-    const imag1 = backend.data.get(input.dataId).complexTensorInfos.imag;
-    const imagVal = backend.data.get(imag1.dataId).values;
+    const imag = backend.data.get(input.dataId).complexTensorInfos.imag;
+    const imagVal = backend.data.get(imag.dataId).values;
     // When complex tensor is disposed, its underlying parts will be disposed too.
     // Make new tensor out of the imag value of the complex. This makes sure the
     // value is still accessible even if complex tensor is disposed.
-    return backend.makeTensorInfo(imag1.shape, imag1.dtype, imagVal);
+    return backend.makeTensorInfo(imag.shape, imag.dtype, imagVal);
 }
 const imagConfig = {
     kernelName: (0, _tfjsCore.Imag),
@@ -36112,47 +36112,47 @@ function cropAndResize(args) {
                 const topInd = Math.floor(yInd);
                 const bottomInd = Math.ceil(yInd);
                 const yLerp = yInd - topInd;
-                for(let x = 0; x < cropWidth; x++){
-                    const xInd = cropWidth > 1 ? x1 * (imageWidth - 1) + x * widthScale : 0.5 * (x1 + x2) * (imageWidth - 1);
+                for(let x3 = 0; x3 < cropWidth; x3++){
+                    const xInd = cropWidth > 1 ? x1 * (imageWidth - 1) + x3 * widthScale : 0.5 * (x1 + x2) * (imageWidth - 1);
                     if (xInd < 0 || xInd > imageWidth - 1) {
-                        for(let c = 0; c < numChannels; c++){
-                            const ind = c + x * outStride[2] + y * outStride[1] + b * outStride[0];
-                            output.values[ind] = extrapolationValue;
+                        for(let c1 = 0; c1 < numChannels; c1++){
+                            const ind1 = c1 + x3 * outStride[2] + y * outStride[1] + b * outStride[0];
+                            output.values[ind1] = extrapolationValue;
                         }
                         continue;
                     }
                     const leftInd = Math.floor(xInd);
                     const rightInd = Math.ceil(xInd);
                     const xLerp = xInd - leftInd;
-                    for(let c = 0; c < numChannels; c++){
-                        let ind = c + leftInd * inStride[2] + topInd * inStride[1] + bInd * inStride[0];
-                        const topLeft = imageVals[ind];
-                        ind = c + rightInd * inStride[2] + topInd * inStride[1] + bInd * inStride[0];
-                        const topRight = imageVals[ind];
-                        ind = c + leftInd * inStride[2] + bottomInd * inStride[1] + bInd * inStride[0];
-                        const bottomLeft = imageVals[ind];
-                        ind = c + rightInd * inStride[2] + bottomInd * inStride[1] + bInd * inStride[0];
-                        const bottomRight = imageVals[ind];
+                    for(let c2 = 0; c2 < numChannels; c2++){
+                        let ind2 = c2 + leftInd * inStride[2] + topInd * inStride[1] + bInd * inStride[0];
+                        const topLeft = imageVals[ind2];
+                        ind2 = c2 + rightInd * inStride[2] + topInd * inStride[1] + bInd * inStride[0];
+                        const topRight = imageVals[ind2];
+                        ind2 = c2 + leftInd * inStride[2] + bottomInd * inStride[1] + bInd * inStride[0];
+                        const bottomLeft = imageVals[ind2];
+                        ind2 = c2 + rightInd * inStride[2] + bottomInd * inStride[1] + bInd * inStride[0];
+                        const bottomRight = imageVals[ind2];
                         const top = topLeft + (topRight - topLeft) * xLerp;
                         const bottom = bottomLeft + (bottomRight - bottomLeft) * xLerp;
-                        ind = c + x * outStride[2] + y * outStride[1] + b * outStride[0];
-                        output.values[ind] = top + (bottom - top) * yLerp;
+                        ind2 = c2 + x3 * outStride[2] + y * outStride[1] + b * outStride[0];
+                        output.values[ind2] = top + (bottom - top) * yLerp;
                     }
                 }
-            } else for(let x = 0; x < cropWidth; ++x){
-                const xInd = cropWidth > 1 ? x1 * (imageWidth - 1) + x * widthScale : 0.5 * (x1 + x2) * (imageWidth - 1);
-                if (xInd < 0 || xInd > imageWidth - 1) {
-                    for(let c = 0; c < numChannels; c++){
-                        const ind = c + x * outStride[2] + y * outStride[1] + b * outStride[0];
-                        output.values[ind] = extrapolationValue;
+            } else for(let x4 = 0; x4 < cropWidth; ++x4){
+                const xInd1 = cropWidth > 1 ? x1 * (imageWidth - 1) + x4 * widthScale : 0.5 * (x1 + x2) * (imageWidth - 1);
+                if (xInd1 < 0 || xInd1 > imageWidth - 1) {
+                    for(let c3 = 0; c3 < numChannels; c3++){
+                        const ind3 = c3 + x4 * outStride[2] + y * outStride[1] + b * outStride[0];
+                        output.values[ind3] = extrapolationValue;
                     }
                     continue;
                 }
-                const closestX = Math.round(xInd);
+                const closestX = Math.round(xInd1);
                 const closestY = Math.round(yInd);
-                for(let c = 0; c < numChannels; c++){
-                    const inInd = c + closestX * inStride[2] + closestY * inStride[1] + bInd * inStride[0];
-                    const outInd = c + x * outStride[2] + y * outStride[1] + b * outStride[0];
+                for(let c4 = 0; c4 < numChannels; c4++){
+                    const inInd = c4 + closestX * inStride[2] + closestY * inStride[1] + bInd * inStride[0];
+                    const outInd = c4 + x4 * outStride[2] + y * outStride[1] + b * outStride[0];
                     output.values[outInd] = imageVals[inInd];
                 }
             }
@@ -36214,11 +36214,11 @@ function cumprod(args) {
     const aVals = backend.data.get($x.dataId).values;
     const finalDim = $x.shape[$x.shape.length - 1];
     const indexAdjuster = reverse ? (i, j)=>i + finalDim - j - 1 : (i, j)=>i + j;
-    for(let i1 = 0; i1 < aVals.length; i1 += finalDim)for(let j1 = 0; j1 < finalDim; j1++){
-        const idx = indexAdjuster(i1, j1);
-        if (j1 === 0) vals[idx] = exclusive ? 1 : aVals[idx];
+    for(let i = 0; i < aVals.length; i += finalDim)for(let j = 0; j < finalDim; j++){
+        const idx = indexAdjuster(i, j);
+        if (j === 0) vals[idx] = exclusive ? 1 : aVals[idx];
         else {
-            const prevIdx = indexAdjuster(i1, j1 - 1);
+            const prevIdx = indexAdjuster(i, j - 1);
             vals[idx] = exclusive ? aVals[prevIdx] * vals[prevIdx] : aVals[idx] * vals[prevIdx];
         }
     }
@@ -36294,11 +36294,11 @@ function cumsum(args) {
     const aVals = backend.data.get($x.dataId).values;
     const finalDim = $x.shape[$x.shape.length - 1];
     const indexAdjuster = reverse ? (i, j)=>i + finalDim - j - 1 : (i, j)=>i + j;
-    for(let i1 = 0; i1 < aVals.length; i1 += finalDim)for(let j1 = 0; j1 < finalDim; j1++){
-        const idx = indexAdjuster(i1, j1);
-        if (j1 === 0) vals[idx] = exclusive ? 0 : aVals[idx];
+    for(let i = 0; i < aVals.length; i += finalDim)for(let j = 0; j < finalDim; j++){
+        const idx = indexAdjuster(i, j);
+        if (j === 0) vals[idx] = exclusive ? 0 : aVals[idx];
         else {
-            const prevIdx = indexAdjuster(i1, j1 - 1);
+            const prevIdx = indexAdjuster(i, j - 1);
             vals[idx] = exclusive ? aVals[prevIdx] + vals[prevIdx] : aVals[idx] + vals[prevIdx];
         }
     }
@@ -37174,9 +37174,9 @@ function sum(args) {
     const aVals = backend.data.get(permutedX.dataId).values;
     for(let i = 0; i < vals.length; ++i){
         const offset = i * reduceSize;
-        let sum1 = 0;
-        for(let j = 0; j < reduceSize; ++j)sum1 += aVals[offset + j];
-        vals[i] = sum1;
+        let sum = 0;
+        for(let j = 0; j < reduceSize; ++j)sum += aVals[offset + j];
+        vals[i] = sum;
     }
     if (keepDims) {
         const newShape = (0, _tfjsCore.backend_util).expandShapeToKeepDim(result.shape, axes);
@@ -37578,7 +37578,7 @@ function fftBatch(input, inverse, cpuBackend) {
                 ]
             }
         });
-        const input = (0, _complex.complex)({
+        const input1 = (0, _complex.complex)({
             inputs: {
                 real: r,
                 imag: i
@@ -37586,7 +37586,7 @@ function fftBatch(input, inverse, cpuBackend) {
             backend: cpuBackend
         });
         // Run FFT by batch element.
-        const { real , imag  } = fftImpl(input, inverse, cpuBackend);
+        const { real , imag  } = fftImpl(input1, inverse, cpuBackend);
         const res = (0, _tfjsCore.backend_util).mergeRealAndImagArrays(real, imag);
         for(let d = 0; d < innerDim; d++){
             const c = (0, _tfjsCore.backend_util).getComplexWithIndex(res, d);
@@ -37595,7 +37595,7 @@ function fftBatch(input, inverse, cpuBackend) {
         }
         cpuBackend.disposeIntermediateTensorInfo(r);
         cpuBackend.disposeIntermediateTensorInfo(i);
-        cpuBackend.disposeIntermediateTensorInfo(input);
+        cpuBackend.disposeIntermediateTensorInfo(input1);
     }
     const $realInfo = cpuBackend.makeTensorInfo(resultShape, "float32", resultReal);
     const $imagInfo = cpuBackend.makeTensorInfo(resultShape, "float32", resultImag);
@@ -38185,7 +38185,7 @@ function fusedConv2D(args) {
         backend.disposeIntermediateTensorInfo(resultOld);
     }
     if (activation) {
-        const resultOld = result;
+        const resultOld1 = result;
         // For NCHW format, if PReLu activation weights is a 1-D tensor, it is
         // supposed to be aligned with the channel of the conv2d's result. For other
         // cases, whether NCHW or NHWC data format, the conv2d result is
@@ -38207,7 +38207,7 @@ function fusedConv2D(args) {
             result = (0, _fusedUtils.applyActivation)(backend, result, activation, reshapedAlpha, leakyreluAlpha);
             backend.disposeIntermediateTensorInfo(reshapedAlpha);
         } else result = (0, _fusedUtils.applyActivation)(backend, result, activation, preluActivationWeights, leakyreluAlpha);
-        backend.disposeIntermediateTensorInfo(resultOld);
+        backend.disposeIntermediateTensorInfo(resultOld1);
     }
     return result;
 }
@@ -38271,9 +38271,9 @@ function fusedDepthwiseConv2D(args) {
         backend.disposeIntermediateTensorInfo(oldResult);
     }
     if (activation) {
-        const oldResult = result;
+        const oldResult1 = result;
         result = (0, _fusedUtils.applyActivation)(backend, result, activation, preluActivationWeights, leakyreluAlpha);
-        backend.disposeIntermediateTensorInfo(oldResult);
+        backend.disposeIntermediateTensorInfo(oldResult1);
     }
     return result;
 }
@@ -39029,10 +39029,10 @@ function lRN(args) {
         }
         return sum;
     }
-    for(let offset1 = 0; offset1 < size; offset1++){
-        const sum = sumAcrossChannels(offset1);
-        const val = xValues[offset1] * Math.pow(bias + alpha * sum, -beta);
-        result[offset1] = val;
+    for(let offset = 0; offset < size; offset++){
+        const sum = sumAcrossChannels(offset);
+        const val = xValues[offset] * Math.pow(bias + alpha * sum, -beta);
+        result[offset] = val;
     }
     return backend.makeTensorInfo(x.shape, x.dtype, result);
 }
@@ -39149,8 +39149,8 @@ function max(args) {
     let outShape = maxOutShape;
     if (keepDims) {
         // reshape
-        const newShape = (0, _tfjsCore.backend_util).expandShapeToKeepDim(maxOutShape, origAxes);
-        outShape = newShape;
+        const newShape1 = (0, _tfjsCore.backend_util).expandShapeToKeepDim(maxOutShape, origAxes);
+        outShape = newShape1;
     }
     return {
         dataId,
@@ -39271,8 +39271,8 @@ function maxPool(args) {
     });
     else {
         const xValues = backend.data.get(x.dataId).values;
-        const strides = (0, _tfjsCore.util).computeStrides(x.shape);
-        const buffer = (0, _poolUtils.pool)(xValues, x.shape, x.dtype, strides, convInfo, "max");
+        const strides1 = (0, _tfjsCore.util).computeStrides(x.shape);
+        const buffer = (0, _poolUtils.pool)(xValues, x.shape, x.dtype, strides1, convInfo, "max");
         res = backend.makeTensorInfo(convInfo.outShape, x.dtype, buffer.values);
     }
     return res;
@@ -39695,12 +39695,12 @@ function min(args) {
     const aVals = backend.data.get($x.dataId).values;
     for(let i = 0; i < vals.length; ++i){
         const offset = i * reduceSize;
-        let min1 = aVals[offset];
+        let min = aVals[offset];
         for(let j = 0; j < reduceSize; ++j){
             const value = aVals[offset + j];
-            if (Number.isNaN(value) || value < min1) min1 = value;
+            if (Number.isNaN(value) || value < min) min = value;
         }
-        vals[i] = min1;
+        vals[i] = min;
     }
     if (permutedAxes != null) backend.disposeIntermediateTensorInfo($x);
     const result = backend.makeTensorInfo(outShape, $x.dtype, vals);
@@ -39796,15 +39796,15 @@ function mirrorPad(args) {
     const resultRank = outShape.length;
     const resultStrides = (0, _tfjsCore.util).computeStrides(outShape);
     const resVals = (0, _tfjsCore.util).getTypedArrayFromDType(x.dtype, resultSize);
-    for(let i1 = 0; i1 < resultSize; i1++){
-        let coords = (0, _tfjsCore.util).indexToLoc(i1, resultRank, resultStrides);
-        for(let i2 = 0; i2 < resultRank; i2++){
-            if (coords[i2] < start[i2]) coords[i2] = start[i2] * 2 - coords[i2] - offset;
-            else if (coords[i2] >= end[i2]) coords[i2] = (end[i2] - 1) * 2 - coords[i2] + offset;
+    for(let i = 0; i < resultSize; i++){
+        let coords = (0, _tfjsCore.util).indexToLoc(i, resultRank, resultStrides);
+        for(let i1 = 0; i1 < resultRank; i1++){
+            if (coords[i1] < start[i1]) coords[i1] = start[i1] * 2 - coords[i1] - offset;
+            else if (coords[i1] >= end[i1]) coords[i1] = (end[i1] - 1) * 2 - coords[i1] + offset;
         }
         coords = coords.map((c, i)=>c - start[i]);
         const inIndex = (0, _tfjsCore.util).locToIndex(coords, xRank, xStrides);
-        resVals[i1] = xVals[inIndex];
+        resVals[i] = xVals[inIndex];
     }
     const outId = backend.write(resVals, outShape, x.dtype);
     return {
@@ -39914,8 +39914,8 @@ function multinomial(args) {
             const r = random();
             // Assume last event happened by default.
             resVals[outOffset + sampleId] = cdf.length;
-            for(let event = 0; event < cdf.length; event++)if (r < cdf[event]) {
-                resVals[outOffset + sampleId] = event;
+            for(let event1 = 0; event1 < cdf.length; event1++)if (r < cdf[event1]) {
+                resVals[outOffset + sampleId] = event1;
                 break;
             }
         }
@@ -40566,11 +40566,11 @@ function padV2(args) {
     const resultStrides = (0, _tfjsCore.util).computeStrides(outShape);
     const resVals = (0, _tfjsCore.util).getTypedArrayFromDType(x.dtype, resultSize);
     if (constantValue !== 0) resVals.fill(constantValue);
-    for(let i1 = 0; i1 < xSize; i1++){
-        const coords = (0, _tfjsCore.util).indexToLoc(i1, xRank, xStrides);
+    for(let i = 0; i < xSize; i++){
+        const coords = (0, _tfjsCore.util).indexToLoc(i, xRank, xStrides);
         const outCoords = coords.map((c, i)=>c + start[i]);
         const outIndex = (0, _tfjsCore.util).locToIndex(outCoords, resultRank, resultStrides);
-        resVals[outIndex] = xVals[i1];
+        resVals[outIndex] = xVals[i];
     }
     const outId = backend.write(resVals, outShape, x.dtype);
     return {
@@ -40648,9 +40648,9 @@ function prodImpl(xShape, xDtype, xVals, reductionAxes) {
     const reduceSize = (0, _tfjsCore.util).sizeFromShape(reduceShape);
     for(let i = 0; i < outVals.length; ++i){
         const offset = i * reduceSize;
-        let prod1 = 1;
-        for(let j = 0; j < reduceSize; ++j)prod1 *= xVals[offset + j];
-        outVals[i] = prod1;
+        let prod = 1;
+        for(let j = 0; j < reduceSize; ++j)prod *= xVals[offset + j];
+        outVals[i] = prod;
     }
     return {
         outVals,
@@ -41982,73 +41982,73 @@ function sparseFillEmptyRowsImpl(indices, indicesShape, indicesDType, values, va
         lastIndicesRow = row;
     }
     let allRowsFull = true;
-    for(let row = 0; row < denseRows; ++row){
+    for(let row1 = 0; row1 < denseRows; ++row1){
         // csrOffset here describes the number of elements in this dense row
-        const rowEmpty = csrOffset[row] === 0;
-        emptyRowIndicator[row] = rowEmpty;
+        const rowEmpty = csrOffset[row1] === 0;
+        emptyRowIndicator[row1] = rowEmpty;
         allRowsFull = allRowsFull && !rowEmpty;
         // In filled version, each row has at least one element.
-        csrOffset[row] = Math.max(csrOffset[row], 1);
+        csrOffset[row1] = Math.max(csrOffset[row1], 1);
         // Update csrOffset to represent the number of elements up to and
         // including denseRows + 1:
         //  csrOffset[0] == #{elements of row 0}
         //  csrOffset[1] == #{elements of row 1} + #{elements of row 0}
         //  ..
         //  csrOffset[i] == starting index for elements in row i + 1.
-        if (row > 0) csrOffset[row] += csrOffset[row - 1];
+        if (row1 > 0) csrOffset[row1] += csrOffset[row1 - 1];
     }
     if (allRowsFull && rowsAreOrdered) {
-        const outputIndices = indices;
-        const outputValues = values;
-        for(let i = 0; i < indicesCount; ++i)reverseIndexMap[i] = i;
+        const outputIndices1 = indices;
+        const outputValues1 = values;
+        for(let i1 = 0; i1 < indicesCount; ++i1)reverseIndexMap[i1] = i1;
         return [
-            outputIndices,
+            outputIndices1,
             [
                 indicesCount,
                 rank
             ],
-            outputValues,
+            outputValues1,
             emptyRowIndicator,
             reverseIndexMap
         ];
     } else {
         const fullIndicesCount = csrOffset[denseRows - 1];
-        const outputIndices = (0, _tfjsCore.util).getArrayFromDType(indicesDType, fullIndicesCount * rank);
-        const outputValues = (0, _tfjsCore.util).getArrayFromDType(valuesDType, fullIndicesCount);
+        const outputIndices2 = (0, _tfjsCore.util).getArrayFromDType(indicesDType, fullIndicesCount * rank);
+        const outputValues2 = (0, _tfjsCore.util).getArrayFromDType(valuesDType, fullIndicesCount);
         const filledCount = new Array(denseRows).fill(0);
         // Fill in values for rows that are not missing
-        for(let i = 0; i < indicesCount; ++i){
+        for(let i2 = 0; i2 < indicesCount; ++i2){
             // indices is a 2d tensor with shape of [N, rank]
-            const row = indices[i * rank];
-            const offset = filledCount[row];
-            const outputI = (row === 0 ? 0 : csrOffset[row - 1]) + offset;
-            filledCount[row]++; // Increment the filled count for this row.
+            const row2 = indices[i2 * rank];
+            const offset = filledCount[row2];
+            const outputI = (row2 === 0 ? 0 : csrOffset[row2 - 1]) + offset;
+            filledCount[row2]++; // Increment the filled count for this row.
             for(let j = 0; j < rank; ++j)// indices and outputIndices are 2d tensors with shape of [N, rank]
-            outputIndices[outputI * rank + j] = indices[i * rank + j];
-            outputValues[outputI] = values[i];
+            outputIndices2[outputI * rank + j] = indices[i2 * rank + j];
+            outputValues2[outputI] = values[i2];
             // We'll need this reverse index map to backprop correctly.
-            reverseIndexMap[i] = outputI;
+            reverseIndexMap[i2] = outputI;
         }
         // Fill in values for rows that are missing
-        for(let row = 0; row < denseRows; ++row){
-            const rowCount = filledCount[row];
+        for(let row3 = 0; row3 < denseRows; ++row3){
+            const rowCount = filledCount[row3];
             if (rowCount === 0) {
-                const startingIndex = row === 0 ? 0 : csrOffset[row - 1];
+                const startingIndex = row3 === 0 ? 0 : csrOffset[row3 - 1];
                 // Remaining index values were set to zero already.
                 // Just need to set the row index in the right location.
                 // outputIndices is a 2d tensor with shape of [N, rank]
-                outputIndices[startingIndex * rank + 0] = row;
-                for(let col = 1; col < rank; ++col)outputIndices[startingIndex * rank + col] = 0;
-                outputValues[startingIndex] = defaultValue;
+                outputIndices2[startingIndex * rank + 0] = row3;
+                for(let col = 1; col < rank; ++col)outputIndices2[startingIndex * rank + col] = 0;
+                outputValues2[startingIndex] = defaultValue;
             }
         }
         return [
-            outputIndices,
+            outputIndices2,
             [
                 fullIndicesCount,
                 rank
             ],
-            outputValues,
+            outputValues2,
             emptyRowIndicator,
             reverseIndexMap
         ];
@@ -42155,12 +42155,12 @@ function sparseReshapeImpl(inputIndices, inputIndicesShape, inputDType, inputSha
     const inputStrides = [];
     if (inputRank > 0) {
         inputStrides[inputRank - 1] = 1;
-        for(let d = inputRank - 2; d >= 0; --d)inputStrides[d] = inputStrides[d + 1] * inputShape[d + 1];
+        for(let d1 = inputRank - 2; d1 >= 0; --d1)inputStrides[d1] = inputStrides[d1 + 1] * inputShape[d1 + 1];
     }
     const outputStrides = [];
     if (outputRank > 0) {
         outputStrides[outputRank - 1] = 1;
-        for(let d = outputRank - 2; d >= 0; --d)outputStrides[d] = outputStrides[d + 1] * outputShape[d + 1];
+        for(let d2 = outputRank - 2; d2 >= 0; --d2)outputStrides[d2] = outputStrides[d2 + 1] * outputShape[d2 + 1];
     }
     const newIndices = (0, _tfjsCore.util).getArrayFromDType(inputDType, nnz * outputRank);
     for(let i = 0; i < nnz; ++i){
@@ -42299,7 +42299,7 @@ function sparseSegmentReductionImpl(input, inputShape, inputDType, indices, segm
             if (index < 0 || index >= inputFlat[0]) throw new Error((0, _tfjsCore.backend_util).getSparseSegmentReductionIndicesOutOfRangeErrorMessage(i, indices[i], inputFlat[0]));
             for(let j = 0; j < numCol; j++)output[outIndex * numCol + j] += input[index * numCol + j];
         }
-        if (isMean) for(let j = 0; j < numCol; j++)output[outIndex * numCol + j] /= end - start;
+        if (isMean) for(let j1 = 0; j1 < numCol; j1++)output[outIndex * numCol + j1] /= end - start;
         start = end;
         ++end;
         uninitializedIndex = outIndex + 1;
@@ -42397,23 +42397,23 @@ function sparseToDense(args) {
             }
         case "float32":
             {
-                const updatesBuf = backend.bufferSync(sparseValues);
-                const $defaultValue = backend.data.get(defaultValue.dataId).values[0];
-                outBuf = (0, _scatterImpl.scatterImpl)(indicesBuf, updatesBuf, outputShape, outputSize, sliceSize, numUpdates, sliceRank, strides, $defaultValue, sumDupeIndices);
+                const updatesBuf1 = backend.bufferSync(sparseValues);
+                const $defaultValue1 = backend.data.get(defaultValue.dataId).values[0];
+                outBuf = (0, _scatterImpl.scatterImpl)(indicesBuf, updatesBuf1, outputShape, outputSize, sliceSize, numUpdates, sliceRank, strides, $defaultValue1, sumDupeIndices);
                 break;
             }
         case "int32":
             {
-                const updatesBuf = backend.bufferSync(sparseValues);
-                const $defaultValue = backend.data.get(defaultValue.dataId).values[0];
-                outBuf = (0, _scatterImpl.scatterImpl)(indicesBuf, updatesBuf, outputShape, outputSize, sliceSize, numUpdates, sliceRank, strides, $defaultValue, sumDupeIndices);
+                const updatesBuf2 = backend.bufferSync(sparseValues);
+                const $defaultValue2 = backend.data.get(defaultValue.dataId).values[0];
+                outBuf = (0, _scatterImpl.scatterImpl)(indicesBuf, updatesBuf2, outputShape, outputSize, sliceSize, numUpdates, sliceRank, strides, $defaultValue2, sumDupeIndices);
                 break;
             }
         case "string":
             {
-                const updatesBuf = backend.bufferSync(sparseValues);
-                const $defaultValue = (0, _tfjsCore.util).decodeString(backend.data.get(defaultValue.dataId).values[0]);
-                outBuf = (0, _scatterImpl.scatterImpl)(indicesBuf, updatesBuf, outputShape, outputSize, sliceSize, numUpdates, sliceRank, strides, $defaultValue, sumDupeIndices);
+                const updatesBuf3 = backend.bufferSync(sparseValues);
+                const $defaultValue3 = (0, _tfjsCore.util).decodeString(backend.data.get(defaultValue.dataId).values[0]);
+                outBuf = (0, _scatterImpl.scatterImpl)(indicesBuf, updatesBuf3, outputShape, outputSize, sliceSize, numUpdates, sliceRank, strides, $defaultValue3, sumDupeIndices);
                 break;
             }
         default:
@@ -42864,7 +42864,7 @@ parcelHelpers.export(exports, "stringNGramsImpl", ()=>stringNGramsImpl);
                 // with the right padding that follows, to ensure nGram ends either with
                 // the token or with the right pad.
                 appendToNGram(data[dataStartIndex + numTokens - 1]);
-                for(let n = 0; n < rightPadding; ++n){
+                for(let n3 = 0; n3 < rightPadding; ++n3){
                     appendToNGram(this.separator);
                     appendToNGram(this.rightPad);
                 }
@@ -42873,7 +42873,7 @@ parcelHelpers.export(exports, "stringNGramsImpl", ()=>stringNGramsImpl);
                 // has been the separator from the left padding loop above. Hence,
                 // output right pad and separator and make sure to finish with a
                 // padding, not a separator.
-                for(let n = 0; n < rightPadding - 1; ++n){
+                for(let n4 = 0; n4 < rightPadding - 1; ++n4){
                     appendToNGram(this.rightPad);
                     appendToNGram(this.separator);
                 }
@@ -42905,28 +42905,28 @@ parcelHelpers.export(exports, "stringNGramsImpl", ()=>stringNGramsImpl);
         // If there is no data or size, return an empty ragged tensor.
         if (inputDataSize === 0 || splitsSize === 0) {
             const empty = new Array(inputDataSize);
-            for(let i = 0; i <= numBatchItems; ++i)nGramsSplits[i] = 0;
+            for(let i1 = 0; i1 <= numBatchItems; ++i1)nGramsSplits[i1] = 0;
             return [
                 empty,
                 nGramsSplits
             ];
         }
         nGramsSplits[0] = 0;
-        for(let i = 1; i <= numBatchItems; ++i){
-            const length = splits[i] - splits[i - 1];
+        for(let i2 = 1; i2 <= numBatchItems; ++i2){
+            const length = splits[i2] - splits[i2 - 1];
             let numNGrams = 0;
             this.nGramWidths.forEach((nGramWidth)=>{
                 numNGrams += this.getNumNGrams(length, nGramWidth);
             });
             if (this.preserveShort && length > 0 && numNGrams === 0) numNGrams = 1;
-            nGramsSplits[i] = nGramsSplits[i - 1] + numNGrams;
+            nGramsSplits[i2] = nGramsSplits[i2 - 1] + numNGrams;
         }
         const nGrams = new Array(nGramsSplits[numBatchItems]);
-        for(let i1 = 0; i1 < numBatchItems; ++i1){
-            const splitIndex = splits[i1];
-            let outputStartIdx = nGramsSplits[i1];
+        for(let i3 = 0; i3 < numBatchItems; ++i3){
+            const splitIndex = splits[i3];
+            let outputStartIdx = nGramsSplits[i3];
             this.nGramWidths.forEach((nGramWidth)=>{
-                const length = splits[i1 + 1] - splits[i1];
+                const length = splits[i3 + 1] - splits[i3];
                 const numNGrams = this.getNumNGrams(length, nGramWidth);
                 this.createNGrams(data, splitIndex, nGrams, outputStartIdx, numNGrams, nGramWidth);
                 outputStartIdx += numNGrams;
@@ -42936,8 +42936,8 @@ parcelHelpers.export(exports, "stringNGramsImpl", ()=>stringNGramsImpl);
             // one (nGramSplitsdata). If no ngrams were generated, then they will
             // be equal (since we increment outputStartIdx by numNGrams every
             // time we create a set of ngrams.)
-            if (this.preserveShort && outputStartIdx === nGramsSplits[i1]) {
-                const dataLength = splits[i1 + 1] - splits[i1];
+            if (this.preserveShort && outputStartIdx === nGramsSplits[i3]) {
+                const dataLength = splits[i3 + 1] - splits[i3];
                 // One legitimate reason to not have any ngrams when this.preserveShort
                 // is true is if the sequence itself is empty. In that case, move on.
                 if (dataLength === 0) continue;
@@ -42945,8 +42945,8 @@ parcelHelpers.export(exports, "stringNGramsImpl", ()=>stringNGramsImpl);
                 // was dynamic, every sequence would have had sufficient padding to
                 // generate at least one nGram.
                 const nGramWidth = dataLength + 2 * this.padWidth;
-                const numNGrams = 1;
-                this.createNGrams(data, splitIndex, nGrams, outputStartIdx, numNGrams, nGramWidth);
+                const numNGrams1 = 1;
+                this.createNGrams(data, splitIndex, nGrams, outputStartIdx, numNGrams1, nGramWidth);
             }
         }
         return [
@@ -43054,10 +43054,10 @@ function split(str, delimiters, skipEmpty, result) {
     // When there are multiple delimiters, the input is split at every instance
     // one of the delimiters appears.
     let tokenStart = 0;
-    for(let i = 0; i < str.length + 1; i++)if (i === str.length || delimiters.indexOf(str[i]) !== -1) {
-        const token = str.subarray(tokenStart, i);
-        if (!skipEmpty || token.length !== 0) result.push(token);
-        tokenStart = i + 1;
+    for(let i1 = 0; i1 < str.length + 1; i1++)if (i1 === str.length || delimiters.indexOf(str[i1]) !== -1) {
+        const token1 = str.subarray(tokenStart, i1);
+        if (!skipEmpty || token1.length !== 0) result.push(token1);
+        tokenStart = i1 + 1;
     }
 }
 function stringSplitImpl(input, delimiter, skipEmpty) {
@@ -43384,15 +43384,15 @@ const comparePair = (a, b)=>{
         }
         // partition the elements between left and right around t
         const t = array[k];
-        let i = left;
+        let i1 = left;
         let j = right;
         (0, _tfjsCore.util).swap(array, left, k);
         if (comparePair(array[right], t) > 0) (0, _tfjsCore.util).swap(array, left, right);
-        while(i < j){
-            (0, _tfjsCore.util).swap(array, i, j);
-            i++;
+        while(i1 < j){
+            (0, _tfjsCore.util).swap(array, i1, j);
+            i1++;
             j--;
-            while(comparePair(array[i], t) < 0)i = i + 1;
+            while(comparePair(array[i1], t) < 0)i1 = i1 + 1;
             while(comparePair(array[j], t) > 0)j = j - 1;
         }
         if (comparePair(array[left], t) === 0) (0, _tfjsCore.util).swap(array, left, j);
@@ -43493,14 +43493,14 @@ function transform(args) {
     // Ref TF implementation:
     // https://github.com/tensorflow/tensorflow/blob/master/tensorflow/core/kernels/image/image_ops.h
     for(let b = 0; b < batch; ++b){
-        const transform1 = transforms.shape[0] === 1 ? transformVals : transformVals.subarray(b * 8, b * 8 + 8);
+        const transform = transforms.shape[0] === 1 ? transformVals : transformVals.subarray(b * 8, b * 8 + 8);
         for(let outY = 0; outY < outHeight; ++outY){
             for(let outX = 0; outX < outWidth; ++outX)for(let channel = 0; channel < numChannels; ++channel){
                 let val;
-                const projection = transform1[6] * outX + transform1[7] * outY + 1;
+                const projection = transform[6] * outX + transform[7] * outY + 1;
                 if (projection === 0) continue;
-                const inX = (transform1[0] * outX + transform1[1] * outY + transform1[2]) / projection;
-                const inY = (transform1[3] * outX + transform1[4] * outY + transform1[5]) / projection;
+                const inX = (transform[0] * outX + transform[1] * outY + transform[2]) / projection;
+                const inY = (transform[3] * outX + transform[4] * outY + transform[5]) / projection;
                 const x = mapCoord(inX, imageWidth, fillMode);
                 const y = mapCoord(inY, imageHeight, fillMode);
                 switch(interpolation){
@@ -43557,9 +43557,9 @@ function mapCoordReflect(outCoord, len) {
     } else if (inCoord > len - 1) {
         if (len <= 1) inCoord = 0;
         else {
-            const sz2 = 2 * len;
-            inCoord -= sz2 * Math.trunc(inCoord / sz2);
-            if (inCoord >= len) inCoord = sz2 - inCoord - 1;
+            const sz21 = 2 * len;
+            inCoord -= sz21 * Math.trunc(inCoord / sz21);
+            if (inCoord >= len) inCoord = sz21 - inCoord - 1;
         }
     }
     // clamp is necessary because when outCoord = 3.5 and len = 4,
@@ -43578,8 +43578,8 @@ function mapCoordWrap(outCoord, len) {
     } else if (inCoord > len - 1) {
         if (len <= 1) inCoord = 0;
         else {
-            const sz = len - 1;
-            inCoord -= len * Math.trunc(inCoord / sz);
+            const sz1 = len - 1;
+            inCoord -= len * Math.trunc(inCoord / sz1);
         }
     }
     // clamp is necessary because when outCoord = -0.5 and len = 4,
@@ -43744,7 +43744,7 @@ function uniqueImpl(values, axis, shape, dtype) {
         shape[0],
         1
     ];
-    for(let i3 = 0; i3 < $axis; i3++)newShape[0] *= shape[i3];
+    for(let i = 0; i < $axis; i++)newShape[0] *= shape[i];
     newShape[1] = shape[$axis];
     for(let i1 = $axis + 1; i1 < shape.length; i1++)newShape[2] *= shape[i1];
     // A map from unique elements (their string representations) to their values
@@ -44319,27 +44319,27 @@ var _focus1 = require("./focus");
 var _moveCamera = require("./move_camera");
 var _moveNode = require("./move_node");
 let EventKind;
-(function(EventKind1) {
-    EventKind1[EventKind1["POINTER_MOVE"] = 0] = "POINTER_MOVE";
-    EventKind1[EventKind1["POINTER_DOWN"] = 1] = "POINTER_DOWN";
-    EventKind1[EventKind1["POINTER_UP"] = 2] = "POINTER_UP";
-    EventKind1[EventKind1["CLICKED_NODE"] = 3] = "CLICKED_NODE";
-    EventKind1[EventKind1["WHEEL"] = 4] = "WHEEL";
-    EventKind1[EventKind1["CLICKED_INPUT"] = 5] = "CLICKED_INPUT";
-    EventKind1[EventKind1["CLICKED_OUTPUT"] = 6] = "CLICKED_OUTPUT";
-    EventKind1[EventKind1["OPEN_FINDER_TIMEOUT"] = 7] = "OPEN_FINDER_TIMEOUT";
-    EventKind1[EventKind1["KEYDOWN"] = 8] = "KEYDOWN";
-    EventKind1[EventKind1["KEYUP"] = 9] = "KEYUP";
-    EventKind1[EventKind1["VIRTUAL_KEYDOWN"] = 10] = "VIRTUAL_KEYDOWN";
-    EventKind1[EventKind1["CLICKED_FINDER_OPTION"] = 11] = "CLICKED_FINDER_OPTION";
-    EventKind1[EventKind1["CLICKED_BODY"] = 12] = "CLICKED_BODY";
-    EventKind1[EventKind1["CLICKED_BACKGROUND"] = 13] = "CLICKED_BACKGROUND";
-    EventKind1[EventKind1["DELETE_NODE"] = 14] = "DELETE_NODE";
-    EventKind1[EventKind1["DELETE_INPUT_EDGE"] = 15] = "DELETE_INPUT_EDGE";
-    EventKind1[EventKind1["DELETE_OUTPUT_EDGES"] = 16] = "DELETE_OUTPUT_EDGES";
-    EventKind1[EventKind1["PAN_CAMERA"] = 17] = "PAN_CAMERA";
-    EventKind1[EventKind1["ZOOM_CAMERA"] = 18] = "ZOOM_CAMERA";
-    EventKind1[EventKind1["MOVE_NODE"] = 19] = "MOVE_NODE";
+(function(EventKind) {
+    EventKind[EventKind["POINTER_MOVE"] = 0] = "POINTER_MOVE";
+    EventKind[EventKind["POINTER_DOWN"] = 1] = "POINTER_DOWN";
+    EventKind[EventKind["POINTER_UP"] = 2] = "POINTER_UP";
+    EventKind[EventKind["CLICKED_NODE"] = 3] = "CLICKED_NODE";
+    EventKind[EventKind["WHEEL"] = 4] = "WHEEL";
+    EventKind[EventKind["CLICKED_INPUT"] = 5] = "CLICKED_INPUT";
+    EventKind[EventKind["CLICKED_OUTPUT"] = 6] = "CLICKED_OUTPUT";
+    EventKind[EventKind["OPEN_FINDER_TIMEOUT"] = 7] = "OPEN_FINDER_TIMEOUT";
+    EventKind[EventKind["KEYDOWN"] = 8] = "KEYDOWN";
+    EventKind[EventKind["KEYUP"] = 9] = "KEYUP";
+    EventKind[EventKind["VIRTUAL_KEYDOWN"] = 10] = "VIRTUAL_KEYDOWN";
+    EventKind[EventKind["CLICKED_FINDER_OPTION"] = 11] = "CLICKED_FINDER_OPTION";
+    EventKind[EventKind["CLICKED_BODY"] = 12] = "CLICKED_BODY";
+    EventKind[EventKind["CLICKED_BACKGROUND"] = 13] = "CLICKED_BACKGROUND";
+    EventKind[EventKind["DELETE_NODE"] = 14] = "DELETE_NODE";
+    EventKind[EventKind["DELETE_INPUT_EDGE"] = 15] = "DELETE_INPUT_EDGE";
+    EventKind[EventKind["DELETE_OUTPUT_EDGES"] = 16] = "DELETE_OUTPUT_EDGES";
+    EventKind[EventKind["PAN_CAMERA"] = 17] = "PAN_CAMERA";
+    EventKind[EventKind["ZOOM_CAMERA"] = 18] = "ZOOM_CAMERA";
+    EventKind[EventKind["MOVE_NODE"] = 19] = "MOVE_NODE";
 })(EventKind || (EventKind = {}));
 const pointerDown = (model, event)=>{
     const pointers = [
@@ -44535,15 +44535,15 @@ const pointerMove = (model, event)=>{
                             const move = (0, _matrix3X3.translate)(x, y);
                             const zoom = Math.pow(2, (previousPointerAction.pointerDistance - pointerAction.pointerDistance) * 0.01);
                             const moveBack = (0, _matrix3X3.translate)(-x, -y);
-                            const dx = x - previousPointerAction.pointerCenter.x;
-                            const dy = y - previousPointerAction.pointerCenter.y;
-                            const camera = (0, _matrix3X3.multiplyMatrices)(model.camera, move, (0, _matrix3X3.scale)(zoom, zoom), moveBack, (0, _matrix3X3.translate)(-dx, -dy));
+                            const dx1 = x - previousPointerAction.pointerCenter.x;
+                            const dy1 = y - previousPointerAction.pointerCenter.y;
+                            const camera1 = (0, _matrix3X3.multiplyMatrices)(model.camera, move, (0, _matrix3X3.scale)(zoom, zoom), moveBack, (0, _matrix3X3.translate)(-dx1, -dy1));
                             return {
                                 model: {
                                     ...model,
                                     focus,
                                     pointers,
-                                    camera
+                                    camera: camera1
                                 },
                                 render: true
                             };
@@ -44557,16 +44557,16 @@ const pointerMove = (model, event)=>{
                 }
             case (0, _focus.FocusKind).NODE:
                 if (model.focus.drag) {
-                    const dx = event.pointer.position.x - pointer.position.x;
-                    const dy = event.pointer.position.y - pointer.position.y;
+                    const dx2 = event.pointer.position.x - pointer.position.x;
+                    const dy2 = event.pointer.position.y - pointer.position.y;
                     const scaling = (0, _vector3.length)((0, _matrix3X3.multiplyMatrixVector)(model.camera, [
                         0,
                         1,
                         0
                     ]));
                     const graph = (0, _graph.changeNodePosition)(model.graph, model.focus.node, (p)=>({
-                            x: p.x + dx * scaling,
-                            y: p.y + dy * scaling
+                            x: p.x + dx2 * scaling,
+                            y: p.y + dy2 * scaling
                         }));
                     return {
                         model: {
@@ -44787,7 +44787,13 @@ const keyDown = (model, event, { generateUUID , currentTime  })=>{
                         case "Backspace":
                             return updateBodyNumber(model, model.focus.body, (value)=>{
                                 let newValue = value.toString().slice(0, -1);
-                                return newValue === "" ? 0 : parseFloat(newValue);
+                                switch(newValue){
+                                    case "":
+                                    case "-":
+                                        return 0;
+                                    default:
+                                        return parseFloat(newValue);
+                                }
                             }, generateUUID);
                         case "1":
                         case "2":
@@ -44800,6 +44806,11 @@ const keyDown = (model, event, { generateUUID , currentTime  })=>{
                         case "9":
                         case "0":
                             return updateBodyNumber(model, model.focus.body, (value)=>parseFloat(value.toString() + key), generateUUID);
+                        case "-":
+                        case "+":
+                            return updateBodyNumber(model, model.focus.body, (value)=>-value, generateUUID);
+                        case "d":
+                            return updateBodyNumber(model, model.focus.body, (value)=>0, generateUUID);
                         case "Enter":
                         case "Escape":
                             return {
@@ -44889,9 +44900,9 @@ const keyDown = (model, event, { generateUUID , currentTime  })=>{
                         render: true
                     };
                     else {
-                        const result = (0, _quickSelect.maybeTriggerQuickSelect)(model, model.focus, key);
-                        if (result.render) return result;
-                        else return (0, _moveCamera.maybeStartMoveCamera)(result.model, event, currentTime);
+                        const result1 = (0, _quickSelect.maybeTriggerQuickSelect)(model, model.focus, key);
+                        if (result1.render) return result1;
+                        else return (0, _moveCamera.maybeStartMoveCamera)(result1.model, event, currentTime);
                     }
             }
     }
@@ -44936,7 +44947,13 @@ const virtualKeyDown = (model, { key  }, generateUUID)=>{
                 case "del":
                     return updateBodyNumber(model, model.focus.body, (value)=>{
                         let newValue = value.toString().slice(0, -1);
-                        return newValue === "" ? 0 : parseFloat(newValue);
+                        switch(newValue){
+                            case "":
+                            case "-":
+                                return 0;
+                            default:
+                                return parseFloat(newValue);
+                        }
                     }, generateUUID);
                 case "1":
                 case "2":
@@ -44948,8 +44965,12 @@ const virtualKeyDown = (model, { key  }, generateUUID)=>{
                 case "8":
                 case "9":
                 case "0":
-                case ".":
                     return updateBodyNumber(model, model.focus.body, (value)=>parseFloat(value.toString() + key), generateUUID);
+                case "-":
+                case "+":
+                    return updateBodyNumber(model, model.focus.body, (value)=>-value, generateUUID);
+                case "clr":
+                    return updateBodyNumber(model, model.focus.body, (value)=>0, generateUUID);
                 case "ret":
                     return {
                         model: (0, _focus1.clearFocus)(model),
@@ -45288,13 +45309,13 @@ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "FocusKind", ()=>FocusKind);
 let FocusKind;
-(function(FocusKind1) {
-    FocusKind1[FocusKind1["NODE"] = 0] = "NODE";
-    FocusKind1[FocusKind1["INPUT"] = 1] = "INPUT";
-    FocusKind1[FocusKind1["OUTPUT"] = 2] = "OUTPUT";
-    FocusKind1[FocusKind1["BODY"] = 3] = "BODY";
-    FocusKind1[FocusKind1["FINDER"] = 4] = "FINDER";
-    FocusKind1[FocusKind1["NONE"] = 5] = "NONE";
+(function(FocusKind) {
+    FocusKind[FocusKind["NODE"] = 0] = "NODE";
+    FocusKind[FocusKind["INPUT"] = 1] = "INPUT";
+    FocusKind[FocusKind["OUTPUT"] = 2] = "OUTPUT";
+    FocusKind[FocusKind["BODY"] = 3] = "BODY";
+    FocusKind[FocusKind["FINDER"] = 4] = "FINDER";
+    FocusKind[FocusKind["NONE"] = 5] = "NONE";
 })(FocusKind || (FocusKind = {}));
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"dtHMy":[function(require,module,exports) {
@@ -45302,10 +45323,10 @@ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "PointerActionKind", ()=>PointerActionKind);
 let PointerActionKind;
-(function(PointerActionKind1) {
-    PointerActionKind1[PointerActionKind1["PAN"] = 0] = "PAN";
-    PointerActionKind1[PointerActionKind1["ZOOM"] = 1] = "ZOOM";
-    PointerActionKind1[PointerActionKind1["NONE"] = 2] = "NONE";
+(function(PointerActionKind) {
+    PointerActionKind[PointerActionKind["PAN"] = 0] = "PAN";
+    PointerActionKind[PointerActionKind["ZOOM"] = 1] = "ZOOM";
+    PointerActionKind[PointerActionKind["NONE"] = 2] = "NONE";
 })(PointerActionKind || (PointerActionKind = {}));
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"kDSit":[function(require,module,exports) {
@@ -45339,19 +45360,19 @@ const addNode = ({ graph , operation , position , generateUUID  })=>{
     };
     const outputUUIDs = [];
     for (const name1 of operation.outputs){
-        const uuid = generateUUID();
-        outputs[uuid] = {
-            uuid,
+        const uuid1 = generateUUID();
+        outputs[uuid1] = {
+            uuid: uuid1,
             node: nodeUUID,
             name: name1,
             edges: []
         };
-        outputUUIDs.push(uuid);
+        outputUUIDs.push(uuid1);
     }
-    const uuid = generateUUID();
+    const uuid2 = generateUUID();
     const body = operation.body !== undefined ? {
         kind: (0, _graph.BodyKind).TENSOR,
-        uuid,
+        uuid: uuid2,
         node: nodeUUID,
         value: operation.body,
         rank: 0,
@@ -45359,7 +45380,7 @@ const addNode = ({ graph , operation , position , generateUUID  })=>{
         editable: true
     } : {
         kind: (0, _graph.BodyKind).NO,
-        uuid,
+        uuid: uuid2,
         node: nodeUUID,
         editable: false
     };
@@ -45368,7 +45389,7 @@ const addNode = ({ graph , operation , position , generateUUID  })=>{
         name: operation.name,
         inputs: inputUUIDs,
         outputs: outputUUIDs,
-        body: uuid,
+        body: uuid2,
         position,
         operation: operation.operation
     };
@@ -45403,7 +45424,7 @@ const removeNode = (graph, node)=>{
         const edge = graph.inputs[input].edge;
         if (edge) edgeUUIDs.push(edge);
     }
-    for (const output of removedNode.outputs)for (const edge of graph.outputs[output].edges)edgeUUIDs.push(edge);
+    for (const output of removedNode.outputs)for (const edge1 of graph.outputs[output].edges)edgeUUIDs.push(edge1);
     const edges = {
         ...graph.edges
     };
@@ -45414,21 +45435,21 @@ const removeNode = (graph, node)=>{
         ...graph.outputs
     };
     for (const uuid of edgeUUIDs){
-        const edge = edges[uuid];
-        const input = inputs[edge.input];
-        inputs[edge.input] = {
-            ...input,
+        const edge2 = edges[uuid];
+        const input1 = inputs[edge2.input];
+        inputs[edge2.input] = {
+            ...input1,
             edge: undefined
         };
-        const output = outputs[edge.output];
-        outputs[edge.output] = {
-            ...output,
-            edges: output.edges.filter((e)=>e !== uuid)
+        const output1 = outputs[edge2.output];
+        outputs[edge2.output] = {
+            ...output1,
+            edges: output1.edges.filter((e)=>e !== uuid)
         };
         delete edges[uuid];
     }
-    for (const input1 of removedNode.inputs)delete inputs[input1];
-    for (const output1 of removedNode.outputs)delete outputs[output1];
+    for (const input2 of removedNode.inputs)delete inputs[input2];
+    for (const output2 of removedNode.outputs)delete outputs[output2];
     const bodys = {
         ...graph.bodys
     };
@@ -45453,11 +45474,11 @@ const removeInputEdge = (graph, input, generateUUID)=>{
                 edges: output.edges.filter((e)=>e !== edge.uuid)
             }
         };
-        const input = graph.inputs[edge.input];
+        const input1 = graph.inputs[edge.input];
         const inputs = {
             ...graph.inputs,
             [edge.input]: {
-                ...input,
+                ...input1,
                 edge: undefined
             }
         };
@@ -45471,44 +45492,44 @@ const removeInputEdge = (graph, input, generateUUID)=>{
             inputs,
             edges
         };
-        return evaluateNode(graph1, input.node);
+        return evaluateNode(graph1, input1.node);
     } else return graph;
 };
-const removeOutputEdges = (graph2, output)=>{
+const removeOutputEdges = (graph, output)=>{
     const edges = {
-        ...graph2.edges
+        ...graph.edges
     };
     const inputs = {
-        ...graph2.inputs
+        ...graph.inputs
     };
     const outputs = {
-        ...graph2.outputs
+        ...graph.outputs
     };
     const nodes = [];
-    for (const uuid of graph2.outputs[output].edges){
-        const edge = graph2.edges[uuid];
+    for (const uuid of graph.outputs[output].edges){
+        const edge = graph.edges[uuid];
         const input = inputs[edge.input];
         nodes.push(input.node);
         inputs[edge.input] = {
             ...input,
             edge: undefined
         };
-        const output = outputs[edge.output];
+        const output1 = outputs[edge.output];
         outputs[edge.output] = {
-            ...output,
-            edges: output.edges.filter((e)=>e !== uuid)
+            ...output1,
+            edges: output1.edges.filter((e)=>e !== uuid)
         };
         delete edges[uuid];
     }
     const graph1 = {
-        ...graph2,
+        ...graph,
         outputs,
         inputs,
         edges
     };
     return nodes.reduce((graph, node)=>evaluateNode(graph, node), graph1);
 };
-const evaluateNodeOutputs = (graph, node1)=>node1.outputs.reduce((graph1, output)=>{
+const evaluateNodeOutputs = (graph, node)=>node.outputs.reduce((graph1, output)=>{
         return graph1.outputs[output].edges.reduce((graph2, edge)=>{
             const input = graph2.edges[edge].input;
             const node = graph2.inputs[input].node;
@@ -45543,20 +45564,20 @@ const evaluateNode = (graph, nodeUUID)=>{
             };
             return evaluateNodeOutputs(graph1, node);
         } else if (graph.bodys[node.body].kind !== (0, _graph.BodyKind).NO) {
-            const body = {
+            const body1 = {
                 kind: (0, _graph.BodyKind).NO,
                 uuid: node.body,
                 node: node.uuid,
                 editable: false
             };
-            const graph1 = {
+            const graph11 = {
                 ...graph,
                 bodys: {
                     ...graph.bodys,
-                    [body.uuid]: body
+                    [body1.uuid]: body1
                 }
             };
-            return evaluateNodeOutputs(graph1, node);
+            return evaluateNodeOutputs(graph11, node);
         } else return graph;
     }
 };
@@ -45638,11 +45659,11 @@ parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "BodyKind", ()=>BodyKind);
 parcelHelpers.export(exports, "emptyGraph", ()=>emptyGraph);
 let BodyKind;
-(function(BodyKind1) {
-    BodyKind1[BodyKind1["NO"] = 0] = "NO";
-    BodyKind1[BodyKind1["TENSOR"] = 1] = "TENSOR";
-    BodyKind1[BodyKind1["SCATTER"] = 2] = "SCATTER";
-    BodyKind1[BodyKind1["ERROR"] = 3] = "ERROR";
+(function(BodyKind) {
+    BodyKind[BodyKind["NO"] = 0] = "NO";
+    BodyKind[BodyKind["TENSOR"] = 1] = "TENSOR";
+    BodyKind[BodyKind["SCATTER"] = 2] = "SCATTER";
+    BodyKind[BodyKind["ERROR"] = 3] = "ERROR";
 })(BodyKind || (BodyKind = {}));
 const emptyGraph = ()=>({
         nodes: {},
@@ -45687,9 +45708,9 @@ const maybeTriggerQuickSelect = (model, focus, key)=>{
             }
         case "o":
             {
-                const hotkeys = {};
+                const hotkeys1 = {};
                 Object.keys(model.graph.outputs).forEach((output, i)=>{
-                    hotkeys[output] = String.fromCharCode(97 + i);
+                    hotkeys1[output] = String.fromCharCode(97 + i);
                 });
                 return {
                     model: {
@@ -45698,7 +45719,7 @@ const maybeTriggerQuickSelect = (model, focus, key)=>{
                             ...focus,
                             quickSelect: {
                                 kind: (0, _quickSelect.QuickSelectKind).OUTPUT,
-                                hotkeys
+                                hotkeys: hotkeys1
                             }
                         }
                     },
@@ -45707,9 +45728,9 @@ const maybeTriggerQuickSelect = (model, focus, key)=>{
             }
         case "n":
             {
-                const hotkeys = {};
+                const hotkeys2 = {};
                 Object.keys(model.graph.nodes).forEach((node, i)=>{
-                    hotkeys[node] = String.fromCharCode(97 + i);
+                    hotkeys2[node] = String.fromCharCode(97 + i);
                 });
                 return {
                     model: {
@@ -45718,7 +45739,7 @@ const maybeTriggerQuickSelect = (model, focus, key)=>{
                             ...focus,
                             quickSelect: {
                                 kind: (0, _quickSelect.QuickSelectKind).NODE,
-                                hotkeys
+                                hotkeys: hotkeys2
                             }
                         }
                     },
@@ -45727,8 +45748,8 @@ const maybeTriggerQuickSelect = (model, focus, key)=>{
             }
         case "b":
             {
-                const hotkeys = {};
-                Object.values(model.graph.bodys).filter((body)=>body.editable).forEach((body, i)=>hotkeys[body.uuid] = String.fromCharCode(97 + i));
+                const hotkeys3 = {};
+                Object.values(model.graph.bodys).filter((body)=>body.editable).forEach((body, i)=>hotkeys3[body.uuid] = String.fromCharCode(97 + i));
                 return {
                     model: {
                         ...model,
@@ -45736,7 +45757,7 @@ const maybeTriggerQuickSelect = (model, focus, key)=>{
                             ...focus,
                             quickSelect: {
                                 kind: (0, _quickSelect.QuickSelectKind).BODY,
-                                hotkeys
+                                hotkeys: hotkeys3
                             }
                         }
                     },
@@ -45859,12 +45880,12 @@ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "QuickSelectKind", ()=>QuickSelectKind);
 let QuickSelectKind;
-(function(QuickSelectKind1) {
-    QuickSelectKind1[QuickSelectKind1["NONE"] = 0] = "NONE";
-    QuickSelectKind1[QuickSelectKind1["INPUT"] = 1] = "INPUT";
-    QuickSelectKind1[QuickSelectKind1["OUTPUT"] = 2] = "OUTPUT";
-    QuickSelectKind1[QuickSelectKind1["NODE"] = 3] = "NODE";
-    QuickSelectKind1[QuickSelectKind1["BODY"] = 4] = "BODY";
+(function(QuickSelectKind) {
+    QuickSelectKind[QuickSelectKind["NONE"] = 0] = "NONE";
+    QuickSelectKind[QuickSelectKind["INPUT"] = 1] = "INPUT";
+    QuickSelectKind[QuickSelectKind["OUTPUT"] = 2] = "OUTPUT";
+    QuickSelectKind[QuickSelectKind["NODE"] = 3] = "NODE";
+    QuickSelectKind[QuickSelectKind["BODY"] = 4] = "BODY";
 })(QuickSelectKind || (QuickSelectKind = {}));
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"aoUv6":[function(require,module,exports) {
@@ -46029,14 +46050,14 @@ const maybeStartMoveCamera = (model, { key , ctrl  }, currentTime)=>{
         case "j":
         case "ArrowDown":
             if (ctrl) {
-                const { now , dispatch  } = zoomDispatch();
+                const { now: now1 , dispatch: dispatch1  } = zoomDispatch();
                 return {
                     model: {
                         ...model,
                         zoomCamera: {
                             ...model.zoomCamera,
                             out: true,
-                            now
+                            now: now1
                         },
                         panCamera: {
                             ...model.panCamera,
@@ -46045,10 +46066,10 @@ const maybeStartMoveCamera = (model, { key , ctrl  }, currentTime)=>{
                         },
                         nodePlacementLocation
                     },
-                    dispatch
+                    dispatch: dispatch1
                 };
             } else {
-                const { now , dispatch , cursor  } = panDispatch();
+                const { now: now2 , dispatch: dispatch2 , cursor: cursor1  } = panDispatch();
                 return {
                     model: {
                         ...model,
@@ -46060,25 +46081,25 @@ const maybeStartMoveCamera = (model, { key , ctrl  }, currentTime)=>{
                         panCamera: {
                             ...model.panCamera,
                             down: true,
-                            now
+                            now: now2
                         },
                         nodePlacementLocation
                     },
-                    dispatch,
-                    cursor
+                    dispatch: dispatch2,
+                    cursor: cursor1
                 };
             }
         case "k":
         case "ArrowUp":
             if (ctrl) {
-                const { now , dispatch  } = zoomDispatch();
+                const { now: now3 , dispatch: dispatch3  } = zoomDispatch();
                 return {
                     model: {
                         ...model,
                         zoomCamera: {
                             ...model.zoomCamera,
                             in: true,
-                            now
+                            now: now3
                         },
                         panCamera: {
                             ...model.panCamera,
@@ -46087,10 +46108,10 @@ const maybeStartMoveCamera = (model, { key , ctrl  }, currentTime)=>{
                         },
                         nodePlacementLocation
                     },
-                    dispatch
+                    dispatch: dispatch3
                 };
             } else {
-                const { now , dispatch , cursor  } = panDispatch();
+                const { now: now4 , dispatch: dispatch4 , cursor: cursor2  } = panDispatch();
                 return {
                     model: {
                         ...model,
@@ -46102,30 +46123,30 @@ const maybeStartMoveCamera = (model, { key , ctrl  }, currentTime)=>{
                         panCamera: {
                             ...model.panCamera,
                             up: true,
-                            now
+                            now: now4
                         },
                         nodePlacementLocation
                     },
-                    dispatch,
-                    cursor
+                    dispatch: dispatch4,
+                    cursor: cursor2
                 };
             }
         case "l":
         case "ArrowRight":
             {
-                const { now , dispatch , cursor  } = panDispatch();
+                const { now: now5 , dispatch: dispatch5 , cursor: cursor3  } = panDispatch();
                 return {
                     model: {
                         ...model,
                         panCamera: {
                             ...model.panCamera,
                             right: true,
-                            now
+                            now: now5
                         },
                         nodePlacementLocation
                     },
-                    dispatch,
-                    cursor
+                    dispatch: dispatch5,
+                    cursor: cursor3
                 };
             }
         default:
@@ -46725,9 +46746,9 @@ const batchGeometry = (layers, connections, idToWorldSpace)=>{
         }
         if (connections.length > z) {
             for (const { connections: cs , scale  } of connections[z]){
-                const offset = 50 * scale;
+                const offset1 = 50 * scale;
                 for (const { from , to , color  } of cs){
-                    for (const p of cubicBezier(ts, idToWorldSpace[from], idToWorldSpace[to], offset))batch.lines.vertices.push(p);
+                    for (const p of cubicBezier(ts, idToWorldSpace[from], idToWorldSpace[to], offset1))batch.lines.vertices.push(p);
                     const { red , green , blue , alpha  } = color;
                     for(let i = 0; i < samples * 2; ++i)batch.lines.colors.push(red, green, blue, alpha);
                 }
@@ -46826,14 +46847,14 @@ var _scene = require("./scene");
 var _stack = require("./stack");
 var _text = require("./text");
 let UIKind;
-(function(UIKind1) {
-    UIKind1[UIKind1["CENTER"] = 0] = "CENTER";
-    UIKind1[UIKind1["COLUMN"] = 1] = "COLUMN";
-    UIKind1[UIKind1["CONTAINER"] = 2] = "CONTAINER";
-    UIKind1[UIKind1["ROW"] = 3] = "ROW";
-    UIKind1[UIKind1["SCENE"] = 4] = "SCENE";
-    UIKind1[UIKind1["STACK"] = 5] = "STACK";
-    UIKind1[UIKind1["TEXT"] = 6] = "TEXT";
+(function(UIKind) {
+    UIKind[UIKind["CENTER"] = 0] = "CENTER";
+    UIKind[UIKind["COLUMN"] = 1] = "COLUMN";
+    UIKind[UIKind["CONTAINER"] = 2] = "CONTAINER";
+    UIKind[UIKind["ROW"] = 3] = "ROW";
+    UIKind[UIKind["SCENE"] = 4] = "SCENE";
+    UIKind[UIKind["STACK"] = 5] = "STACK";
+    UIKind[UIKind["TEXT"] = 6] = "TEXT";
 })(UIKind || (UIKind = {}));
 const layout = (ui, constraints, measureText)=>{
     switch(ui.kind){
@@ -46853,46 +46874,46 @@ const layout = (ui, constraints, measureText)=>{
             return (0, _text.textLayout)(ui, constraints, measureText);
     }
 };
-const geometry = (ui, layout1, offset, cameraStack)=>{
+const geometry = (ui, layout, offset, cameraStack)=>{
     switch(ui.kind){
         case UIKind.CENTER:
-            return (0, _center.centerGeometry)(ui, layout1, offset, cameraStack);
+            return (0, _center.centerGeometry)(ui, layout, offset, cameraStack);
         case UIKind.COLUMN:
-            return (0, _column.columnGeometry)(ui, layout1, offset, cameraStack);
+            return (0, _column.columnGeometry)(ui, layout, offset, cameraStack);
         case UIKind.CONTAINER:
-            return (0, _container.containerGeometry)(ui, layout1, offset, cameraStack);
+            return (0, _container.containerGeometry)(ui, layout, offset, cameraStack);
         case UIKind.ROW:
-            return (0, _row.rowGeometry)(ui, layout1, offset, cameraStack);
+            return (0, _row.rowGeometry)(ui, layout, offset, cameraStack);
         case UIKind.SCENE:
-            return (0, _scene.sceneGeometry)(ui, layout1, offset, cameraStack);
+            return (0, _scene.sceneGeometry)(ui, layout, offset, cameraStack);
         case UIKind.STACK:
-            return (0, _stack.stackGeometry)(ui, layout1, offset, cameraStack);
+            return (0, _stack.stackGeometry)(ui, layout, offset, cameraStack);
         case UIKind.TEXT:
-            return (0, _text.textGeometry)(ui, layout1, offset, cameraStack);
+            return (0, _text.textGeometry)(ui, layout, offset, cameraStack);
     }
 };
-function* traverse(ui, layout2, geometry1, z) {
+function* traverse(ui, layout, geometry, z) {
     switch(ui.kind){
         case UIKind.CENTER:
-            yield* (0, _center.centerTraverse)(ui, layout2, geometry1, z);
+            yield* (0, _center.centerTraverse)(ui, layout, geometry, z);
             break;
         case UIKind.COLUMN:
-            yield* (0, _column.columnTraverse)(ui, layout2, geometry1, z);
+            yield* (0, _column.columnTraverse)(ui, layout, geometry, z);
             break;
         case UIKind.CONTAINER:
-            yield* (0, _container.containerTraverse)(ui, layout2, geometry1, z);
+            yield* (0, _container.containerTraverse)(ui, layout, geometry, z);
             break;
         case UIKind.ROW:
-            yield* (0, _row.rowTraverse)(ui, layout2, geometry1, z);
+            yield* (0, _row.rowTraverse)(ui, layout, geometry, z);
             break;
         case UIKind.SCENE:
-            yield* (0, _scene.sceneTraverse)(ui, layout2, geometry1, z);
+            yield* (0, _scene.sceneTraverse)(ui, layout, geometry, z);
             break;
         case UIKind.STACK:
-            yield* (0, _stack.stackTraverse)(ui, layout2, geometry1, z);
+            yield* (0, _stack.stackTraverse)(ui, layout, geometry, z);
             break;
         case UIKind.TEXT:
-            yield* (0, _text.textTraverse)(ui, layout2, geometry1, z);
+            yield* (0, _text.textTraverse)(ui, layout, geometry, z);
             break;
     }
 }
@@ -47091,18 +47112,18 @@ parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "MainAxisAlignment", ()=>MainAxisAlignment);
 parcelHelpers.export(exports, "CrossAxisAlignment", ()=>CrossAxisAlignment);
 let MainAxisAlignment;
-(function(MainAxisAlignment1) {
-    MainAxisAlignment1[MainAxisAlignment1["START"] = 0] = "START";
-    MainAxisAlignment1[MainAxisAlignment1["CENTER"] = 1] = "CENTER";
-    MainAxisAlignment1[MainAxisAlignment1["END"] = 2] = "END";
-    MainAxisAlignment1[MainAxisAlignment1["SPACE_EVENLY"] = 3] = "SPACE_EVENLY";
-    MainAxisAlignment1[MainAxisAlignment1["SPACE_BETWEEN"] = 4] = "SPACE_BETWEEN";
+(function(MainAxisAlignment) {
+    MainAxisAlignment[MainAxisAlignment["START"] = 0] = "START";
+    MainAxisAlignment[MainAxisAlignment["CENTER"] = 1] = "CENTER";
+    MainAxisAlignment[MainAxisAlignment["END"] = 2] = "END";
+    MainAxisAlignment[MainAxisAlignment["SPACE_EVENLY"] = 3] = "SPACE_EVENLY";
+    MainAxisAlignment[MainAxisAlignment["SPACE_BETWEEN"] = 4] = "SPACE_BETWEEN";
 })(MainAxisAlignment || (MainAxisAlignment = {}));
 let CrossAxisAlignment;
-(function(CrossAxisAlignment1) {
-    CrossAxisAlignment1[CrossAxisAlignment1["START"] = 0] = "START";
-    CrossAxisAlignment1[CrossAxisAlignment1["CENTER"] = 1] = "CENTER";
-    CrossAxisAlignment1[CrossAxisAlignment1["END"] = 2] = "END";
+(function(CrossAxisAlignment) {
+    CrossAxisAlignment[CrossAxisAlignment["START"] = 0] = "START";
+    CrossAxisAlignment[CrossAxisAlignment["CENTER"] = 1] = "CENTER";
+    CrossAxisAlignment[CrossAxisAlignment["END"] = 2] = "END";
 })(CrossAxisAlignment || (CrossAxisAlignment = {}));
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"1RkTm":[function(require,module,exports) {
@@ -47158,18 +47179,18 @@ const containerLayout = (ui, constraints, measureText)=>{
             child: childLayout
         };
     }
-    const width = (()=>{
+    const width1 = (()=>{
         if (ui.width) return ui.width + left + right;
         return constraints.maxWidth;
     })();
-    const height = (()=>{
+    const height1 = (()=>{
         if (ui.height) return ui.height + top + bottom;
         return constraints.maxHeight;
     })();
     return {
         size: {
-            width,
-            height
+            width: width1,
+            height: height1
         }
     };
 };
@@ -47557,9 +47578,9 @@ function text(...args) {
 }
 const textLayout = ({ font , str  }, _, measureText)=>{
     const measurements = measureText(font, str);
-    const width1 = measurements.widths.reduce((acc, width)=>acc + width);
+    const width = measurements.widths.reduce((acc, width)=>acc + width);
     const size = {
-        width: width1,
+        width,
         height: font.size
     };
     return {
@@ -47595,8 +47616,8 @@ const vertexIndices = (n)=>{
     return result;
 };
 const textGeometry = (ui, layout, offset, cameraStack)=>{
-    const textLayout1 = layout;
-    const { measurements  } = textLayout1;
+    const textLayout = layout;
+    const { measurements  } = textLayout;
     const { textureIndex , textureCoordinates , widths  } = measurements;
     return {
         worldSpace: (0, _cameraStack.transformWorldSpace)(cameraStack, {
@@ -47689,14 +47710,14 @@ const combine = (layers, entry)=>{
             const needed = entry.z - layers.length + 1;
             for(let i = 0; i < needed; ++i)layers.push({});
             const layer = layers[entry.z];
-            const geometry1 = (()=>{
+            const geometry = (()=>{
                 const geometry = layer[entryGeometry.textureIndex];
                 if (geometry) return geometry;
                 const newGeometry = [];
                 layer[entryGeometry.textureIndex] = newGeometry;
                 return newGeometry;
             })();
-            geometry1.push(entryGeometry);
+            geometry.push(entryGeometry);
             return layers;
         default:
             return layers;
@@ -47739,9 +47760,9 @@ parcelHelpers.export(exports, "WebGL2Renderer", ()=>WebGL2Renderer);
 parcelHelpers.export(exports, "webGL2Renderer", ()=>webGL2Renderer);
 var _matrix3X3 = require("../linear_algebra/matrix3x3");
 let ProgramKind;
-(function(ProgramKind1) {
-    ProgramKind1[ProgramKind1["DATA"] = 0] = "DATA";
-    ProgramKind1[ProgramKind1["ERROR"] = 1] = "ERROR";
+(function(ProgramKind) {
+    ProgramKind[ProgramKind["DATA"] = 0] = "DATA";
+    ProgramKind[ProgramKind["ERROR"] = 1] = "ERROR";
 })(ProgramKind || (ProgramKind = {}));
 const nearestPowerOfTwo = (x)=>{
     let current = 1;
@@ -47809,13 +47830,13 @@ const mapString = (str, f)=>{
     return result;
 };
 class WebGL2Renderer {
-    constructor(window1, document1, canvas, gl1, program1, textures1, textMeasurementsCache, clickHandlers, dispatch){
-        this.window = window1;
-        this.document = document1;
+    constructor(window, document, canvas, gl, program, textures, textMeasurementsCache, clickHandlers, dispatch){
+        this.window = window;
+        this.document = document;
         this.canvas = canvas;
-        this.gl = gl1;
-        this.program = program1;
-        this.textures = textures1;
+        this.gl = gl;
+        this.program = program;
+        this.textures = textures;
         this.textMeasurementsCache = textMeasurementsCache;
         this.clickHandlers = clickHandlers;
         this.dispatch = dispatch;
@@ -47846,15 +47867,15 @@ class WebGL2Renderer {
                 }
             }
             {
-                const { vertices , colors  } = lines;
-                if (vertices.length !== 0) {
-                    const texture = textures[0];
-                    const count = vertices.length / 2;
-                    gl.bindTexture(gl.TEXTURE_2D, texture);
+                const { vertices: vertices1 , colors: colors1  } = lines;
+                if (vertices1.length !== 0) {
+                    const texture1 = textures[0];
+                    const count = vertices1.length / 2;
+                    gl.bindTexture(gl.TEXTURE_2D, texture1);
                     gl.bindBuffer(gl.ARRAY_BUFFER, attributes.vertices.buffer);
-                    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+                    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices1), gl.STATIC_DRAW);
                     gl.bindBuffer(gl.ARRAY_BUFFER, attributes.colors.buffer);
-                    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
+                    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors1), gl.STATIC_DRAW);
                     gl.bindBuffer(gl.ARRAY_BUFFER, attributes.textureCoordinates.buffer);
                     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(Array(count * 2).fill(0)), gl.STATIC_DRAW);
                     gl.bindBuffer(gl.ARRAY_BUFFER, attributes.cameraIndex.buffer);
@@ -48200,19 +48221,21 @@ const tensorBody = (theme, body, focus)=>{
         case 1:
             return (0, _ui.container)({
                 color: theme.background
-            }, (0, _ui.column)(body.value.map((value)=>(0, _ui.container)({
+            }, (0, _ui.column)({
+                crossAxisAlignment: (0, _alignment.CrossAxisAlignment).END
+            }, body.value.map((value)=>(0, _ui.container)({
                     padding: 5
                 }, (0, _ui.text)(formatNumber(value))))));
         case 2:
             {
-                const value = body.value;
+                const value1 = body.value;
                 return (0, _ui.container)({
                     color: theme.background
-                }, (0, _ui.row)(value[0].map((_, i)=>(0, _ui.container)({
+                }, (0, _ui.row)(value1[0].map((_, i)=>(0, _ui.container)({
                         padding: 5
                     }, (0, _ui.column)({
                         crossAxisAlignment: (0, _alignment.CrossAxisAlignment).END
-                    }, value.map((row)=>(0, _ui.container)({
+                    }, value1.map((row)=>(0, _ui.container)({
                             padding: 5
                         }, (0, _ui.text)(formatNumber(row[i])))))))));
             }
@@ -48403,7 +48426,7 @@ const alphabeticVirtualKeyboard = (theme)=>(0, _ui.column)({
             ])), 
         ]), 
     ]);
-const numericVirtualKeyboard = (theme)=>(0, _ui.column)({
+const numericVirtualKeyboard = (theme, sign)=>(0, _ui.column)({
         mainAxisAlignment: (0, _alignment.MainAxisAlignment).END
     }, [
         (0, _ui.row)({
@@ -48419,20 +48442,23 @@ const numericVirtualKeyboard = (theme)=>(0, _ui.column)({
                     "1",
                     "2",
                     "3",
-                    "4"
+                    "clr"
                 ]),
                 virtualKeys([
+                    "4",
                     "5",
                     "6",
-                    "7",
-                    "8"
-                ]),
-                virtualKeys([
-                    "9",
-                    "0",
                     "del"
                 ]),
                 virtualKeys([
+                    "7",
+                    "8",
+                    "9",
+                    "   "
+                ]),
+                virtualKeys([
+                    sign,
+                    "0",
                     ".",
                     "ret"
                 ]), 
@@ -48478,7 +48504,11 @@ const view = (model)=>{
             stacked.push(finder(model.focus, model.theme), alphabeticVirtualKeyboard(model.theme));
             break;
         case (0, _focus.FocusKind).BODY:
-            stacked.push(numericVirtualKeyboard(model.theme));
+            const body = model.graph.bodys[model.focus.body];
+            if (body.kind === (0, _graph.BodyKind).TENSOR) {
+                const sign = body.value >= 0 ? "-" : "+";
+                stacked.push(numericVirtualKeyboard(model.theme, sign));
+            }
             break;
         case (0, _focus.FocusKind).NODE:
             stacked.push((0, _contextMenu.contextMenu)({
@@ -48553,7 +48583,44 @@ const contextMenu = ({ items , backgroundColor  })=>(0, _ui.column)({
         ])
     ]);
 
-},{"../ui":"cOWCo","../ui/alignment":"eEpxz","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"5AK9F":[function(require,module,exports) {
+},{"../ui":"cOWCo","../ui/alignment":"eEpxz","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"1mLYK":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("7UhFu") + "service_worker.js" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"lgJ39":[function(require,module,exports) {
+"use strict";
+var bundleURL = {};
+function getBundleURLCached(id) {
+    var value = bundleURL[id];
+    if (!value) {
+        value = getBundleURL();
+        bundleURL[id] = value;
+    }
+    return value;
+}
+function getBundleURL() {
+    try {
+        throw new Error();
+    } catch (err) {
+        var matches = ("" + err.stack).match(/(https?|file|ftp|(chrome|moz|safari-web)-extension):\/\/[^)\n]+/g);
+        if (matches) // The first two stack frames will be this function and getBundleURLCached.
+        // Use the 3rd one, which will be a runtime in the original bundle.
+        return getBaseURL(matches[2]);
+    }
+    return "/";
+}
+function getBaseURL(url) {
+    return ("" + url).replace(/^((?:https?|file|ftp|(chrome|moz|safari-web)-extension):\/\/.+)\/[^/]+$/, "$1") + "/";
+} // TODO: Replace uses with `new URL(url).origin` when ie11 is no longer supported.
+function getOrigin(url) {
+    var matches = ("" + url).match(/(https?|file|ftp|(chrome|moz|safari-web)-extension):\/\/[^/]+/);
+    if (!matches) throw new Error("Origin not found");
+    return matches[0];
+}
+exports.getBundleURL = getBundleURLCached;
+exports.getBaseURL = getBaseURL;
+exports.getOrigin = getOrigin;
+
+},{}],"5AK9F":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "demoModel", ()=>demoModel);
@@ -49938,55 +50005,18 @@ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "normalize", ()=>normalize);
 const normalize = (values, [t_min, t_max])=>{
-    const [r_min1, r_max1] = values.reduce(([r_min, r_max], val)=>[
+    const [r_min, r_max] = values.reduce(([r_min, r_max], val)=>[
             Math.min(r_min, val),
             Math.max(r_max, val)
         ], [
         Infinity,
         -Infinity
     ]);
-    const delta_r = r_max1 - r_min1;
+    const delta_r = r_max - r_min;
     const delta_t = t_max - t_min;
-    return values.map((val)=>(val - r_min1) / delta_r * delta_t + t_min);
+    return values.map((val)=>(val - r_min) / delta_r * delta_t + t_min);
 };
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"1mLYK":[function(require,module,exports) {
-module.exports = require("./helpers/bundle-url").getBundleURL("7UhFu") + "service_worker.js" + "?" + Date.now();
-
-},{"./helpers/bundle-url":"lgJ39"}],"lgJ39":[function(require,module,exports) {
-"use strict";
-var bundleURL = {};
-function getBundleURLCached(id) {
-    var value = bundleURL[id];
-    if (!value) {
-        value = getBundleURL();
-        bundleURL[id] = value;
-    }
-    return value;
-}
-function getBundleURL() {
-    try {
-        throw new Error();
-    } catch (err) {
-        var matches = ("" + err.stack).match(/(https?|file|ftp|(chrome|moz|safari-web)-extension):\/\/[^)\n]+/g);
-        if (matches) // The first two stack frames will be this function and getBundleURLCached.
-        // Use the 3rd one, which will be a runtime in the original bundle.
-        return getBaseURL(matches[2]);
-    }
-    return "/";
-}
-function getBaseURL(url) {
-    return ("" + url).replace(/^((?:https?|file|ftp|(chrome|moz|safari-web)-extension):\/\/.+)\/[^/]+$/, "$1") + "/";
-} // TODO: Replace uses with `new URL(url).origin` when ie11 is no longer supported.
-function getOrigin(url) {
-    var matches = ("" + url).match(/(https?|file|ftp|(chrome|moz|safari-web)-extension):\/\/[^/]+/);
-    if (!matches) throw new Error("Origin not found");
-    return matches[0];
-}
-exports.getBundleURL = getBundleURLCached;
-exports.getBaseURL = getBaseURL;
-exports.getOrigin = getOrigin;
-
-},{}]},["iJYvl","h7u1C"], "h7u1C", "parcelRequire045c")
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["iJYvl","h7u1C"], "h7u1C", "parcelRequire045c")
 
 //# sourceMappingURL=index.b71e74eb.js.map

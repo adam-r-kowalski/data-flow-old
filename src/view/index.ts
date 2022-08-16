@@ -113,7 +113,7 @@ export const tensorBody = (theme: Theme, body: TensorBody, focus: Focus): UI<App
         }
         case 1: {
             return container({ color: theme.background },
-                column(
+                column({ crossAxisAlignment: CrossAxisAlignment.END },
                     (body.value as number[]).map(value => container({ padding: 5 }, text(formatNumber(value))))
                 )
             )
@@ -268,15 +268,15 @@ export const alphabeticVirtualKeyboard = (theme: Theme) =>
     ])
 
 
-export const numericVirtualKeyboard = (theme: Theme) =>
+export const numericVirtualKeyboard = (theme: Theme, sign: string) =>
     column({ mainAxisAlignment: MainAxisAlignment.END }, [
         row({ mainAxisAlignment: MainAxisAlignment.END }, [
             container({ padding: 4, color: theme.node },
                 column({ crossAxisAlignment: CrossAxisAlignment.END }, [
-                    virtualKeys(['1', '2', '3', '4']),
-                    virtualKeys(['5', '6', '7', '8']),
-                    virtualKeys(['9', '0', 'del']),
-                    virtualKeys(['.', 'ret']),
+                    virtualKeys(['1', '2', '3', 'clr']),
+                    virtualKeys(['4', '5', '6', 'del']),
+                    virtualKeys(['7', '8', '9', '   ']),
+                    virtualKeys([sign, '0', '.', 'ret']),
                 ])
             ),
         ]),
@@ -328,7 +328,11 @@ export const view = (model: Model): UI<AppEvent> => {
             )
             break
         case FocusKind.BODY:
-            stacked.push(numericVirtualKeyboard(model.theme))
+            const body = model.graph.bodys[model.focus.body]
+            if (body.kind === BodyKind.TENSOR) {
+                const sign = (body.value as number) >= 0 ? '-' : '+'
+                stacked.push(numericVirtualKeyboard(model.theme, sign))
+            }
             break
         case FocusKind.NODE:
             stacked.push(contextMenu({

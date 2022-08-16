@@ -138,7 +138,6 @@ export interface MoveNode {
     readonly kind: EventKind.MOVE_NODE,
 }
 
-
 export type AppEvent =
     | PointerMove
     | PointerDown
@@ -496,7 +495,13 @@ const keyDown = (model: Model, event: KeyDown, { generateUUID, currentTime }: Ef
                         case 'Backspace':
                             return updateBodyNumber(model, model.focus.body, value => {
                                 let newValue = value.toString().slice(0, -1)
-                                return newValue === '' ? 0 : parseFloat(newValue)
+                                switch (newValue) {
+                                    case '':
+                                    case '-':
+                                        return 0
+                                    default:
+                                        return parseFloat(newValue)
+                                }
                             }, generateUUID)
                         case '1':
                         case '2':
@@ -509,6 +514,11 @@ const keyDown = (model: Model, event: KeyDown, { generateUUID, currentTime }: Ef
                         case '9':
                         case '0':
                             return updateBodyNumber(model, model.focus.body, value => parseFloat(value.toString() + key), generateUUID)
+                        case '-':
+                        case '+':
+                            return updateBodyNumber(model, model.focus.body, value => -value, generateUUID)
+                        case 'd':
+                            return updateBodyNumber(model, model.focus.body, value => 0, generateUUID)
                         case 'Enter':
                         case 'Escape':
                             return {
@@ -628,7 +638,13 @@ const virtualKeyDown = (model: Model, { key }: VirtualKeyDown, generateUUID: Gen
                 case 'del':
                     return updateBodyNumber(model, model.focus.body, value => {
                         let newValue = value.toString().slice(0, -1)
-                        return newValue === '' ? 0 : parseFloat(newValue)
+                        switch (newValue) {
+                            case '':
+                            case '-':
+                                return 0
+                            default:
+                                return parseFloat(newValue)
+                        }
                     }, generateUUID)
                 case '1':
                 case '2':
@@ -640,8 +656,12 @@ const virtualKeyDown = (model: Model, { key }: VirtualKeyDown, generateUUID: Gen
                 case '8':
                 case '9':
                 case '0':
-                case '.':
                     return updateBodyNumber(model, model.focus.body, value => parseFloat(value.toString() + key), generateUUID)
+                case '-':
+                case '+':
+                    return updateBodyNumber(model, model.focus.body, value => -value, generateUUID)
+                case 'clr':
+                    return updateBodyNumber(model, model.focus.body, value => 0, generateUUID)
                 case 'ret':
                     return {
                         model: clearFocus(model),

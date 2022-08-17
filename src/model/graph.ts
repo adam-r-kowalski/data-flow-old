@@ -20,6 +20,7 @@ export interface Output {
 
 export enum BodyKind {
     NO,
+    NUMBER,
     TENSOR,
     SCATTER,
     ERROR,
@@ -29,7 +30,13 @@ export interface NoBody {
     readonly kind: BodyKind.NO
     readonly uuid: UUID
     readonly node: UUID
-    readonly editable: false
+}
+
+export interface NumberBody {
+    readonly kind: BodyKind.NUMBER
+    readonly uuid: UUID
+    readonly node: UUID
+    readonly value: number
 }
 
 export interface TensorBody {
@@ -39,7 +46,6 @@ export interface TensorBody {
     readonly value: tf.TensorLike
     readonly rank: number
     readonly shape: number[]
-    readonly editable: boolean
 }
 
 export interface ScatterBody {
@@ -48,18 +54,17 @@ export interface ScatterBody {
     readonly node: UUID
     readonly x: number[]
     readonly y: number[]
-    readonly editable: false
 }
 
 export interface ErrorBody {
     readonly kind: BodyKind.ERROR
     readonly uuid: UUID
     readonly node: UUID
-    readonly editable: false
 }
 
 export type Body =
     | NoBody
+    | NumberBody
     | TensorBody
     | ScatterBody
     | ErrorBody

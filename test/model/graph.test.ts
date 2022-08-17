@@ -68,7 +68,6 @@ test("add operation to graph", () => {
         kind: BodyKind.NO,
         uuid: bodyUUID,
         node: addUUID,
-        editable: false
     }
     expect(graph1).toEqual({
         nodes: {
@@ -121,13 +120,10 @@ test("add operation with body to graph", () => {
         edges: []
     }
     const body: Body = {
-        kind: BodyKind.TENSOR,
+        kind: BodyKind.NUMBER,
         uuid: bodyUUID,
         node: numberUUID,
         value: 0,
-        shape: [],
-        editable: true,
-        rank: 0,
     }
     expect(graph1).toEqual({
         nodes: { [number.uuid]: number },
@@ -198,7 +194,6 @@ test("add two operations to graph", () => {
         kind: BodyKind.NO,
         uuid: addBodyUUID,
         node: addUUID,
-        editable: false
     }
     const logUUID = generateUUID1()
     const valueUUID = generateUUID1()
@@ -220,7 +215,6 @@ test("add two operations to graph", () => {
         kind: BodyKind.NO,
         uuid: logBodyUUID,
         node: logUUID,
-        editable: false
     }
     expect(graph1).toEqual({
         nodes: {
@@ -330,7 +324,6 @@ test("add edge between two operations", () => {
         kind: BodyKind.NO,
         uuid: addBodyUUID,
         node: add.uuid,
-        editable: false
     }
     const log: Node = {
         uuid: logUUID,
@@ -350,7 +343,6 @@ test("add edge between two operations", () => {
         kind: BodyKind.NO,
         uuid: logBodyUUID,
         node: log.uuid,
-        editable: false
     }
     const edge: Edge = {
         uuid: edgeUUID,
@@ -429,7 +421,6 @@ test("change node position", () => {
         kind: BodyKind.NO,
         uuid: bodyUUID,
         node: add.uuid,
-        editable: false
     }
     expect(graph).toEqual(emptyGraph())
     expect(graph1).toEqual({
@@ -540,7 +531,6 @@ test("remove node from graph", () => {
             kind: BodyKind.NO,
             uuid: addBodyUUID,
             node: add.uuid,
-            editable: false
         }
         const log: Node = {
             uuid: logUUID,
@@ -560,7 +550,6 @@ test("remove node from graph", () => {
             kind: BodyKind.NO,
             uuid: logBodyUUID,
             node: log.uuid,
-            editable: false
         }
         const edge: Edge = {
             uuid: edgeUUID,
@@ -679,7 +668,6 @@ test("remove input edge", () => {
             kind: BodyKind.NO,
             uuid: addBodyUUID,
             node: add.uuid,
-            editable: false
         }
         const log: Node = {
             uuid: logUUID,
@@ -699,7 +687,6 @@ test("remove input edge", () => {
             kind: BodyKind.NO,
             uuid: logBodyUUID,
             node: log.uuid,
-            editable: false
         }
         const edge: Edge = {
             uuid: edgeUUID,
@@ -827,7 +814,6 @@ test("remove node with input edge", () => {
             kind: BodyKind.NO,
             uuid: addBodyUUID,
             node: add.uuid,
-            editable: false
         }
         const log: Node = {
             uuid: logUUID,
@@ -847,7 +833,6 @@ test("remove node with input edge", () => {
             kind: BodyKind.NO,
             uuid: logBodyUUID,
             node: log.uuid,
-            editable: false
         }
         const edge: Edge = {
             uuid: edgeUUID,
@@ -955,7 +940,6 @@ test("remove input edge when node has no inputs nothing changes", () => {
             kind: BodyKind.NO,
             uuid: addBodyUUID,
             node: add.uuid,
-            editable: false
         }
         const out: Output = {
             uuid: outUUID,
@@ -980,7 +964,6 @@ test("remove input edge when node has no inputs nothing changes", () => {
             kind: BodyKind.NO,
             uuid: logBodyUUID,
             node: log.uuid,
-            editable: false
         }
         expect(graph2).toEqual({
             nodes: {
@@ -1077,7 +1060,6 @@ test("remove output edge", () => {
             kind: BodyKind.NO,
             uuid: addBodyUUID,
             node: add.uuid,
-            editable: false
         }
         const log: Node = {
             uuid: logUUID,
@@ -1097,7 +1079,6 @@ test("remove output edge", () => {
             kind: BodyKind.NO,
             uuid: logBodyUUID,
             node: log.uuid,
-            editable: false
         }
         const edge: Edge = {
             uuid: edgeUUID,

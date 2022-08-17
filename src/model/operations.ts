@@ -10,7 +10,7 @@ type TensorOperation = (...inputs: Tensor[]) => tf.Tensor<tf.Rank>
 export const tensorOperation = (f: TensorOperation): Operation => {
     return ({ uuid, node }: Body, ...inputs: Body[]): Body => {
         const tensors = inputs
-            .filter(body => body.kind === BodyKind.TENSOR)
+            .filter(body => body.kind === BodyKind.TENSOR || body.kind === BodyKind.NUMBER)
             .map(body => (body as TensorBody).value)
         try {
             const result = f(...tensors)
@@ -21,14 +21,12 @@ export const tensorOperation = (f: TensorOperation): Operation => {
                 value: result.arraySync(),
                 rank: result.rank,
                 shape: result.shape,
-                editable: false,
             }
         } catch (e) {
             return {
                 kind: BodyKind.ERROR,
                 uuid: uuid,
                 node: node,
-                editable: false,
             }
         }
     }
@@ -43,7 +41,6 @@ export const scatter = ({ uuid, node }: Body, ...inputs: Body[]): Body => {
         node: node,
         x,
         y,
-        editable: false,
     }
 }
 

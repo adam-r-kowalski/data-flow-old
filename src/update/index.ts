@@ -1,5 +1,3 @@
-import * as tf from '@tensorflow/tfjs'
-
 import { fuzzyFind } from "../fuzzy_find"
 import { multiplyMatrices, multiplyMatrixVector, scale, translate } from "../linear_algebra/matrix3x3"
 import { length } from "../linear_algebra/vector3"
@@ -414,7 +412,7 @@ const updateFinderSearch = (model: Model, focus: FocusFinder, transform: (search
     }
 }
 
-const updateBodyNumber = (model: Model, body: UUID, transform: (value: tf.TensorLike) => tf.TensorLike, generateUUID: GenerateUUID): UpdateResult<Model, AppEvent> => {
+const updateBodyNumber = (model: Model, body: UUID, transform: (value: number) => number): UpdateResult<Model, AppEvent> => {
     return {
         model: {
             ...model,
@@ -502,7 +500,7 @@ const keyDown = (model: Model, event: KeyDown, { generateUUID, currentTime }: Ef
                                     default:
                                         return parseFloat(newValue)
                                 }
-                            }, generateUUID)
+                            })
                         case '1':
                         case '2':
                         case '3':
@@ -513,12 +511,12 @@ const keyDown = (model: Model, event: KeyDown, { generateUUID, currentTime }: Ef
                         case '8':
                         case '9':
                         case '0':
-                            return updateBodyNumber(model, model.focus.body, value => parseFloat(value.toString() + key), generateUUID)
+                            return updateBodyNumber(model, model.focus.body, value => parseFloat(value.toString() + key))
                         case '-':
                         case '+':
-                            return updateBodyNumber(model, model.focus.body, value => -value, generateUUID)
+                            return updateBodyNumber(model, model.focus.body, value => -value)
                         case 'd':
-                            return updateBodyNumber(model, model.focus.body, value => 0, generateUUID)
+                            return updateBodyNumber(model, model.focus.body, () => 0)
                         case 'Enter':
                         case 'Escape':
                             return {
@@ -645,7 +643,7 @@ const virtualKeyDown = (model: Model, { key }: VirtualKeyDown, generateUUID: Gen
                             default:
                                 return parseFloat(newValue)
                         }
-                    }, generateUUID)
+                    })
                 case '1':
                 case '2':
                 case '3':
@@ -656,12 +654,12 @@ const virtualKeyDown = (model: Model, { key }: VirtualKeyDown, generateUUID: Gen
                 case '8':
                 case '9':
                 case '0':
-                    return updateBodyNumber(model, model.focus.body, value => parseFloat(value.toString() + key), generateUUID)
+                    return updateBodyNumber(model, model.focus.body, value => parseFloat(value.toString() + key))
                 case '-':
                 case '+':
-                    return updateBodyNumber(model, model.focus.body, value => -value, generateUUID)
+                    return updateBodyNumber(model, model.focus.body, value => -value)
                 case 'clr':
-                    return updateBodyNumber(model, model.focus.body, value => 0, generateUUID)
+                    return updateBodyNumber(model, model.focus.body, () => 0)
                 case 'ret':
                     return {
                         model: clearFocus(model),

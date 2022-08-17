@@ -1390,13 +1390,10 @@ test("pressing number on keyboard appends to number node", () => {
             ...model0.graph,
             bodys: {
                 [body]: {
-                    kind: BodyKind.TENSOR,
+                    kind: BodyKind.NUMBER,
                     uuid: body,
                     node,
                     value: 1234567890,
-                    shape: [],
-                    editable: true,
-                    rank: 0,
                 }
             }
         }
@@ -1449,13 +1446,10 @@ test("pressing backspace on keyboard deletes from number node", () => {
             ...model0.graph,
             bodys: {
                 [body]: {
-                    kind: BodyKind.TENSOR,
+                    kind: BodyKind.NUMBER,
                     uuid: body,
                     node,
                     value: 123456789,
-                    shape: [],
-                    editable: true,
-                    rank: 0,
                 }
             }
         }
@@ -1503,13 +1497,10 @@ test("pressing backspace when number node value is 0 has no effect", () => {
             ...model0.graph,
             bodys: {
                 [body]: {
-                    kind: BodyKind.TENSOR,
+                    kind: BodyKind.NUMBER,
                     uuid: body,
                     node,
                     value: 0,
-                    shape: [],
-                    editable: true,
-                    rank: 0,
                 }
             }
         }
@@ -1556,13 +1547,10 @@ test("pressing del on virtual keyboard when number node value is 0 has no effect
             ...model0.graph,
             bodys: {
                 [body]: {
-                    kind: BodyKind.TENSOR,
+                    kind: BodyKind.NUMBER,
                     uuid: body,
                     node,
                     value: 0,
-                    shape: [],
-                    editable: true,
-                    rank: 0,
                 }
             }
         }
@@ -1609,13 +1597,10 @@ test("pressing number on virtual keyboard appends to number node", () => {
             ...model0.graph,
             bodys: {
                 [body]: {
-                    kind: BodyKind.TENSOR,
+                    kind: BodyKind.NUMBER,
                     uuid: body,
                     node,
                     value: 1234567890,
-                    shape: [],
-                    editable: true,
-                    rank: 0,
                 }
             }
         }
@@ -1666,13 +1651,10 @@ test("pressing del on virtual keyboard deletes from number node", () => {
             ...model0.graph,
             bodys: {
                 [body]: {
-                    kind: BodyKind.TENSOR,
+                    kind: BodyKind.NUMBER,
                     uuid: body,
                     node,
                     value: 123456789,
-                    shape: [],
-                    editable: true,
-                    rank: 0,
                 }
             }
         }
@@ -1720,13 +1702,10 @@ test("pressing enter on keyboard while editing number node exits virtual keyboar
             ...model0.graph,
             bodys: {
                 [body]: {
-                    kind: BodyKind.TENSOR,
+                    kind: BodyKind.NUMBER,
                     uuid: body,
                     node,
                     value: 1234567890,
-                    shape: [],
-                    editable: true,
-                    rank: 0,
                 }
             }
         }
@@ -1772,13 +1751,10 @@ test("pressing ret on virtual keyboard while editing number node exits virtual k
             ...model0.graph,
             bodys: {
                 [body]: {
-                    kind: BodyKind.TENSOR,
+                    kind: BodyKind.NUMBER,
                     uuid: body,
                     node,
                     value: 1234567890,
-                    shape: [],
-                    editable: true,
-                    rank: 0,
                 }
             }
         }
@@ -1822,13 +1798,10 @@ test("pressing non number on keyboard while editing number node is ignored", () 
             ...model0.graph,
             bodys: {
                 [body]: {
-                    kind: BodyKind.TENSOR,
+                    kind: BodyKind.NUMBER,
                     uuid: body,
                     node,
                     value: 0,
-                    shape: [],
-                    editable: true,
-                    rank: 0,
                 }
             }
         }
@@ -1871,13 +1844,10 @@ test("pressing non number on virtual keyboard while editing number node is ignor
             ...model0.graph,
             bodys: {
                 [body]: {
-                    kind: BodyKind.TENSOR,
+                    kind: BodyKind.NUMBER,
                     uuid: body,
                     node,
                     value: 0,
-                    shape: [],
-                    editable: true,
-                    rank: 0,
                 }
             }
         }
@@ -1916,13 +1886,10 @@ test("pressing - on keyboard while editing number node makes the number negative
             ...model0.graph,
             bodys: {
                 [body]: {
-                    kind: BodyKind.TENSOR,
+                    kind: BodyKind.NUMBER,
                     uuid: body,
                     node,
                     value: -10,
-                    shape: [],
-                    editable: true,
-                    rank: 0,
                 }
             }
         },
@@ -1966,13 +1933,10 @@ test("pressing + on keyboard while editing number node makes the number negative
             ...model0.graph,
             bodys: {
                 [body]: {
-                    kind: BodyKind.TENSOR,
+                    kind: BodyKind.NUMBER,
                     uuid: body,
                     node,
                     value: 10,
-                    shape: [],
-                    editable: true,
-                    rank: 0,
                 }
             }
         },
@@ -2016,13 +1980,10 @@ test("pressing - on virtual keyboard while editing number node makes the number 
             ...model0.graph,
             bodys: {
                 [body]: {
-                    kind: BodyKind.TENSOR,
+                    kind: BodyKind.NUMBER,
                     uuid: body,
                     node,
                     value: -10,
-                    shape: [],
-                    editable: true,
-                    rank: 0,
                 }
             }
         },
@@ -2065,13 +2026,10 @@ test("pressing + on virtual keyboard while editing number node makes the number 
             ...model0.graph,
             bodys: {
                 [body]: {
-                    kind: BodyKind.TENSOR,
+                    kind: BodyKind.NUMBER,
                     uuid: body,
                     node,
                     value: 10,
-                    shape: [],
-                    editable: true,
-                    rank: 0,
                 }
             }
         },
@@ -2115,13 +2073,10 @@ test("pressing d on keyboard while editing number node makes the number 0", () =
             ...model0.graph,
             bodys: {
                 [body]: {
-                    kind: BodyKind.TENSOR,
+                    kind: BodyKind.NUMBER,
                     uuid: body,
                     node,
                     value: 0,
-                    shape: [],
-                    editable: true,
-                    rank: 0,
                 }
             }
         },
@@ -2164,13 +2119,10 @@ test("pressing clr on virtual keyboard while editing number node makes the numbe
             ...model0.graph,
             bodys: {
                 [body]: {
-                    kind: BodyKind.TENSOR,
+                    kind: BodyKind.NUMBER,
                     uuid: body,
                     node,
                     value: 0,
-                    shape: [],
-                    editable: true,
-                    rank: 0,
                 }
             }
         },

@@ -1,7 +1,7 @@
 import { AppEvent } from ".";
 import { Model } from "../model";
 import { Focus, FocusFinder, FocusKind } from "../model/focus";
-import { GenerateUUID, UUID } from "../model/graph";
+import { BodyKind, GenerateUUID, UUID } from "../model/graph";
 import { QuickSelectInput, QuickSelectOutput, QuickSelectKind, QuickSelectNode, QuickSelectBody } from "../model/quick_select";
 import { UpdateResult } from "../ui/run";
 import { selectInput, selectOutput } from "./focus";
@@ -68,7 +68,7 @@ export const maybeTriggerQuickSelect = (model: Model, focus: Exclude<Focus, Focu
         case 'b': {
             const hotkeys: { [body: UUID]: string } = {}
             Object.values(model.graph.bodys)
-                .filter(body => body.editable)
+                .filter(body => body.kind === BodyKind.NUMBER)
                 .forEach((body, i) => hotkeys[body.uuid] = String.fromCharCode(97 + i))
             return {
                 model: {

@@ -1,5 +1,3 @@
-import * as tf from '@tensorflow/tfjs'
-
 import { Body, BodyKind, Edge, GenerateUUID, Graph, Inputs, Node, Operation, Outputs, Position, UUID } from "../model/graph"
 
 interface AddNodeInputs {
@@ -42,19 +40,15 @@ export const addNode = ({ graph, operation, position, generateUUID }: AddNodeInp
     const uuid = generateUUID()
     const body: Body = operation.body !== undefined ?
         {
-            kind: BodyKind.TENSOR,
+            kind: BodyKind.NUMBER,
             uuid,
             node: nodeUUID,
             value: operation.body,
-            rank: 0,
-            shape: [],
-            editable: true
         } :
         {
             kind: BodyKind.NO,
             uuid,
             node: nodeUUID,
-            editable: false
         }
     const node: Node = {
         uuid: nodeUUID,
@@ -209,15 +203,7 @@ const evaluateNode = (graph: Graph, nodeUUID: UUID): Graph => {
             })
             .filter(bodyUUID => bodyUUID !== undefined)
             .map(bodyUUID => graph.bodys[bodyUUID!])
-            .filter(body => {
-                switch (body.kind) {
-                    case BodyKind.NO:
-                    case BodyKind.ERROR:
-                        return false
-                    default:
-                        return true
-                }
-            })
+            .filter(body => !(body.kind === BodyKind.NO || body.kind === BodyKind.ERROR))
         if (values.length > 0 && values.length === node.inputs.length) {
             const body = node.operation!(graph.bodys[node.body], ...values)
             const graph1: Graph = {
@@ -233,7 +219,6 @@ const evaluateNode = (graph: Graph, nodeUUID: UUID): Graph => {
                 kind: BodyKind.NO,
                 uuid: node.body,
                 node: node.uuid,
-                editable: false
             }
             const graph1: Graph = {
                 ...graph,
@@ -312,10 +297,10 @@ export const changeNodePosition = (graph: Graph, node: UUID, transform: (positio
     }
 }
 
-export const changeBodyValue = (graph: Graph, body: UUID, transform: (value: tf.TensorLike) => tf.TensorLike): Graph => {
+export const changeBodyValue = (graph: Graph, body: UUID, transform: (value: number) => number): Graph => {
     const currentBody = graph.bodys[body]
     switch (currentBody.kind) {
-        case BodyKind.TENSOR:
+        case BodyKind.NUMBER:
             const graph1 = {
                 ...graph,
                 bodys: {

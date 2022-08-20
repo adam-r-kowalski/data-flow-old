@@ -1,5 +1,7 @@
-import { addNodeToGraph, EventKind, openFinder, openNumericKeyboard, update } from "../../src/update"
-import { BodyKind, Operations } from "../../src/model/graph"
+import * as tf from '@tensorflow/tfjs-core'
+
+import { addNodeToGraph, EventKind, openFinder, openNumericKeyboard, update, updateBodyNumber } from "../../src/update"
+import { BodyKind, NodeTransform, OperationKind, Operations } from "../../src/model/graph"
 import { addEdge, changeNodePosition } from "../../src/update/graph"
 import { translate } from "../../src/linear_algebra/matrix3x3"
 import { Model } from "../../src/model"
@@ -9,8 +11,12 @@ import { Pointer } from "../../src/ui"
 import { emptyModel } from "../../src/model/empty"
 import { QuickSelectKind } from "../../src/model/quick_select"
 import { defaultEffectModel, EffectModel, makeEffects } from "../mock_effects"
+import { tensorFunc } from "../../src/model/operations"
 
 const model = emptyModel({ width: 500, height: 500 })
+const addFunc = tensorFunc(tf.add)
+const subFunc = tensorFunc(tf.sub)
+const divFunc = tensorFunc(tf.sub)
 
 test("two pointers down on background starts zooming", () => {
     const effects = makeEffects()
@@ -204,14 +210,18 @@ test("clicking node selects it and puts it on top of of the node order", () => {
     const effects = makeEffects()
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
         'Sub': {
+            kind: OperationKind.TRANSFORM,
             name: 'Sub',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: subFunc
         }
     }
     const model0: Model = { ...model, operations }
@@ -302,14 +312,18 @@ test("pointer move after clicking node pointer down drags node", () => {
     const effects = makeEffects()
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
         'Sub': {
+            kind: OperationKind.TRANSFORM,
             name: 'Sub',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: subFunc
         }
     }
     const model0: Model = { ...model, operations }
@@ -369,9 +383,11 @@ test("pointer move after clicking node, pointer down, then pointer up", () => {
     const effects = makeEffects()
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
     }
     const model0: Model = { ...model, operations }
@@ -442,9 +458,11 @@ test("clicking input selects it", () => {
     const effects = makeEffects()
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
     }
     const model0: Model = { ...model, operations }
@@ -454,7 +472,7 @@ test("clicking input selects it", () => {
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
     })
-    const input = model1.graph.nodes[node0].inputs[0]
+    const input = (model1.graph.nodes[node0] as NodeTransform).inputs[0]
     const { model: model2, render } = update(effects, model1, {
         kind: EventKind.CLICKED_INPUT,
         input
@@ -475,9 +493,11 @@ test("clicking new input selects it and deselects old input", () => {
     const effects = makeEffects()
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
     }
     const model0: Model = { ...model, operations }
@@ -487,7 +507,7 @@ test("clicking new input selects it and deselects old input", () => {
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
     })
-    const [input0, input1] = model1.graph.nodes[node0].inputs
+    const [input0, input1] = (model1.graph.nodes[node0] as NodeTransform).inputs
     const { model: model2 } = update(effects, model1, {
         kind: EventKind.CLICKED_INPUT,
         input: input0
@@ -513,14 +533,18 @@ test("clicking output after clicking input adds connection", () => {
     const effects = makeEffects(effectModel)
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
         'Sub': {
+            kind: OperationKind.TRANSFORM,
             name: 'Sub',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: subFunc
         }
     }
     const model0: Model = { ...model, operations }
@@ -536,7 +560,7 @@ test("clicking output after clicking input adds connection", () => {
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
     })
-    const input = model2.graph.nodes[node0].inputs[0]
+    const input = (model2.graph.nodes[node0] as NodeTransform).inputs[0]
     const { model: model3 } = update(effects, model2, {
         kind: EventKind.CLICKED_INPUT,
         input
@@ -564,9 +588,11 @@ test("clicking output selects it", () => {
     const effects = makeEffects()
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
     }
     const model0: Model = { ...model, operations }
@@ -597,9 +623,11 @@ test("clicking new output selects it and deselects old output", () => {
     const effects = makeEffects()
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
     }
     const model0: Model = { ...model, operations }
@@ -635,14 +663,18 @@ test("clicking input after clicking output adds connection", () => {
     const effects = makeEffects(effectModel)
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
         'Sub': {
+            kind: OperationKind.TRANSFORM,
             name: 'Sub',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: subFunc
         }
     }
     const model0: Model = { ...model, operations }
@@ -664,7 +696,7 @@ test("clicking input after clicking output adds connection", () => {
         output
     })
     const newEffectModel = { ...effectModel }
-    const input = model3.graph.nodes[node0].inputs[0]
+    const input = (model3.graph.nodes[node0] as NodeTransform).inputs[0]
     const { model: model4 } = update(effects, model3, {
         kind: EventKind.CLICKED_INPUT,
         input
@@ -686,14 +718,18 @@ test("double click opens finder", () => {
     const effects = makeEffects()
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
         'Sub': {
+            kind: OperationKind.TRANSFORM,
             name: 'Sub',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: subFunc
         }
     }
     const model0: Model = { ...model, operations }
@@ -757,14 +793,18 @@ test("key down when finder is not shown does nothing", () => {
 test("f key down when finder is not shown opens finder", () => {
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
         'Sub': {
+            kind: OperationKind.TRANSFORM,
             name: 'Sub',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: subFunc
         }
     }
     const model0: Model = { ...model, operations }
@@ -789,14 +829,18 @@ test("f key down when finder is not shown opens finder", () => {
 test("clicking a finder option adds node to graph", () => {
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
         'Sub': {
+            kind: OperationKind.TRANSFORM,
             name: 'Sub',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: subFunc
         }
     }
     const model0 = openFinder({ ...model, operations })
@@ -818,14 +862,18 @@ test("key down when finder is shown appends to search", () => {
     const effects = makeEffects()
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
         'Sub': {
+            kind: OperationKind.TRANSFORM,
             name: 'Sub',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: subFunc
         }
     }
     const model0 = openFinder({ ...model, operations })
@@ -861,14 +909,18 @@ test("backspace key down when finder is shown deletes from search", () => {
     const effects = makeEffects()
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
         'Sub': {
+            kind: OperationKind.TRANSFORM,
             name: 'Sub',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: subFunc
         }
     }
     const model0 = openFinder({ ...model, operations })
@@ -908,14 +960,18 @@ test("backspace key down when finder is shown deletes from search", () => {
 test("enter key down when finder is shown closes finder and adds node", () => {
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
         'Sub': {
+            kind: OperationKind.TRANSFORM,
             name: 'Sub',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: subFunc
         }
     }
     const model0 = openFinder({ ...model, operations })
@@ -938,14 +994,18 @@ test("enter key down when finder is shown and finder has search closes finder an
     const effects = makeEffects()
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
         'Sub': {
+            kind: OperationKind.TRANSFORM,
             name: 'Sub',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: subFunc
         }
     }
     const model0: Model = openFinder({ ...model, operations })
@@ -976,14 +1036,18 @@ test("enter key down when finder is shown and finder has search eliminates all o
     const effects = makeEffects()
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
         'Sub': {
+            kind: OperationKind.TRANSFORM,
             name: 'Sub',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: subFunc
         }
     }
     const model0: Model = openFinder({ ...model, operations })
@@ -1004,14 +1068,18 @@ test("ret virtual key down when finder is shown and finder has search eliminates
     const effects = makeEffects()
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
         'Sub': {
+            kind: OperationKind.TRANSFORM,
             name: 'Sub',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: subFunc
         }
     }
     const model0: Model = openFinder({ ...model, operations })
@@ -1032,14 +1100,18 @@ test("escape key down when finder is shown closes finder", () => {
     const effects = makeEffects()
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
         'Sub': {
+            kind: OperationKind.TRANSFORM,
             name: 'Sub',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: subFunc
         }
     }
     const model0: Model = openFinder({ ...model, operations })
@@ -1057,14 +1129,18 @@ test("shift key down when finder is shown are ignored", () => {
     const effects = makeEffects()
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
         'Sub': {
+            kind: OperationKind.TRANSFORM,
             name: 'Sub',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: subFunc
         }
     }
     const model0: Model = openFinder({ ...model, operations })
@@ -1081,14 +1157,18 @@ test("alt key down when finder is shown are ignored", () => {
     const effects = makeEffects()
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
         'Sub': {
+            kind: OperationKind.TRANSFORM,
             name: 'Sub',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: subFunc
         }
     }
     const model0: Model = openFinder({ ...model, operations })
@@ -1105,14 +1185,18 @@ test("control key down when finder is shown are ignored", () => {
     const effects = makeEffects()
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
         'Sub': {
+            kind: OperationKind.TRANSFORM,
             name: 'Sub',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: subFunc
         }
     }
     const model0: Model = openFinder({ ...model, operations })
@@ -1129,14 +1213,18 @@ test("meta key down when finder is shown are ignored", () => {
     const effects = makeEffects()
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
         'Sub': {
+            kind: OperationKind.TRANSFORM,
             name: 'Sub',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: subFunc
         }
     }
     const model0: Model = openFinder({ ...model, operations })
@@ -1153,14 +1241,18 @@ test("Tab key down when finder is shown are ignored", () => {
     const effects = makeEffects()
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
         'Sub': {
+            kind: OperationKind.TRANSFORM,
             name: 'Sub',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: subFunc
         }
     }
     const model0: Model = openFinder({ ...model, operations })
@@ -1178,14 +1270,18 @@ test("virtual key down when finder is shown appends to search", () => {
     const effects = makeEffects()
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
         'Sub': {
+            kind: OperationKind.TRANSFORM,
             name: 'Sub',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: subFunc
         }
     }
     const model0: Model = openFinder({ ...model, operations })
@@ -1219,14 +1315,18 @@ test("del virtual key down when finder is shown deletes from search", () => {
     const effects = makeEffects()
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
         'Sub': {
+            kind: OperationKind.TRANSFORM,
             name: 'Sub',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: subFunc
         }
     }
     const model0 = openFinder({ ...model, operations })
@@ -1263,14 +1363,18 @@ test("space virtual key down when finder is shown adds space to search", () => {
     const effects = makeEffects()
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
         'Sub': {
+            kind: OperationKind.TRANSFORM,
             name: 'Sub',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: subFunc
         }
     }
     const model0 = openFinder({ ...model, operations })
@@ -1302,14 +1406,18 @@ test("space virtual key down when finder is shown adds space to search", () => {
 test("ret virtual key down when finder is shown closes finder and adds node", () => {
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
         'Sub': {
+            kind: OperationKind.TRANSFORM,
             name: 'Sub',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: subFunc
         }
     }
     const model0 = openFinder({ ...model, operations })
@@ -1331,14 +1439,18 @@ test("sft virtual key down when finder is shown are ignored", () => {
     const effects = makeEffects()
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
         'Sub': {
+            kind: OperationKind.TRANSFORM,
             name: 'Sub',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: subFunc
         }
     }
     const model0: Model = openFinder({ ...model, operations })
@@ -1355,9 +1467,8 @@ test("pressing number on keyboard appends to number node", () => {
     const effects = makeEffects(effectModel)
     const operations: Operations = {
         'Number': {
+            kind: OperationKind.NUMBER,
             name: 'Number',
-            inputs: [],
-            body: 0,
             outputs: ['out']
         }
     }
@@ -1394,6 +1505,7 @@ test("pressing number on keyboard appends to number node", () => {
                     uuid: body,
                     node,
                     value: 1234567890,
+                    text: '1234567890'
                 }
             }
         }
@@ -1406,9 +1518,8 @@ test("pressing backspace on keyboard deletes from number node", () => {
     const effects = makeEffects(effectModel)
     const operations: Operations = {
         'Number': {
+            kind: OperationKind.NUMBER,
             name: 'Number',
-            inputs: [],
-            body: 0,
             outputs: ['out']
         }
     }
@@ -1450,6 +1561,7 @@ test("pressing backspace on keyboard deletes from number node", () => {
                     uuid: body,
                     node,
                     value: 123456789,
+                    text: '123456789'
                 }
             }
         }
@@ -1462,9 +1574,8 @@ test("pressing backspace when number node value is 0 has no effect", () => {
     const effects = makeEffects(effectModel)
     const operations: Operations = {
         'Number': {
+            kind: OperationKind.NUMBER,
             name: 'Number',
-            inputs: [],
-            body: 0,
             outputs: ['out']
         }
     }
@@ -1501,6 +1612,7 @@ test("pressing backspace when number node value is 0 has no effect", () => {
                     uuid: body,
                     node,
                     value: 0,
+                    text: '0'
                 }
             }
         }
@@ -1513,9 +1625,8 @@ test("pressing del on virtual keyboard when number node value is 0 has no effect
     const effects = makeEffects(effectModel)
     const operations: Operations = {
         'Number': {
+            kind: OperationKind.NUMBER,
             name: 'Number',
-            inputs: [],
-            body: 0,
             outputs: ['out']
         }
     }
@@ -1551,6 +1662,7 @@ test("pressing del on virtual keyboard when number node value is 0 has no effect
                     uuid: body,
                     node,
                     value: 0,
+                    text: '0'
                 }
             }
         }
@@ -1563,9 +1675,8 @@ test("pressing number on virtual keyboard appends to number node", () => {
     const effects = makeEffects(effectModel)
     const operations: Operations = {
         'Number': {
+            kind: OperationKind.NUMBER,
             name: 'Number',
-            inputs: [],
-            body: 0,
             outputs: ['out']
         }
     }
@@ -1601,6 +1712,7 @@ test("pressing number on virtual keyboard appends to number node", () => {
                     uuid: body,
                     node,
                     value: 1234567890,
+                    text: '1234567890'
                 }
             }
         }
@@ -1613,9 +1725,8 @@ test("pressing del on virtual keyboard deletes from number node", () => {
     const effects = makeEffects(effectModel)
     const operations: Operations = {
         'Number': {
+            kind: OperationKind.NUMBER,
             name: 'Number',
-            inputs: [],
-            body: 0,
             outputs: ['out']
         }
     }
@@ -1655,6 +1766,7 @@ test("pressing del on virtual keyboard deletes from number node", () => {
                     uuid: body,
                     node,
                     value: 123456789,
+                    text: '123456789'
                 }
             }
         }
@@ -1667,9 +1779,8 @@ test("pressing enter on keyboard while editing number node exits virtual keyboar
     const effects = makeEffects(effectModel)
     const operations: Operations = {
         'Number': {
+            kind: OperationKind.NUMBER,
             name: 'Number',
-            inputs: [],
-            body: 0,
             outputs: ['out']
         }
     }
@@ -1706,6 +1817,7 @@ test("pressing enter on keyboard while editing number node exits virtual keyboar
                     uuid: body,
                     node,
                     value: 1234567890,
+                    text: '1234567890'
                 }
             }
         }
@@ -1718,9 +1830,8 @@ test("pressing ret on virtual keyboard while editing number node exits virtual k
     const effects = makeEffects(effectModel)
     const operations: Operations = {
         'Number': {
+            kind: OperationKind.NUMBER,
             name: 'Number',
-            inputs: [],
-            body: 0,
             outputs: ['out']
         }
     }
@@ -1755,6 +1866,7 @@ test("pressing ret on virtual keyboard while editing number node exits virtual k
                     uuid: body,
                     node,
                     value: 1234567890,
+                    text: '1234567890'
                 }
             }
         }
@@ -1768,9 +1880,8 @@ test("pressing non number on keyboard while editing number node is ignored", () 
     const effects = makeEffects(effectModel)
     const operations: Operations = {
         'Number': {
+            kind: OperationKind.NUMBER,
             name: 'Number',
-            inputs: [],
-            body: 0,
             outputs: ['out']
         }
     }
@@ -1802,6 +1913,7 @@ test("pressing non number on keyboard while editing number node is ignored", () 
                     uuid: body,
                     node,
                     value: 0,
+                    text: ''
                 }
             }
         }
@@ -1815,9 +1927,8 @@ test("pressing non number on virtual keyboard while editing number node is ignor
     const effects = makeEffects(effectModel)
     const operations: Operations = {
         'Number': {
+            kind: OperationKind.NUMBER,
             name: 'Number',
-            inputs: [],
-            body: 0,
             outputs: ['out']
         }
     }
@@ -1848,6 +1959,7 @@ test("pressing non number on virtual keyboard while editing number node is ignor
                     uuid: body,
                     node,
                     value: 0,
+                    text: ''
                 }
             }
         }
@@ -1860,9 +1972,8 @@ test("pressing - on keyboard while editing number node makes the number negative
     const effects = makeEffects(effectModel)
     const operations: Operations = {
         'Number': {
+            kind: OperationKind.NUMBER,
             name: 'Number',
-            inputs: [],
-            body: 10,
             outputs: ['out']
         }
     }
@@ -1872,8 +1983,9 @@ test("pressing - on keyboard while editing number node makes the number negative
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
     })
-    const model1 = openNumericKeyboard(model0, model0.graph.nodes[node].body!)
-    const { model: model2 } = update(effects, model1, {
+    const model1 = updateBodyNumber(model0, model0.graph.nodes[node].body, () => 10).model
+    const model2 = openNumericKeyboard(model1, model1.graph.nodes[node].body!)
+    const { model: model3 } = update(effects, model2, {
         kind: EventKind.KEYDOWN,
         key: '-',
         ctrl: false
@@ -1890,6 +2002,7 @@ test("pressing - on keyboard while editing number node makes the number negative
                     uuid: body,
                     node,
                     value: -10,
+                    text: '-10'
                 }
             }
         },
@@ -1899,7 +2012,7 @@ test("pressing - on keyboard while editing number node makes the number negative
             quickSelect: { kind: QuickSelectKind.NONE }
         }
     }
-    expect(model2).toEqual(expectedModel)
+    expect(model3).toEqual(expectedModel)
 })
 
 test("pressing + on keyboard while editing number node makes the number negative", () => {
@@ -1907,9 +2020,8 @@ test("pressing + on keyboard while editing number node makes the number negative
     const effects = makeEffects(effectModel)
     const operations: Operations = {
         'Number': {
+            kind: OperationKind.NUMBER,
             name: 'Number',
-            inputs: [],
-            body: -10,
             outputs: ['out']
         }
     }
@@ -1919,8 +2031,9 @@ test("pressing + on keyboard while editing number node makes the number negative
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
     })
-    const model1 = openNumericKeyboard(model0, model0.graph.nodes[node].body!)
-    const { model: model2 } = update(effects, model1, {
+    const model1 = updateBodyNumber(model0, model0.graph.nodes[node].body, () => -10).model
+    const model2 = openNumericKeyboard(model1, model1.graph.nodes[node].body!)
+    const { model: model3 } = update(effects, model2, {
         kind: EventKind.KEYDOWN,
         key: '+',
         ctrl: false
@@ -1937,6 +2050,7 @@ test("pressing + on keyboard while editing number node makes the number negative
                     uuid: body,
                     node,
                     value: 10,
+                    text: '10'
                 }
             }
         },
@@ -1946,7 +2060,7 @@ test("pressing + on keyboard while editing number node makes the number negative
             quickSelect: { kind: QuickSelectKind.NONE }
         }
     }
-    expect(model2).toEqual(expectedModel)
+    expect(model3).toEqual(expectedModel)
 })
 
 
@@ -1955,9 +2069,8 @@ test("pressing - on virtual keyboard while editing number node makes the number 
     const effects = makeEffects(effectModel)
     const operations: Operations = {
         'Number': {
+            kind: OperationKind.NUMBER,
             name: 'Number',
-            inputs: [],
-            body: 10,
             outputs: ['out']
         }
     }
@@ -1967,8 +2080,9 @@ test("pressing - on virtual keyboard while editing number node makes the number 
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
     })
-    const model1 = openNumericKeyboard(model0, model0.graph.nodes[node].body!)
-    const { model: model2 } = update(effects, model1, {
+    const model1 = updateBodyNumber(model0, model0.graph.nodes[node].body, () => 10).model
+    const model2 = openNumericKeyboard(model1, model1.graph.nodes[node].body!)
+    const { model: model3 } = update(effects, model2, {
         kind: EventKind.VIRTUAL_KEYDOWN,
         key: '-'
     })
@@ -1984,6 +2098,7 @@ test("pressing - on virtual keyboard while editing number node makes the number 
                     uuid: body,
                     node,
                     value: -10,
+                    text: '-10'
                 }
             }
         },
@@ -1993,7 +2108,7 @@ test("pressing - on virtual keyboard while editing number node makes the number 
             quickSelect: { kind: QuickSelectKind.NONE }
         }
     }
-    expect(model2).toEqual(expectedModel)
+    expect(model3).toEqual(expectedModel)
 })
 
 test("pressing + on virtual keyboard while editing number node makes the number positive", () => {
@@ -2001,9 +2116,8 @@ test("pressing + on virtual keyboard while editing number node makes the number 
     const effects = makeEffects(effectModel)
     const operations: Operations = {
         'Number': {
+            kind: OperationKind.NUMBER,
             name: 'Number',
-            inputs: [],
-            body: -10,
             outputs: ['out']
         }
     }
@@ -2013,8 +2127,9 @@ test("pressing + on virtual keyboard while editing number node makes the number 
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
     })
-    const model1 = openNumericKeyboard(model0, model0.graph.nodes[node].body!)
-    const { model: model2 } = update(effects, model1, {
+    const model1 = updateBodyNumber(model0, model0.graph.nodes[node].body, () => -10).model
+    const model2 = openNumericKeyboard(model1, model1.graph.nodes[node].body!)
+    const { model: model3 } = update(effects, model2, {
         kind: EventKind.VIRTUAL_KEYDOWN,
         key: '+'
     })
@@ -2030,6 +2145,7 @@ test("pressing + on virtual keyboard while editing number node makes the number 
                     uuid: body,
                     node,
                     value: 10,
+                    text: '10'
                 }
             }
         },
@@ -2039,7 +2155,7 @@ test("pressing + on virtual keyboard while editing number node makes the number 
             quickSelect: { kind: QuickSelectKind.NONE }
         }
     }
-    expect(model2).toEqual(expectedModel)
+    expect(model3).toEqual(expectedModel)
 })
 
 test("pressing d on keyboard while editing number node makes the number 0", () => {
@@ -2047,9 +2163,8 @@ test("pressing d on keyboard while editing number node makes the number 0", () =
     const effects = makeEffects(effectModel)
     const operations: Operations = {
         'Number': {
+            kind: OperationKind.NUMBER,
             name: 'Number',
-            inputs: [],
-            body: 10,
             outputs: ['out']
         }
     }
@@ -2077,6 +2192,7 @@ test("pressing d on keyboard while editing number node makes the number 0", () =
                     uuid: body,
                     node,
                     value: 0,
+                    text: '0'
                 }
             }
         },
@@ -2094,9 +2210,8 @@ test("pressing clr on virtual keyboard while editing number node makes the numbe
     const effects = makeEffects(effectModel)
     const operations: Operations = {
         'Number': {
+            kind: OperationKind.NUMBER,
             name: 'Number',
-            inputs: [],
-            body: 10,
             outputs: ['out']
         }
     }
@@ -2123,6 +2238,7 @@ test("pressing clr on virtual keyboard while editing number node makes the numbe
                     uuid: body,
                     node,
                     value: 0,
+                    text: '0'
                 }
             }
         },
@@ -2141,9 +2257,8 @@ test("pressing a key on virtual keyboard while no input target selected doesn't 
     const effects = makeEffects()
     const operations: Operations = {
         'Number': {
+            kind: OperationKind.NUMBER,
             name: 'Number',
-            inputs: [],
-            body: 0,
             outputs: ['out']
         }
     }
@@ -2172,9 +2287,8 @@ test("clicking a number node opens the numeric keyboard", () => {
     const effects = makeEffects()
     const operations: Operations = {
         'Number': {
+            kind: OperationKind.NUMBER,
             name: 'Number',
-            inputs: [],
-            body: 0,
             outputs: ['out']
         }
     }
@@ -2197,9 +2311,8 @@ test("clicking a number node when another number node is selected switches selec
     const effects = makeEffects()
     const operations: Operations = {
         'Number': {
+            kind: OperationKind.NUMBER,
             name: 'Number',
-            inputs: [],
-            body: 0,
             outputs: ['out']
         }
     }
@@ -2233,9 +2346,8 @@ test("clicking background when a number node is selected deselects it", () => {
     const effects = makeEffects()
     const operations: Operations = {
         'Number': {
+            kind: OperationKind.NUMBER,
             name: 'Number',
-            inputs: [],
-            body: 0,
             outputs: ['out']
         }
     }
@@ -2286,9 +2398,8 @@ test("pressing Escape when a number node is selected deselects it", () => {
     const effects = makeEffects()
     const operations: Operations = {
         'Number': {
+            kind: OperationKind.NUMBER,
             name: 'Number',
-            inputs: [],
-            body: 0,
             outputs: ['out']
         }
     }
@@ -2315,46 +2426,57 @@ test("clicking input when a number node is selected deselects it and selects inp
     const effects = makeEffects()
     const operations: Operations = {
         'Number': {
+            kind: OperationKind.NUMBER,
             name: 'Number',
-            inputs: [],
-            body: 0,
             outputs: ['out']
-        }
+        },
+        'Add': {
+            kind: OperationKind.TRANSFORM,
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out'],
+            func: addFunc
+        },
     }
-    const { model: model0, node } = addNodeToGraph({
+    const { model: model0, node: number } = addNodeToGraph({
         model: { ...model, operations },
         operation: operations['Number'],
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
     })
-    const body = model0.graph.nodes[node].body!
-    const { model: model1 } = update(effects, model0, {
+    const { model: model1, node: add } = addNodeToGraph({
+        model: model0,
+        operation: operations['Add'],
+        position: { x: 0, y: 0 },
+        generateUUID: effects.generateUUID
+    })
+    const body = model1.graph.nodes[number].body!
+    const { model: model2 } = update(effects, model1, {
         kind: EventKind.CLICKED_BODY,
         body
     })
-    const input = model0.graph.nodes[node].inputs[0]
-    const { model: model2 } = update(effects, model1, {
+    const input = (model2.graph.nodes[add] as NodeTransform).inputs[0]
+    const { model: model3 } = update(effects, model2, {
         kind: EventKind.CLICKED_INPUT,
         input
     })
     const expectedModel: Model = {
-        ...model0,
+        ...model1,
         focus: {
             kind: FocusKind.INPUT,
             input,
             quickSelect: { kind: QuickSelectKind.NONE }
         }
     }
-    expect(model2).toEqual(expectedModel)
+    expect(model3).toEqual(expectedModel)
 })
 
 test("clicking output when a number node is selected deselects it and selects output", () => {
     const effects = makeEffects()
     const operations: Operations = {
         'Number': {
+            kind: OperationKind.NUMBER,
             name: 'Number',
-            inputs: [],
-            body: 0,
             outputs: ['out']
         }
     }
@@ -2389,9 +2511,8 @@ test("clicking node when a number node is selected deselects it and selects node
     const effects = makeEffects()
     const operations: Operations = {
         'Number': {
+            kind: OperationKind.NUMBER,
             name: 'Number',
-            inputs: [],
-            body: 0,
             outputs: ['out']
         }
     }
@@ -2520,9 +2641,11 @@ test("pressing d on keyboard with node selected deletes it", () => {
     const effects = makeEffects()
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
     }
     const model0: Model = { ...model, operations }
@@ -2548,9 +2671,11 @@ test("clicking background when a node is selected deselects it", () => {
     const effects = makeEffects()
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
     }
     const model0: Model = { ...model, operations }
@@ -2600,9 +2725,11 @@ test("pressing escape when a node is selected deselects it", () => {
     const effects = makeEffects()
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
     }
     const model0: Model = { ...model, operations }
@@ -2629,9 +2756,11 @@ test("clicking background when a input is selected deselects it", () => {
     const effects = makeEffects()
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
     }
     const model0: Model = { ...model, operations }
@@ -2649,7 +2778,7 @@ test("clicking background when a input is selected deselects it", () => {
         kind: EventKind.POINTER_DOWN,
         pointer
     })
-    const input = model2.graph.nodes[node].inputs[0]
+    const input = (model2.graph.nodes[node] as NodeTransform).inputs[0]
     const { model: model3 } = update(effects, model2, {
         kind: EventKind.CLICKED_INPUT,
         input
@@ -2682,9 +2811,11 @@ test("pressing escape when a input is selected deselects it", () => {
     const effects = makeEffects()
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
     }
     const model0: Model = { ...model, operations }
@@ -2694,7 +2825,7 @@ test("pressing escape when a input is selected deselects it", () => {
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
     })
-    const input = model1.graph.nodes[node].inputs[0]
+    const input = (model1.graph.nodes[node] as NodeTransform).inputs[0]
     const { model: model2 } = update(effects, model1, {
         kind: EventKind.CLICKED_INPUT,
         input
@@ -2712,9 +2843,11 @@ test("clicking background when a output is selected deselects it", () => {
     const effects = makeEffects()
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
     }
     const model0: Model = { ...model, operations }
@@ -2765,9 +2898,11 @@ test("pressing escape when a output is selected deselects it", () => {
     const effects = makeEffects()
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
     }
     const model0: Model = { ...model, operations }
@@ -2794,9 +2929,11 @@ test("delete node", () => {
     const effects = makeEffects()
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
     }
     const model0: Model = { ...model, operations }
@@ -2818,15 +2955,19 @@ test("delete input edge", () => {
     const effects = makeEffects()
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
         'Sub': {
+            kind: OperationKind.TRANSFORM,
             name: 'Sub',
             inputs: ['x', 'y'],
-            outputs: ['out']
-        },
+            outputs: ['out'],
+            func: subFunc
+        }
     }
     const model0: Model = { ...model, operations }
     const { model: model1, node: node0 } = addNodeToGraph({
@@ -2841,7 +2982,7 @@ test("delete input edge", () => {
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
     })
-    const input = model2.graph.nodes[node0].inputs[0]
+    const input = (model2.graph.nodes[node0] as NodeTransform).inputs[0]
     const { model: model3 } = update(effects, model2, {
         kind: EventKind.CLICKED_INPUT,
         input
@@ -2862,15 +3003,19 @@ test("pressing d on keyboard with input selected delete edge attached", () => {
     const effects = makeEffects()
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
         'Sub': {
+            kind: OperationKind.TRANSFORM,
             name: 'Sub',
             inputs: ['x', 'y'],
-            outputs: ['out']
-        },
+            outputs: ['out'],
+            func: subFunc
+        }
     }
     const model0: Model = { ...model, operations }
     const { model: model1, node: node0 } = addNodeToGraph({
@@ -2885,7 +3030,7 @@ test("pressing d on keyboard with input selected delete edge attached", () => {
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
     })
-    const input = model2.graph.nodes[node0].inputs[0]
+    const input = (model2.graph.nodes[node0] as NodeTransform).inputs[0]
     const { model: model3 } = update(effects, model2, {
         kind: EventKind.CLICKED_INPUT,
         input
@@ -2911,15 +3056,19 @@ test("delete output edges", () => {
     const effects = makeEffects()
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
         'Sub': {
+            kind: OperationKind.TRANSFORM,
             name: 'Sub',
             inputs: ['x', 'y'],
-            outputs: ['out']
-        },
+            outputs: ['out'],
+            func: subFunc
+        }
     }
     const model0: Model = { ...model, operations }
     const { model: model1, node: node0 } = addNodeToGraph({
@@ -2934,7 +3083,7 @@ test("delete output edges", () => {
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
     })
-    const [input0, input1] = model2.graph.nodes[node0].inputs
+    const [input0, input1] = (model2.graph.nodes[node0] as NodeTransform).inputs
     const { model: model3 } = update(effects, model2, {
         kind: EventKind.CLICKED_INPUT,
         input: input0
@@ -2963,15 +3112,19 @@ test("pressing d on keyboard with output selected delete edges attached", () => 
     const effects = makeEffects()
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
         'Sub': {
+            kind: OperationKind.TRANSFORM,
             name: 'Sub',
             inputs: ['x', 'y'],
-            outputs: ['out']
-        },
+            outputs: ['out'],
+            func: subFunc
+        }
     }
     const model0: Model = { ...model, operations }
     const { model: model1, node: node0 } = addNodeToGraph({
@@ -2986,7 +3139,7 @@ test("pressing d on keyboard with output selected delete edges attached", () => 
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
     })
-    const [input0, input1] = model2.graph.nodes[node0].inputs
+    const [input0, input1] = (model2.graph.nodes[node0] as NodeTransform).inputs
     const { model: model3 } = update(effects, model2, {
         kind: EventKind.CLICKED_INPUT,
         input: input0
@@ -3020,9 +3173,11 @@ test("connecting output of same node where input is selected is not allowed", ()
     const effects = makeEffects()
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
     }
     const model0: Model = { ...model, operations }
@@ -3032,7 +3187,7 @@ test("connecting output of same node where input is selected is not allowed", ()
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
     })
-    const input = model1.graph.nodes[node0].inputs[0]
+    const input = (model1.graph.nodes[node0] as NodeTransform).inputs[0]
     const { model: model2 } = update(effects, model1, {
         kind: EventKind.CLICKED_INPUT,
         input
@@ -3050,9 +3205,11 @@ test("connecting input of same node where output is selected is not allowed", ()
     const effects = makeEffects()
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
     }
     const model0: Model = { ...model, operations }
@@ -3067,7 +3224,7 @@ test("connecting input of same node where output is selected is not allowed", ()
         kind: EventKind.CLICKED_OUTPUT,
         output
     })
-    const input = model1.graph.nodes[node0].inputs[0]
+    const input = (model1.graph.nodes[node0] as NodeTransform).inputs[0]
     const { model: model3 } = update(effects, model2, {
         kind: EventKind.CLICKED_INPUT,
         input
@@ -3080,20 +3237,26 @@ test("connecting output to input if input already has edge replaces it", () => {
     const effects = makeEffects(effectModel)
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
         'Sub': {
-            name: 'Div',
+            kind: OperationKind.TRANSFORM,
+            name: 'Sub',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: subFunc
         },
         'Div': {
+            kind: OperationKind.TRANSFORM,
             name: 'Div',
             inputs: ['x', 'y'],
-            outputs: ['out']
-        },
+            outputs: ['out'],
+            func: divFunc
+        }
     }
     const model0: Model = { ...model, operations }
     const { model: model1, node: node0 } = addNodeToGraph({
@@ -3114,7 +3277,7 @@ test("connecting output to input if input already has edge replaces it", () => {
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
     })
-    const input = model3.graph.nodes[node0].inputs[0]
+    const input = (model3.graph.nodes[node0] as NodeTransform).inputs[0]
     const { model: model4 } = update(effects, model3, {
         kind: EventKind.CLICKED_INPUT,
         input
@@ -3151,20 +3314,26 @@ test("connecting input to output if input already has edge replaces it", () => {
     const effects = makeEffects(effectModel)
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
         'Sub': {
-            name: 'Div',
+            kind: OperationKind.TRANSFORM,
+            name: 'Sub',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: subFunc
         },
         'Div': {
+            kind: OperationKind.TRANSFORM,
             name: 'Div',
             inputs: ['x', 'y'],
-            outputs: ['out']
-        },
+            outputs: ['out'],
+            func: divFunc
+        }
     }
     const model0: Model = { ...model, operations }
     const { model: model1, node: node0 } = addNodeToGraph({
@@ -3185,7 +3354,7 @@ test("connecting input to output if input already has edge replaces it", () => {
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
     })
-    const input = model3.graph.nodes[node0].inputs[0]
+    const input = (model3.graph.nodes[node0] as NodeTransform).inputs[0]
     const { model: model4 } = update(effects, model3, {
         kind: EventKind.CLICKED_INPUT,
         input
@@ -3260,10 +3429,12 @@ test("three pointers down on node then one up keeps state dragging", () => {
         ...model,
         operations: {
             'Add': {
+                kind: OperationKind.TRANSFORM,
                 name: 'Add',
                 inputs: ['x', 'y'],
-                outputs: ['out']
-            }
+                outputs: ['out'],
+                func: addFunc
+            },
         }
     }
     const { model: model1, node } = addNodeToGraph({
@@ -3320,10 +3491,12 @@ test("pointer move when input selected updates node placement location", () => {
         ...model,
         operations: {
             'Add': {
+                kind: OperationKind.TRANSFORM,
                 name: 'Add',
                 inputs: ['x', 'y'],
-                outputs: ['out']
-            }
+                outputs: ['out'],
+                func: addFunc
+            },
         }
     }
     const { model: model1, node } = addNodeToGraph({
@@ -3342,7 +3515,7 @@ test("pointer move when input selected updates node placement location", () => {
     })
     const { model: model3 } = update(effects, model2, {
         kind: EventKind.CLICKED_INPUT,
-        input: model2.graph.nodes[node].inputs[0]
+        input: (model2.graph.nodes[node] as NodeTransform).inputs[0]
     })
     const pointer1: Pointer = {
         id: 0,
@@ -3366,10 +3539,12 @@ test("pointer move when output selected updates node placement location", () => 
         ...model,
         operations: {
             'Add': {
+                kind: OperationKind.TRANSFORM,
                 name: 'Add',
                 inputs: ['x', 'y'],
-                outputs: ['out']
-            }
+                outputs: ['out'],
+                func: addFunc
+            },
         }
     }
     const { model: model1, node } = addNodeToGraph({
@@ -3412,9 +3587,8 @@ test("pointer move when body selected updates node placement location", () => {
         ...model,
         operations: {
             'Number': {
+                kind: OperationKind.NUMBER,
                 name: 'Number',
-                inputs: [],
-                body: 0,
                 outputs: ['out']
             }
         }
@@ -3507,10 +3681,12 @@ test("pressing f with node selected opens finder", () => {
         ...model,
         operations: {
             'Add': {
+                kind: OperationKind.TRANSFORM,
                 name: 'Add',
                 inputs: ['x', 'y'],
-                outputs: ['out']
-            }
+                outputs: ['out'],
+                func: addFunc
+            },
         }
     }
     const { model: model1, node } = addNodeToGraph({
@@ -3559,10 +3735,12 @@ test("pressing f with input selected opens finder", () => {
         ...model,
         operations: {
             'Add': {
+                kind: OperationKind.TRANSFORM,
                 name: 'Add',
                 inputs: ['x', 'y'],
-                outputs: ['out']
-            }
+                outputs: ['out'],
+                func: addFunc
+            },
         }
     }
     const { model: model1, node } = addNodeToGraph({
@@ -3581,7 +3759,7 @@ test("pressing f with input selected opens finder", () => {
     })
     const { model: model3 } = update(effects, model2, {
         kind: EventKind.CLICKED_INPUT,
-        input: model2.graph.nodes[node].inputs[0]
+        input: (model2.graph.nodes[node] as NodeTransform).inputs[0]
     })
     const { model: model4 } = update(effects, model3, {
         kind: EventKind.POINTER_UP,
@@ -3610,10 +3788,12 @@ test("pressing f with output selected opens finder", () => {
         ...model,
         operations: {
             'Add': {
+                kind: OperationKind.TRANSFORM,
                 name: 'Add',
                 inputs: ['x', 'y'],
-                outputs: ['out']
-            }
+                outputs: ['out'],
+                func: addFunc
+            },
         }
     }
     const { model: model1, node } = addNodeToGraph({
@@ -3661,10 +3841,12 @@ test("key up with input selected does nothing", () => {
         ...model,
         operations: {
             'Add': {
+                kind: OperationKind.TRANSFORM,
                 name: 'Add',
                 inputs: ['x', 'y'],
-                outputs: ['out']
-            }
+                outputs: ['out'],
+                func: addFunc
+            },
         }
     }
     const { model: model1, node } = addNodeToGraph({
@@ -3683,7 +3865,7 @@ test("key up with input selected does nothing", () => {
     })
     const { model: model3 } = update(effects, model2, {
         kind: EventKind.CLICKED_INPUT,
-        input: model2.graph.nodes[node].inputs[0]
+        input: (model2.graph.nodes[node] as NodeTransform).inputs[0]
     })
     const { model: model4 } = update(effects, model3, {
         kind: EventKind.POINTER_UP,

@@ -4,7 +4,7 @@ import { Model } from "../model"
 import { Theme } from '../model/theme'
 import { Focus, FocusFinder, FocusKind } from "../model/focus"
 import { text, stack, scene, row, container, column, Connection, UI } from '../ui'
-import { BodyKind, Graph, Input, NumberBody, Output, ScatterBody, TensorBody, UUID } from "../model/graph"
+import { BodyKind, Graph, Input, NodeKind, NumberBody, Output, ScatterBody, TensorBody, UUID } from "../model/graph"
 import { contextMenu } from "./context_menu"
 import { QuickSelectKind } from "../model/quick_select"
 import { identity } from "../linear_algebra/matrix3x3"
@@ -161,10 +161,8 @@ export const scatterBody = (theme: Theme, body: ScatterBody): UI<AppEvent> => {
 export const nodeUi = (theme: Theme, nodeUUID: UUID, graph: Graph, focus: Focus): UI<AppEvent> => {
     const node = graph.nodes[nodeUUID]
     const rowEntries: UI<AppEvent>[] = []
-    if (node.inputs.length) {
+    if (node.kind === NodeKind.TRANSFORM) {
         rowEntries.push(inputsUi(theme, node.inputs.map(i => graph.inputs[i]), focus))
-    }
-    if (node.inputs.length && node.outputs.length) {
         rowEntries.push(spacer(15))
     }
     const body = graph.bodys[node.body]
@@ -181,9 +179,7 @@ export const nodeUi = (theme: Theme, nodeUUID: UUID, graph: Graph, focus: Focus)
         default:
             break
     }
-    if (node.outputs.length) {
-        rowEntries.push(outputsUi(theme, node.outputs.map(o => graph.outputs[o]), focus))
-    }
+    rowEntries.push(outputsUi(theme, node.outputs.map(o => graph.outputs[o]), focus))
     const name = focus.quickSelect.kind === QuickSelectKind.NODE ?
         focus.quickSelect.hotkeys[node.uuid] :
         node.name

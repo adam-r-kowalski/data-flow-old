@@ -1,5 +1,7 @@
+import * as tf from '@tensorflow/tfjs-core'
+
 import { AppEvent, EventKind } from "../../src/update"
-import { Body, BodyKind, emptyGraph, Graph, Input, Node, Output } from "../../src/model/graph"
+import { Body, BodyKind, emptyGraph, Graph, Input, Node, NodeKind, Output } from "../../src/model/graph"
 import { identity } from "../../src/linear_algebra/matrix3x3"
 import { Model } from "../../src/model"
 import { Theme } from "../../src/model/theme"
@@ -28,6 +30,10 @@ import {
 import { contextMenu } from "../../src/view/context_menu"
 import { QuickSelectKind } from "../../src/model/quick_select"
 import { normalize } from "../../src/normalize"
+import { tensorFunc } from "../../src/model/operations"
+
+const addFunc = tensorFunc(tf.add)
+const subFunc = tensorFunc(tf.sub)
 
 test("spacer", () => {
     expect(spacer(10)).toEqual(container({ width: 10, height: 10 }))
@@ -249,6 +255,7 @@ test("numberBody not focused", () => {
         uuid: 'body uuid',
         node: 'node',
         value: 0,
+        text: ''
     }
     const focus: Focus = {
         kind: FocusKind.NONE,
@@ -274,6 +281,7 @@ test("bodyUi editing", () => {
         uuid: 'body uuid',
         node: 'node',
         value: 0,
+        text: ''
     }
     const actual = numberBody(theme, body, {
         kind: FocusKind.BODY,
@@ -385,24 +393,31 @@ test("bodyUi with scatter plot", () => {
 })
 
 
-test("nodeUi no inputs body or outputs", () => {
+test("nodeUi no body 1 outputs", () => {
     const node: Node = {
+        kind: NodeKind.SOURCE,
         uuid: 'uuid',
         name: "node",
         position: { x: 0, y: 0 },
-        inputs: [],
         body: 'body uuid',
-        outputs: [],
+        outputs: ['out'],
     }
     const body: Body = {
         kind: BodyKind.NO,
         uuid: 'body uuid',
         node: 'uuid',
     }
+    const out: Output = {
+        uuid: 'out',
+        name: 'out',
+        node: 'node',
+        edges: []
+    }
     const graph: Graph = {
         ...emptyGraph(),
         nodes: { [node.uuid]: node },
         bodys: { [body.uuid]: body },
+        outputs: { [out.uuid]: out }
     }
     const focus: Focus = {
         kind: FocusKind.NONE,
@@ -424,20 +439,22 @@ test("nodeUi no inputs body or outputs", () => {
         column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             text("node"),
             spacer(4),
-            row([])
+            row([outputsUi(theme, node.outputs.map(o => graph.outputs[o]), focus)])
         ])
     )
     expect(actual).toEqual(expected)
 })
 
-test("nodeUi 1 input, no body and no outputs", () => {
+test("nodeUi 1 input, no body and 1 outputs", () => {
     const node: Node = {
+        kind: NodeKind.TRANSFORM,
         uuid: 'node uuid',
         name: "node",
         position: { x: 0, y: 0 },
         inputs: ['input uuid'],
         body: 'body uuid',
-        outputs: [],
+        outputs: ['out'],
+        func: addFunc
     }
     const input: Input = {
         uuid: 'input uuid',
@@ -449,11 +466,18 @@ test("nodeUi 1 input, no body and no outputs", () => {
         uuid: 'body uuid',
         node: 'node',
     }
+    const out: Output = {
+        uuid: 'out',
+        name: 'out',
+        node: 'node',
+        edges: []
+    }
     const graph: Graph = {
         ...emptyGraph(),
         nodes: { [node.uuid]: node },
         inputs: { [input.uuid]: input },
         bodys: { [body.uuid]: body },
+        outputs: { [out.uuid]: out }
     }
     const focus: Focus = {
         kind: FocusKind.NONE,
@@ -475,7 +499,11 @@ test("nodeUi 1 input, no body and no outputs", () => {
         column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             text("node"),
             spacer(4),
-            row([inputsUi(theme, node.inputs.map(i => graph.inputs[i]), focus)])
+            row([
+                inputsUi(theme, node.inputs.map(i => graph.inputs[i]), focus),
+                spacer(15),
+                outputsUi(theme, node.outputs.map(o => graph.outputs[o]), focus)
+            ])
         ])
     )
     expect(actual).toEqual(expected)
@@ -483,10 +511,10 @@ test("nodeUi 1 input, no body and no outputs", () => {
 
 test("nodeUi 1 output, no body and no inputs", () => {
     const node: Node = {
+        kind: NodeKind.SOURCE,
         uuid: 'node uuid',
         name: "node",
         position: { x: 0, y: 0 },
-        inputs: [],
         body: 'body uuid',
         outputs: ['output uuid'],
     }
@@ -533,25 +561,33 @@ test("nodeUi 1 output, no body and no inputs", () => {
     expect(actual).toEqual(expected)
 })
 
-test("nodeUi no inputs or outputs but body defined", () => {
+test("nodeUi no inputs 1 outputs but body defined", () => {
     const node: Node = {
+        kind: NodeKind.SOURCE,
         uuid: 'node uuid',
         name: "node",
         position: { x: 0, y: 0 },
-        inputs: [],
         body: 'body uuid',
-        outputs: [],
+        outputs: ['output uuid'],
     }
     const body: Body = {
         kind: BodyKind.NUMBER,
         uuid: 'body uuid',
         node: 'node',
         value: 0,
+        text: ''
+    }
+    const output: Output = {
+        uuid: 'output uuid',
+        node: 'node uuid',
+        name: 'first',
+        edges: []
     }
     const graph: Graph = {
         ...emptyGraph(),
         nodes: { [node.uuid]: node },
-        bodys: { [body.uuid]: body }
+        bodys: { [body.uuid]: body },
+        outputs: { [output.uuid]: output },
     }
     const focus: Focus = {
         kind: FocusKind.NONE,
@@ -573,7 +609,11 @@ test("nodeUi no inputs or outputs but body defined", () => {
         column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             text("node"),
             spacer(4),
-            row([numberBody(theme, body, focus), spacer(15)])
+            row([
+                numberBody(theme, body, focus),
+                spacer(15),
+                outputsUi(theme, node.outputs.map(o => graph.outputs[o]), focus)
+            ])
         ])
     )
     expect(actual).toEqual(expected)
@@ -581,12 +621,14 @@ test("nodeUi no inputs or outputs but body defined", () => {
 
 test("nodeUi 1 input and 1 output but no body", () => {
     const node: Node = {
+        kind: NodeKind.TRANSFORM,
         uuid: 'node uuid',
         name: "node",
         position: { x: 0, y: 0 },
         inputs: ['input uuid'],
         body: 'body uuid',
         outputs: ['output uuid'],
+        func: addFunc
     }
     const input: Input = {
         uuid: 'input uuid',
@@ -641,14 +683,16 @@ test("nodeUi 1 input and 1 output but no body", () => {
     expect(actual).toEqual(expected)
 })
 
-test("nodeUi 1 input body but no outputs", () => {
+test("nodeUi 1 input body and output", () => {
     const node: Node = {
+        kind: NodeKind.TRANSFORM,
         uuid: 'node uuid',
         name: "node",
         position: { x: 0, y: 0 },
         inputs: ['input uuid'],
         body: 'body uuid',
-        outputs: [],
+        outputs: ['output uuid'],
+        func: addFunc
     }
     const input: Input = {
         uuid: 'input uuid',
@@ -660,12 +704,20 @@ test("nodeUi 1 input body but no outputs", () => {
         uuid: 'body uuid',
         node: 'node uuid',
         value: 0,
+        text: ''
+    }
+    const output: Output = {
+        uuid: 'output uuid',
+        node: 'node',
+        name: 'first',
+        edges: []
     }
     const graph: Graph = {
         ...emptyGraph(),
         nodes: { [node.uuid]: node },
         inputs: { [input.uuid]: input },
-        bodys: { [body.uuid]: body }
+        bodys: { [body.uuid]: body },
+        outputs: { [output.uuid]: output },
     }
     const focus: Focus = {
         kind: FocusKind.NONE,
@@ -689,22 +741,31 @@ test("nodeUi 1 input body but no outputs", () => {
             spacer(4),
             row([
                 inputsUi(theme, node.inputs.map(i => graph.inputs[i]), focus),
+                spacer(15),
                 numberBody(theme, body, focus),
                 spacer(15),
+                outputsUi(theme, node.outputs.map(o => graph.outputs[o]), focus)
             ])
         ])
     )
     expect(actual).toEqual(expected)
 })
 
-test("nodeUi 1 output body but no inputs", () => {
+test("nodeUi 1 input output body", () => {
     const node: Node = {
+        kind: NodeKind.TRANSFORM,
         uuid: 'node uuid',
         name: "node",
         position: { x: 0, y: 0 },
-        inputs: [],
+        inputs: ['input uuid'],
         body: 'body uuid',
         outputs: ['output uuid'],
+        func: addFunc
+    }
+    const input: Input = {
+        uuid: 'input uuid',
+        node: 'node uuid',
+        name: 'first'
     }
     const output: Output = {
         uuid: 'output uuid',
@@ -717,10 +778,12 @@ test("nodeUi 1 output body but no inputs", () => {
         uuid: 'body uuid',
         node: 'node uuid',
         value: 0,
+        text: ''
     }
     const graph: Graph = {
         ...emptyGraph(),
         nodes: { [node.uuid]: node },
+        inputs: { [input.uuid]: input },
         outputs: { [output.uuid]: output },
         bodys: { [body.uuid]: body }
     }
@@ -745,6 +808,8 @@ test("nodeUi 1 output body but no inputs", () => {
             text("node"),
             spacer(4),
             row([
+                inputsUi(theme, node.inputs.map(i => graph.inputs[i]), focus),
+                spacer(15),
                 numberBody(theme, body, focus),
                 spacer(15),
                 outputsUi(theme, node.outputs.map(o => graph.outputs[o]), focus),
@@ -757,12 +822,14 @@ test("nodeUi 1 output body but no inputs", () => {
 
 test("nodeUi 1 input body and 1 output", () => {
     const node: Node = {
+        kind: NodeKind.TRANSFORM,
         uuid: 'node uuid',
         name: "node",
         position: { x: 0, y: 0 },
         inputs: ['input uuid'],
         body: 'body uuid',
         outputs: ['output uuid'],
+        func: addFunc
     }
     const input: Input = {
         uuid: 'input uuid',
@@ -780,6 +847,7 @@ test("nodeUi 1 input body and 1 output", () => {
         uuid: 'body uuid',
         node: 'node uuid',
         value: 0,
+        text: ''
     }
     const graph: Graph = {
         ...emptyGraph(),
@@ -1023,28 +1091,34 @@ test("view with three nodes and no edges", () => {
         graph: {
             nodes: {
                 "first": {
+                    kind: NodeKind.TRANSFORM,
                     uuid: "first",
                     name: "first",
                     inputs: [],
                     body: 'first body uuid',
                     outputs: [],
-                    position: { x: 0, y: 0 }
+                    position: { x: 0, y: 0 },
+                    func: addFunc
                 },
                 "second": {
+                    kind: NodeKind.TRANSFORM,
                     uuid: "second",
                     name: "second",
                     inputs: [],
                     body: 'second body uuid',
                     outputs: [],
-                    position: { x: 0, y: 0 }
+                    position: { x: 0, y: 0 },
+                    func: addFunc
                 },
                 "third": {
+                    kind: NodeKind.TRANSFORM,
                     uuid: "thrid",
                     name: "thrid",
                     inputs: [],
                     body: 'third body uuid',
                     outputs: [],
-                    position: { x: 0, y: 0 }
+                    position: { x: 0, y: 0 },
+                    func: addFunc
                 }
             },
             edges: {},
@@ -1105,28 +1179,34 @@ test("view with three nodes and no edges", () => {
         graph: {
             nodes: {
                 "first": {
+                    kind: NodeKind.TRANSFORM,
                     uuid: "first",
                     name: "first",
                     inputs: [],
                     body: 'first body uuid',
                     outputs: [],
                     position: { x: 0, y: 0 },
+                    func: addFunc
                 },
                 "second": {
+                    kind: NodeKind.TRANSFORM,
                     uuid: "second",
                     name: "second",
                     inputs: [],
                     body: 'second body uuid',
                     outputs: [],
                     position: { x: 0, y: 0 },
+                    func: addFunc
                 },
                 "third": {
+                    kind: NodeKind.TRANSFORM,
                     uuid: "thrid",
                     name: "thrid",
                     inputs: [],
                     body: 'third body uuid',
                     outputs: [],
                     position: { x: 0, y: 0 },
+                    func: addFunc
                 }
             },
             edges: {},
@@ -1201,28 +1281,34 @@ test("view with three nodes and one edges", () => {
         graph: {
             nodes: {
                 "first": {
+                    kind: NodeKind.TRANSFORM,
                     uuid: "first",
                     name: "first",
                     inputs: [],
                     body: 'first body uuid',
                     outputs: ['output uuid'],
-                    position: { x: 0, y: 0 }
+                    position: { x: 0, y: 0 },
+                    func: addFunc
                 },
                 "second": {
+                    kind: NodeKind.TRANSFORM,
                     uuid: "second",
                     name: "second",
                     inputs: ['input uuid'],
                     body: 'second body uuid',
                     outputs: [],
-                    position: { x: 0, y: 0 }
+                    position: { x: 0, y: 0 },
+                    func: addFunc
                 },
                 "third": {
+                    kind: NodeKind.TRANSFORM,
                     uuid: "third",
                     name: "third",
                     inputs: [],
                     body: 'third body uuid',
                     outputs: [],
-                    position: { x: 0, y: 0 }
+                    position: { x: 0, y: 0 },
+                    func: addFunc
                 },
             },
             edges: {
@@ -1309,9 +1395,9 @@ test("view with body selected", () => {
         graph: {
             nodes: {
                 "number": {
+                    kind: NodeKind.SOURCE,
                     uuid: "number",
                     name: "number",
-                    inputs: [],
                     body: "body",
                     outputs: ["out"],
                     position: { x: 0, y: 0 }
@@ -1333,6 +1419,7 @@ test("view with body selected", () => {
                     uuid: "body",
                     node: "number",
                     value: 0,
+                    text: ''
                 }
             }
         },
@@ -1372,20 +1459,24 @@ test("view with input selected", () => {
         graph: {
             nodes: {
                 "add": {
+                    kind: NodeKind.TRANSFORM,
                     uuid: "add",
                     name: "add",
                     inputs: ["x0", "y0"],
                     body: 'add body uuid',
                     outputs: ["out0"],
-                    position: { x: 0, y: 0 }
+                    position: { x: 0, y: 0 },
+                    func: addFunc
                 },
                 "sub": {
+                    kind: NodeKind.TRANSFORM,
                     uuid: "sub",
                     name: "sub",
                     inputs: ["x1", "y1"],
                     body: 'sub body uuid',
                     outputs: ["out1"],
-                    position: { x: 0, y: 0 }
+                    position: { x: 0, y: 0 },
+                    func: subFunc
                 }
             },
             edges: {
@@ -1499,20 +1590,24 @@ test("view with output selected", () => {
         graph: {
             nodes: {
                 "add": {
+                    kind: NodeKind.TRANSFORM,
                     uuid: "add",
                     name: "add",
                     inputs: ["x0", "y0"],
                     body: 'add body uuid',
                     outputs: ["out0"],
-                    position: { x: 0, y: 0 }
+                    position: { x: 0, y: 0 },
+                    func: addFunc
                 },
                 "sub": {
+                    kind: NodeKind.TRANSFORM,
                     uuid: "sub",
                     name: "sub",
                     inputs: ["x1", "y1"],
                     body: 'sub body uuid',
                     outputs: ["out1"],
-                    position: { x: 0, y: 0 }
+                    position: { x: 0, y: 0 },
+                    func: subFunc
                 }
             },
             edges: {

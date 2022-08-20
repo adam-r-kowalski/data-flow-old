@@ -1,21 +1,27 @@
+import * as tf from '@tensorflow/tfjs-core'
+
 import { Model } from "../../src/model"
 import { emptyModel } from "../../src/model/empty"
 import { FocusKind } from "../../src/model/focus"
-import { Operations } from "../../src/model/graph"
+import { NodeTransform, OperationKind, Operations } from "../../src/model/graph"
+import { tensorFunc } from "../../src/model/operations"
 import { PointerActionKind } from "../../src/model/pointer_action"
 import { QuickSelectKind } from "../../src/model/quick_select"
 import { addNodeToGraph, EventKind, update } from "../../src/update"
 import { makeEffects } from "../mock_effects"
 
 const model = emptyModel({ width: 500, height: 500 })
+const addFunc = tensorFunc(tf.add)
 
 test("pressing i with nothing focused launches quick select for inputs", () => {
     const effects = makeEffects()
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
     }
     const model0: Model = { ...model, operations }
@@ -25,7 +31,7 @@ test("pressing i with nothing focused launches quick select for inputs", () => {
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
     })
-    const inputs = model1.graph.nodes[node].inputs
+    const inputs = (model1.graph.nodes[node] as NodeTransform).inputs
     const { model: model2 } = update(effects, model1, {
         kind: EventKind.KEYDOWN,
         key: 'i',
@@ -52,9 +58,11 @@ test("pressing i with output focused launches quick select for inputs", () => {
     const effects = makeEffects()
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
     }
     const model0: Model = { ...model, operations }
@@ -69,7 +77,7 @@ test("pressing i with output focused launches quick select for inputs", () => {
         kind: EventKind.CLICKED_OUTPUT,
         output
     })
-    const inputs = model2.graph.nodes[node].inputs
+    const inputs = (model2.graph.nodes[node] as NodeTransform).inputs
     const { model: model3 } = update(effects, model2, {
         kind: EventKind.KEYDOWN,
         key: 'i',
@@ -96,9 +104,11 @@ test("pressing i with input focused launches quick select for inputs", () => {
     const effects = makeEffects()
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
     }
     const model0: Model = { ...model, operations }
@@ -108,7 +118,7 @@ test("pressing i with input focused launches quick select for inputs", () => {
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
     })
-    const inputs = model1.graph.nodes[node].inputs
+    const inputs = (model1.graph.nodes[node] as NodeTransform).inputs
     const { model: model2 } = update(effects, model1, {
         kind: EventKind.CLICKED_INPUT,
         input: inputs[0]
@@ -139,15 +149,16 @@ test("pressing i with body focused launches quick select for inputs", () => {
     const effects = makeEffects()
     const operations: Operations = {
         'Number': {
+            kind: OperationKind.NUMBER,
             name: 'Number',
-            inputs: [],
-            body: 0,
             outputs: ['out']
         },
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
     }
     const model0: Model = { ...model, operations }
@@ -173,7 +184,7 @@ test("pressing i with body focused launches quick select for inputs", () => {
         key: 'i',
         ctrl: false
     })
-    const inputs = model4.graph.nodes[node1].inputs
+    const inputs = (model4.graph.nodes[node1] as NodeTransform).inputs
     const expectedModel: Model = {
         ...model2,
         focus: {
@@ -194,16 +205,18 @@ test("pressing i with body focused launches quick select for inputs", () => {
 test("pressing i with node focused launches quick select for inputs", () => {
     const effects = makeEffects()
     const operations: Operations = {
-        'Number': {
+        'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
     }
     const model0: Model = { ...model, operations }
     const { model: model1, node } = addNodeToGraph({
         model: model0,
-        operation: operations['Number'],
+        operation: operations['Add'],
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
     })
@@ -216,7 +229,7 @@ test("pressing i with node focused launches quick select for inputs", () => {
         key: 'i',
         ctrl: false
     })
-    const inputs = model3.graph.nodes[node].inputs
+    const inputs = (model3.graph.nodes[node] as NodeTransform).inputs
     const expectedModel: Model = {
         ...model2,
         focus: {
@@ -241,9 +254,11 @@ test("pressing hotkey with input quick select will select the input and disable 
     const effects = makeEffects()
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
     }
     const model0: Model = { ...model, operations }
@@ -253,7 +268,7 @@ test("pressing hotkey with input quick select will select the input and disable 
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
     })
-    const inputs = model1.graph.nodes[node].inputs
+    const inputs = (model1.graph.nodes[node] as NodeTransform).inputs
     const { model: model2 } = update(effects, model1, {
         kind: EventKind.KEYDOWN,
         key: 'i',
@@ -280,9 +295,11 @@ test("pressing o with nothing focused launches quick select for outputs", () => 
     const effects = makeEffects()
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
     }
     const model0: Model = { ...model, operations }
@@ -318,9 +335,11 @@ test("pressing o with output focused launches quick select for outputs", () => {
     const effects = makeEffects()
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
     }
     const model0: Model = { ...model, operations }
@@ -360,9 +379,11 @@ test("pressing o with input focused launches quick select for outputs", () => {
     const effects = makeEffects()
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
     }
     const model0: Model = { ...model, operations }
@@ -372,7 +393,7 @@ test("pressing o with input focused launches quick select for outputs", () => {
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
     })
-    const inputs = model1.graph.nodes[node].inputs
+    const inputs = (model1.graph.nodes[node] as NodeTransform).inputs
     const { model: model2 } = update(effects, model1, {
         kind: EventKind.CLICKED_INPUT,
         input: inputs[0]
@@ -403,15 +424,16 @@ test("pressing o with body focused launches quick select for outputs", () => {
     const effects = makeEffects()
     const operations: Operations = {
         'Number': {
+            kind: OperationKind.NUMBER,
             name: 'Number',
-            inputs: [],
-            body: 0,
             outputs: ['out']
         },
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
     }
     const model0: Model = { ...model, operations }
@@ -459,16 +481,18 @@ test("pressing o with body focused launches quick select for outputs", () => {
 test("pressing o with node focused launches quick select for outputs", () => {
     const effects = makeEffects()
     const operations: Operations = {
-        'Number': {
+        'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
     }
     const model0: Model = { ...model, operations }
     const { model: model1, node } = addNodeToGraph({
         model: model0,
-        operation: operations['Number'],
+        operation: operations['Add'],
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
     })
@@ -504,9 +528,11 @@ test("pressing hotkey with output quick select will select the output and disabl
     const effects = makeEffects()
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
     }
     const model0: Model = { ...model, operations }
@@ -542,9 +568,11 @@ test("pressing invalid hotkey with output quick select will disable quick select
     const effects = makeEffects()
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
     }
     const model0: Model = { ...model, operations }
@@ -579,9 +607,11 @@ test("pressing n with nothing focused launches quick select for nodes", () => {
     const effects = makeEffects()
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
     }
     const model0: Model = { ...model, operations }
@@ -614,9 +644,11 @@ test("pressing hotkey with node quick select will select the node and disable qu
     const effects = makeEffects()
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
     }
     const model0: Model = { ...model, operations }
@@ -653,9 +685,11 @@ test("pressing invalid hotkey with node quick select will disable quick select",
     const effects = makeEffects()
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
     }
     const model0: Model = { ...model, operations }
@@ -690,9 +724,8 @@ test("pressing b with nothing focused launches quick select for body", () => {
     const effects = makeEffects()
     const operations: Operations = {
         'Number': {
+            kind: OperationKind.NUMBER,
             name: 'Number',
-            inputs: [],
-            body: 0,
             outputs: ['out']
         },
     }
@@ -727,9 +760,8 @@ test("pressing hotkey with body quick select will select the body and disable qu
     const effects = makeEffects()
     const operations: Operations = {
         'Number': {
+            kind: OperationKind.NUMBER,
             name: 'Number',
-            inputs: [],
-            body: 0,
             outputs: ['out']
         },
     }
@@ -766,9 +798,8 @@ test("pressing invalid hotkey with body quick select will disable quick select",
     const effects = makeEffects()
     const operations: Operations = {
         'Number': {
+            kind: OperationKind.NUMBER,
             name: 'Number',
-            inputs: [],
-            body: 0,
             outputs: ['out']
         },
     }

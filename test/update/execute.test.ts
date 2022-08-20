@@ -4,31 +4,31 @@ import * as tf from '@tensorflow/tfjs-core'
 import { Model } from '../../src/model'
 import { emptyModel } from '../../src/model/empty'
 import { FocusKind } from '../../src/model/focus'
-import { BodyKind, Operations } from "../../src/model/graph"
-import { tensorOperation } from '../../src/model/operations'
+import { BodyKind, NodeKind, NodeTransform, OperationKind, Operations } from "../../src/model/graph"
+import { tensorFunc } from '../../src/model/operations'
 import { QuickSelectKind } from '../../src/model/quick_select'
-import { addNodeToGraph, EventKind, update } from '../../src/update'
+import { addNodeToGraph, EventKind, update, updateBodyNumber } from '../../src/update'
 import { EffectModel, makeEffects } from "../mock_effects"
 
 const model = emptyModel({ width: 500, height: 500 })
 
-const addOp = tensorOperation(tf.add)
+const addFunc = tensorFunc(tf.add)
 
 test("connecting all inputs for node evaluates operation", () => {
     const effectModel: EffectModel = { uuid: 0, time: 0 }
     const effects = makeEffects(effectModel)
     const operations: Operations = {
         'Number': {
+            kind: OperationKind.NUMBER,
             name: 'Number',
-            inputs: [],
-            body: 5,
             outputs: ['out'],
         },
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
             outputs: ['out'],
-            operation: addOp
+            func: addFunc
         },
     }
     const model0: Model = { ...model, operations }
@@ -38,31 +38,33 @@ test("connecting all inputs for node evaluates operation", () => {
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
     })
-    const { model: model2, node: y } = addNodeToGraph({
-        model: model1,
+    const model2 = updateBodyNumber(model1, model1.graph.nodes[x].body, () => 5).model
+    const { model: model3, node: y } = addNodeToGraph({
+        model: model2,
         operation: operations['Number'],
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
     })
-    const { model: model3, node: add } = addNodeToGraph({
-        model: model2,
+    const model4 = updateBodyNumber(model3, model3.graph.nodes[y].body, () => 5).model
+    const { model: model5, node: add } = addNodeToGraph({
+        model: model4,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
     })
-    const { model: model4 } = update(effects, model3, {
-        kind: EventKind.CLICKED_INPUT,
-        input: model3.graph.nodes[add].inputs[0]
-    })
-    const { model: model5 } = update(effects, model4, {
-        kind: EventKind.CLICKED_OUTPUT,
-        output: model3.graph.nodes[x].outputs[0]
-    })
     const { model: model6 } = update(effects, model5, {
         kind: EventKind.CLICKED_INPUT,
-        input: model5.graph.nodes[add].inputs[1]
+        input: (model5.graph.nodes[add] as NodeTransform).inputs[0]
     })
-    const { model: model7, render } = update(effects, model6, {
+    const { model: model7 } = update(effects, model6, {
+        kind: EventKind.CLICKED_OUTPUT,
+        output: model5.graph.nodes[x].outputs[0]
+    })
+    const { model: model8 } = update(effects, model7, {
+        kind: EventKind.CLICKED_INPUT,
+        input: (model5.graph.nodes[add] as NodeTransform).inputs[1]
+    })
+    const { model: model9, render } = update(effects, model8, {
         kind: EventKind.CLICKED_OUTPUT,
         output: model3.graph.nodes[y].outputs[0]
     })
@@ -71,93 +73,96 @@ test("connecting all inputs for node evaluates operation", () => {
         graph: {
             nodes: {
                 [x]: {
+                    kind: NodeKind.SOURCE,
                     uuid: x,
                     name: "Number",
-                    inputs: [],
-                    body: model4.graph.nodes[x].body,
-                    outputs: model4.graph.nodes[x].outputs,
+                    body: model5.graph.nodes[x].body,
+                    outputs: model5.graph.nodes[x].outputs,
                     position: { x: 0, y: 0 }
                 },
                 [y]: {
+                    kind: NodeKind.SOURCE,
                     uuid: y,
                     name: "Number",
-                    inputs: [],
-                    body: model4.graph.nodes[y].body,
-                    outputs: model4.graph.nodes[y].outputs,
+                    body: model5.graph.nodes[y].body,
+                    outputs: model5.graph.nodes[y].outputs,
                     position: { x: 0, y: 0 }
                 },
                 [add]: {
+                    kind: NodeKind.TRANSFORM,
                     uuid: add,
                     name: "Add",
-                    inputs: model4.graph.nodes[add].inputs,
-                    body: model4.graph.nodes[add].body,
-                    outputs: model4.graph.nodes[add].outputs,
+                    inputs: (model5.graph.nodes[add] as NodeTransform).inputs,
+                    body: model5.graph.nodes[add].body,
+                    outputs: model5.graph.nodes[add].outputs,
                     position: { x: 0, y: 0 },
-                    operation: addOp
+                    func: addFunc
                 },
             },
             edges: {
                 "11": {
                     uuid: "11",
-                    input: model4.graph.nodes[add].inputs[0],
+                    input: (model5.graph.nodes[add] as NodeTransform).inputs[0],
                     output: "1",
                 },
                 "12": {
                     uuid: "12",
-                    input: model4.graph.nodes[add].inputs[1],
+                    input: (model5.graph.nodes[add] as NodeTransform).inputs[1],
                     output: "4",
                 }
             },
             inputs: {
-                [model4.graph.nodes[add].inputs[0]]: {
-                    uuid: model4.graph.nodes[add].inputs[0],
+                [(model5.graph.nodes[add] as NodeTransform).inputs[0]]: {
+                    uuid: (model5.graph.nodes[add] as NodeTransform).inputs[0],
                     name: "x",
                     node: add,
                     edge: "11"
                 },
-                [model4.graph.nodes[add].inputs[1]]: {
-                    uuid: model4.graph.nodes[add].inputs[1],
+                [(model5.graph.nodes[add] as NodeTransform).inputs[1]]: {
+                    uuid: (model5.graph.nodes[add] as NodeTransform).inputs[1],
                     name: "y",
                     node: add,
                     edge: "12"
                 }
             },
             outputs: {
-                [model4.graph.nodes[x].outputs[0]]: {
-                    uuid: model4.graph.nodes[x].outputs[0],
+                [model5.graph.nodes[x].outputs[0]]: {
+                    uuid: model5.graph.nodes[x].outputs[0],
                     name: "out",
                     node: x,
                     edges: ["11"]
                 },
-                [model4.graph.nodes[y].outputs[0]]: {
-                    uuid: model4.graph.nodes[y].outputs[0],
+                [model5.graph.nodes[y].outputs[0]]: {
+                    uuid: model5.graph.nodes[y].outputs[0],
                     name: "out",
                     node: y,
                     edges: ["12"]
                 },
-                [model4.graph.nodes[add].outputs[0]]: {
-                    uuid: model4.graph.nodes[add].outputs[0],
+                [model5.graph.nodes[add].outputs[0]]: {
+                    uuid: model5.graph.nodes[add].outputs[0],
                     name: "out",
                     node: add,
                     edges: []
                 },
             },
             bodys: {
-                [model4.graph.nodes[x].body]: {
+                [model5.graph.nodes[x].body]: {
                     kind: BodyKind.NUMBER,
-                    uuid: model4.graph.nodes[x].body,
+                    uuid: model5.graph.nodes[x].body,
                     node: x,
                     value: 5,
+                    text: '5'
                 },
-                [model4.graph.nodes[y].body]: {
+                [model5.graph.nodes[y].body]: {
                     kind: BodyKind.NUMBER,
-                    uuid: model4.graph.nodes[y].body,
+                    uuid: model5.graph.nodes[y].body,
                     node: y,
                     value: 5,
+                    text: '5'
                 },
-                [model4.graph.nodes[add].body]: {
+                [model5.graph.nodes[add].body]: {
                     kind: BodyKind.TENSOR,
-                    uuid: model4.graph.nodes[add].body,
+                    uuid: model5.graph.nodes[add].body,
                     node: add,
                     value: 10,
                     shape: [],
@@ -168,26 +173,26 @@ test("connecting all inputs for node evaluates operation", () => {
         nodeOrder: [x, y, add],
         operations
     }
-    expect(model7).toEqual(expectedModel)
+    expect(model9).toEqual(expectedModel)
     expect(render).toEqual(true)
 })
 
 
-test("clicking output after clicking input adds connection", () => {
+test("changing body retriggers evaluation", () => {
     const effectModel: EffectModel = { uuid: 0, time: 0 }
     const effects = makeEffects(effectModel)
     const operations: Operations = {
         'Number': {
+            kind: OperationKind.NUMBER,
             name: 'Number',
-            inputs: [],
-            body: 5,
             outputs: ['out'],
         },
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
             outputs: ['out'],
-            operation: addOp
+            func: addFunc
         },
     }
     const model0: Model = { ...model, operations }
@@ -197,39 +202,41 @@ test("clicking output after clicking input adds connection", () => {
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
     })
-    const { model: model2, node: y } = addNodeToGraph({
-        model: model1,
+    const model2 = updateBodyNumber(model1, model1.graph.nodes[x].body, () => 5).model
+    const { model: model3, node: y } = addNodeToGraph({
+        model: model2,
         operation: operations['Number'],
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
     })
-    const { model: model3, node: add } = addNodeToGraph({
-        model: model2,
+    const model4 = updateBodyNumber(model3, model3.graph.nodes[y].body, () => 5).model
+    const { model: model5, node: add } = addNodeToGraph({
+        model: model4,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
     })
-    const { model: model4 } = update(effects, model3, {
-        kind: EventKind.CLICKED_INPUT,
-        input: model3.graph.nodes[add].inputs[0]
-    })
-    const { model: model5 } = update(effects, model4, {
-        kind: EventKind.CLICKED_OUTPUT,
-        output: model3.graph.nodes[x].outputs[0]
-    })
     const { model: model6 } = update(effects, model5, {
         kind: EventKind.CLICKED_INPUT,
-        input: model5.graph.nodes[add].inputs[1]
+        input: (model5.graph.nodes[add] as NodeTransform).inputs[0]
     })
     const { model: model7 } = update(effects, model6, {
         kind: EventKind.CLICKED_OUTPUT,
-        output: model3.graph.nodes[y].outputs[0]
+        output: model5.graph.nodes[x].outputs[0]
     })
     const { model: model8 } = update(effects, model7, {
-        kind: EventKind.CLICKED_BODY,
-        body: model3.graph.nodes[x].body!
+        kind: EventKind.CLICKED_INPUT,
+        input: (model5.graph.nodes[add] as NodeTransform).inputs[1]
     })
     const { model: model9 } = update(effects, model8, {
+        kind: EventKind.CLICKED_OUTPUT,
+        output: model3.graph.nodes[y].outputs[0]
+    })
+    const { model: model10 } = update(effects, model9, {
+        kind: EventKind.CLICKED_BODY,
+        body: model3.graph.nodes[x].body
+    })
+    const { model: model11 } = update(effects, model10, {
         kind: EventKind.KEYDOWN,
         key: 'Backspace',
         ctrl: false
@@ -239,109 +246,114 @@ test("clicking output after clicking input adds connection", () => {
         graph: {
             nodes: {
                 [x]: {
+                    kind: NodeKind.SOURCE,
                     uuid: x,
                     name: "Number",
-                    inputs: [],
-                    body: model4.graph.nodes[x].body,
-                    outputs: model4.graph.nodes[x].outputs,
+                    body: model5.graph.nodes[x].body,
+                    outputs: model5.graph.nodes[x].outputs,
                     position: { x: 0, y: 0 }
                 },
                 [y]: {
+                    kind: NodeKind.SOURCE,
                     uuid: y,
                     name: "Number",
-                    inputs: [],
-                    body: model4.graph.nodes[y].body,
-                    outputs: model4.graph.nodes[y].outputs,
+                    body: model5.graph.nodes[y].body,
+                    outputs: model5.graph.nodes[y].outputs,
                     position: { x: 0, y: 0 }
                 },
                 [add]: {
+                    kind: NodeKind.TRANSFORM,
                     uuid: add,
                     name: "Add",
-                    inputs: model4.graph.nodes[add].inputs,
-                    body: model4.graph.nodes[add].body,
-                    outputs: model4.graph.nodes[add].outputs,
+                    inputs: (model5.graph.nodes[add] as NodeTransform).inputs,
+                    body: model5.graph.nodes[add].body,
+                    outputs: model5.graph.nodes[add].outputs,
                     position: { x: 0, y: 0 },
-                    operation: addOp
+                    func: addFunc
                 },
             },
             edges: {
                 "11": {
                     uuid: "11",
-                    input: model4.graph.nodes[add].inputs[0],
+                    input: (model5.graph.nodes[add] as NodeTransform).inputs[0],
                     output: "1",
                 },
                 "12": {
                     uuid: "12",
-                    input: model4.graph.nodes[add].inputs[1],
+                    input: (model5.graph.nodes[add] as NodeTransform).inputs[1],
                     output: "4",
                 }
             },
             inputs: {
-                [model4.graph.nodes[add].inputs[0]]: {
-                    uuid: model4.graph.nodes[add].inputs[0],
+                [(model5.graph.nodes[add] as NodeTransform).inputs[0]]: {
+                    uuid: (model5.graph.nodes[add] as NodeTransform).inputs[0],
                     name: "x",
                     node: add,
                     edge: "11"
                 },
-                [model4.graph.nodes[add].inputs[1]]: {
-                    uuid: model4.graph.nodes[add].inputs[1],
+                [(model5.graph.nodes[add] as NodeTransform).inputs[1]]: {
+                    uuid: (model5.graph.nodes[add] as NodeTransform).inputs[1],
                     name: "y",
                     node: add,
                     edge: "12"
                 }
             },
             outputs: {
-                [model4.graph.nodes[x].outputs[0]]: {
-                    uuid: model4.graph.nodes[x].outputs[0],
+                [model5.graph.nodes[x].outputs[0]]: {
+                    uuid: model5.graph.nodes[x].outputs[0],
                     name: "out",
                     node: x,
                     edges: ["11"]
                 },
-                [model4.graph.nodes[y].outputs[0]]: {
-                    uuid: model4.graph.nodes[y].outputs[0],
+                [model5.graph.nodes[y].outputs[0]]: {
+                    uuid: model5.graph.nodes[y].outputs[0],
                     name: "out",
                     node: y,
                     edges: ["12"]
                 },
-                [model4.graph.nodes[add].outputs[0]]: {
-                    uuid: model4.graph.nodes[add].outputs[0],
+                [model5.graph.nodes[add].outputs[0]]: {
+                    uuid: model5.graph.nodes[add].outputs[0],
                     name: "out",
                     node: add,
                     edges: []
                 },
             },
             bodys: {
-                [model4.graph.nodes[x].body]: {
+                [model5.graph.nodes[x].body]: {
                     kind: BodyKind.NUMBER,
-                    uuid: model4.graph.nodes[x].body,
+                    uuid: model5.graph.nodes[x].body,
                     node: x,
                     value: 0,
+                    text: '0'
                 },
-                [model4.graph.nodes[y].body]: {
+                [model5.graph.nodes[y].body]: {
                     kind: BodyKind.NUMBER,
-                    uuid: model4.graph.nodes[y].body,
+                    uuid: model5.graph.nodes[y].body,
                     node: y,
                     value: 5,
+                    text: '5'
                 },
-                [model4.graph.nodes[add].body]: {
+                [model5.graph.nodes[add].body]: {
                     kind: BodyKind.TENSOR,
-                    uuid: model4.graph.nodes[add].body,
+                    uuid: model5.graph.nodes[add].body,
                     node: add,
                     value: 5,
                     shape: [],
-                    rank: 0,
+                    rank: 0
                 },
             }
         },
         nodeOrder: [x, y, add],
+        operations,
         focus: {
             kind: FocusKind.BODY,
-            body: model4.graph.nodes[x].body!,
-            quickSelect: { kind: QuickSelectKind.NONE }
-        },
-        operations
+            body: model5.graph.nodes[x].body,
+            quickSelect: {
+                kind: QuickSelectKind.NONE
+            }
+        }
     }
-    expect(model9).toEqual(expectedModel)
+    expect(model11).toEqual(expectedModel)
 })
 
 test("deleting input edge deletes body in associated input node and propagates out", () => {
@@ -349,16 +361,16 @@ test("deleting input edge deletes body in associated input node and propagates o
     const effects = makeEffects(effectModel)
     const operations: Operations = {
         'Number': {
+            kind: OperationKind.NUMBER,
             name: 'Number',
-            inputs: [],
-            body: 5,
             outputs: ['out'],
         },
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
             outputs: ['out'],
-            operation: addOp
+            func: addFunc
         },
     }
     const model0: Model = { ...model, operations }
@@ -368,39 +380,41 @@ test("deleting input edge deletes body in associated input node and propagates o
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
     })
-    const { model: model2, node: y } = addNodeToGraph({
-        model: model1,
+    const model2 = updateBodyNumber(model1, model1.graph.nodes[x].body, () => 5).model
+    const { model: model3, node: y } = addNodeToGraph({
+        model: model2,
         operation: operations['Number'],
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
     })
-    const { model: model3, node: add } = addNodeToGraph({
-        model: model2,
+    const model4 = updateBodyNumber(model3, model3.graph.nodes[y].body, () => 5).model
+    const { model: model5, node: add } = addNodeToGraph({
+        model: model4,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
     })
-    const { model: model4 } = update(effects, model3, {
-        kind: EventKind.CLICKED_INPUT,
-        input: model3.graph.nodes[add].inputs[0]
-    })
-    const { model: model5 } = update(effects, model4, {
-        kind: EventKind.CLICKED_OUTPUT,
-        output: model3.graph.nodes[x].outputs[0]
-    })
     const { model: model6 } = update(effects, model5, {
         kind: EventKind.CLICKED_INPUT,
-        input: model5.graph.nodes[add].inputs[1]
+        input: (model5.graph.nodes[add] as NodeTransform).inputs[0]
     })
     const { model: model7 } = update(effects, model6, {
         kind: EventKind.CLICKED_OUTPUT,
-        output: model6.graph.nodes[y].outputs[0]
+        output: model6.graph.nodes[x].outputs[0]
     })
     const { model: model8 } = update(effects, model7, {
         kind: EventKind.CLICKED_INPUT,
-        input: model7.graph.nodes[add].inputs[1]
+        input: (model7.graph.nodes[add] as NodeTransform).inputs[1]
     })
     const { model: model9 } = update(effects, model8, {
+        kind: EventKind.CLICKED_OUTPUT,
+        output: model8.graph.nodes[y].outputs[0]
+    })
+    const { model: model10 } = update(effects, model9, {
+        kind: EventKind.CLICKED_INPUT,
+        input: (model9.graph.nodes[add] as NodeTransform).inputs[1]
+    })
+    const { model: model11 } = update(effects, model10, {
         kind: EventKind.KEYDOWN,
         key: 'd',
         ctrl: false
@@ -410,87 +424,90 @@ test("deleting input edge deletes body in associated input node and propagates o
         graph: {
             nodes: {
                 [x]: {
+                    kind: NodeKind.SOURCE,
                     uuid: x,
                     name: "Number",
-                    inputs: [],
-                    body: model4.graph.nodes[x].body,
-                    outputs: model4.graph.nodes[x].outputs,
+                    body: model5.graph.nodes[x].body,
+                    outputs: model5.graph.nodes[x].outputs,
                     position: { x: 0, y: 0 }
                 },
                 [y]: {
+                    kind: NodeKind.SOURCE,
                     uuid: y,
                     name: "Number",
-                    inputs: [],
-                    body: model4.graph.nodes[y].body,
-                    outputs: model4.graph.nodes[y].outputs,
+                    body: model5.graph.nodes[y].body,
+                    outputs: model5.graph.nodes[y].outputs,
                     position: { x: 0, y: 0 }
                 },
                 [add]: {
+                    kind: NodeKind.TRANSFORM,
                     uuid: add,
                     name: "Add",
-                    inputs: model4.graph.nodes[add].inputs,
-                    body: model4.graph.nodes[add].body,
-                    outputs: model4.graph.nodes[add].outputs,
+                    inputs: (model5.graph.nodes[add] as NodeTransform).inputs,
+                    body: model5.graph.nodes[add].body,
+                    outputs: model5.graph.nodes[add].outputs,
                     position: { x: 0, y: 0 },
-                    operation: addOp
+                    func: addFunc
                 },
             },
             edges: {
                 "11": {
                     uuid: "11",
-                    input: model4.graph.nodes[add].inputs[0],
+                    input: (model5.graph.nodes[add] as NodeTransform).inputs[0],
                     output: "1",
                 },
             },
             inputs: {
-                [model4.graph.nodes[add].inputs[0]]: {
-                    uuid: model4.graph.nodes[add].inputs[0],
+                [(model5.graph.nodes[add] as NodeTransform).inputs[0]]: {
+                    uuid: (model5.graph.nodes[add] as NodeTransform).inputs[0],
                     name: "x",
                     node: add,
                     edge: "11"
                 },
-                [model4.graph.nodes[add].inputs[1]]: {
-                    uuid: model4.graph.nodes[add].inputs[1],
+                [(model5.graph.nodes[add] as NodeTransform).inputs[1]]: {
+                    uuid: (model5.graph.nodes[add] as NodeTransform).inputs[1],
                     name: "y",
                     node: add,
                 }
             },
             outputs: {
-                [model4.graph.nodes[x].outputs[0]]: {
-                    uuid: model4.graph.nodes[x].outputs[0],
+                [model5.graph.nodes[x].outputs[0]]: {
+                    uuid: model5.graph.nodes[x].outputs[0],
                     name: "out",
                     node: x,
                     edges: ["11"]
                 },
-                [model4.graph.nodes[y].outputs[0]]: {
-                    uuid: model4.graph.nodes[y].outputs[0],
+                [model5.graph.nodes[y].outputs[0]]: {
+                    uuid: model5.graph.nodes[y].outputs[0],
                     name: "out",
                     node: y,
                     edges: []
                 },
-                [model4.graph.nodes[add].outputs[0]]: {
-                    uuid: model4.graph.nodes[add].outputs[0],
+                [model5.graph.nodes[add].outputs[0]]: {
+                    uuid: model5.graph.nodes[add].outputs[0],
                     name: "out",
                     node: add,
                     edges: []
                 },
             },
             bodys: {
-                [model4.graph.nodes[x].body]: {
+                [model5.graph.nodes[x].body]: {
                     kind: BodyKind.NUMBER,
-                    uuid: model4.graph.nodes[x].body,
+                    uuid: model5.graph.nodes[x].body,
                     node: x,
                     value: 5,
+                    text: '5'
                 },
-                [model4.graph.nodes[y].body]: {
+                [model5.graph.nodes[y].body]: {
                     kind: BodyKind.NUMBER,
-                    uuid: model4.graph.nodes[y].body,
+                    uuid: model5.graph.nodes[y].body,
                     node: y,
                     value: 5,
+                    text: '5'
                 },
-                [model4.graph.nodes[add].body]: {
+                [model5.graph.nodes[add].body]: {
                     kind: BodyKind.NO,
-                    uuid: model4.graph.nodes[add].body,
+                    uuid: model5.graph.nodes[add].body,
                     node: add,
                 },
             }
@@ -498,7 +515,7 @@ test("deleting input edge deletes body in associated input node and propagates o
         nodeOrder: [x, y, add],
         operations
     }
-    expect(model9).toEqual(expectedModel)
+    expect(model11).toEqual(expectedModel)
 })
 
 test("deleting output edge deletes body in associated input node and propagates out", () => {
@@ -506,16 +523,16 @@ test("deleting output edge deletes body in associated input node and propagates 
     const effects = makeEffects(effectModel)
     const operations: Operations = {
         'Number': {
+            kind: OperationKind.NUMBER,
             name: 'Number',
-            inputs: [],
-            body: 5,
             outputs: ['out'],
         },
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
             outputs: ['out'],
-            operation: addOp
+            func: addFunc
         },
     }
     const model0: Model = { ...model, operations }
@@ -525,39 +542,41 @@ test("deleting output edge deletes body in associated input node and propagates 
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
     })
-    const { model: model2, node: y } = addNodeToGraph({
-        model: model1,
+    const model2 = updateBodyNumber(model1, model1.graph.nodes[x].body, () => 5).model
+    const { model: model3, node: y } = addNodeToGraph({
+        model: model2,
         operation: operations['Number'],
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
     })
-    const { model: model3, node: add } = addNodeToGraph({
-        model: model2,
+    const model4 = updateBodyNumber(model3, model3.graph.nodes[y].body, () => 5).model
+    const { model: model5, node: add } = addNodeToGraph({
+        model: model4,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
     })
-    const { model: model4 } = update(effects, model3, {
-        kind: EventKind.CLICKED_INPUT,
-        input: model3.graph.nodes[add].inputs[0]
-    })
-    const { model: model5 } = update(effects, model4, {
-        kind: EventKind.CLICKED_OUTPUT,
-        output: model3.graph.nodes[x].outputs[0]
-    })
     const { model: model6 } = update(effects, model5, {
         kind: EventKind.CLICKED_INPUT,
-        input: model5.graph.nodes[add].inputs[1]
+        input: (model5.graph.nodes[add] as NodeTransform).inputs[0]
     })
     const { model: model7 } = update(effects, model6, {
         kind: EventKind.CLICKED_OUTPUT,
-        output: model6.graph.nodes[y].outputs[0]
+        output: model6.graph.nodes[x].outputs[0]
     })
     const { model: model8 } = update(effects, model7, {
-        kind: EventKind.CLICKED_OUTPUT,
-        output: model7.graph.nodes[y].outputs[0]
+        kind: EventKind.CLICKED_INPUT,
+        input: (model7.graph.nodes[add] as NodeTransform).inputs[1]
     })
     const { model: model9 } = update(effects, model8, {
+        kind: EventKind.CLICKED_OUTPUT,
+        output: model8.graph.nodes[y].outputs[0]
+    })
+    const { model: model10 } = update(effects, model9, {
+        kind: EventKind.CLICKED_OUTPUT,
+        output: model9.graph.nodes[y].outputs[0]
+    })
+    const { model: model11 } = update(effects, model10, {
         kind: EventKind.KEYDOWN,
         key: 'd',
         ctrl: false
@@ -567,87 +586,90 @@ test("deleting output edge deletes body in associated input node and propagates 
         graph: {
             nodes: {
                 [x]: {
+                    kind: NodeKind.SOURCE,
                     uuid: x,
                     name: "Number",
-                    inputs: [],
-                    body: model4.graph.nodes[x].body,
-                    outputs: model4.graph.nodes[x].outputs,
+                    body: model5.graph.nodes[x].body,
+                    outputs: model5.graph.nodes[x].outputs,
                     position: { x: 0, y: 0 }
                 },
                 [y]: {
+                    kind: NodeKind.SOURCE,
                     uuid: y,
                     name: "Number",
-                    inputs: [],
-                    body: model4.graph.nodes[y].body,
-                    outputs: model4.graph.nodes[y].outputs,
+                    body: model5.graph.nodes[y].body,
+                    outputs: model5.graph.nodes[y].outputs,
                     position: { x: 0, y: 0 }
                 },
                 [add]: {
+                    kind: NodeKind.TRANSFORM,
                     uuid: add,
                     name: "Add",
-                    inputs: model4.graph.nodes[add].inputs,
-                    body: model4.graph.nodes[add].body,
-                    outputs: model4.graph.nodes[add].outputs,
+                    inputs: (model5.graph.nodes[add] as NodeTransform).inputs,
+                    body: model5.graph.nodes[add].body,
+                    outputs: model5.graph.nodes[add].outputs,
                     position: { x: 0, y: 0 },
-                    operation: addOp
+                    func: addFunc
                 },
             },
             edges: {
                 "11": {
                     uuid: "11",
-                    input: model4.graph.nodes[add].inputs[0],
+                    input: (model5.graph.nodes[add] as NodeTransform).inputs[0],
                     output: "1",
                 },
             },
             inputs: {
-                [model4.graph.nodes[add].inputs[0]]: {
-                    uuid: model4.graph.nodes[add].inputs[0],
+                [(model5.graph.nodes[add] as NodeTransform).inputs[0]]: {
+                    uuid: (model5.graph.nodes[add] as NodeTransform).inputs[0],
                     name: "x",
                     node: add,
                     edge: "11"
                 },
-                [model4.graph.nodes[add].inputs[1]]: {
-                    uuid: model4.graph.nodes[add].inputs[1],
+                [(model5.graph.nodes[add] as NodeTransform).inputs[1]]: {
+                    uuid: (model5.graph.nodes[add] as NodeTransform).inputs[1],
                     name: "y",
                     node: add,
                 }
             },
             outputs: {
-                [model4.graph.nodes[x].outputs[0]]: {
-                    uuid: model4.graph.nodes[x].outputs[0],
+                [model5.graph.nodes[x].outputs[0]]: {
+                    uuid: model5.graph.nodes[x].outputs[0],
                     name: "out",
                     node: x,
                     edges: ["11"]
                 },
-                [model4.graph.nodes[y].outputs[0]]: {
-                    uuid: model4.graph.nodes[y].outputs[0],
+                [model5.graph.nodes[y].outputs[0]]: {
+                    uuid: model5.graph.nodes[y].outputs[0],
                     name: "out",
                     node: y,
                     edges: []
                 },
-                [model4.graph.nodes[add].outputs[0]]: {
-                    uuid: model4.graph.nodes[add].outputs[0],
+                [model5.graph.nodes[add].outputs[0]]: {
+                    uuid: model5.graph.nodes[add].outputs[0],
                     name: "out",
                     node: add,
                     edges: []
                 },
             },
             bodys: {
-                [model4.graph.nodes[x].body]: {
+                [model5.graph.nodes[x].body]: {
                     kind: BodyKind.NUMBER,
-                    uuid: model4.graph.nodes[x].body,
+                    uuid: model5.graph.nodes[x].body,
                     node: x,
                     value: 5,
+                    text: '5'
                 },
-                [model4.graph.nodes[y].body]: {
+                [model5.graph.nodes[y].body]: {
                     kind: BodyKind.NUMBER,
-                    uuid: model4.graph.nodes[y].body,
+                    uuid: model5.graph.nodes[y].body,
                     node: y,
                     value: 5,
+                    text: '5'
                 },
-                [model4.graph.nodes[add].body]: {
+                [model5.graph.nodes[add].body]: {
                     kind: BodyKind.NO,
-                    uuid: model4.graph.nodes[add].body,
+                    uuid: model5.graph.nodes[add].body,
                     node: add,
                 },
             }
@@ -655,5 +677,5 @@ test("deleting output edge deletes body in associated input node and propagates 
         nodeOrder: [x, y, add],
         operations
     }
-    expect(model9).toEqual(expectedModel)
+    expect(model11).toEqual(expectedModel)
 })

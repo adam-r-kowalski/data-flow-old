@@ -412,7 +412,7 @@ const updateFinderSearch = (model: Model, focus: FocusFinder, transform: (search
     }
 }
 
-const updateBodyNumber = (model: Model, body: UUID, transform: (value: number) => number): UpdateResult<Model, AppEvent> => {
+export const updateBodyNumber = (model: Model, body: UUID, transform: (value: number) => number): UpdateResult<Model, AppEvent> => {
     return {
         model: {
             ...model,

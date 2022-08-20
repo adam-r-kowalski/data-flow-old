@@ -4,7 +4,7 @@ import { Model } from "../model"
 import { Theme } from '../model/theme'
 import { Focus, FocusFinder, FocusKind } from "../model/focus"
 import { text, stack, scene, row, container, column, Connection, UI } from '../ui'
-import { BodyKind, Graph, Input, Output, ScatterBody, TensorBody, UUID } from "../model/graph"
+import { BodyKind, Graph, Input, NodeKind, NumberBody, Output, ScatterBody, TensorBody, UUID } from "../model/graph"
 import { contextMenu } from "./context_menu"
 import { QuickSelectKind } from "../model/quick_select"
 import { identity } from "../linear_algebra/matrix3x3"
@@ -92,22 +92,29 @@ export const outputsUi = (theme: Theme, outputs: Output[], focus: Focus) =>
 const formatNumber = (value: Number): string =>
     Number.isInteger(value) ? value.toString() : value.toFixed(2)
 
-export const tensorBody = (theme: Theme, body: TensorBody, focus: Focus): UI<AppEvent> => {
+
+export const numberBody = (theme: Theme, body: NumberBody, focus: Focus): UI<AppEvent> => {
+    const value = focus.quickSelect.kind === QuickSelectKind.BODY ?
+        (focus.quickSelect.hotkeys[body.uuid] ?? formatNumber(body.value)) :
+        formatNumber(body.value)
+    return container({
+        color: isFocused(focus, body.uuid) ? theme.focusInput : theme.background,
+        padding: 5,
+        onClick: {
+            kind: EventKind.CLICKED_BODY,
+            body: body.uuid
+        }
+    },
+        text(value))
+}
+
+export const tensorBody = (theme: Theme, body: TensorBody): UI<AppEvent> => {
     switch (body.rank) {
         case 0: {
-            const value = focus.quickSelect.kind === QuickSelectKind.BODY ?
-                (focus.quickSelect.hotkeys[body.uuid] ?? formatNumber(body.value as Number)) :
-                formatNumber(body.value as Number)
-            const onClick: AppEvent | undefined = body.editable ?
-                {
-                    kind: EventKind.CLICKED_BODY,
-                    body: body.uuid
-                } :
-                undefined
+            const value = formatNumber(body.value as Number)
             return container({
-                color: isFocused(focus, body.uuid) ? theme.focusInput : theme.background,
-                padding: 5,
-                onClick
+                color: theme.background,
+                padding: 5
             },
                 text(value))
         }
@@ -154,16 +161,17 @@ export const scatterBody = (theme: Theme, body: ScatterBody): UI<AppEvent> => {
 export const nodeUi = (theme: Theme, nodeUUID: UUID, graph: Graph, focus: Focus): UI<AppEvent> => {
     const node = graph.nodes[nodeUUID]
     const rowEntries: UI<AppEvent>[] = []
-    if (node.inputs.length) {
+    if (node.kind === NodeKind.TRANSFORM) {
         rowEntries.push(inputsUi(theme, node.inputs.map(i => graph.inputs[i]), focus))
-    }
-    if (node.inputs.length && node.outputs.length) {
         rowEntries.push(spacer(15))
     }
     const body = graph.bodys[node.body]
     switch (body.kind) {
+        case BodyKind.NUMBER:
+            rowEntries.push(numberBody(theme, body, focus), spacer(15))
+            break
         case BodyKind.TENSOR:
-            rowEntries.push(tensorBody(theme, body, focus), spacer(15))
+            rowEntries.push(tensorBody(theme, body), spacer(15))
             break
         case BodyKind.SCATTER:
             rowEntries.push(scatterBody(theme, body), spacer(15))
@@ -171,9 +179,7 @@ export const nodeUi = (theme: Theme, nodeUUID: UUID, graph: Graph, focus: Focus)
         default:
             break
     }
-    if (node.outputs.length) {
-        rowEntries.push(outputsUi(theme, node.outputs.map(o => graph.outputs[o]), focus))
-    }
+    rowEntries.push(outputsUi(theme, node.outputs.map(o => graph.outputs[o]), focus))
     const name = focus.quickSelect.kind === QuickSelectKind.NODE ?
         focus.quickSelect.hotkeys[node.uuid] :
         node.name
@@ -329,8 +335,8 @@ export const view = (model: Model): UI<AppEvent> => {
             break
         case FocusKind.BODY:
             const body = model.graph.bodys[model.focus.body]
-            if (body.kind === BodyKind.TENSOR) {
-                const sign = (body.value as number) >= 0 ? '-' : '+'
+            if (body.kind === BodyKind.NUMBER) {
+                const sign = body.value >= 0 ? '-' : '+'
                 stacked.push(numericVirtualKeyboard(model.theme, sign))
             }
             break

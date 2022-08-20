@@ -20,6 +20,7 @@ export interface Output {
 
 export enum BodyKind {
     NO,
+    NUMBER,
     TENSOR,
     SCATTER,
     ERROR,
@@ -29,7 +30,14 @@ export interface NoBody {
     readonly kind: BodyKind.NO
     readonly uuid: UUID
     readonly node: UUID
-    readonly editable: false
+}
+
+export interface NumberBody {
+    readonly kind: BodyKind.NUMBER
+    readonly uuid: UUID
+    readonly node: UUID
+    readonly value: number
+    readonly text: string
 }
 
 export interface TensorBody {
@@ -39,7 +47,6 @@ export interface TensorBody {
     readonly value: tf.TensorLike
     readonly rank: number
     readonly shape: number[]
-    readonly editable: boolean
 }
 
 export interface ScatterBody {
@@ -48,18 +55,17 @@ export interface ScatterBody {
     readonly node: UUID
     readonly x: number[]
     readonly y: number[]
-    readonly editable: false
 }
 
 export interface ErrorBody {
     readonly kind: BodyKind.ERROR
     readonly uuid: UUID
     readonly node: UUID
-    readonly editable: false
 }
 
 export type Body =
     | NoBody
+    | NumberBody
     | TensorBody
     | ScatterBody
     | ErrorBody
@@ -69,15 +75,37 @@ export interface Position {
     readonly y: number
 }
 
-export interface Node {
+export type Function = (currentBody: Body, ...inputs: Body[]) => Body
+
+export enum NodeKind {
+    SOURCE,
+    TRANSFORM,
+}
+
+export interface NodeSource {
+    readonly kind: NodeKind.SOURCE
+    readonly uuid: UUID
+    readonly name: string
+    readonly body: UUID
+    readonly outputs: Readonly<UUID[]>
+    readonly position: Position
+}
+
+
+export interface NodeTransform {
+    readonly kind: NodeKind.TRANSFORM
     readonly uuid: UUID
     readonly name: string
     readonly inputs: Readonly<UUID[]>
     readonly body: UUID
     readonly outputs: Readonly<UUID[]>
     readonly position: Position
-    readonly operation?: (currentBody: Body, ...inputs: Body[]) => Body
+    readonly func: Function
 }
+
+export type Node =
+    | NodeSource
+    | NodeTransform
 
 export interface Edge {
     readonly uuid: UUID
@@ -101,13 +129,29 @@ export interface Graph {
 
 export type Tensor = tf.TensorLike | tf.Tensor<tf.Rank>
 
-export interface Operation {
+
+export enum OperationKind {
+    NUMBER,
+    TRANSFORM,
+}
+
+export interface OperationNumber {
+    readonly kind: OperationKind.NUMBER
+    readonly name: string
+    readonly outputs: Readonly<string[]>
+}
+
+export interface OperationTransform {
+    readonly kind: OperationKind.TRANSFORM
     readonly name: string
     readonly inputs: Readonly<string[]>
-    readonly body?: number
     readonly outputs: Readonly<string[]>
-    readonly operation?: (currentBody: Body, ...inputs: Body[]) => Body
+    readonly func: Function
 }
+
+export type Operation =
+    | OperationNumber
+    | OperationTransform
 
 export type Operations = { [name: string]: Operation }
 

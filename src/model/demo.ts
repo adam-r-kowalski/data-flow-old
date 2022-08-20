@@ -1,5 +1,5 @@
 
-import { GenerateUUID } from './graph'
+import { GenerateUUID, NodeTransform } from './graph'
 import { addEdge, addNode, changeBodyValue } from "../update/graph"
 import { Model, Window } from '.'
 import { emptyModel } from './empty'
@@ -39,20 +39,20 @@ export const demoModel = (window: Window, generateUUID: GenerateUUID): Model => 
     })
     const { graph: graph7 } = addEdge({
         graph: graph6,
-        input: graph6.nodes[linspace].inputs[0],
-        output: graph6.nodes[start].outputs[0],
+        input: (graph6.nodes[linspace] as NodeTransform).inputs[0],
+        output: (graph6.nodes[start] as NodeTransform).outputs[0],
         generateUUID
     })
     const { graph: graph8 } = addEdge({
         graph: graph7,
-        input: graph7.nodes[linspace].inputs[1],
-        output: graph7.nodes[stop].outputs[0],
+        input: (graph7.nodes[linspace] as NodeTransform).inputs[1],
+        output: (graph7.nodes[stop] as NodeTransform).outputs[0],
         generateUUID
     })
     const { graph: graph9 } = addEdge({
         graph: graph8,
-        input: graph8.nodes[linspace].inputs[2],
-        output: graph8.nodes[num].outputs[0],
+        input: (graph8.nodes[linspace] as NodeTransform).inputs[2],
+        output: (graph8.nodes[num] as NodeTransform).outputs[0],
         generateUUID
     })
     const { graph: graph10, node: square } = addNode({
@@ -63,8 +63,8 @@ export const demoModel = (window: Window, generateUUID: GenerateUUID): Model => 
     })
     const { graph: graph11 } = addEdge({
         graph: graph10,
-        input: graph10.nodes[square].inputs[0],
-        output: graph10.nodes[linspace].outputs[0],
+        input: (graph10.nodes[square] as NodeTransform).inputs[0],
+        output: (graph10.nodes[linspace] as NodeTransform).outputs[0],
         generateUUID
     })
     const { graph: graph12, node: scatter } = addNode({
@@ -75,14 +75,14 @@ export const demoModel = (window: Window, generateUUID: GenerateUUID): Model => 
     })
     const { graph: graph13 } = addEdge({
         graph: graph12,
-        input: graph12.nodes[scatter].inputs[0],
-        output: graph12.nodes[linspace].outputs[0],
+        input: (graph12.nodes[scatter] as NodeTransform).inputs[0],
+        output: (graph12.nodes[linspace] as NodeTransform).outputs[0],
         generateUUID
     })
     const { graph: graph14 } = addEdge({
         graph: graph13,
-        input: graph13.nodes[scatter].inputs[1],
-        output: graph13.nodes[square].outputs[0],
+        input: (graph13.nodes[scatter] as NodeTransform).inputs[1],
+        output: (graph13.nodes[square] as NodeTransform).outputs[0],
         generateUUID
     })
     const { graph: graph15, node: stack } = addNode({
@@ -93,14 +93,14 @@ export const demoModel = (window: Window, generateUUID: GenerateUUID): Model => 
     })
     const { graph: graph16 } = addEdge({
         graph: graph15,
-        input: graph15.nodes[stack].inputs[0],
-        output: graph15.nodes[linspace].outputs[0],
+        input: (graph15.nodes[stack] as NodeTransform).inputs[0],
+        output: (graph15.nodes[linspace] as NodeTransform).outputs[0],
         generateUUID
     })
     const { graph: graph17 } = addEdge({
         graph: graph16,
-        input: graph16.nodes[stack].inputs[1],
-        output: graph16.nodes[square].outputs[0],
+        input: (graph16.nodes[stack] as NodeTransform).inputs[1],
+        output: (graph16.nodes[square] as NodeTransform).outputs[0],
         generateUUID
     })
     return {

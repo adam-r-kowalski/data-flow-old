@@ -1,18 +1,25 @@
+import * as tf from '@tensorflow/tfjs-core'
+
 import { emptyModel } from "../../src/model/empty"
-import { Operations } from "../../src/model/graph"
+import { OperationKind, Operations } from "../../src/model/graph"
+import { tensorFunc } from "../../src/model/operations"
 import { addNodeToGraph, EventKind, update } from "../../src/update"
 import { changeNodePosition } from "../../src/update/graph"
 import { makeEffects } from "../mock_effects"
 
 const model = emptyModel({ width: 500, height: 500 })
 
+const addFunc = tensorFunc(tf.add)
+
 test("h when a node is focused moves node left", () => {
     const effects = makeEffects()
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
     }
     const model0 = { ...model, operations }
@@ -74,9 +81,11 @@ test("j when a node is focused moves node down", () => {
     const effects = makeEffects()
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
     }
     const model0 = { ...model, operations }
@@ -138,9 +147,11 @@ test("k when a node is focused moves node up", () => {
     const effects = makeEffects()
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
     }
     const model0 = { ...model, operations }
@@ -202,9 +213,11 @@ test("l when a node is focused moves node right", () => {
     const effects = makeEffects()
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
     }
     const model0 = { ...model, operations }
@@ -266,9 +279,11 @@ test("pressing a non hotkey when node focused does nothing", () => {
     const effects = makeEffects()
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
     }
     const model0 = { ...model, operations }
@@ -307,9 +322,11 @@ test("pressing h then l when node focused does nothing", () => {
     const effects = makeEffects()
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
     }
     const model0 = { ...model, operations }
@@ -355,9 +372,11 @@ test("move node when nothing focused does nothing", () => {
     const effects = makeEffects()
     const operations: Operations = {
         'Add': {
+            kind: OperationKind.TRANSFORM,
             name: 'Add',
             inputs: ['x', 'y'],
-            outputs: ['out']
+            outputs: ['out'],
+            func: addFunc
         },
     }
     const model0 = { ...model, operations }

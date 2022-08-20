@@ -1,12 +1,12 @@
 import { Focus, FocusKind } from "../../src/model/focus"
-import { Body, BodyKind, emptyGraph, Graph, Input, Node, Output } from "../../src/model/graph"
+import { Body, BodyKind, emptyGraph, Graph, Input, Node, NodeKind, Output } from "../../src/model/graph"
 import { PointerActionKind } from "../../src/model/pointer_action"
 import { QuickSelectKind } from "../../src/model/quick_select"
 import { Theme } from "../../src/model/theme"
 import { column, container, row, text } from "../../src/ui"
 import { CrossAxisAlignment } from "../../src/ui/alignment"
 import { AppEvent, EventKind } from "../../src/update"
-import { inputUi, nodeUi, outputUi, spacer, tensorBody } from "../../src/view"
+import { inputUi, nodeUi, numberBody, outputsUi, outputUi, spacer } from "../../src/view"
 
 const theme: Theme = {
     background: { red: 2, green: 22, blue: 39, alpha: 255 },
@@ -95,23 +95,29 @@ test("outputUI with quick select", () => {
 
 test("nodeUi with quick select", () => {
     const node: Node = {
+        kind: NodeKind.SOURCE,
         uuid: 'uuid',
         name: "node",
         position: { x: 0, y: 0 },
-        inputs: [],
         body: 'body uuid',
-        outputs: [],
+        outputs: ['out'],
     }
     const body: Body = {
         kind: BodyKind.NO,
         uuid: 'body uuid',
         node: 'uuid',
-        editable: false
+    }
+    const out: Output = {
+        uuid: 'out',
+        name: 'out',
+        node: 'uuid',
+        edges: []
     }
     const graph: Graph = {
         ...emptyGraph(),
         nodes: { [node.uuid]: node },
-        bodys: { [body.uuid]: body }
+        bodys: { [body.uuid]: body },
+        outputs: { [out.uuid]: out }
     }
     const focus: Focus = {
         kind: FocusKind.NONE,
@@ -138,7 +144,9 @@ test("nodeUi with quick select", () => {
         column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             text("a"),
             spacer(4),
-            row([])
+            row([
+                outputsUi(theme, node.outputs.map(o => graph.outputs[o]), focus)
+            ])
         ])
     )
     expect(actual).toEqual(expected)
@@ -146,13 +154,11 @@ test("nodeUi with quick select", () => {
 
 test("bodyUi quick select", () => {
     const body: Body = {
-        kind: BodyKind.TENSOR,
+        kind: BodyKind.NUMBER,
         uuid: 'body uuid',
         node: 'node',
         value: 0,
-        shape: [],
-        editable: true,
-        rank: 0,
+        text: ''
     }
     const focus: Focus = {
         kind: FocusKind.NONE,
@@ -162,7 +168,7 @@ test("bodyUi quick select", () => {
             hotkeys: { 'body uuid': 'a' }
         }
     }
-    const actual = tensorBody(theme, body, focus)
+    const actual = numberBody(theme, body, focus)
     const expected = container({
         color: theme.background,
         padding: 5,
@@ -172,32 +178,5 @@ test("bodyUi quick select", () => {
         }
     },
         text('a'))
-    expect(actual).toEqual(expected)
-})
-
-test("bodyUi quick select non editable", () => {
-    const body: Body = {
-        kind: BodyKind.TENSOR,
-        uuid: 'body uuid',
-        node: 'node',
-        value: 0,
-        shape: [],
-        rank: 0,
-        editable: false,
-    }
-    const focus: Focus = {
-        kind: FocusKind.NONE,
-        pointerAction: { kind: PointerActionKind.NONE },
-        quickSelect: {
-            kind: QuickSelectKind.BODY,
-            hotkeys: {}
-        }
-    }
-    const actual = tensorBody(theme, body, focus)
-    const expected = container({
-        color: theme.background,
-        padding: 5
-    },
-        text('0'))
     expect(actual).toEqual(expected)
 })

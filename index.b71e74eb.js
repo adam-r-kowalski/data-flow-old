@@ -625,7 +625,7 @@ document.addEventListener("keyup", (e)=>{
 });
 if ("serviceWorker" in navigator) navigator.serviceWorker.register(require("24a5b8c3f264d2d2"));
 
-},{"@tensorflow/tfjs-backend-cpu":"alTEC","./update":"ilzHD","./ui/run":"e5SKV","./view":"kkyMT","./ui/webgl2":"gDI6s","24a5b8c3f264d2d2":"1mLYK","./model/demo":"5AK9F"}],"alTEC":[function(require,module,exports) {
+},{"@tensorflow/tfjs-backend-cpu":"alTEC","./update":"ilzHD","./ui/run":"e5SKV","./view":"kkyMT","./model/demo":"5AK9F","./ui/webgl2":"gDI6s","24a5b8c3f264d2d2":"1mLYK"}],"alTEC":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _registerAllKernels = require("./register_all_kernels");
@@ -44303,6 +44303,7 @@ parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "EventKind", ()=>EventKind);
 parcelHelpers.export(exports, "changeNth", ()=>changeNth);
 parcelHelpers.export(exports, "openFinder", ()=>openFinder);
+parcelHelpers.export(exports, "updateNumberText", ()=>updateNumberText);
 parcelHelpers.export(exports, "addNodeToGraph", ()=>addNodeToGraph);
 parcelHelpers.export(exports, "removeNodeFromGraph", ()=>removeNodeFromGraph);
 parcelHelpers.export(exports, "openNumericKeyboard", ()=>openNumericKeyboard);
@@ -44330,16 +44331,15 @@ let EventKind;
     EventKind[EventKind["OPEN_FINDER_TIMEOUT"] = 7] = "OPEN_FINDER_TIMEOUT";
     EventKind[EventKind["KEYDOWN"] = 8] = "KEYDOWN";
     EventKind[EventKind["KEYUP"] = 9] = "KEYUP";
-    EventKind[EventKind["VIRTUAL_KEYDOWN"] = 10] = "VIRTUAL_KEYDOWN";
-    EventKind[EventKind["CLICKED_FINDER_OPTION"] = 11] = "CLICKED_FINDER_OPTION";
-    EventKind[EventKind["CLICKED_BODY"] = 12] = "CLICKED_BODY";
-    EventKind[EventKind["CLICKED_BACKGROUND"] = 13] = "CLICKED_BACKGROUND";
-    EventKind[EventKind["DELETE_NODE"] = 14] = "DELETE_NODE";
-    EventKind[EventKind["DELETE_INPUT_EDGE"] = 15] = "DELETE_INPUT_EDGE";
-    EventKind[EventKind["DELETE_OUTPUT_EDGES"] = 16] = "DELETE_OUTPUT_EDGES";
-    EventKind[EventKind["PAN_CAMERA"] = 17] = "PAN_CAMERA";
-    EventKind[EventKind["ZOOM_CAMERA"] = 18] = "ZOOM_CAMERA";
-    EventKind[EventKind["MOVE_NODE"] = 19] = "MOVE_NODE";
+    EventKind[EventKind["CLICKED_FINDER_OPTION"] = 10] = "CLICKED_FINDER_OPTION";
+    EventKind[EventKind["CLICKED_BODY"] = 11] = "CLICKED_BODY";
+    EventKind[EventKind["CLICKED_BACKGROUND"] = 12] = "CLICKED_BACKGROUND";
+    EventKind[EventKind["DELETE_NODE"] = 13] = "DELETE_NODE";
+    EventKind[EventKind["DELETE_INPUT_EDGE"] = 14] = "DELETE_INPUT_EDGE";
+    EventKind[EventKind["DELETE_OUTPUT_EDGES"] = 15] = "DELETE_OUTPUT_EDGES";
+    EventKind[EventKind["PAN_CAMERA"] = 16] = "PAN_CAMERA";
+    EventKind[EventKind["ZOOM_CAMERA"] = 17] = "ZOOM_CAMERA";
+    EventKind[EventKind["MOVE_NODE"] = 18] = "MOVE_NODE";
 })(EventKind || (EventKind = {}));
 const pointerDown = (model, event)=>{
     const pointers = [
@@ -44708,11 +44708,11 @@ const updateFinderSearch = (model, focus, transform)=>{
         render: true
     };
 };
-const updateBodyNumber = (model, body, transform, generateUUID)=>{
+const updateNumberText = (model, body, transform)=>{
     return {
         model: {
             ...model,
-            graph: (0, _graph.changeBodyValue)(model.graph, body, transform)
+            graph: (0, _graph.changeNumberText)(model.graph, body, transform)
         },
         render: true
     };
@@ -44785,16 +44785,10 @@ const keyDown = (model, event, { generateUUID , currentTime  })=>{
                 case (0, _focus.FocusKind).BODY:
                     switch(key){
                         case "Backspace":
-                            return updateBodyNumber(model, model.focus.body, (value)=>{
-                                let newValue = value.toString().slice(0, -1);
-                                switch(newValue){
-                                    case "":
-                                    case "-":
-                                        return 0;
-                                    default:
-                                        return parseFloat(newValue);
-                                }
-                            }, generateUUID);
+                            return updateNumberText(model, model.focus.body, (text)=>{
+                                const nextText = text.slice(0, -1);
+                                return nextText === "" ? "0" : nextText;
+                            });
                         case "1":
                         case "2":
                         case "3":
@@ -44805,12 +44799,21 @@ const keyDown = (model, event, { generateUUID , currentTime  })=>{
                         case "8":
                         case "9":
                         case "0":
-                            return updateBodyNumber(model, model.focus.body, (value)=>parseFloat(value.toString() + key), generateUUID);
+                            return updateNumberText(model, model.focus.body, (text)=>{
+                                if (text === "0") return key;
+                                else if (text === "-0") return `-${key}`;
+                                else return text + key;
+                            });
+                        case ".":
+                            return updateNumberText(model, model.focus.body, (text)=>text.includes(".") ? text : text + key);
                         case "-":
                         case "+":
-                            return updateBodyNumber(model, model.focus.body, (value)=>-value, generateUUID);
-                        case "d":
-                            return updateBodyNumber(model, model.focus.body, (value)=>0, generateUUID);
+                            return updateNumberText(model, model.focus.body, (text)=>{
+                                if (text.length && text[0] === "-") return text.slice(1);
+                                else return "-" + text;
+                            });
+                        case "c":
+                            return updateNumberText(model, model.focus.body, ()=>"0");
                         case "Enter":
                         case "Escape":
                             return {
@@ -44919,74 +44922,6 @@ const keyUp = (model, event)=>{
             };
     }
 };
-const virtualKeyDown = (model, { key  }, generateUUID)=>{
-    switch(model.focus.kind){
-        case (0, _focus.FocusKind).FINDER:
-            switch(key){
-                case "del":
-                    return updateFinderSearch(model, model.focus, (search)=>search.slice(0, -1));
-                case "sft":
-                    return {
-                        model
-                    };
-                case "space":
-                    return updateFinderSearch(model, model.focus, (search)=>search + " ");
-                case "ret":
-                    if (model.focus.options.length > 0) {
-                        const name = model.focus.options[0];
-                        return insertOperationFromFinder(model, name, generateUUID);
-                    } else return {
-                        model: (0, _focus1.clearFocus)(model),
-                        render: true
-                    };
-                default:
-                    return updateFinderSearch(model, model.focus, (search)=>search + key);
-            }
-        case (0, _focus.FocusKind).BODY:
-            switch(key){
-                case "del":
-                    return updateBodyNumber(model, model.focus.body, (value)=>{
-                        let newValue = value.toString().slice(0, -1);
-                        switch(newValue){
-                            case "":
-                            case "-":
-                                return 0;
-                            default:
-                                return parseFloat(newValue);
-                        }
-                    }, generateUUID);
-                case "1":
-                case "2":
-                case "3":
-                case "4":
-                case "5":
-                case "6":
-                case "7":
-                case "8":
-                case "9":
-                case "0":
-                    return updateBodyNumber(model, model.focus.body, (value)=>parseFloat(value.toString() + key), generateUUID);
-                case "-":
-                case "+":
-                    return updateBodyNumber(model, model.focus.body, (value)=>-value, generateUUID);
-                case "clr":
-                    return updateBodyNumber(model, model.focus.body, (value)=>0, generateUUID);
-                case "ret":
-                    return {
-                        model: (0, _focus1.clearFocus)(model),
-                        render: true
-                    };
-                default:
-                    return {
-                        model
-                    };
-            }
-        default:
-            return {
-                model
-            };
-    }
-};
 const clickedFinderOption = (model, { option  }, generateUUID)=>insertOperationFromFinder(model, option, generateUUID);
 const openNumericKeyboard = (model, body)=>({
         ...model,
@@ -45061,7 +44996,7 @@ const deleteInputEdge = (model, { input  }, generateUUID)=>({
         }),
         render: true
     });
-const deleteOutputEdges = (model, { output  }, generateUUID)=>({
+const deleteOutputEdges = (model, { output  })=>({
         model: (0, _focus1.clearFocus)({
             ...model,
             graph: (0, _graph.removeOutputEdges)(model.graph, output)
@@ -45090,8 +45025,6 @@ const update = (effects, model, event)=>{
             return keyDown(model, event, effects);
         case EventKind.KEYUP:
             return keyUp(model, event);
-        case EventKind.VIRTUAL_KEYDOWN:
-            return virtualKeyDown(model, event, effects.generateUUID);
         case EventKind.CLICKED_FINDER_OPTION:
             return clickedFinderOption(model, event, effects.generateUUID);
         case EventKind.CLICKED_BODY:
@@ -45103,7 +45036,7 @@ const update = (effects, model, event)=>{
         case EventKind.DELETE_INPUT_EDGE:
             return deleteInputEdge(model, event, effects.generateUUID);
         case EventKind.DELETE_OUTPUT_EDGES:
-            return deleteOutputEdges(model, event, effects.generateUUID);
+            return deleteOutputEdges(model, event);
         case EventKind.PAN_CAMERA:
             return (0, _moveCamera.panCamera)(model, effects.currentTime);
         case EventKind.ZOOM_CAMERA:
@@ -45338,61 +45271,95 @@ parcelHelpers.export(exports, "removeInputEdge", ()=>removeInputEdge);
 parcelHelpers.export(exports, "removeOutputEdges", ()=>removeOutputEdges);
 parcelHelpers.export(exports, "addEdge", ()=>addEdge);
 parcelHelpers.export(exports, "changeNodePosition", ()=>changeNodePosition);
-parcelHelpers.export(exports, "changeBodyValue", ()=>changeBodyValue);
+parcelHelpers.export(exports, "changeNumberText", ()=>changeNumberText);
 var _graph = require("../model/graph");
 const addNode = ({ graph , operation , position , generateUUID  })=>{
     const nodeUUID = generateUUID();
     const inputs = {
         ...graph.inputs
     };
-    const inputUUIDs = [];
-    for (const name of operation.inputs){
-        const uuid = generateUUID();
-        inputs[uuid] = {
-            uuid,
-            node: nodeUUID,
-            name
-        };
-        inputUUIDs.push(uuid);
-    }
     const outputs = {
         ...graph.outputs
     };
-    const outputUUIDs = [];
-    for (const name1 of operation.outputs){
-        const uuid1 = generateUUID();
-        outputs[uuid1] = {
-            uuid: uuid1,
-            node: nodeUUID,
-            name: name1,
-            edges: []
-        };
-        outputUUIDs.push(uuid1);
-    }
-    const uuid2 = generateUUID();
-    const body = operation.body !== undefined ? {
-        kind: (0, _graph.BodyKind).TENSOR,
-        uuid: uuid2,
-        node: nodeUUID,
-        value: operation.body,
-        rank: 0,
-        shape: [],
-        editable: true
-    } : {
-        kind: (0, _graph.BodyKind).NO,
-        uuid: uuid2,
-        node: nodeUUID,
-        editable: false
+    const bodys = {
+        ...graph.bodys
     };
-    const node = {
-        uuid: nodeUUID,
-        name: operation.name,
-        inputs: inputUUIDs,
-        outputs: outputUUIDs,
-        body: uuid2,
-        position,
-        operation: operation.operation
-    };
+    const node = (()=>{
+        switch(operation.kind){
+            case (0, _graph.OperationKind).NUMBER:
+                {
+                    const outputUUIDs = [];
+                    for (const name of operation.outputs){
+                        const uuid = generateUUID();
+                        outputs[uuid] = {
+                            uuid,
+                            node: nodeUUID,
+                            name,
+                            edges: []
+                        };
+                        outputUUIDs.push(uuid);
+                    }
+                    const body = {
+                        kind: (0, _graph.BodyKind).NUMBER,
+                        uuid: generateUUID(),
+                        node: nodeUUID,
+                        value: 0,
+                        text: "0"
+                    };
+                    const node = {
+                        kind: (0, _graph.NodeKind).SOURCE,
+                        uuid: nodeUUID,
+                        name: operation.name,
+                        outputs: outputUUIDs,
+                        body: body.uuid,
+                        position
+                    };
+                    bodys[body.uuid] = body;
+                    return node;
+                }
+            case (0, _graph.OperationKind).TRANSFORM:
+                {
+                    const inputUUIDs = [];
+                    for (const name1 of operation.inputs){
+                        const uuid1 = generateUUID();
+                        inputs[uuid1] = {
+                            uuid: uuid1,
+                            node: nodeUUID,
+                            name: name1
+                        };
+                        inputUUIDs.push(uuid1);
+                    }
+                    const outputUUIDs1 = [];
+                    for (const name2 of operation.outputs){
+                        const uuid2 = generateUUID();
+                        outputs[uuid2] = {
+                            uuid: uuid2,
+                            node: nodeUUID,
+                            name: name2,
+                            edges: []
+                        };
+                        outputUUIDs1.push(uuid2);
+                    }
+                    const body1 = {
+                        kind: (0, _graph.BodyKind).NO,
+                        uuid: generateUUID(),
+                        node: nodeUUID
+                    };
+                    const node1 = {
+                        kind: (0, _graph.NodeKind).TRANSFORM,
+                        uuid: nodeUUID,
+                        name: operation.name,
+                        inputs: inputUUIDs,
+                        body: body1.uuid,
+                        outputs: outputUUIDs1,
+                        position,
+                        func: operation.func
+                    };
+                    bodys[body1.uuid] = body1;
+                    return node1;
+                }
+        }
+    })();
     return {
         graph: {
             ...graph,
@@ -45400,15 +45367,12 @@ const addNode = ({ graph , operation , position , generateUUID  })=>{
                 ...graph.nodes,
                 [node.uuid]: {
                     ...node,
-                    body: body.uuid
+                    body: node.body
                 }
             },
             inputs,
             outputs,
-            bodys: {
-                ...graph.bodys,
-                [body.uuid]: body
-            }
+            bodys
         },
         node: nodeUUID
     };
@@ -45420,7 +45384,7 @@ const removeNode = (graph, node)=>{
     const removedNode = nodes[node];
     delete nodes[node];
     const edgeUUIDs = [];
-    for (const input of removedNode.inputs){
+    if (removedNode.kind === (0, _graph.NodeKind).TRANSFORM) for (const input of removedNode.inputs){
         const edge = graph.inputs[input].edge;
         if (edge) edgeUUIDs.push(edge);
     }
@@ -45448,7 +45412,7 @@ const removeNode = (graph, node)=>{
         };
         delete edges[uuid];
     }
-    for (const input2 of removedNode.inputs)delete inputs[input2];
+    if (removedNode.kind === (0, _graph.NodeKind).TRANSFORM) for (const input2 of removedNode.inputs)delete inputs[input2];
     for (const output2 of removedNode.outputs)delete outputs[output2];
     const bodys = {
         ...graph.bodys
@@ -45538,47 +45502,42 @@ const evaluateNodeOutputs = (graph, node)=>node.outputs.reduce((graph1, output)=
     }, graph);
 const evaluateNode = (graph, nodeUUID)=>{
     const node = graph.nodes[nodeUUID];
-    if (node.inputs.length === 0) return evaluateNodeOutputs(graph, node);
-    else {
-        const values = node.inputs.map((input)=>graph.inputs[input].edge).filter((edgeUUID)=>edgeUUID !== undefined).map((edgeUUID)=>{
-            const edge = graph.edges[edgeUUID];
-            const output = graph.outputs[edge.output];
-            return graph.nodes[output.node].body;
-        }).filter((bodyUUID)=>bodyUUID !== undefined).map((bodyUUID)=>graph.bodys[bodyUUID]).filter((body)=>{
-            switch(body.kind){
-                case (0, _graph.BodyKind).NO:
-                case (0, _graph.BodyKind).ERROR:
-                    return false;
-                default:
-                    return true;
+    switch(node.kind){
+        case (0, _graph.NodeKind).SOURCE:
+            return evaluateNodeOutputs(graph, node);
+        case (0, _graph.NodeKind).TRANSFORM:
+            {
+                const values = node.inputs.map((input)=>graph.inputs[input].edge).filter((edgeUUID)=>edgeUUID !== undefined).map((edgeUUID)=>{
+                    const edge = graph.edges[edgeUUID];
+                    const output = graph.outputs[edge.output];
+                    return graph.nodes[output.node].body;
+                }).map((bodyUUID)=>graph.bodys[bodyUUID]).filter((body)=>!(body.kind === (0, _graph.BodyKind).NO || body.kind === (0, _graph.BodyKind).ERROR));
+                if (values.length > 0 && values.length === node.inputs.length) {
+                    const body = node.func(graph.bodys[node.body], ...values);
+                    const graph1 = {
+                        ...graph,
+                        bodys: {
+                            ...graph.bodys,
+                            [body.uuid]: body
+                        }
+                    };
+                    return evaluateNodeOutputs(graph1, node);
+                } else if (graph.bodys[node.body].kind !== (0, _graph.BodyKind).NO) {
+                    const body1 = {
+                        kind: (0, _graph.BodyKind).NO,
+                        uuid: node.body,
+                        node: node.uuid
+                    };
+                    const graph11 = {
+                        ...graph,
+                        bodys: {
+                            ...graph.bodys,
+                            [body1.uuid]: body1
+                        }
+                    };
+                    return evaluateNodeOutputs(graph11, node);
+                } else return graph;
             }
-        });
-        if (values.length > 0 && values.length === node.inputs.length) {
-            const body = node.operation(graph.bodys[node.body], ...values);
-            const graph1 = {
-                ...graph,
-                bodys: {
-                    ...graph.bodys,
-                    [body.uuid]: body
-                }
-            };
-            return evaluateNodeOutputs(graph1, node);
-        } else if (graph.bodys[node.body].kind !== (0, _graph.BodyKind).NO) {
-            const body1 = {
-                kind: (0, _graph.BodyKind).NO,
-                uuid: node.body,
-                node: node.uuid,
-                editable: false
-            };
-            const graph11 = {
-                ...graph,
-                bodys: {
-                    ...graph.bodys,
-                    [body1.uuid]: body1
-                }
-            };
-            return evaluateNodeOutputs(graph11, node);
-        } else return graph;
     }
 };
 const addEdge = ({ graph , input , output , generateUUID  })=>{
@@ -45632,17 +45591,29 @@ const changeNodePosition = (graph, node, transform)=>{
         }
     };
 };
-const changeBodyValue = (graph, body, transform)=>{
+const parseNumber = (text)=>{
+    switch(text){
+        case "":
+        case "-":
+        case ".":
+            return 0;
+        default:
+            return parseFloat(text);
+    }
+};
+const changeNumberText = (graph, body, transform)=>{
     const currentBody = graph.bodys[body];
     switch(currentBody.kind){
-        case (0, _graph.BodyKind).TENSOR:
+        case (0, _graph.BodyKind).NUMBER:
+            const text = transform(currentBody.text);
             const graph1 = {
                 ...graph,
                 bodys: {
                     ...graph.bodys,
                     [body]: {
                         ...currentBody,
-                        value: transform(currentBody.value)
+                        value: parseNumber(text),
+                        text
                     }
                 }
             };
@@ -45657,14 +45628,27 @@ const changeBodyValue = (graph, body, transform)=>{
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "BodyKind", ()=>BodyKind);
+parcelHelpers.export(exports, "NodeKind", ()=>NodeKind);
+parcelHelpers.export(exports, "OperationKind", ()=>OperationKind);
 parcelHelpers.export(exports, "emptyGraph", ()=>emptyGraph);
 let BodyKind;
 (function(BodyKind) {
     BodyKind[BodyKind["NO"] = 0] = "NO";
-    BodyKind[BodyKind["TENSOR"] = 1] = "TENSOR";
-    BodyKind[BodyKind["SCATTER"] = 2] = "SCATTER";
-    BodyKind[BodyKind["ERROR"] = 3] = "ERROR";
+    BodyKind[BodyKind["NUMBER"] = 1] = "NUMBER";
+    BodyKind[BodyKind["TENSOR"] = 2] = "TENSOR";
+    BodyKind[BodyKind["SCATTER"] = 3] = "SCATTER";
+    BodyKind[BodyKind["ERROR"] = 4] = "ERROR";
 })(BodyKind || (BodyKind = {}));
+let NodeKind;
+(function(NodeKind) {
+    NodeKind[NodeKind["SOURCE"] = 0] = "SOURCE";
+    NodeKind[NodeKind["TRANSFORM"] = 1] = "TRANSFORM";
+})(NodeKind || (NodeKind = {}));
+let OperationKind;
+(function(OperationKind) {
+    OperationKind[OperationKind["NUMBER"] = 0] = "NUMBER";
+    OperationKind[OperationKind["TRANSFORM"] = 1] = "TRANSFORM";
+})(OperationKind || (OperationKind = {}));
 const emptyGraph = ()=>({
         nodes: {},
         edges: {},
@@ -45682,6 +45666,7 @@ parcelHelpers.export(exports, "quickSelectOutput", ()=>quickSelectOutput);
 parcelHelpers.export(exports, "quickSelectNode", ()=>quickSelectNode);
 parcelHelpers.export(exports, "quickSelectBody", ()=>quickSelectBody);
 var _focus = require("../model/focus");
+var _graph = require("../model/graph");
 var _quickSelect = require("../model/quick_select");
 var _focus1 = require("./focus");
 const maybeTriggerQuickSelect = (model, focus, key)=>{
@@ -45749,7 +45734,7 @@ const maybeTriggerQuickSelect = (model, focus, key)=>{
         case "b":
             {
                 const hotkeys3 = {};
-                Object.values(model.graph.bodys).filter((body)=>body.editable).forEach((body, i)=>hotkeys3[body.uuid] = String.fromCharCode(97 + i));
+                Object.values(model.graph.bodys).filter((body)=>body.kind === (0, _graph.BodyKind).NUMBER).forEach((body, i)=>hotkeys3[body.uuid] = String.fromCharCode(97 + i));
                 return {
                     model: {
                         ...model,
@@ -45875,7 +45860,7 @@ const quickSelectBody = (model, quickSelect, key)=>{
     };
 };
 
-},{"../model/focus":"4HSqF","../model/quick_select":"imfkP","./focus":"aoUv6","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"imfkP":[function(require,module,exports) {
+},{"../model/focus":"4HSqF","../model/graph":"j9QYs","../model/quick_select":"imfkP","./focus":"aoUv6","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"imfkP":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "QuickSelectKind", ()=>QuickSelectKind);
@@ -48109,6 +48094,7 @@ parcelHelpers.export(exports, "inputUi", ()=>inputUi);
 parcelHelpers.export(exports, "inputsUi", ()=>inputsUi);
 parcelHelpers.export(exports, "outputUi", ()=>outputUi);
 parcelHelpers.export(exports, "outputsUi", ()=>outputsUi);
+parcelHelpers.export(exports, "numberBody", ()=>numberBody);
 parcelHelpers.export(exports, "tensorBody", ()=>tensorBody);
 parcelHelpers.export(exports, "scatterBody", ()=>scatterBody);
 parcelHelpers.export(exports, "nodeUi", ()=>nodeUi);
@@ -48202,20 +48188,26 @@ const outputUi = (theme, { name , uuid  }, focus)=>{
     ]));
 };
 const outputsUi = (theme, outputs, focus)=>(0, _ui.column)(intersperse(outputs.map((output)=>outputUi(theme, output, focus)), spacer(4)));
+const numberBody = (theme, body, focus)=>{
+    const value = focus.quickSelect.kind === (0, _quickSelect.QuickSelectKind).BODY ? focus.quickSelect.hotkeys[body.uuid] : body.text;
+    return (0, _ui.container)({
+        color: isFocused(focus, body.uuid) ? theme.focusInput : theme.background,
+        padding: 5,
+        onClick: {
+            kind: (0, _update.EventKind).CLICKED_BODY,
+            body: body.uuid
+        }
+    }, (0, _ui.text)(value));
+};
 const formatNumber = (value)=>Number.isInteger(value) ? value.toString() : value.toFixed(2);
-const tensorBody = (theme, body, focus)=>{
+const tensorBody = (theme, body)=>{
     switch(body.rank){
         case 0:
             {
-                const value = focus.quickSelect.kind === (0, _quickSelect.QuickSelectKind).BODY ? focus.quickSelect.hotkeys[body.uuid] ?? formatNumber(body.value) : formatNumber(body.value);
-                const onClick = body.editable ? {
-                    kind: (0, _update.EventKind).CLICKED_BODY,
-                    body: body.uuid
-                } : undefined;
+                const value = formatNumber(body.value);
                 return (0, _ui.container)({
-                    color: isFocused(focus, body.uuid) ? theme.focusInput : theme.background,
-                    padding: 5,
-                    onClick
+                    color: theme.background,
+                    padding: 5
                 }, (0, _ui.text)(value));
             }
         case 1:
@@ -48259,12 +48251,17 @@ const scatterBody = (theme, body)=>{
 const nodeUi = (theme, nodeUUID, graph, focus)=>{
     const node = graph.nodes[nodeUUID];
     const rowEntries = [];
-    if (node.inputs.length) rowEntries.push(inputsUi(theme, node.inputs.map((i)=>graph.inputs[i]), focus));
-    if (node.inputs.length && node.outputs.length) rowEntries.push(spacer(15));
+    if (node.kind === (0, _graph.NodeKind).TRANSFORM) {
+        rowEntries.push(inputsUi(theme, node.inputs.map((i)=>graph.inputs[i]), focus));
+        rowEntries.push(spacer(15));
+    }
     const body = graph.bodys[node.body];
     switch(body.kind){
+        case (0, _graph.BodyKind).NUMBER:
+            rowEntries.push(numberBody(theme, body, focus), spacer(15));
+            break;
         case (0, _graph.BodyKind).TENSOR:
-            rowEntries.push(tensorBody(theme, body, focus), spacer(15));
+            rowEntries.push(tensorBody(theme, body), spacer(15));
             break;
         case (0, _graph.BodyKind).SCATTER:
             rowEntries.push(scatterBody(theme, body), spacer(15));
@@ -48272,7 +48269,7 @@ const nodeUi = (theme, nodeUUID, graph, focus)=>{
         default:
             break;
     }
-    if (node.outputs.length) rowEntries.push(outputsUi(theme, node.outputs.map((o)=>graph.outputs[o]), focus));
+    rowEntries.push(outputsUi(theme, node.outputs.map((o)=>graph.outputs[o]), focus));
     const name = focus.quickSelect.kind === (0, _quickSelect.QuickSelectKind).NODE ? focus.quickSelect.hotkeys[node.uuid] : node.name;
     const color = (()=>{
         if (isFocused(focus, node.uuid)) return theme.focusNode;
@@ -48335,16 +48332,25 @@ const finder = ({ search , options  }, theme)=>(0, _ui.column)({
                 }, option)))
         ]))
     ]);
-const virtualKey = (key)=>(0, _ui.container)({
+const virtualKey = (key)=>{
+    const { display , event  } = (()=>{
+        return typeof key === "string" ? {
+            display: key,
+            event: key
+        } : key;
+    })();
+    return (0, _ui.container)({
         padding: 10,
         onClick: {
-            kind: (0, _update.EventKind).VIRTUAL_KEYDOWN,
-            key
+            kind: (0, _update.EventKind).KEYDOWN,
+            key: event,
+            ctrl: false
         }
     }, (0, _ui.text)({
         size: 24
-    }, key));
-const virtualKeys = (keys)=>(0, _ui.row)(keys.map((c)=>virtualKey(c)));
+    }, display));
+};
+const virtualKeys = (keys)=>(0, _ui.row)(keys.map(virtualKey));
 const alphabeticVirtualKeyboard = (theme)=>(0, _ui.column)({
         mainAxisAlignment: (0, _alignment.MainAxisAlignment).END
     }, [
@@ -48383,7 +48389,10 @@ const alphabeticVirtualKeyboard = (theme)=>(0, _ui.column)({
                     "v"
                 ]),
                 virtualKeys([
-                    "sft",
+                    {
+                        display: "ret",
+                        event: "Enter"
+                    },
                     "space"
                 ]), 
             ])),
@@ -48417,11 +48426,17 @@ const alphabeticVirtualKeyboard = (theme)=>(0, _ui.column)({
                     "b",
                     "n",
                     "m",
-                    "del"
+                    {
+                        display: "del",
+                        event: "Backspace"
+                    }
                 ]),
                 virtualKeys([
                     "space",
-                    "ret"
+                    {
+                        display: "ret",
+                        event: "Enter"
+                    }
                 ]), 
             ])), 
         ]), 
@@ -48442,13 +48457,19 @@ const numericVirtualKeyboard = (theme, sign)=>(0, _ui.column)({
                     "1",
                     "2",
                     "3",
-                    "clr"
+                    {
+                        display: "clr",
+                        event: "c"
+                    }
                 ]),
                 virtualKeys([
                     "4",
                     "5",
                     "6",
-                    "del"
+                    {
+                        display: "del",
+                        event: "Backspace"
+                    }
                 ]),
                 virtualKeys([
                     "7",
@@ -48460,7 +48481,10 @@ const numericVirtualKeyboard = (theme, sign)=>(0, _ui.column)({
                     sign,
                     "0",
                     ".",
-                    "ret"
+                    {
+                        display: "ret",
+                        event: "Enter"
+                    }
                 ]), 
             ])), 
         ]), 
@@ -48505,7 +48529,7 @@ const view = (model)=>{
             break;
         case (0, _focus.FocusKind).BODY:
             const body = model.graph.bodys[model.focus.body];
-            if (body.kind === (0, _graph.BodyKind).TENSOR) {
+            if (body.kind === (0, _graph.BodyKind).NUMBER) {
                 const sign = body.value >= 0 ? "-" : "+";
                 stacked.push(numericVirtualKeyboard(model.theme, sign));
             }
@@ -48583,44 +48607,7 @@ const contextMenu = ({ items , backgroundColor  })=>(0, _ui.column)({
         ])
     ]);
 
-},{"../ui":"cOWCo","../ui/alignment":"eEpxz","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"1mLYK":[function(require,module,exports) {
-module.exports = require("./helpers/bundle-url").getBundleURL("7UhFu") + "service_worker.js" + "?" + Date.now();
-
-},{"./helpers/bundle-url":"lgJ39"}],"lgJ39":[function(require,module,exports) {
-"use strict";
-var bundleURL = {};
-function getBundleURLCached(id) {
-    var value = bundleURL[id];
-    if (!value) {
-        value = getBundleURL();
-        bundleURL[id] = value;
-    }
-    return value;
-}
-function getBundleURL() {
-    try {
-        throw new Error();
-    } catch (err) {
-        var matches = ("" + err.stack).match(/(https?|file|ftp|(chrome|moz|safari-web)-extension):\/\/[^)\n]+/g);
-        if (matches) // The first two stack frames will be this function and getBundleURLCached.
-        // Use the 3rd one, which will be a runtime in the original bundle.
-        return getBaseURL(matches[2]);
-    }
-    return "/";
-}
-function getBaseURL(url) {
-    return ("" + url).replace(/^((?:https?|file|ftp|(chrome|moz|safari-web)-extension):\/\/.+)\/[^/]+$/, "$1") + "/";
-} // TODO: Replace uses with `new URL(url).origin` when ie11 is no longer supported.
-function getOrigin(url) {
-    var matches = ("" + url).match(/(https?|file|ftp|(chrome|moz|safari-web)-extension):\/\/[^/]+/);
-    if (!matches) throw new Error("Origin not found");
-    return matches[0];
-}
-exports.getBundleURL = getBundleURLCached;
-exports.getBaseURL = getBaseURL;
-exports.getOrigin = getOrigin;
-
-},{}],"5AK9F":[function(require,module,exports) {
+},{"../ui":"cOWCo","../ui/alignment":"eEpxz","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"5AK9F":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "demoModel", ()=>demoModel);
@@ -48641,7 +48628,7 @@ const demoModel = (window, generateUUID)=>{
         },
         generateUUID
     });
-    const graph1 = (0, _graph.changeBodyValue)(graph0, graph0.nodes[start].body, ()=>-5);
+    const graph1 = (0, _graph.changeNumberText)(graph0, graph0.nodes[start].body, ()=>"-5");
     const { graph: graph2 , node: stop  } = (0, _graph.addNode)({
         graph: graph1,
         operation: model.operations["number"],
@@ -48651,7 +48638,7 @@ const demoModel = (window, generateUUID)=>{
         },
         generateUUID
     });
-    const graph3 = (0, _graph.changeBodyValue)(graph2, graph2.nodes[stop].body, ()=>5);
+    const graph3 = (0, _graph.changeNumberText)(graph2, graph2.nodes[stop].body, ()=>"5");
     const { graph: graph4 , node: num  } = (0, _graph.addNode)({
         graph: graph3,
         operation: model.operations["number"],
@@ -48661,7 +48648,7 @@ const demoModel = (window, generateUUID)=>{
         },
         generateUUID
     });
-    const graph5 = (0, _graph.changeBodyValue)(graph4, graph4.nodes[num].body, ()=>11);
+    const graph5 = (0, _graph.changeNumberText)(graph4, graph4.nodes[num].body, ()=>"11");
     const { graph: graph6 , node: linspace  } = (0, _graph.addNode)({
         graph: graph5,
         operation: model.operations["linspace"],
@@ -48859,15 +48846,15 @@ const emptyModel = (window)=>({
 },{"./focus":"4HSqF","./pointer_action":"dtHMy","../linear_algebra/matrix3x3":"aZqnw","./graph":"j9QYs","./quick_select":"imfkP","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"bjcGR":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "tensorOperation", ()=>tensorOperation);
+parcelHelpers.export(exports, "tensorFunc", ()=>tensorFunc);
 parcelHelpers.export(exports, "scatter", ()=>scatter);
 parcelHelpers.export(exports, "operations", ()=>operations);
 var _tfjsCore = require("@tensorflow/tfjs-core");
 var _normalize = require("../normalize");
 var _graph = require("./graph");
-const tensorOperation = (f)=>{
+const tensorFunc = (f)=>{
     return ({ uuid , node  }, ...inputs)=>{
-        const tensors = inputs.filter((body)=>body.kind === (0, _graph.BodyKind).TENSOR).map((body)=>body.value);
+        const tensors = inputs.filter((body)=>body.kind === (0, _graph.BodyKind).TENSOR || body.kind === (0, _graph.BodyKind).NUMBER).map((body)=>body.value);
         try {
             const result = f(...tensors);
             return {
@@ -48876,15 +48863,13 @@ const tensorOperation = (f)=>{
                 node: node,
                 value: result.arraySync(),
                 rank: result.rank,
-                shape: result.shape,
-                editable: false
+                shape: result.shape
             };
         } catch (e) {
             return {
                 kind: (0, _graph.BodyKind).ERROR,
                 uuid: uuid,
-                node: node,
-                editable: false
+                node: node
             };
         }
     };
@@ -48903,20 +48888,19 @@ const scatter = ({ uuid , node  }, ...inputs)=>{
         uuid: uuid,
         node: node,
         x,
-        y,
-        editable: false
+        y
     };
 };
 const operations = {
     "number": {
+        kind: (0, _graph.OperationKind).NUMBER,
         name: "number",
-        inputs: [],
-        body: 0,
         outputs: [
             "out"
         ]
     },
     "abs": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "abs",
         inputs: [
             "x"
@@ -48924,9 +48908,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.abs)
+        func: tensorFunc(_tfjsCore.abs)
     },
     "acos": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "acos",
         inputs: [
             "x"
@@ -48934,9 +48919,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.acos)
+        func: tensorFunc(_tfjsCore.acos)
     },
     "acosh": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "acosh",
         inputs: [
             "x"
@@ -48944,9 +48930,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.acosh)
+        func: tensorFunc(_tfjsCore.acosh)
     },
     "add": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "add",
         inputs: [
             "x",
@@ -48955,9 +48942,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.add)
+        func: tensorFunc(_tfjsCore.add)
     },
     "all": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "all",
         inputs: [
             "x"
@@ -48965,9 +48953,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.all)
+        func: tensorFunc(_tfjsCore.all)
     },
     "any": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "any",
         inputs: [
             "x"
@@ -48975,9 +48964,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.any)
+        func: tensorFunc(_tfjsCore.any)
     },
     "arg max": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "arg max",
         inputs: [
             "x"
@@ -48985,9 +48975,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.argMax)
+        func: tensorFunc(_tfjsCore.argMax)
     },
     "arg min": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "arg min",
         inputs: [
             "x"
@@ -48995,9 +48986,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.argMin)
+        func: tensorFunc(_tfjsCore.argMin)
     },
     "asin": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "asin",
         inputs: [
             "x"
@@ -49005,9 +48997,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.asin)
+        func: tensorFunc(_tfjsCore.asin)
     },
     "asinh": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "asinh",
         inputs: [
             "x"
@@ -49015,9 +49008,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.asinh)
+        func: tensorFunc(_tfjsCore.asinh)
     },
     "atan": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "atan",
         inputs: [
             "x"
@@ -49025,9 +49019,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.atan)
+        func: tensorFunc(_tfjsCore.atan)
     },
     "atanh": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "atanh",
         inputs: [
             "x"
@@ -49035,9 +49030,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.atanh)
+        func: tensorFunc(_tfjsCore.atanh)
     },
     "ceil": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "ceil",
         inputs: [
             "x"
@@ -49045,9 +49041,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.ceil)
+        func: tensorFunc(_tfjsCore.ceil)
     },
     "clip": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "clip",
         inputs: [
             "x",
@@ -49057,9 +49054,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.clipByValue)
+        func: tensorFunc(_tfjsCore.clipByValue)
     },
     "complex": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "complex",
         inputs: [
             "real",
@@ -49068,9 +49066,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.complex)
+        func: tensorFunc(_tfjsCore.complex)
     },
     "concat": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "concat",
         inputs: [
             "x",
@@ -49079,12 +49078,13 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation((x, y)=>_tfjsCore.concat([
+        func: tensorFunc((x, y)=>_tfjsCore.concat([
                 x,
                 y
             ]))
     },
     "cos": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "cos",
         inputs: [
             "x"
@@ -49092,9 +49092,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.cos)
+        func: tensorFunc(_tfjsCore.cos)
     },
     "cosh": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "cosh",
         inputs: [
             "x"
@@ -49102,9 +49103,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.cosh)
+        func: tensorFunc(_tfjsCore.cosh)
     },
     "cumsum": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "cumsum",
         inputs: [
             "x"
@@ -49112,9 +49114,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.cumsum)
+        func: tensorFunc(_tfjsCore.cumsum)
     },
     "cumprod": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "cumprod",
         inputs: [
             "x"
@@ -49122,9 +49125,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.cumprod)
+        func: tensorFunc(_tfjsCore.cumprod)
     },
     "diag": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "diag",
         inputs: [
             "x"
@@ -49132,9 +49136,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.diag)
+        func: tensorFunc(_tfjsCore.diag)
     },
     "div": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "div",
         inputs: [
             "x",
@@ -49143,9 +49148,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.div)
+        func: tensorFunc(_tfjsCore.div)
     },
     "div no nan": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "div no nan",
         inputs: [
             "x",
@@ -49154,9 +49160,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.divNoNan)
+        func: tensorFunc(_tfjsCore.divNoNan)
     },
     "dot": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "dot",
         inputs: [
             "x",
@@ -49165,9 +49172,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.dot)
+        func: tensorFunc(_tfjsCore.dot)
     },
     "elu": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "elu",
         inputs: [
             "x"
@@ -49175,9 +49183,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.elu)
+        func: tensorFunc(_tfjsCore.elu)
     },
     "erf": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "erf",
         inputs: [
             "x"
@@ -49185,9 +49194,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.erf)
+        func: tensorFunc(_tfjsCore.erf)
     },
     "equal": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "equal",
         inputs: [
             "x",
@@ -49196,9 +49206,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.equal)
+        func: tensorFunc(_tfjsCore.equal)
     },
     "euclideanNorm": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "euclideanNorm",
         inputs: [
             "x"
@@ -49206,9 +49217,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.euclideanNorm)
+        func: tensorFunc(_tfjsCore.euclideanNorm)
     },
     "exp": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "exp",
         inputs: [
             "x"
@@ -49216,9 +49228,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.exp)
+        func: tensorFunc(_tfjsCore.exp)
     },
     "expm1": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "expm1",
         inputs: [
             "x"
@@ -49226,9 +49239,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.expm1)
+        func: tensorFunc(_tfjsCore.expm1)
     },
     "eye": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "eye",
         inputs: [
             "size"
@@ -49236,9 +49250,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.eye)
+        func: tensorFunc(_tfjsCore.eye)
     },
     "fill": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "fill",
         inputs: [
             "shape",
@@ -49247,9 +49262,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.fill)
+        func: tensorFunc(_tfjsCore.fill)
     },
     "floor": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "floor",
         inputs: [
             "x"
@@ -49257,9 +49273,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.floor)
+        func: tensorFunc(_tfjsCore.floor)
     },
     "floor div": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "floor div",
         inputs: [
             "x",
@@ -49268,9 +49285,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.floorDiv)
+        func: tensorFunc(_tfjsCore.floorDiv)
     },
     "gather": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "gather",
         inputs: [
             "x",
@@ -49279,9 +49297,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.gather)
+        func: tensorFunc(_tfjsCore.gather)
     },
     "greater": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "greater",
         inputs: [
             "x",
@@ -49290,9 +49309,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.greater)
+        func: tensorFunc(_tfjsCore.greater)
     },
     "greater equal": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "greater equal",
         inputs: [
             "x",
@@ -49301,9 +49321,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.greaterEqual)
+        func: tensorFunc(_tfjsCore.greaterEqual)
     },
     "imag": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "imag",
         inputs: [
             "x"
@@ -49311,9 +49332,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.imag)
+        func: tensorFunc(_tfjsCore.imag)
     },
     "is finite": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "is finite",
         inputs: [
             "x"
@@ -49321,9 +49343,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.isFinite)
+        func: tensorFunc(_tfjsCore.isFinite)
     },
     "is inf": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "is inf",
         inputs: [
             "x"
@@ -49331,9 +49354,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.isInf)
+        func: tensorFunc(_tfjsCore.isInf)
     },
     "is nan": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "is nan",
         inputs: [
             "x"
@@ -49341,9 +49365,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.isNaN)
+        func: tensorFunc(_tfjsCore.isNaN)
     },
     "leaky relu": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "leaky relu",
         inputs: [
             "x"
@@ -49351,9 +49376,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.leakyRelu)
+        func: tensorFunc(_tfjsCore.leakyRelu)
     },
     "less": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "less",
         inputs: [
             "x",
@@ -49362,9 +49388,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.less)
+        func: tensorFunc(_tfjsCore.less)
     },
     "less equal": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "less equal",
         inputs: [
             "x",
@@ -49373,9 +49400,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.lessEqual)
+        func: tensorFunc(_tfjsCore.lessEqual)
     },
     "linspace": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "linspace",
         inputs: [
             "start",
@@ -49385,9 +49413,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.linspace)
+        func: tensorFunc(_tfjsCore.linspace)
     },
     "log": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "log",
         inputs: [
             "x"
@@ -49395,9 +49424,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.log)
+        func: tensorFunc(_tfjsCore.log)
     },
     "log1p": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "log1p",
         inputs: [
             "x"
@@ -49405,9 +49435,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.log1p)
+        func: tensorFunc(_tfjsCore.log1p)
     },
     "log sigmoid": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "log sigmoid",
         inputs: [
             "x"
@@ -49415,9 +49446,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.logSigmoid)
+        func: tensorFunc(_tfjsCore.logSigmoid)
     },
     "log softmax": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "log softmax",
         inputs: [
             "x"
@@ -49425,9 +49457,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.logSoftmax)
+        func: tensorFunc(_tfjsCore.logSoftmax)
     },
     "log sum exp": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "log sum exp",
         inputs: [
             "x"
@@ -49435,9 +49468,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.logSumExp)
+        func: tensorFunc(_tfjsCore.logSumExp)
     },
     "and": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "and",
         inputs: [
             "x",
@@ -49446,9 +49480,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.logicalAnd)
+        func: tensorFunc(_tfjsCore.logicalAnd)
     },
     "not": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "not",
         inputs: [
             "x"
@@ -49456,9 +49491,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.logicalNot)
+        func: tensorFunc(_tfjsCore.logicalNot)
     },
     "oneHot": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "oneHot",
         inputs: [
             "indices",
@@ -49467,9 +49503,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.oneHot)
+        func: tensorFunc(_tfjsCore.oneHot)
     },
     "ones": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "ones",
         inputs: [
             "shape"
@@ -49477,9 +49514,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.ones)
+        func: tensorFunc(_tfjsCore.ones)
     },
     "ones like": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "ones like",
         inputs: [
             "x"
@@ -49487,9 +49525,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.onesLike)
+        func: tensorFunc(_tfjsCore.onesLike)
     },
     "or": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "or",
         inputs: [
             "x",
@@ -49498,9 +49537,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.logicalOr)
+        func: tensorFunc(_tfjsCore.logicalOr)
     },
     "xor": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "xor",
         inputs: [
             "x",
@@ -49509,9 +49549,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.logicalXor)
+        func: tensorFunc(_tfjsCore.logicalXor)
     },
     "mat mul": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "mat mul",
         inputs: [
             "x",
@@ -49520,9 +49561,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.matMul)
+        func: tensorFunc(_tfjsCore.matMul)
     },
     "max": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "max",
         inputs: [
             "x"
@@ -49530,9 +49572,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.max)
+        func: tensorFunc(_tfjsCore.max)
     },
     "maximum": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "maximum",
         inputs: [
             "x",
@@ -49541,9 +49584,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.maximum)
+        func: tensorFunc(_tfjsCore.maximum)
     },
     "minimum": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "minimum",
         inputs: [
             "x",
@@ -49552,9 +49596,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.minimum)
+        func: tensorFunc(_tfjsCore.minimum)
     },
     "min": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "min",
         inputs: [
             "x"
@@ -49562,9 +49607,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.min)
+        func: tensorFunc(_tfjsCore.min)
     },
     "mean": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "mean",
         inputs: [
             "x"
@@ -49572,9 +49618,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.mean)
+        func: tensorFunc(_tfjsCore.mean)
     },
     "mod": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "mod",
         inputs: [
             "x",
@@ -49583,9 +49630,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.mod)
+        func: tensorFunc(_tfjsCore.mod)
     },
     "mul": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "mul",
         inputs: [
             "x",
@@ -49594,9 +49642,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.mul)
+        func: tensorFunc(_tfjsCore.mul)
     },
     "multinomial": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "multinomial",
         inputs: [
             "logits",
@@ -49605,9 +49654,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.multinomial)
+        func: tensorFunc(_tfjsCore.multinomial)
     },
     "neg": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "neg",
         inputs: [
             "x"
@@ -49615,9 +49665,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.neg)
+        func: tensorFunc(_tfjsCore.neg)
     },
     "not equal": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "not equal",
         inputs: [
             "x",
@@ -49626,9 +49677,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.notEqual)
+        func: tensorFunc(_tfjsCore.notEqual)
     },
     "norm": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "norm",
         inputs: [
             "x"
@@ -49636,9 +49688,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.norm)
+        func: tensorFunc(_tfjsCore.norm)
     },
     "outer product": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "outer product",
         inputs: [
             "x",
@@ -49647,9 +49700,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.outerProduct)
+        func: tensorFunc(_tfjsCore.outerProduct)
     },
     "pow": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "pow",
         inputs: [
             "base",
@@ -49658,9 +49712,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.pow)
+        func: tensorFunc(_tfjsCore.pow)
     },
     "prelu": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "prelu",
         inputs: [
             "x",
@@ -49669,9 +49724,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.prelu)
+        func: tensorFunc(_tfjsCore.prelu)
     },
     "prod": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "prod",
         inputs: [
             "x"
@@ -49679,9 +49735,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.prod)
+        func: tensorFunc(_tfjsCore.prod)
     },
     "range": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "range",
         inputs: [
             "start",
@@ -49691,9 +49748,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.range)
+        func: tensorFunc(_tfjsCore.range)
     },
     "reciprocal": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "reciprocal",
         inputs: [
             "x"
@@ -49701,9 +49759,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.reciprocal)
+        func: tensorFunc(_tfjsCore.reciprocal)
     },
     "real": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "real",
         inputs: [
             "x"
@@ -49711,9 +49770,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.real)
+        func: tensorFunc(_tfjsCore.real)
     },
     "relu": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "relu",
         inputs: [
             "x"
@@ -49721,9 +49781,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.relu)
+        func: tensorFunc(_tfjsCore.relu)
     },
     "relu6": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "relu6",
         inputs: [
             "x"
@@ -49731,9 +49792,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.relu6)
+        func: tensorFunc(_tfjsCore.relu6)
     },
     "reverse": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "reverse",
         inputs: [
             "x"
@@ -49741,9 +49803,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.reverse)
+        func: tensorFunc(_tfjsCore.reverse)
     },
     "round": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "round",
         inputs: [
             "x"
@@ -49751,9 +49814,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.round)
+        func: tensorFunc(_tfjsCore.round)
     },
     "rsqrt": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "rsqrt",
         inputs: [
             "x"
@@ -49761,9 +49825,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.rsqrt)
+        func: tensorFunc(_tfjsCore.rsqrt)
     },
     "scatter": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "scatter",
         inputs: [
             "x",
@@ -49772,9 +49837,10 @@ const operations = {
         outputs: [
             "plot"
         ],
-        operation: scatter
+        func: scatter
     },
     "selu": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "selu",
         inputs: [
             "x"
@@ -49782,9 +49848,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.selu)
+        func: tensorFunc(_tfjsCore.selu)
     },
     "sigmoid": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "sigmoid",
         inputs: [
             "x"
@@ -49792,9 +49859,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.sigmoid)
+        func: tensorFunc(_tfjsCore.sigmoid)
     },
     "sign": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "sign",
         inputs: [
             "x"
@@ -49802,9 +49870,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.sign)
+        func: tensorFunc(_tfjsCore.sign)
     },
     "sin": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "sin",
         inputs: [
             "x"
@@ -49812,9 +49881,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.sin)
+        func: tensorFunc(_tfjsCore.sin)
     },
     "sinh": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "sinh",
         inputs: [
             "x"
@@ -49822,9 +49892,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.sin)
+        func: tensorFunc(_tfjsCore.sin)
     },
     "slice": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "slice",
         inputs: [
             "x",
@@ -49834,9 +49905,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.slice)
+        func: tensorFunc(_tfjsCore.slice)
     },
     "softplus": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "softplus",
         inputs: [
             "x"
@@ -49844,9 +49916,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.softplus)
+        func: tensorFunc(_tfjsCore.softplus)
     },
     "sqrt": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "sqrt",
         inputs: [
             "x"
@@ -49854,9 +49927,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.sqrt)
+        func: tensorFunc(_tfjsCore.sqrt)
     },
     "square": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "square",
         inputs: [
             "x"
@@ -49864,9 +49938,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.square)
+        func: tensorFunc(_tfjsCore.square)
     },
     "squared difference": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "squared difference",
         inputs: [
             "x",
@@ -49875,9 +49950,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.squaredDifference)
+        func: tensorFunc(_tfjsCore.squaredDifference)
     },
     "sub": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "sub",
         inputs: [
             "x",
@@ -49886,9 +49962,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.sub)
+        func: tensorFunc(_tfjsCore.sub)
     },
     "sum": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "sum",
         inputs: [
             "x"
@@ -49896,9 +49973,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.sum)
+        func: tensorFunc(_tfjsCore.sum)
     },
     "stack": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "stack",
         inputs: [
             "x",
@@ -49907,12 +49985,13 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation((x, y)=>_tfjsCore.stack([
+        func: tensorFunc((x, y)=>_tfjsCore.stack([
                 x,
                 y
             ], 1))
     },
     "step": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "step",
         inputs: [
             "x",
@@ -49921,9 +50000,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.step)
+        func: tensorFunc(_tfjsCore.step)
     },
     "tan": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "tan",
         inputs: [
             "x"
@@ -49931,9 +50011,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.tan)
+        func: tensorFunc(_tfjsCore.tan)
     },
     "tanh": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "tanh",
         inputs: [
             "x"
@@ -49941,9 +50022,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.tanh)
+        func: tensorFunc(_tfjsCore.tanh)
     },
     "tile": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "tile",
         inputs: [
             "x",
@@ -49952,11 +50034,12 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation((x, reps)=>_tfjsCore.tile(x, [
+        func: tensorFunc((x, reps)=>_tfjsCore.tile(x, [
                 reps
             ]))
     },
     "transpose": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "transpose",
         inputs: [
             "x"
@@ -49964,9 +50047,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.transpose)
+        func: tensorFunc(_tfjsCore.transpose)
     },
     "where": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "where",
         inputs: [
             "condition",
@@ -49976,9 +50060,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.where)
+        func: tensorFunc(_tfjsCore.where)
     },
     "zeros": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "zeros",
         inputs: [
             "shape"
@@ -49986,9 +50071,10 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.zeros)
+        func: tensorFunc(_tfjsCore.zeros)
     },
     "zeros like": {
+        kind: (0, _graph.OperationKind).TRANSFORM,
         name: "zeros like",
         inputs: [
             "x"
@@ -49996,7 +50082,7 @@ const operations = {
         outputs: [
             "out"
         ],
-        operation: tensorOperation(_tfjsCore.zerosLike)
+        func: tensorFunc(_tfjsCore.zerosLike)
     }
 };
 
@@ -50017,6 +50103,43 @@ const normalize = (values, [t_min, t_max])=>{
     return values.map((val)=>(val - r_min) / delta_r * delta_t + t_min);
 };
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["iJYvl","h7u1C"], "h7u1C", "parcelRequire045c")
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"1mLYK":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("7UhFu") + "service_worker.js" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"lgJ39":[function(require,module,exports) {
+"use strict";
+var bundleURL = {};
+function getBundleURLCached(id) {
+    var value = bundleURL[id];
+    if (!value) {
+        value = getBundleURL();
+        bundleURL[id] = value;
+    }
+    return value;
+}
+function getBundleURL() {
+    try {
+        throw new Error();
+    } catch (err) {
+        var matches = ("" + err.stack).match(/(https?|file|ftp|(chrome|moz|safari-web)-extension):\/\/[^)\n]+/g);
+        if (matches) // The first two stack frames will be this function and getBundleURLCached.
+        // Use the 3rd one, which will be a runtime in the original bundle.
+        return getBaseURL(matches[2]);
+    }
+    return "/";
+}
+function getBaseURL(url) {
+    return ("" + url).replace(/^((?:https?|file|ftp|(chrome|moz|safari-web)-extension):\/\/.+)\/[^/]+$/, "$1") + "/";
+} // TODO: Replace uses with `new URL(url).origin` when ie11 is no longer supported.
+function getOrigin(url) {
+    var matches = ("" + url).match(/(https?|file|ftp|(chrome|moz|safari-web)-extension):\/\/[^/]+/);
+    if (!matches) throw new Error("Origin not found");
+    return matches[0];
+}
+exports.getBundleURL = getBundleURLCached;
+exports.getBaseURL = getBaseURL;
+exports.getOrigin = getOrigin;
+
+},{}]},["iJYvl","h7u1C"], "h7u1C", "parcelRequire045c")
 
 //# sourceMappingURL=index.b71e74eb.js.map

@@ -89,14 +89,10 @@ export const outputsUi = (theme: Theme, outputs: Output[], focus: Focus) =>
         )
     )
 
-const formatNumber = (value: Number): string =>
-    Number.isInteger(value) ? value.toString() : value.toFixed(2)
-
-
 export const numberBody = (theme: Theme, body: NumberBody, focus: Focus): UI<AppEvent> => {
     const value = focus.quickSelect.kind === QuickSelectKind.BODY ?
-        (focus.quickSelect.hotkeys[body.uuid] ?? formatNumber(body.value)) :
-        formatNumber(body.value)
+        focus.quickSelect.hotkeys[body.uuid] :
+        body.text
     return container({
         color: isFocused(focus, body.uuid) ? theme.focusInput : theme.background,
         padding: 5,
@@ -107,6 +103,10 @@ export const numberBody = (theme: Theme, body: NumberBody, focus: Focus): UI<App
     },
         text(value))
 }
+
+const formatNumber = (value: Number): string =>
+    Number.isInteger(value) ? value.toString() : value.toFixed(2)
+
 
 export const tensorBody = (theme: Theme, body: TensorBody): UI<AppEvent> => {
     switch (body.rank) {
@@ -235,18 +235,33 @@ export const finder = ({ search, options }: FocusFinder, theme: Theme): UI<AppEv
     ])
 
 
-export const virtualKey = (key: string): UI<AppEvent> =>
-    container({
+export interface MappedVirtualKey {
+    display: string
+    event: string
+}
+
+export type VirtualKey =
+    | MappedVirtualKey
+    | string
+
+
+export const virtualKey = (key: VirtualKey): UI<AppEvent> => {
+    const { display, event } = (() => {
+        return typeof key === 'string' ? { display: key, event: key } : key
+    })()
+    return container({
         padding: 10,
         onClick: {
-            kind: EventKind.VIRTUAL_KEYDOWN,
-            key
+            kind: EventKind.KEYDOWN,
+            key: event,
+            ctrl: false
         }
-    }, text({ size: 24 }, key))
+    }, text({ size: 24 }, display))
+}
 
 
-export const virtualKeys = (keys: string[]) =>
-    row(keys.map(c => virtualKey(c)))
+export const virtualKeys = (keys: VirtualKey[]) =>
+    row(keys.map(virtualKey))
 
 
 export const alphabeticVirtualKeyboard = (theme: Theme) =>
@@ -258,7 +273,7 @@ export const alphabeticVirtualKeyboard = (theme: Theme) =>
                     virtualKeys(['q', 'w', 'e', 'r', 't']),
                     virtualKeys(['a', 's', 'd', 'f', 'g']),
                     virtualKeys(['z', 'x', 'c', 'v']),
-                    virtualKeys(['sft', 'space']),
+                    virtualKeys([{ display: 'ret', event: 'Enter' }, 'space']),
                 ])
             ),
             container({ padding: 4, color: theme.node },
@@ -266,8 +281,8 @@ export const alphabeticVirtualKeyboard = (theme: Theme) =>
                     virtualKeys(['6', '7', '8', '9', '0']),
                     virtualKeys(['y', 'u', 'i', 'o', 'p']),
                     virtualKeys(['h', 'j', 'k', 'l']),
-                    virtualKeys(['b', 'n', 'm', 'del']),
-                    virtualKeys(['space', 'ret']),
+                    virtualKeys(['b', 'n', 'm', { display: 'del', event: 'Backspace' }]),
+                    virtualKeys(['space', { display: 'ret', event: 'Enter' }]),
                 ])
             ),
         ]),
@@ -279,10 +294,10 @@ export const numericVirtualKeyboard = (theme: Theme, sign: string) =>
         row({ mainAxisAlignment: MainAxisAlignment.END }, [
             container({ padding: 4, color: theme.node },
                 column({ crossAxisAlignment: CrossAxisAlignment.END }, [
-                    virtualKeys(['1', '2', '3', 'clr']),
-                    virtualKeys(['4', '5', '6', 'del']),
+                    virtualKeys(['1', '2', '3', { display: 'clr', event: 'c' }]),
+                    virtualKeys(['4', '5', '6', { display: 'del', event: 'Backspace' }]),
                     virtualKeys(['7', '8', '9', '   ']),
-                    virtualKeys([sign, '0', '.', 'ret']),
+                    virtualKeys([sign, '0', '.', { display: 'ret', event: 'Enter' }]),
                 ])
             ),
         ]),

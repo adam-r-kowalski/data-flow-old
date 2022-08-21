@@ -7,7 +7,7 @@ import { Focus, FocusFinder, FocusKind } from '../model/focus'
 import { PointerAction, PointerActionKind } from '../model/pointer_action'
 import { GenerateUUID, Operation, Operations, Position, UUID } from '../model/graph'
 import { Pointer } from "../ui"
-import { addNode, changeBodyValue, changeNodePosition, removeInputEdge, removeNode, removeOutputEdges } from "./graph"
+import { addNode, changeNumberText, changeNodePosition, removeInputEdge, removeNode, removeOutputEdges } from "./graph"
 import { maybeTriggerQuickSelect, quickSelectInput, quickSelectOutput, quickSelectNode, quickSelectBody } from "./quick_select"
 import { QuickSelectKind } from "../model/quick_select"
 import { clearFocus, selectInput, selectOutput } from "./focus"
@@ -25,7 +25,6 @@ export enum EventKind {
     OPEN_FINDER_TIMEOUT,
     KEYDOWN,
     KEYUP,
-    VIRTUAL_KEYDOWN,
     CLICKED_FINDER_OPTION,
     CLICKED_BODY,
     CLICKED_BACKGROUND,
@@ -90,11 +89,6 @@ export interface KeyDown {
     readonly ctrl: boolean
 }
 
-export interface VirtualKeyDown {
-    readonly kind: EventKind.VIRTUAL_KEYDOWN
-    readonly key: string
-}
-
 export interface ClickedFinderOption {
     readonly kind: EventKind.CLICKED_FINDER_OPTION
     readonly option: string
@@ -147,7 +141,6 @@ export type AppEvent =
     | OpenFinderTimeout
     | KeyDown
     | KeyUp
-    | VirtualKeyDown
     | ClickedFinderOption
     | ClickedNumber
     | ClickedBackground
@@ -412,11 +405,11 @@ const updateFinderSearch = (model: Model, focus: FocusFinder, transform: (search
     }
 }
 
-export const updateBodyNumber = (model: Model, body: UUID, transform: (value: number) => number): UpdateResult<Model, AppEvent> => {
+export const updateNumberText = (model: Model, body: UUID, transform: (text: string) => string): UpdateResult<Model, AppEvent> => {
     return {
         model: {
             ...model,
-            graph: changeBodyValue(model.graph, body, transform)
+            graph: changeNumberText(model.graph, body, transform)
         },
         render: true
     }
@@ -491,15 +484,9 @@ const keyDown = (model: Model, event: KeyDown, { generateUUID, currentTime }: Ef
                 case FocusKind.BODY:
                     switch (key) {
                         case 'Backspace':
-                            return updateBodyNumber(model, model.focus.body, value => {
-                                let newValue = value.toString().slice(0, -1)
-                                switch (newValue) {
-                                    case '':
-                                    case '-':
-                                        return 0
-                                    default:
-                                        return parseFloat(newValue)
-                                }
+                            return updateNumberText(model, model.focus.body, text => {
+                                const nextText = text.slice(0, -1)
+                                return nextText === '' ? '0' : nextText
                             })
                         case '1':
                         case '2':
@@ -511,12 +498,24 @@ const keyDown = (model: Model, event: KeyDown, { generateUUID, currentTime }: Ef
                         case '8':
                         case '9':
                         case '0':
-                            return updateBodyNumber(model, model.focus.body, value => parseFloat(value.toString() + key))
+                            return updateNumberText(model, model.focus.body, text => {
+                                if (text === '0') { return key }
+                                else if (text === '-0') { return `-${key}` }
+                                else { return text + key }
+                            })
+                        case '.':
+                            return updateNumberText(model, model.focus.body, text => text.includes('.') ? text : text + key)
                         case '-':
                         case '+':
-                            return updateBodyNumber(model, model.focus.body, value => -value)
-                        case 'd':
-                            return updateBodyNumber(model, model.focus.body, () => 0)
+                            return updateNumberText(model, model.focus.body, text => {
+                                if (text.length && text[0] === '-') {
+                                    return text.slice(1)
+                                } else {
+                                    return '-' + text
+                                }
+                            })
+                        case 'c':
+                            return updateNumberText(model, model.focus.body, () => '0')
                         case 'Enter':
                         case 'Escape':
                             return {
@@ -611,68 +610,6 @@ const keyUp = (model: Model, event: KeyUp): UpdateResult<Model, AppEvent> => {
     }
 }
 
-const virtualKeyDown = (model: Model, { key }: VirtualKeyDown, generateUUID: GenerateUUID): UpdateResult<Model, AppEvent> => {
-    switch (model.focus.kind) {
-        case FocusKind.FINDER:
-            switch (key) {
-                case 'del':
-                    return updateFinderSearch(model, model.focus, search => search.slice(0, -1))
-                case 'sft':
-                    return { model }
-                case 'space':
-                    return updateFinderSearch(model, model.focus, search => search + ' ')
-                case 'ret':
-                    if (model.focus.options.length > 0) {
-                        const name = model.focus.options[0]
-                        return insertOperationFromFinder(model, name, generateUUID)
-                    } else {
-                        return { model: clearFocus(model), render: true }
-                    }
-                default:
-                    return updateFinderSearch(model, model.focus, search => search + key)
-            }
-        case FocusKind.BODY:
-            switch (key) {
-                case 'del':
-                    return updateBodyNumber(model, model.focus.body, value => {
-                        let newValue = value.toString().slice(0, -1)
-                        switch (newValue) {
-                            case '':
-                            case '-':
-                                return 0
-                            default:
-                                return parseFloat(newValue)
-                        }
-                    })
-                case '1':
-                case '2':
-                case '3':
-                case '4':
-                case '5':
-                case '6':
-                case '7':
-                case '8':
-                case '9':
-                case '0':
-                    return updateBodyNumber(model, model.focus.body, value => parseFloat(value.toString() + key))
-                case '-':
-                case '+':
-                    return updateBodyNumber(model, model.focus.body, value => -value)
-                case 'clr':
-                    return updateBodyNumber(model, model.focus.body, () => 0)
-                case 'ret':
-                    return {
-                        model: clearFocus(model),
-                        render: true
-                    }
-                default:
-                    return { model }
-            }
-        default:
-            return { model }
-    }
-}
-
 const clickedFinderOption = (model: Model, { option }: ClickedFinderOption, generateUUID: GenerateUUID): UpdateResult<Model, AppEvent> =>
     insertOperationFromFinder(model, option, generateUUID)
 
@@ -738,7 +675,7 @@ const deleteInputEdge = (model: Model, { input }: DeleteInputEdge, generateUUID:
     render: true
 })
 
-const deleteOutputEdges = (model: Model, { output }: DeleteOutputEdges, generateUUID: GenerateUUID): UpdateResult<Model, AppEvent> => ({
+const deleteOutputEdges = (model: Model, { output }: DeleteOutputEdges): UpdateResult<Model, AppEvent> => ({
     model: clearFocus({
         ...model,
         graph: removeOutputEdges(model.graph, output),
@@ -758,13 +695,12 @@ export const update = (effects: Effects, model: Model, event: AppEvent): UpdateR
         case EventKind.OPEN_FINDER_TIMEOUT: return openFinderTimeout(model, event)
         case EventKind.KEYDOWN: return keyDown(model, event, effects)
         case EventKind.KEYUP: return keyUp(model, event)
-        case EventKind.VIRTUAL_KEYDOWN: return virtualKeyDown(model, event, effects.generateUUID)
         case EventKind.CLICKED_FINDER_OPTION: return clickedFinderOption(model, event, effects.generateUUID)
         case EventKind.CLICKED_BODY: return clickedNumber(model, event)
         case EventKind.CLICKED_BACKGROUND: return clickedBackground(model)
         case EventKind.DELETE_NODE: return deleteNode(model, event)
         case EventKind.DELETE_INPUT_EDGE: return deleteInputEdge(model, event, effects.generateUUID)
-        case EventKind.DELETE_OUTPUT_EDGES: return deleteOutputEdges(model, event, effects.generateUUID)
+        case EventKind.DELETE_OUTPUT_EDGES: return deleteOutputEdges(model, event)
         case EventKind.PAN_CAMERA: return panCamera(model, effects.currentTime)
         case EventKind.ZOOM_CAMERA: return zoomCamera(model, effects.currentTime)
         case EventKind.MOVE_NODE: return moveNode(model, effects.currentTime)

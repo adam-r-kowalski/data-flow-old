@@ -132,7 +132,7 @@ test("add operation with body to graph", () => {
         uuid: bodyUUID,
         node: numberUUID,
         value: 0,
-        text: ''
+        text: '0'
     }
     expect(graph1).toEqual({
         nodes: { [number.uuid]: number },
@@ -216,7 +216,7 @@ test("add two operations to graph", () => {
         uuid: generateUUID1(),
         node: numberUUID,
         value: 0,
-        text: ''
+        text: '0'
     }
     const number: Node = {
         kind: NodeKind.SOURCE,
@@ -359,7 +359,7 @@ test("add edge between two operations", () => {
         uuid: numberBodyUUID,
         node: number.uuid,
         value: 0,
-        text: ''
+        text: '0'
     }
     const edge: Edge = {
         uuid: edgeUUID,
@@ -579,7 +579,7 @@ test("remove node from graph", () => {
             uuid: numberBodyUUID,
             node: number.uuid,
             value: 0,
-            text: ''
+            text: '0'
         }
         const edge: Edge = {
             uuid: edgeUUID,
@@ -723,7 +723,7 @@ test("remove input edge", () => {
             uuid: numberBodyUUID,
             node: number.uuid,
             value: 0,
-            text: ''
+            text: '0'
         }
         const edge: Edge = {
             uuid: edgeUUID,
@@ -875,7 +875,7 @@ test("remove node with output edges", () => {
             uuid: numberBodyUUID,
             node: number.uuid,
             value: 0,
-            text: ''
+            text: '0'
         }
         const edge: Edge = {
             uuid: edgeUUID,
@@ -1013,7 +1013,7 @@ test("remove input edge when node has no inputs nothing changes", () => {
             uuid: numberBodyUUID,
             node: number.uuid,
             value: 0,
-            text: ''
+            text: '0'
         }
         expect(graph2).toEqual({
             nodes: {
@@ -1135,7 +1135,7 @@ test("remove output edge", () => {
             uuid: numberBodyUUID,
             node: number.uuid,
             value: 0,
-            text: ''
+            text: '0'
         }
         const edge: Edge = {
             uuid: edgeUUID,

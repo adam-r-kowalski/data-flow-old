@@ -36,7 +36,7 @@ export const addNode = ({ graph, operation, position, generateUUID }: AddNodeInp
                     uuid: generateUUID(),
                     node: nodeUUID,
                     value: 0,
-                    text: ''
+                    text: '0'
                 }
                 const node: NodeSource = {
                     kind: NodeKind.SOURCE,
@@ -334,19 +334,30 @@ export const changeNodePosition = (graph: Graph, node: UUID, transform: (positio
     }
 }
 
-export const changeBodyValue = (graph: Graph, body: UUID, transform: (value: number) => number): Graph => {
+const parseNumber = (text: string): number => {
+    switch (text) {
+        case '':
+        case '-':
+        case '.':
+            return 0
+        default:
+            return parseFloat(text)
+    }
+}
+
+export const changeNumberText = (graph: Graph, body: UUID, transform: (text: string) => string): Graph => {
     const currentBody = graph.bodys[body]
     switch (currentBody.kind) {
         case BodyKind.NUMBER:
-            const value = transform(currentBody.value)
+            const text = transform(currentBody.text)
             const graph1 = {
                 ...graph,
                 bodys: {
                     ...graph.bodys,
                     [body]: {
                         ...currentBody,
-                        value,
-                        text: value.toString()
+                        value: parseNumber(text),
+                        text
                     }
                 }
             }

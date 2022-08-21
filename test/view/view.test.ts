@@ -255,7 +255,7 @@ test("numberBody not focused", () => {
         uuid: 'body uuid',
         node: 'node',
         value: 0,
-        text: ''
+        text: '0'
     }
     const focus: Focus = {
         kind: FocusKind.NONE,
@@ -281,7 +281,7 @@ test("bodyUi editing", () => {
         uuid: 'body uuid',
         node: 'node',
         value: 0,
-        text: ''
+        text: '0'
     }
     const actual = numberBody(theme, body, {
         kind: FocusKind.BODY,
@@ -938,12 +938,27 @@ test("virtual key", () => {
     const expected = container({
         padding: 10,
         onClick: {
-            kind: EventKind.VIRTUAL_KEYDOWN,
-            key: "key"
+            kind: EventKind.KEYDOWN,
+            key: "key",
+            ctrl: false
         }
     }, text({ size: 24 }, "key"))
     expect(actual).toEqual(expected)
 })
+
+test("remapped virtual key", () => {
+    const actual = virtualKey({ display: "key", event: 'f' })
+    const expected = container({
+        padding: 10,
+        onClick: {
+            kind: EventKind.KEYDOWN,
+            key: "f",
+            ctrl: false
+        }
+    }, text({ size: 24 }, "key"))
+    expect(actual).toEqual(expected)
+})
+
 
 test("virtual keys", () => {
     const actual = virtualKeys(["a", "b", "c"])
@@ -951,22 +966,25 @@ test("virtual keys", () => {
         container({
             padding: 10,
             onClick: {
-                kind: EventKind.VIRTUAL_KEYDOWN,
-                key: "a"
+                kind: EventKind.KEYDOWN,
+                key: "a",
+                ctrl: false
             }
         }, text({ size: 24 }, "a")),
         container({
             padding: 10,
             onClick: {
-                kind: EventKind.VIRTUAL_KEYDOWN,
-                key: "b"
+                kind: EventKind.KEYDOWN,
+                key: "b",
+                ctrl: false
             }
         }, text({ size: 24 }, "b")),
         container({
             padding: 10,
             onClick: {
-                kind: EventKind.VIRTUAL_KEYDOWN,
-                key: "c"
+                kind: EventKind.KEYDOWN,
+                key: "c",
+                ctrl: false
             }
         }, text({ size: 24 }, "c")),
     ])
@@ -983,7 +1001,7 @@ test("alphabetic virtual keyboard", () => {
                     virtualKeys(['q', 'w', 'e', 'r', 't']),
                     virtualKeys(['a', 's', 'd', 'f', 'g']),
                     virtualKeys(['z', 'x', 'c', 'v']),
-                    virtualKeys(['sft', 'space']),
+                    virtualKeys([{ display: 'ret', event: 'Enter' }, 'space']),
                 ])
             ),
             container({ padding: 4, color: theme.node },
@@ -991,8 +1009,8 @@ test("alphabetic virtual keyboard", () => {
                     virtualKeys(['6', '7', '8', '9', '0']),
                     virtualKeys(['y', 'u', 'i', 'o', 'p']),
                     virtualKeys(['h', 'j', 'k', 'l']),
-                    virtualKeys(['b', 'n', 'm', 'del']),
-                    virtualKeys(['space', 'ret']),
+                    virtualKeys(['b', 'n', 'm', { display: 'del', event: 'Backspace' }]),
+                    virtualKeys(['space', { display: 'ret', event: 'Enter' }]),
                 ])
             ),
         ]),
@@ -1006,10 +1024,10 @@ test("numeric virtual keyboard", () => {
         row({ mainAxisAlignment: MainAxisAlignment.END }, [
             container({ padding: 4, color: theme.node },
                 column({ crossAxisAlignment: CrossAxisAlignment.END }, [
-                    virtualKeys(['1', '2', '3', 'clr']),
-                    virtualKeys(['4', '5', '6', 'del']),
+                    virtualKeys(['1', '2', '3', { display: 'clr', event: 'c' }]),
+                    virtualKeys(['4', '5', '6', { display: 'del', event: 'Backspace' }]),
                     virtualKeys(['7', '8', '9', '   ']),
-                    virtualKeys(['-', '0', '.', 'ret']),
+                    virtualKeys(['-', '0', '.', { display: 'ret', event: 'Enter' }]),
                 ])
             ),
         ]),

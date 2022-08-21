@@ -1,6 +1,6 @@
 import * as tf from '@tensorflow/tfjs-core'
 
-import { addNodeToGraph, EventKind, openFinder, openNumericKeyboard, update, updateBodyNumber } from "../../src/update"
+import { addNodeToGraph, EventKind, openFinder, openNumericKeyboard, update, updateNumberText } from "../../src/update"
 import { BodyKind, NodeTransform, OperationKind, Operations } from "../../src/model/graph"
 import { addEdge, changeNodePosition } from "../../src/update/graph"
 import { translate } from "../../src/linear_algebra/matrix3x3"
@@ -1064,38 +1064,6 @@ test("enter key down when finder is shown and finder has search eliminates all o
     expect(model2).toEqual({ ...model, operations })
 })
 
-test("ret virtual key down when finder is shown and finder has search eliminates all options closes finder", () => {
-    const effects = makeEffects()
-    const operations: Operations = {
-        'Add': {
-            kind: OperationKind.TRANSFORM,
-            name: 'Add',
-            inputs: ['x', 'y'],
-            outputs: ['out'],
-            func: addFunc
-        },
-        'Sub': {
-            kind: OperationKind.TRANSFORM,
-            name: 'Sub',
-            inputs: ['x', 'y'],
-            outputs: ['out'],
-            func: subFunc
-        }
-    }
-    const model0: Model = openFinder({ ...model, operations })
-    const { model: model1 } = update(effects, model0, {
-        kind: EventKind.VIRTUAL_KEYDOWN,
-        key: 'x'
-    })
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.VIRTUAL_KEYDOWN,
-        key: 'ret'
-    })
-    const expectedModel = { ...model, operations }
-    expect(model2).toEqual(expectedModel)
-})
-
-
 test("escape key down when finder is shown closes finder", () => {
     const effects = makeEffects()
     const operations: Operations = {
@@ -1266,202 +1234,6 @@ test("Tab key down when finder is shown are ignored", () => {
 
 })
 
-test("virtual key down when finder is shown appends to search", () => {
-    const effects = makeEffects()
-    const operations: Operations = {
-        'Add': {
-            kind: OperationKind.TRANSFORM,
-            name: 'Add',
-            inputs: ['x', 'y'],
-            outputs: ['out'],
-            func: addFunc
-        },
-        'Sub': {
-            kind: OperationKind.TRANSFORM,
-            name: 'Sub',
-            inputs: ['x', 'y'],
-            outputs: ['out'],
-            func: subFunc
-        }
-    }
-    const model0: Model = openFinder({ ...model, operations })
-    const { model: model1 } = update(effects, model0, {
-        kind: EventKind.VIRTUAL_KEYDOWN,
-        key: 'a'
-    })
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.VIRTUAL_KEYDOWN,
-        key: 'd'
-    })
-    const { model: model3, render } = update(effects, model2, {
-        kind: EventKind.KEYDOWN,
-        key: 'd',
-        ctrl: false
-    })
-    const expectedModel: Model = {
-        ...model0,
-        focus: {
-            kind: FocusKind.FINDER,
-            search: 'add',
-            options: ['Add'],
-            quickSelect: { kind: QuickSelectKind.NONE }
-        }
-    }
-    expect(model3).toEqual(expectedModel)
-    expect(render).toEqual(true)
-})
-
-test("del virtual key down when finder is shown deletes from search", () => {
-    const effects = makeEffects()
-    const operations: Operations = {
-        'Add': {
-            kind: OperationKind.TRANSFORM,
-            name: 'Add',
-            inputs: ['x', 'y'],
-            outputs: ['out'],
-            func: addFunc
-        },
-        'Sub': {
-            kind: OperationKind.TRANSFORM,
-            name: 'Sub',
-            inputs: ['x', 'y'],
-            outputs: ['out'],
-            func: subFunc
-        }
-    }
-    const model0 = openFinder({ ...model, operations })
-    const { model: model1 } = update(effects, model0, {
-        kind: EventKind.VIRTUAL_KEYDOWN,
-        key: 'a'
-    })
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.VIRTUAL_KEYDOWN,
-        key: 'd'
-    })
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.VIRTUAL_KEYDOWN,
-        key: 'd'
-    })
-    const { model: model4, render } = update(effects, model3, {
-        kind: EventKind.VIRTUAL_KEYDOWN,
-        key: 'del'
-    })
-    const expectedModel: Model = {
-        ...model0,
-        focus: {
-            kind: FocusKind.FINDER,
-            search: 'ad',
-            options: ['Add'],
-            quickSelect: { kind: QuickSelectKind.NONE }
-        }
-    }
-    expect(model4).toEqual(expectedModel)
-    expect(render).toEqual(true)
-})
-
-test("space virtual key down when finder is shown adds space to search", () => {
-    const effects = makeEffects()
-    const operations: Operations = {
-        'Add': {
-            kind: OperationKind.TRANSFORM,
-            name: 'Add',
-            inputs: ['x', 'y'],
-            outputs: ['out'],
-            func: addFunc
-        },
-        'Sub': {
-            kind: OperationKind.TRANSFORM,
-            name: 'Sub',
-            inputs: ['x', 'y'],
-            outputs: ['out'],
-            func: subFunc
-        }
-    }
-    const model0 = openFinder({ ...model, operations })
-    const { model: model1 } = update(effects, model0, {
-        kind: EventKind.VIRTUAL_KEYDOWN,
-        key: 'a'
-    })
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.VIRTUAL_KEYDOWN,
-        key: 'space'
-    })
-    const { model: model3, render } = update(effects, model2, {
-        kind: EventKind.VIRTUAL_KEYDOWN,
-        key: 'd'
-    })
-    const expectedModel: Model = {
-        ...model0,
-        focus: {
-            kind: FocusKind.FINDER,
-            search: 'a d',
-            options: [],
-            quickSelect: { kind: QuickSelectKind.NONE }
-        }
-    }
-    expect(model3).toEqual(expectedModel)
-    expect(render).toEqual(true)
-})
-
-test("ret virtual key down when finder is shown closes finder and adds node", () => {
-    const operations: Operations = {
-        'Add': {
-            kind: OperationKind.TRANSFORM,
-            name: 'Add',
-            inputs: ['x', 'y'],
-            outputs: ['out'],
-            func: addFunc
-        },
-        'Sub': {
-            kind: OperationKind.TRANSFORM,
-            name: 'Sub',
-            inputs: ['x', 'y'],
-            outputs: ['out'],
-            func: subFunc
-        }
-    }
-    const model0 = openFinder({ ...model, operations })
-    const { model: model1, render } = update(makeEffects(), model0, {
-        kind: EventKind.VIRTUAL_KEYDOWN,
-        key: 'ret'
-    })
-    const { model: expectedModel } = addNodeToGraph({
-        model: { ...model, operations },
-        position: { x: 250, y: 250 },
-        operation: operations['Add'],
-        generateUUID: makeEffects().generateUUID
-    })
-    expect(model1).toEqual(expectedModel)
-    expect(render).toEqual(true)
-})
-
-test("sft virtual key down when finder is shown are ignored", () => {
-    const effects = makeEffects()
-    const operations: Operations = {
-        'Add': {
-            kind: OperationKind.TRANSFORM,
-            name: 'Add',
-            inputs: ['x', 'y'],
-            outputs: ['out'],
-            func: addFunc
-        },
-        'Sub': {
-            kind: OperationKind.TRANSFORM,
-            name: 'Sub',
-            inputs: ['x', 'y'],
-            outputs: ['out'],
-            func: subFunc
-        }
-    }
-    const model0: Model = openFinder({ ...model, operations })
-    const { model: model1, render } = update(effects, model0, {
-        kind: EventKind.VIRTUAL_KEYDOWN,
-        key: 'sft'
-    })
-    expect(model1).toEqual(model0)
-    expect(render).toBeUndefined()
-})
-
 test("pressing number on keyboard appends to number node", () => {
     const effectModel = defaultEffectModel()
     const effects = makeEffects(effectModel)
@@ -1512,6 +1284,58 @@ test("pressing number on keyboard appends to number node", () => {
     }
     expect(model2).toEqual(expectedModel)
 })
+
+test("pressing -3.14 on keyboard writes a float for the number", () => {
+    const effectModel = defaultEffectModel()
+    const effects = makeEffects(effectModel)
+    const operations: Operations = {
+        'Number': {
+            kind: OperationKind.NUMBER,
+            name: 'Number',
+            outputs: ['out']
+        }
+    }
+    const { model: model0, node } = addNodeToGraph({
+        model: { ...model, operations },
+        operation: operations['Number'],
+        position: { x: 0, y: 0 },
+        generateUUID: effects.generateUUID
+    })
+    const model1 = openNumericKeyboard(model0, model0.graph.nodes[node].body!)
+    let model2 = model1
+    for (const key of '-3.14') {
+        const { model: model } = update(effects, model2, {
+            kind: EventKind.KEYDOWN,
+            key,
+            ctrl: false
+        })
+        model2 = model
+    }
+    const body = makeEffects({ ...effectModel, uuid: effectModel.uuid - 1 }).generateUUID()
+    const expectedModel: Model = {
+        ...model0,
+        operations,
+        focus: {
+            kind: FocusKind.BODY,
+            body,
+            quickSelect: { kind: QuickSelectKind.NONE }
+        },
+        graph: {
+            ...model0.graph,
+            bodys: {
+                [body]: {
+                    kind: BodyKind.NUMBER,
+                    uuid: body,
+                    node,
+                    value: -3.14,
+                    text: '-3.14'
+                }
+            }
+        }
+    }
+    expect(model2).toEqual(expectedModel)
+})
+
 
 test("pressing backspace on keyboard deletes from number node", () => {
     const effectModel = defaultEffectModel()
@@ -1620,160 +1444,6 @@ test("pressing backspace when number node value is 0 has no effect", () => {
     expect(model2).toEqual(expectedModel)
 })
 
-test("pressing del on virtual keyboard when number node value is 0 has no effect", () => {
-    const effectModel = defaultEffectModel()
-    const effects = makeEffects(effectModel)
-    const operations: Operations = {
-        'Number': {
-            kind: OperationKind.NUMBER,
-            name: 'Number',
-            outputs: ['out']
-        }
-    }
-    const { model: model0, node } = addNodeToGraph({
-        model: { ...model, operations },
-        operation: operations['Number'],
-        position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
-    })
-    const model1 = openNumericKeyboard(model0, model0.graph.nodes[node].body!)
-    let model2 = model1
-    for (let i = 0; i < 3; ++i) {
-        const { model: model } = update(effects, model2, {
-            kind: EventKind.VIRTUAL_KEYDOWN,
-            key: 'del'
-        })
-        model2 = model
-    }
-    const body = makeEffects({ ...effectModel, uuid: effectModel.uuid - 1 }).generateUUID()
-    const expectedModel: Model = {
-        ...model0,
-        operations,
-        focus: {
-            kind: FocusKind.BODY,
-            body,
-            quickSelect: { kind: QuickSelectKind.NONE }
-        },
-        graph: {
-            ...model0.graph,
-            bodys: {
-                [body]: {
-                    kind: BodyKind.NUMBER,
-                    uuid: body,
-                    node,
-                    value: 0,
-                    text: '0'
-                }
-            }
-        }
-    }
-    expect(model2).toEqual(expectedModel)
-})
-
-test("pressing number on virtual keyboard appends to number node", () => {
-    const effectModel = defaultEffectModel()
-    const effects = makeEffects(effectModel)
-    const operations: Operations = {
-        'Number': {
-            kind: OperationKind.NUMBER,
-            name: 'Number',
-            outputs: ['out']
-        }
-    }
-    const { model: model0, node } = addNodeToGraph({
-        model: { ...model, operations },
-        operation: operations['Number'],
-        position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
-    })
-    const model1 = openNumericKeyboard(model0, model0.graph.nodes[node].body!)
-    let model2 = model1
-    for (const key of '1234567890') {
-        const { model: model } = update(effects, model2, {
-            kind: EventKind.VIRTUAL_KEYDOWN,
-            key
-        })
-        model2 = model
-    }
-    const body = makeEffects({ ...effectModel, uuid: effectModel.uuid - 1 }).generateUUID()
-    const expectedModel: Model = {
-        ...model0,
-        operations,
-        focus: {
-            kind: FocusKind.BODY,
-            body,
-            quickSelect: { kind: QuickSelectKind.NONE }
-        },
-        graph: {
-            ...model0.graph,
-            bodys: {
-                [body]: {
-                    kind: BodyKind.NUMBER,
-                    uuid: body,
-                    node,
-                    value: 1234567890,
-                    text: '1234567890'
-                }
-            }
-        }
-    }
-    expect(model2).toEqual(expectedModel)
-})
-
-test("pressing del on virtual keyboard deletes from number node", () => {
-    const effectModel = defaultEffectModel()
-    const effects = makeEffects(effectModel)
-    const operations: Operations = {
-        'Number': {
-            kind: OperationKind.NUMBER,
-            name: 'Number',
-            outputs: ['out']
-        }
-    }
-    const { model: model0, node } = addNodeToGraph({
-        model: { ...model, operations },
-        operation: operations['Number'],
-        position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
-    })
-    const model1 = openNumericKeyboard(model0, model0.graph.nodes[node].body!)
-    let model2 = model1
-    for (const key of '1234567890') {
-        const { model: model } = update(effects, model2, {
-            kind: EventKind.VIRTUAL_KEYDOWN,
-            key
-        })
-        model2 = model
-    }
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.VIRTUAL_KEYDOWN,
-        key: 'del'
-    })
-    const body = makeEffects({ ...effectModel, uuid: effectModel.uuid - 1 }).generateUUID()
-    const expectedModel: Model = {
-        ...model0,
-        operations,
-        focus: {
-            kind: FocusKind.BODY,
-            body,
-            quickSelect: { kind: QuickSelectKind.NONE }
-        },
-        graph: {
-            ...model0.graph,
-            bodys: {
-                [body]: {
-                    kind: BodyKind.NUMBER,
-                    uuid: body,
-                    node,
-                    value: 123456789,
-                    text: '123456789'
-                }
-            }
-        }
-    }
-    expect(model3).toEqual(expectedModel)
-})
-
 test("pressing enter on keyboard while editing number node exits virtual keyboard", () => {
     const effectModel = defaultEffectModel()
     const effects = makeEffects(effectModel)
@@ -1825,55 +1495,6 @@ test("pressing enter on keyboard while editing number node exits virtual keyboar
     expect(model3).toEqual(expectedModel)
 })
 
-test("pressing ret on virtual keyboard while editing number node exits virtual keyboard", () => {
-    const effectModel = defaultEffectModel()
-    const effects = makeEffects(effectModel)
-    const operations: Operations = {
-        'Number': {
-            kind: OperationKind.NUMBER,
-            name: 'Number',
-            outputs: ['out']
-        }
-    }
-    const { model: model0, node } = addNodeToGraph({
-        model: { ...model, operations },
-        operation: operations['Number'],
-        position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
-    })
-    const model1 = openNumericKeyboard(model0, model0.graph.nodes[node].body!)
-    let model2 = model1
-    for (const key of '1234567890') {
-        const { model: model } = update(effects, model2, {
-            kind: EventKind.VIRTUAL_KEYDOWN,
-            key
-        })
-        model2 = model
-    }
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.VIRTUAL_KEYDOWN,
-        key: 'ret'
-    })
-    const body = makeEffects({ ...effectModel, uuid: effectModel.uuid - 1 }).generateUUID()
-    const expectedModel: Model = {
-        ...model0,
-        operations,
-        graph: {
-            ...model0.graph,
-            bodys: {
-                [body]: {
-                    kind: BodyKind.NUMBER,
-                    uuid: body,
-                    node,
-                    value: 1234567890,
-                    text: '1234567890'
-                }
-            }
-        }
-    }
-    expect(model3).toEqual(expectedModel)
-})
-
 
 test("pressing non number on keyboard while editing number node is ignored", () => {
     const effectModel = defaultEffectModel()
@@ -1893,7 +1514,7 @@ test("pressing non number on keyboard while editing number node is ignored", () 
     })
     const model1 = openNumericKeyboard(model0, node)
     let model2 = model1
-    for (const key of 'qwertyuiopasfghjklzxcvbnm') {
+    for (const key of 'qwertyuiopasdfghjklzxvbnm') {
         const { model: model } = update(effects, model2, {
             kind: EventKind.KEYDOWN,
             key,
@@ -1913,7 +1534,7 @@ test("pressing non number on keyboard while editing number node is ignored", () 
                     uuid: body,
                     node,
                     value: 0,
-                    text: ''
+                    text: '0'
                 }
             }
         }
@@ -1921,51 +1542,6 @@ test("pressing non number on keyboard while editing number node is ignored", () 
     expect(model2).toEqual(expectedModel)
 })
 
-
-test("pressing non number on virtual keyboard while editing number node is ignored", () => {
-    const effectModel = defaultEffectModel()
-    const effects = makeEffects(effectModel)
-    const operations: Operations = {
-        'Number': {
-            kind: OperationKind.NUMBER,
-            name: 'Number',
-            outputs: ['out']
-        }
-    }
-    const { model: model0, node } = addNodeToGraph({
-        model: { ...model, operations },
-        operation: operations['Number'],
-        position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
-    })
-    const model1 = openNumericKeyboard(model0, node)
-    let model2 = model1
-    for (const key of 'qwertyuiopasdfghjklzxcvbnm') {
-        const { model: model } = update(effects, model2, {
-            kind: EventKind.VIRTUAL_KEYDOWN,
-            key
-        })
-        model2 = model
-    }
-    const body = makeEffects({ ...effectModel, uuid: effectModel.uuid - 1 }).generateUUID()
-    const expectedModel: Model = {
-        ...model1,
-        operations,
-        graph: {
-            ...model0.graph,
-            bodys: {
-                [body]: {
-                    kind: BodyKind.NUMBER,
-                    uuid: body,
-                    node,
-                    value: 0,
-                    text: ''
-                }
-            }
-        }
-    }
-    expect(model2).toEqual(expectedModel)
-})
 
 test("pressing - on keyboard while editing number node makes the number negative", () => {
     const effectModel = defaultEffectModel()
@@ -1983,7 +1559,7 @@ test("pressing - on keyboard while editing number node makes the number negative
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
     })
-    const model1 = updateBodyNumber(model0, model0.graph.nodes[node].body, () => 10).model
+    const model1 = updateNumberText(model0, model0.graph.nodes[node].body, () => '10').model
     const model2 = openNumericKeyboard(model1, model1.graph.nodes[node].body!)
     const { model: model3 } = update(effects, model2, {
         kind: EventKind.KEYDOWN,
@@ -2031,7 +1607,7 @@ test("pressing + on keyboard while editing number node makes the number negative
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
     })
-    const model1 = updateBodyNumber(model0, model0.graph.nodes[node].body, () => -10).model
+    const model1 = updateNumberText(model0, model0.graph.nodes[node].body, () => '-10').model
     const model2 = openNumericKeyboard(model1, model1.graph.nodes[node].body!)
     const { model: model3 } = update(effects, model2, {
         kind: EventKind.KEYDOWN,
@@ -2064,101 +1640,7 @@ test("pressing + on keyboard while editing number node makes the number negative
 })
 
 
-test("pressing - on virtual keyboard while editing number node makes the number negative", () => {
-    const effectModel = defaultEffectModel()
-    const effects = makeEffects(effectModel)
-    const operations: Operations = {
-        'Number': {
-            kind: OperationKind.NUMBER,
-            name: 'Number',
-            outputs: ['out']
-        }
-    }
-    const { model: model0, node } = addNodeToGraph({
-        model: { ...model, operations },
-        operation: operations['Number'],
-        position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
-    })
-    const model1 = updateBodyNumber(model0, model0.graph.nodes[node].body, () => 10).model
-    const model2 = openNumericKeyboard(model1, model1.graph.nodes[node].body!)
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.VIRTUAL_KEYDOWN,
-        key: '-'
-    })
-    const body = makeEffects({ ...effectModel, uuid: effectModel.uuid - 1 }).generateUUID()
-    const expectedModel: Model = {
-        ...model0,
-        operations,
-        graph: {
-            ...model0.graph,
-            bodys: {
-                [body]: {
-                    kind: BodyKind.NUMBER,
-                    uuid: body,
-                    node,
-                    value: -10,
-                    text: '-10'
-                }
-            }
-        },
-        focus: {
-            kind: FocusKind.BODY,
-            body,
-            quickSelect: { kind: QuickSelectKind.NONE }
-        }
-    }
-    expect(model3).toEqual(expectedModel)
-})
-
-test("pressing + on virtual keyboard while editing number node makes the number positive", () => {
-    const effectModel = defaultEffectModel()
-    const effects = makeEffects(effectModel)
-    const operations: Operations = {
-        'Number': {
-            kind: OperationKind.NUMBER,
-            name: 'Number',
-            outputs: ['out']
-        }
-    }
-    const { model: model0, node } = addNodeToGraph({
-        model: { ...model, operations },
-        operation: operations['Number'],
-        position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
-    })
-    const model1 = updateBodyNumber(model0, model0.graph.nodes[node].body, () => -10).model
-    const model2 = openNumericKeyboard(model1, model1.graph.nodes[node].body!)
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.VIRTUAL_KEYDOWN,
-        key: '+'
-    })
-    const body = makeEffects({ ...effectModel, uuid: effectModel.uuid - 1 }).generateUUID()
-    const expectedModel: Model = {
-        ...model0,
-        operations,
-        graph: {
-            ...model0.graph,
-            bodys: {
-                [body]: {
-                    kind: BodyKind.NUMBER,
-                    uuid: body,
-                    node,
-                    value: 10,
-                    text: '10'
-                }
-            }
-        },
-        focus: {
-            kind: FocusKind.BODY,
-            body,
-            quickSelect: { kind: QuickSelectKind.NONE }
-        }
-    }
-    expect(model3).toEqual(expectedModel)
-})
-
-test("pressing d on keyboard while editing number node makes the number 0", () => {
+test("pressing c on keyboard while editing number node makes the number 0", () => {
     const effectModel = defaultEffectModel()
     const effects = makeEffects(effectModel)
     const operations: Operations = {
@@ -2177,7 +1659,7 @@ test("pressing d on keyboard while editing number node makes the number 0", () =
     const model1 = openNumericKeyboard(model0, model0.graph.nodes[node].body!)
     const { model: model2 } = update(effects, model1, {
         kind: EventKind.KEYDOWN,
-        key: 'd',
+        key: 'c',
         ctrl: false
     })
     const body = makeEffects({ ...effectModel, uuid: effectModel.uuid - 1 }).generateUUID()
@@ -2203,84 +1685,6 @@ test("pressing d on keyboard while editing number node makes the number 0", () =
         }
     }
     expect(model2).toEqual(expectedModel)
-})
-
-test("pressing clr on virtual keyboard while editing number node makes the number 0", () => {
-    const effectModel = defaultEffectModel()
-    const effects = makeEffects(effectModel)
-    const operations: Operations = {
-        'Number': {
-            kind: OperationKind.NUMBER,
-            name: 'Number',
-            outputs: ['out']
-        }
-    }
-    const { model: model0, node } = addNodeToGraph({
-        model: { ...model, operations },
-        operation: operations['Number'],
-        position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
-    })
-    const model1 = openNumericKeyboard(model0, model0.graph.nodes[node].body!)
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.VIRTUAL_KEYDOWN,
-        key: 'clr',
-    })
-    const body = makeEffects({ ...effectModel, uuid: effectModel.uuid - 1 }).generateUUID()
-    const expectedModel: Model = {
-        ...model0,
-        operations,
-        graph: {
-            ...model0.graph,
-            bodys: {
-                [body]: {
-                    kind: BodyKind.NUMBER,
-                    uuid: body,
-                    node,
-                    value: 0,
-                    text: '0'
-                }
-            }
-        },
-        focus: {
-            kind: FocusKind.BODY,
-            body,
-            quickSelect: { kind: QuickSelectKind.NONE }
-        }
-    }
-    expect(model2).toEqual(expectedModel)
-})
-
-
-
-test("pressing a key on virtual keyboard while no input target selected doesn't change the model", () => {
-    const effects = makeEffects()
-    const operations: Operations = {
-        'Number': {
-            kind: OperationKind.NUMBER,
-            name: 'Number',
-            outputs: ['out']
-        }
-    }
-    const { model: model0 } = addNodeToGraph({
-        model: {
-            ...model,
-            operations,
-            focus: {
-                kind: FocusKind.NONE,
-                pointerAction: { kind: PointerActionKind.NONE },
-                quickSelect: { kind: QuickSelectKind.NONE }
-            }
-        },
-        operation: operations['Number'],
-        position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
-    })
-    const { model: model1 } = update(effects, model0, {
-        kind: EventKind.VIRTUAL_KEYDOWN,
-        key: '1'
-    })
-    expect(model1).toEqual(model0)
 })
 
 test("clicking a number node opens the numeric keyboard", () => {

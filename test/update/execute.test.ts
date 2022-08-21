@@ -7,7 +7,7 @@ import { FocusKind } from '../../src/model/focus'
 import { BodyKind, NodeKind, NodeTransform, OperationKind, Operations } from "../../src/model/graph"
 import { tensorFunc } from '../../src/model/operations'
 import { QuickSelectKind } from '../../src/model/quick_select'
-import { addNodeToGraph, EventKind, update, updateBodyNumber } from '../../src/update'
+import { addNodeToGraph, EventKind, update, updateNumberText } from '../../src/update'
 import { EffectModel, makeEffects } from "../mock_effects"
 
 const model = emptyModel({ width: 500, height: 500 })
@@ -38,14 +38,14 @@ test("connecting all inputs for node evaluates operation", () => {
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
     })
-    const model2 = updateBodyNumber(model1, model1.graph.nodes[x].body, () => 5).model
+    const model2 = updateNumberText(model1, model1.graph.nodes[x].body, () => '5').model
     const { model: model3, node: y } = addNodeToGraph({
         model: model2,
         operation: operations['Number'],
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
     })
-    const model4 = updateBodyNumber(model3, model3.graph.nodes[y].body, () => 5).model
+    const model4 = updateNumberText(model3, model3.graph.nodes[y].body, () => '5').model
     const { model: model5, node: add } = addNodeToGraph({
         model: model4,
         operation: operations['Add'],
@@ -202,14 +202,14 @@ test("changing body retriggers evaluation", () => {
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
     })
-    const model2 = updateBodyNumber(model1, model1.graph.nodes[x].body, () => 5).model
+    const model2 = updateNumberText(model1, model1.graph.nodes[x].body, () => '5').model
     const { model: model3, node: y } = addNodeToGraph({
         model: model2,
         operation: operations['Number'],
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
     })
-    const model4 = updateBodyNumber(model3, model3.graph.nodes[y].body, () => 5).model
+    const model4 = updateNumberText(model3, model3.graph.nodes[y].body, () => '5').model
     const { model: model5, node: add } = addNodeToGraph({
         model: model4,
         operation: operations['Add'],
@@ -380,14 +380,14 @@ test("deleting input edge deletes body in associated input node and propagates o
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
     })
-    const model2 = updateBodyNumber(model1, model1.graph.nodes[x].body, () => 5).model
+    const model2 = updateNumberText(model1, model1.graph.nodes[x].body, () => '5').model
     const { model: model3, node: y } = addNodeToGraph({
         model: model2,
         operation: operations['Number'],
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
     })
-    const model4 = updateBodyNumber(model3, model3.graph.nodes[y].body, () => 5).model
+    const model4 = updateNumberText(model3, model3.graph.nodes[y].body, () => '5').model
     const { model: model5, node: add } = addNodeToGraph({
         model: model4,
         operation: operations['Add'],
@@ -542,14 +542,14 @@ test("deleting output edge deletes body in associated input node and propagates 
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
     })
-    const model2 = updateBodyNumber(model1, model1.graph.nodes[x].body, () => 5).model
+    const model2 = updateNumberText(model1, model1.graph.nodes[x].body, () => '5').model
     const { model: model3, node: y } = addNodeToGraph({
         model: model2,
         operation: operations['Number'],
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
     })
-    const model4 = updateBodyNumber(model3, model3.graph.nodes[y].body, () => 5).model
+    const model4 = updateNumberText(model3, model3.graph.nodes[y].body, () => '5').model
     const { model: model5, node: add } = addNodeToGraph({
         model: model4,
         operation: operations['Add'],

@@ -1,4 +1,5 @@
 import * as tf from '@tensorflow/tfjs-core';
+import { Table } from './table';
 
 export type UUID = string
 
@@ -21,6 +22,7 @@ export interface Output {
 export enum BodyKind {
     NO,
     NUMBER,
+    TABLE,
     TENSOR,
     SCATTER,
     ERROR,
@@ -39,6 +41,14 @@ export interface NumberBody {
     readonly value: number
     readonly text: string
 }
+
+export interface TableBody {
+    readonly kind: BodyKind.TABLE
+    readonly uuid: UUID
+    readonly node: UUID
+    readonly table: Table
+}
+
 
 export interface TensorBody {
     readonly kind: BodyKind.TENSOR
@@ -66,6 +76,7 @@ export interface ErrorBody {
 export type Body =
     | NoBody
     | NumberBody
+    | TableBody
     | TensorBody
     | ScatterBody
     | ErrorBody

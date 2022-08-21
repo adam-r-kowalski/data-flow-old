@@ -1,4 +1,6 @@
 import '@tensorflow/tfjs-backend-cpu'
+import * as tf from '@tensorflow/tfjs-core'
+import * as papa from 'papaparse'
 
 import { EventKind, update } from "./update"
 import { run, transformPointer } from "./ui/run"
@@ -6,6 +8,7 @@ import { view } from './view'
 import { demoModel } from "./model/demo"
 import { Document } from './ui/dom'
 import { ProgramKind } from "./ui/webgl2"
+import { Table } from './model/table'
 
 const generateUUID = () => crypto.randomUUID()
 const currentTime = () => performance.now()
@@ -106,3 +109,45 @@ if ('serviceWorker' in navigator) {
         { type: 'module' }
     )
 }
+
+
+document.addEventListener('dragover', e => {
+    e.preventDefault()
+})
+
+document.addEventListener('drop', async e => {
+    e.preventDefault()
+    if (!e.dataTransfer) {
+        return
+    }
+    if (e.dataTransfer.items.length !== 1) {
+        return
+    }
+    const file = e.dataTransfer.files[0]
+    type Row = { [name: string]: string }
+    papa.parse(file, {
+        worker: true,
+        header: true,
+        dynamicTyping: true,
+        complete: async results => {
+            const table: Table = results.meta.fields!.map(field => ({
+                name: field,
+                data: []
+            }))
+            results.data.forEach(row => {
+                table.forEach(column => {
+                    column.data.push((row as Row)[column.name] ?? undefined)
+                })
+            })
+            dispatch({
+                kind: EventKind.UPLOAD_TABLE,
+                name: file.name,
+                table,
+                position: {
+                    x: e.clientX,
+                    y: e.clientY,
+                }
+            })
+        }
+    })
+})

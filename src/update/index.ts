@@ -5,7 +5,7 @@ import { Effects, UpdateResult } from "../ui/run"
 import { Model, NodePlacementLocation } from "../model"
 import { Focus, FocusFinder, FocusKind } from '../model/focus'
 import { PointerAction, PointerActionKind } from '../model/pointer_action'
-import { GenerateUUID, Operation, Operations, Position, UUID } from '../model/graph'
+import { Body, BodyKind, GenerateUUID, NodeKind, NodeSource, Operation, Operations, Output, Position, UUID } from '../model/graph'
 import { Pointer } from "../ui"
 import { addNode, changeNumberText, changeNodePosition, removeInputEdge, removeNode, removeOutputEdges } from "./graph"
 import { maybeTriggerQuickSelect, quickSelectInput, quickSelectOutput, quickSelectNode, quickSelectBody } from "./quick_select"
@@ -13,6 +13,7 @@ import { QuickSelectKind } from "../model/quick_select"
 import { clearFocus, selectInput, selectOutput } from "./focus"
 import { maybeStartMoveCamera, maybeStopMoveCamera, panCamera, zoomCamera } from "./move_camera"
 import { maybeStartMoveNode, maybeStopMoveNode, moveNode } from "./move_node"
+import { Table } from "../model/table"
 
 export enum EventKind {
     POINTER_MOVE,
@@ -34,6 +35,7 @@ export enum EventKind {
     PAN_CAMERA,
     ZOOM_CAMERA,
     MOVE_NODE,
+    UPLOAD_TABLE,
 }
 
 export interface PointerMove {
@@ -130,6 +132,14 @@ export interface MoveNode {
     readonly kind: EventKind.MOVE_NODE,
 }
 
+export interface UploadTable {
+    readonly kind: EventKind.UPLOAD_TABLE
+    readonly name: string
+    readonly table: Table
+    readonly position: Position
+}
+
+
 export type AppEvent =
     | PointerMove
     | PointerDown
@@ -150,6 +160,7 @@ export type AppEvent =
     | PanCamera
     | ZoomCamera
     | MoveNode
+    | UploadTable
 
 const pointerDown = (model: Model, event: PointerDown): UpdateResult<Model, AppEvent> => {
     const pointers = [...model.pointers, event.pointer]
@@ -683,6 +694,44 @@ const deleteOutputEdges = (model: Model, { output }: DeleteOutputEdges): UpdateR
     render: true
 })
 
+const uploadTable = (model: Model, event: UploadTable, generateUUID: GenerateUUID): UpdateResult<Model, AppEvent> => {
+    const nodeUUID = generateUUID()
+    const output: Output = {
+        uuid: generateUUID(),
+        node: nodeUUID,
+        name: 'table',
+        edges: []
+    }
+    const body: Body = {
+        kind: BodyKind.TABLE,
+        uuid: generateUUID(),
+        node: nodeUUID,
+        table: event.table
+    }
+    const [x, y] = multiplyMatrixVector(model.camera, [event.position.x, event.position.y, 1])
+    const node: NodeSource = {
+        kind: NodeKind.SOURCE,
+        uuid: nodeUUID,
+        name: event.name,
+        outputs: [output.uuid],
+        body: body.uuid,
+        position: { x, y }
+    }
+    return {
+        model: {
+            ...model,
+            graph: {
+                ...model.graph,
+                nodes: { ...model.graph.nodes, [node.uuid]: node },
+                bodys: { ...model.graph.bodys, [body.uuid]: body },
+                outputs: { ...model.graph.outputs, [output.uuid]: output },
+            },
+            nodeOrder: [...model.nodeOrder, node.uuid]
+        },
+        render: true
+    }
+}
+
 export const update = (effects: Effects, model: Model, event: AppEvent): UpdateResult<Model, AppEvent> => {
     switch (event.kind) {
         case EventKind.POINTER_DOWN: return pointerDown(model, event)
@@ -704,5 +753,6 @@ export const update = (effects: Effects, model: Model, event: AppEvent): UpdateR
         case EventKind.PAN_CAMERA: return panCamera(model, effects.currentTime)
         case EventKind.ZOOM_CAMERA: return zoomCamera(model, effects.currentTime)
         case EventKind.MOVE_NODE: return moveNode(model, effects.currentTime)
+        case EventKind.UPLOAD_TABLE: return uploadTable(model, event, effects.generateUUID)
     }
 }

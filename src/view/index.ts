@@ -4,7 +4,7 @@ import { Model } from "../model"
 import { Theme } from '../model/theme'
 import { Focus, FocusFinder, FocusKind } from "../model/focus"
 import { text, stack, scene, row, container, column, Connection, UI } from '../ui'
-import { BodyKind, Graph, Input, NodeKind, NumberBody, Output, ScatterBody, TensorBody, UUID } from "../model/graph"
+import { BodyKind, Graph, Input, NodeKind, NumberBody, Output, ScatterBody, TableBody, TensorBody, UUID } from "../model/graph"
 import { contextMenu } from "./context_menu"
 import { QuickSelectKind } from "../model/quick_select"
 import { identity } from "../linear_algebra/matrix3x3"
@@ -104,6 +104,23 @@ export const numberBody = (theme: Theme, body: NumberBody, focus: Focus): UI<App
         text(value))
 }
 
+export const tableBody = (theme: Theme, body: TableBody): UI<AppEvent> => {
+    return container({
+        color: theme.background,
+    },
+        row(body.table.map(({ name, data }) =>
+            container({ padding: 5 },
+                column({ crossAxisAlignment: CrossAxisAlignment.END }, [
+                    container({ padding: 5 }, text(name)),
+                    ...data.slice(0, 10).map(value =>
+                        container<AppEvent>({ padding: 5 }, text(value === undefined ? 'NULL' : value.toString()))
+                    )
+                ])
+            )
+        )))
+}
+
+
 const formatNumber = (value: Number): string =>
     Number.isInteger(value) ? value.toString() : value.toFixed(2)
 
@@ -169,6 +186,9 @@ export const nodeUi = (theme: Theme, nodeUUID: UUID, graph: Graph, focus: Focus)
     switch (body.kind) {
         case BodyKind.NUMBER:
             rowEntries.push(numberBody(theme, body, focus), spacer(15))
+            break
+        case BodyKind.TABLE:
+            rowEntries.push(tableBody(theme, body), spacer(15))
             break
         case BodyKind.TENSOR:
             rowEntries.push(tensorBody(theme, body), spacer(15))

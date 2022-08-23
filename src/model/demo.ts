@@ -23,14 +23,14 @@ export const demoModel = (window: Window, generateUUID: GenerateUUID): Model => 
         position: { x: 25, y: 90 },
         generateUUID
     })
-    const graph3 = changeNumberText(graph2, graph2.nodes[stop].body!, () => '5')
+    const graph3 = changeNumberText(graph2, graph2.nodes[stop].body!, () => '9')
     const { graph: graph4, node: num } = addNode({
         graph: graph3,
         operation: model.operations["number"],
         position: { x: 25, y: 160 },
         generateUUID
     })
-    const graph5 = changeNumberText(graph4, graph4.nodes[num].body!, () => '11')
+    const graph5 = changeNumberText(graph4, graph4.nodes[num].body!, () => '10')
     const { graph: graph6, node: linspace } = addNode({
         graph: graph5,
         operation: model.operations["linspace"],
@@ -58,7 +58,7 @@ export const demoModel = (window: Window, generateUUID: GenerateUUID): Model => 
     const { graph: graph10, node: square } = addNode({
         graph: graph9,
         operation: model.operations["square"],
-        position: { x: 400, y: 325 },
+        position: { x: 450, y: 350 },
         generateUUID
     })
     const { graph: graph11 } = addEdge({
@@ -88,7 +88,7 @@ export const demoModel = (window: Window, generateUUID: GenerateUUID): Model => 
     const { graph: graph15, node: stack } = addNode({
         graph: graph14,
         operation: model.operations["stack"],
-        position: { x: 700, y: 400 },
+        position: { x: 750, y: 400 },
         generateUUID
     })
     const { graph: graph16 } = addEdge({

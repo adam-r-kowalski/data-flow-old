@@ -3,38 +3,38 @@
     "description": "Empowering creators everywhere.",
     "icons": [
         {
-            "src": "icons/favicon-16x16.png",
+            "src": "./icons/favicon-16x16.png",
             "type": "image/png",
             "sizes": "16x16"
         },
         {
-            "src": "icons/favicon-32x32.png",
+            "src": "./icons/favicon-32x32.png",
             "type": "image/png",
             "sizes": "32x32"
         },
         {
-            "src": "icons/favicon-96x96.png",
+            "src": "./icons/favicon-96x96.png",
             "type": "image/png",
             "sizes": "96x96"
         },
         {
-            "src": "icons/favicon-196x196.png",
+            "src": "./icons/favicon-196x196.png",
             "type": "image/png",
             "sizes": "196x196"
         },
         {
-            "src": "icons/favicon-512x512.png",
+            "src": "./icons/favicon-512x512.png",
             "type": "image/png",
             "sizes": "512x512"
         },
         {
-            "src": "icons/maskable_icon_x192.png",
+            "src": "./icons/maskable_icon_x192.png",
             "type": "image/png",
             "sizes": "192x192",
             "purpose": "maskable"
         },
         {
-            "src": "icons/maskable_icon_x512.png",
+            "src": "./icons/maskable_icon_x512.png",
             "type": "image/png",
             "sizes": "512x512",
             "purpose": "maskable"

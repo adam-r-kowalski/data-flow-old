@@ -5,14 +5,15 @@ import { Effects, UpdateResult } from "../ui/run"
 import { Model, NodePlacementLocation } from "../model"
 import { Focus, FocusFinder, FocusKind } from '../model/focus'
 import { PointerAction, PointerActionKind } from '../model/pointer_action'
-import { GenerateUUID, Operation, Operations, Position, UUID } from '../model/graph'
+import { Body, BodyKind, GenerateUUID, Graph, NodeKind, NodeSource, Operation, Operations, Output, Position, TextBody, UUID } from '../model/graph'
 import { Pointer } from "../ui"
-import { addNode, changeNumberText, changeNodePosition, removeInputEdge, removeNode, removeOutputEdges } from "./graph"
+import { addNode, changeNumberText, changeNodePosition, removeInputEdge, removeNode, removeOutputEdges, evaluateNode } from "./graph"
 import { maybeTriggerQuickSelect, quickSelectInput, quickSelectOutput, quickSelectNode, quickSelectBody } from "./quick_select"
 import { QuickSelectKind } from "../model/quick_select"
 import { clearFocus, selectInput, selectOutput } from "./focus"
 import { maybeStartMoveCamera, maybeStopMoveCamera, panCamera, zoomCamera } from "./move_camera"
 import { maybeStartMoveNode, maybeStopMoveNode, moveNode } from "./move_node"
+import { Table } from "../model/table"
 
 export enum EventKind {
     POINTER_MOVE,
@@ -34,6 +35,7 @@ export enum EventKind {
     PAN_CAMERA,
     ZOOM_CAMERA,
     MOVE_NODE,
+    UPLOAD_TABLE,
 }
 
 export interface PointerMove {
@@ -130,6 +132,14 @@ export interface MoveNode {
     readonly kind: EventKind.MOVE_NODE,
 }
 
+export interface UploadTable {
+    readonly kind: EventKind.UPLOAD_TABLE
+    readonly name: string
+    readonly table: Table
+    readonly position: Position
+}
+
+
 export type AppEvent =
     | PointerMove
     | PointerDown
@@ -150,6 +160,7 @@ export type AppEvent =
     | PanCamera
     | ZoomCamera
     | MoveNode
+    | UploadTable
 
 const pointerDown = (model: Model, event: PointerDown): UpdateResult<Model, AppEvent> => {
     const pointers = [...model.pointers, event.pointer]
@@ -446,6 +457,26 @@ export const removeNodeFromGraph = (model: Model, node: UUID): Model => clearFoc
     nodeOrder: model.nodeOrder.filter(n => n !== node),
 })
 
+export const updateBody = (model: Model, body: UUID, transform: (body: Body) => Body): UpdateResult<Model, AppEvent> => {
+    const currentBody = model.graph.bodys[body]
+    const nextBody = transform(currentBody)
+    const graph: Graph = {
+        ...model.graph,
+        bodys: {
+            ...model.graph.bodys,
+            [body]: nextBody
+        }
+    }
+    const node = graph.bodys[body].node
+    return {
+        model: {
+            ...model,
+            graph: evaluateNode(graph, node)
+        },
+        render: true
+    }
+}
+
 const keyDown = (model: Model, event: KeyDown, { generateUUID, currentTime }: Effects): UpdateResult<Model, AppEvent> => {
     const { key } = event
     switch (model.focus.quickSelect.kind) {
@@ -482,48 +513,81 @@ const keyDown = (model: Model, event: KeyDown, { generateUUID, currentTime }: Ef
                             return updateFinderSearch(model, model.focus, search => search + key)
                     }
                 case FocusKind.BODY:
-                    switch (key) {
-                        case 'Backspace':
-                            return updateNumberText(model, model.focus.body, text => {
-                                const nextText = text.slice(0, -1)
-                                return nextText === '' ? '0' : nextText
-                            })
-                        case '1':
-                        case '2':
-                        case '3':
-                        case '4':
-                        case '5':
-                        case '6':
-                        case '7':
-                        case '8':
-                        case '9':
-                        case '0':
-                            return updateNumberText(model, model.focus.body, text => {
-                                if (text === '0') { return key }
-                                else if (text === '-0') { return `-${key}` }
-                                else { return text + key }
-                            })
-                        case '.':
-                            return updateNumberText(model, model.focus.body, text => text.includes('.') ? text : text + key)
-                        case '-':
-                        case '+':
-                            return updateNumberText(model, model.focus.body, text => {
-                                if (text.length && text[0] === '-') {
-                                    return text.slice(1)
-                                } else {
-                                    return '-' + text
-                                }
-                            })
-                        case 'c':
-                            return updateNumberText(model, model.focus.body, () => '0')
-                        case 'Enter':
-                        case 'Escape':
-                            return {
-                                model: clearFocus(model),
-                                render: true
+                    const body = model.graph.bodys[model.focus.body]
+                    switch (body.kind) {
+                        case BodyKind.NUMBER:
+                            switch (key) {
+                                case 'Backspace':
+                                    return updateNumberText(model, model.focus.body, text => {
+                                        const nextText = text.slice(0, -1)
+                                        return nextText === '' ? '0' : nextText
+                                    })
+                                case '1':
+                                case '2':
+                                case '3':
+                                case '4':
+                                case '5':
+                                case '6':
+                                case '7':
+                                case '8':
+                                case '9':
+                                case '0':
+                                    return updateNumberText(model, model.focus.body, text => {
+                                        if (text === '0') { return key }
+                                        else if (text === '-0') { return `-${key}` }
+                                        else { return text + key }
+                                    })
+                                case '.':
+                                    return updateNumberText(model, model.focus.body, text => text.includes('.') ? text : text + key)
+                                case '-':
+                                case '+':
+                                    return updateNumberText(model, model.focus.body, text => {
+                                        if (text.length && text[0] === '-') {
+                                            return text.slice(1)
+                                        } else {
+                                            return '-' + text
+                                        }
+                                    })
+                                case 'c':
+                                    return updateNumberText(model, model.focus.body, () => '0')
+                                case 'Enter':
+                                case 'Escape':
+                                    return {
+                                        model: clearFocus(model),
+                                        render: true
+                                    }
+                                default:
+                                    return maybeTriggerQuickSelect(model, model.focus, key)
+                            }
+                        case BodyKind.TEXT:
+                            switch (key) {
+                                case 'Enter':
+                                case 'Escape':
+                                    return {
+                                        model: clearFocus(model),
+                                        render: true
+                                    }
+                                case 'Shift':
+                                    return { model }
+                                case 'Backspace':
+                                    return updateBody(model, body.uuid, body => {
+                                        const textBody = (body as TextBody)
+                                        return {
+                                            ...textBody,
+                                            value: textBody.value.slice(0, -1)
+                                        }
+                                    })
+                                default:
+                                    return updateBody(model, body.uuid, body => {
+                                        const textBody = (body as TextBody)
+                                        return {
+                                            ...textBody,
+                                            value: textBody.value + key
+                                        }
+                                    })
                             }
                         default:
-                            return maybeTriggerQuickSelect(model, model.focus, key)
+                            return { model }
                     }
                 case FocusKind.NODE:
                     switch (key) {
@@ -683,6 +747,44 @@ const deleteOutputEdges = (model: Model, { output }: DeleteOutputEdges): UpdateR
     render: true
 })
 
+const uploadTable = (model: Model, event: UploadTable, generateUUID: GenerateUUID): UpdateResult<Model, AppEvent> => {
+    const nodeUUID = generateUUID()
+    const output: Output = {
+        uuid: generateUUID(),
+        node: nodeUUID,
+        name: 'table',
+        edges: []
+    }
+    const body: Body = {
+        kind: BodyKind.TABLE,
+        uuid: generateUUID(),
+        node: nodeUUID,
+        table: event.table
+    }
+    const [x, y] = multiplyMatrixVector(model.camera, [event.position.x, event.position.y, 1])
+    const node: NodeSource = {
+        kind: NodeKind.SOURCE,
+        uuid: nodeUUID,
+        name: event.name,
+        outputs: [output.uuid],
+        body: body.uuid,
+        position: { x, y }
+    }
+    return {
+        model: {
+            ...model,
+            graph: {
+                ...model.graph,
+                nodes: { ...model.graph.nodes, [node.uuid]: node },
+                bodys: { ...model.graph.bodys, [body.uuid]: body },
+                outputs: { ...model.graph.outputs, [output.uuid]: output },
+            },
+            nodeOrder: [...model.nodeOrder, node.uuid]
+        },
+        render: true
+    }
+}
+
 export const update = (effects: Effects, model: Model, event: AppEvent): UpdateResult<Model, AppEvent> => {
     switch (event.kind) {
         case EventKind.POINTER_DOWN: return pointerDown(model, event)
@@ -704,5 +806,6 @@ export const update = (effects: Effects, model: Model, event: AppEvent): UpdateR
         case EventKind.PAN_CAMERA: return panCamera(model, effects.currentTime)
         case EventKind.ZOOM_CAMERA: return zoomCamera(model, effects.currentTime)
         case EventKind.MOVE_NODE: return moveNode(model, effects.currentTime)
+        case EventKind.UPLOAD_TABLE: return uploadTable(model, event, effects.generateUUID)
     }
 }

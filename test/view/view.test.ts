@@ -310,13 +310,17 @@ test("tensorUi with vector", () => {
         rank: 1,
     }
     const actual = tensorBody(theme, body)
-    const expected = container({ color: theme.background },
-        column({ crossAxisAlignment: CrossAxisAlignment.END }, [
-            container({ padding: 5 }, text("0")),
-            container({ padding: 5 }, text("1")),
-            container({ padding: 5 }, text("2")),
-        ])
-    )
+    const expected = column([
+        container({ padding: 5 }, text("3 rows")),
+        container({ color: theme.background },
+            column({ crossAxisAlignment: CrossAxisAlignment.END }, [
+                container({ padding: 5 }, text("0")),
+                container({ padding: 5 }, text("1")),
+                container({ padding: 5 }, text("2")),
+            ])
+        )
+    ])
+
     expect(actual).toEqual(expected)
 })
 
@@ -330,28 +334,32 @@ test("bodyUi with matrix", () => {
         shape: [2, 3],
     }
     const actual = tensorBody(theme, body)
-    const expected = container({ color: theme.background },
-        row([
-            container({ padding: 5 },
-                column({ crossAxisAlignment: CrossAxisAlignment.END }, [
-                    container({ padding: 5 }, text("0")),
-                    container({ padding: 5 }, text("4")),
-                ])
-            ),
-            container({ padding: 5 },
-                column({ crossAxisAlignment: CrossAxisAlignment.END }, [
-                    container({ padding: 5 }, text("1")),
-                    container({ padding: 5 }, text("5")),
-                ])
-            ),
-            container({ padding: 5 },
-                column({ crossAxisAlignment: CrossAxisAlignment.END }, [
-                    container({ padding: 5 }, text("2")),
-                    container({ padding: 5 }, text("6")),
-                ])
-            )
-        ])
-    )
+    const expected = column([
+        container({ padding: 5 }, text('3 columns 2 rows')),
+        container({ color: theme.background },
+            row([
+                container({ padding: 5 },
+                    column({ crossAxisAlignment: CrossAxisAlignment.END }, [
+                        container({ padding: 5 }, text("0")),
+                        container({ padding: 5 }, text("4")),
+                    ])
+                ),
+                container({ padding: 5 },
+                    column({ crossAxisAlignment: CrossAxisAlignment.END }, [
+                        container({ padding: 5 }, text("1")),
+                        container({ padding: 5 }, text("5")),
+                    ])
+                ),
+                container({ padding: 5 },
+                    column({ crossAxisAlignment: CrossAxisAlignment.END }, [
+                        container({ padding: 5 }, text("2")),
+                        container({ padding: 5 }, text("6")),
+                    ])
+                )
+            ])
+        )
+    ])
+
     expect(actual).toEqual(expected)
 })
 

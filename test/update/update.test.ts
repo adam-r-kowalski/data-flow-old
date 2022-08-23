@@ -1512,7 +1512,7 @@ test("pressing non number on keyboard while editing number node is ignored", () 
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
     })
-    const model1 = openNumericKeyboard(model0, node)
+    const model1 = openNumericKeyboard(model0, model0.graph.nodes[node].body)
     let model2 = model1
     for (const key of 'qwertyuiopasdfghjklzxvbnm') {
         const { model: model } = update(effects, model2, {

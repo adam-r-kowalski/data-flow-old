@@ -49,6 +49,35 @@ export const addNode = ({ graph, operation, position, generateUUID }: AddNodeInp
                 bodys[body.uuid] = body
                 return node
             }
+            case OperationKind.TEXT: {
+                const outputUUIDs = []
+                for (const name of operation.outputs) {
+                    const uuid = generateUUID()
+                    outputs[uuid] = {
+                        uuid,
+                        node: nodeUUID,
+                        name,
+                        edges: []
+                    }
+                    outputUUIDs.push(uuid)
+                }
+                const body: Body = {
+                    kind: BodyKind.TEXT,
+                    uuid: generateUUID(),
+                    node: nodeUUID,
+                    value: '',
+                }
+                const node: NodeSource = {
+                    kind: NodeKind.SOURCE,
+                    uuid: nodeUUID,
+                    name: operation.name,
+                    outputs: outputUUIDs,
+                    body: body.uuid,
+                    position,
+                }
+                bodys[body.uuid] = body
+                return node
+            }
             case OperationKind.TRANSFORM: {
                 const inputUUIDs = []
                 for (const name of operation.inputs) {
@@ -224,7 +253,7 @@ const evaluateNodeOutputs = (graph: Graph, node: Node): Graph =>
     }, graph)
 
 
-const evaluateNode = (graph: Graph, nodeUUID: UUID): Graph => {
+export const evaluateNode = (graph: Graph, nodeUUID: UUID): Graph => {
     const node = graph.nodes[nodeUUID]
     switch (node.kind) {
         case NodeKind.SOURCE:

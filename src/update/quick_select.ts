@@ -68,7 +68,7 @@ export const maybeTriggerQuickSelect = (model: Model, focus: Exclude<Focus, Focu
         case 'b': {
             const hotkeys: { [body: UUID]: string } = {}
             Object.values(model.graph.bodys)
-                .filter(body => body.kind === BodyKind.NUMBER)
+                .filter(body => [BodyKind.NUMBER, BodyKind.TEXT].includes(body.kind))
                 .forEach((body, i) => hotkeys[body.uuid] = String.fromCharCode(97 + i))
             return {
                 model: {

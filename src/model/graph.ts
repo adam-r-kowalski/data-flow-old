@@ -1,4 +1,5 @@
 import * as tf from '@tensorflow/tfjs-core';
+import { Table } from './table';
 
 export type UUID = string
 
@@ -21,6 +22,8 @@ export interface Output {
 export enum BodyKind {
     NO,
     NUMBER,
+    TEXT,
+    TABLE,
     TENSOR,
     SCATTER,
     ERROR,
@@ -39,6 +42,21 @@ export interface NumberBody {
     readonly value: number
     readonly text: string
 }
+
+export interface TextBody {
+    readonly kind: BodyKind.TEXT
+    readonly uuid: UUID
+    readonly node: UUID
+    readonly value: string
+}
+
+export interface TableBody {
+    readonly kind: BodyKind.TABLE
+    readonly uuid: UUID
+    readonly node: UUID
+    readonly table: Table
+}
+
 
 export interface TensorBody {
     readonly kind: BodyKind.TENSOR
@@ -66,6 +84,8 @@ export interface ErrorBody {
 export type Body =
     | NoBody
     | NumberBody
+    | TextBody
+    | TableBody
     | TensorBody
     | ScatterBody
     | ErrorBody
@@ -132,11 +152,18 @@ export type Tensor = tf.TensorLike | tf.Tensor<tf.Rank>
 
 export enum OperationKind {
     NUMBER,
+    TEXT,
     TRANSFORM,
 }
 
 export interface OperationNumber {
     readonly kind: OperationKind.NUMBER
+    readonly name: string
+    readonly outputs: Readonly<string[]>
+}
+
+export interface OperationText {
+    readonly kind: OperationKind.TEXT
     readonly name: string
     readonly outputs: Readonly<string[]>
 }
@@ -151,6 +178,7 @@ export interface OperationTransform {
 
 export type Operation =
     | OperationNumber
+    | OperationText
     | OperationTransform
 
 export type Operations = { [name: string]: Operation }

@@ -50,7 +50,7 @@ export function text<AppEvent>(...args: any[]): Text<AppEvent> {
 
 export const textLayout = <AppEvent>({ font, str }: Text<AppEvent>, _: Constraints, measureText: MeasureText): TextLayout => {
     const measurements = measureText(font, str)
-    const width = measurements.widths.reduce((acc, width) => acc + width)
+    const width = measurements.widths.length === 0 ? 0 : measurements.widths.reduce((acc, width) => acc + width)
     const size = { width, height: font.size }
     return { measurements, size }
 }

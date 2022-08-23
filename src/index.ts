@@ -1,5 +1,4 @@
 import '@tensorflow/tfjs-backend-cpu'
-import * as tf from '@tensorflow/tfjs-core'
 import * as papa from 'papaparse'
 
 import { EventKind, update } from "./update"
@@ -134,10 +133,13 @@ document.addEventListener('drop', async e => {
                 name: field,
                 data: []
             }))
-            results.data.forEach(row => {
-                table.forEach(column => {
-                    column.data.push((row as Row)[column.name] ?? undefined)
-                })
+            const errorRows = results.errors.map(e => e.row)
+            results.data.forEach((row, i) => {
+                if (!errorRows.includes(i)) {
+                    table.forEach(column => {
+                        column.data.push((row as Row)[column.name] ?? undefined)
+                    })
+                }
             })
             dispatch({
                 kind: EventKind.UPLOAD_TABLE,

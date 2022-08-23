@@ -4,7 +4,7 @@ import { Model } from "../model"
 import { Theme } from '../model/theme'
 import { Focus, FocusFinder, FocusKind } from "../model/focus"
 import { text, stack, scene, row, container, column, Connection, UI } from '../ui'
-import { BodyKind, Graph, Input, NodeKind, NumberBody, Output, ScatterBody, TableBody, TensorBody, UUID } from "../model/graph"
+import { BodyKind, Graph, Input, NodeKind, NumberBody, Output, ScatterBody, TableBody, TensorBody, TextBody, UUID } from "../model/graph"
 import { contextMenu } from "./context_menu"
 import { QuickSelectKind } from "../model/quick_select"
 import { identity } from "../linear_algebra/matrix3x3"
@@ -104,31 +104,57 @@ export const numberBody = (theme: Theme, body: NumberBody, focus: Focus): UI<App
         text(value))
 }
 
-export const tableBody = (theme: Theme, body: TableBody): UI<AppEvent> => {
+export const textBody = (theme: Theme, body: TextBody, focus: Focus): UI<AppEvent> => {
+    const value = focus.quickSelect.kind === QuickSelectKind.BODY ?
+        focus.quickSelect.hotkeys[body.uuid] :
+        body.value
     return container({
-        color: theme.background,
+        color: isFocused(focus, body.uuid) ? theme.focusInput : theme.background,
+        padding: 5,
+        onClick: {
+            kind: EventKind.CLICKED_BODY,
+            body: body.uuid
+        }
     },
-        row(body.table.map(({ name, data }) =>
-            container({ padding: 5 },
-                column({ crossAxisAlignment: CrossAxisAlignment.END }, [
-                    container({ padding: 5 }, text(name)),
-                    ...data.slice(0, 10).map(value =>
-                        container<AppEvent>({ padding: 5 }, text(value === undefined ? 'NULL' : value.toString()))
-                    )
-                ])
-            )
-        )))
+        text(value))
 }
 
 
-const formatNumber = (value: Number): string =>
-    Number.isInteger(value) ? value.toString() : value.toFixed(2)
+export const tableBody = (theme: Theme, body: TableBody): UI<AppEvent> => {
+    const columns = body.table.length
+    const rows = body.table[0].data.length
+    return column([
+        container({ padding: 5 }, text(`${columns} columns ${rows} rows`)),
+        container({ color: theme.background },
+            row(body.table.map(({ name, data }) =>
+                container({ padding: 5 },
+                    column({ crossAxisAlignment: CrossAxisAlignment.END }, [
+                        container({ padding: 5 }, text(name)),
+                        ...data.slice(0, 10).map(value =>
+                            container<AppEvent>({ padding: 5 }, text(value === undefined ? 'NULL' : value.toString()))
+                        )
+                    ])
+                )
+            ))
+        )
 
+    ])
+}
+
+
+const formatCell = (value: number | string): string => {
+    switch (typeof value) {
+        case 'string': return value
+        case 'number': return Number.isInteger(value) ? value.toString() : value.toFixed(2)
+        case 'undefined': return 'NULL'
+        default: return 'no format for this type'
+    }
+}
 
 export const tensorBody = (theme: Theme, body: TensorBody): UI<AppEvent> => {
     switch (body.rank) {
         case 0: {
-            const value = formatNumber(body.value as Number)
+            const value = formatCell(body.value as (number | string))
             return container({
                 color: theme.background,
                 padding: 5
@@ -136,24 +162,34 @@ export const tensorBody = (theme: Theme, body: TensorBody): UI<AppEvent> => {
                 text(value))
         }
         case 1: {
-            return container({ color: theme.background },
-                column({ crossAxisAlignment: CrossAxisAlignment.END },
-                    (body.value as number[]).map(value => container({ padding: 5 }, text(formatNumber(value))))
+            const data = body.value as number[]
+            const rows = data.length
+            return column([
+                container({ padding: 5 }, text(`${rows} rows`)),
+                container({ color: theme.background },
+                    column({ crossAxisAlignment: CrossAxisAlignment.END },
+                        data.slice(0, 10).map(value => container({ padding: 5 }, text(formatCell(value))))
+                    )
                 )
-            )
+            ])
         }
         case 2: {
-            const value = body.value as number[][]
-            return container({ color: theme.background },
-                row(value[0].map((_, i) =>
-                    container({ padding: 5 },
-                        column({ crossAxisAlignment: CrossAxisAlignment.END },
-                            value.map(row =>
-                                container({ padding: 5 }, text(formatNumber(row[i]))))
+            const data = body.value as number[][]
+            const rows = data.length
+            const columns = data[0].length
+            return column([
+                container({ padding: 5 }, text(`${columns} columns ${rows} rows`)),
+                container({ color: theme.background },
+                    row(data[0].map((_, i) =>
+                        container({ padding: 5 },
+                            column({ crossAxisAlignment: CrossAxisAlignment.END },
+                                data.slice(0, 10).map(row =>
+                                    container({ padding: 5 }, text(formatCell(row[i]))))
+                            )
                         )
-                    )
-                ))
-            )
+                    ))
+                )
+            ])
         }
         default: {
             return text("no view for this rank yet")
@@ -186,6 +222,9 @@ export const nodeUi = (theme: Theme, nodeUUID: UUID, graph: Graph, focus: Focus)
     switch (body.kind) {
         case BodyKind.NUMBER:
             rowEntries.push(numberBody(theme, body, focus), spacer(15))
+            break
+        case BodyKind.TEXT:
+            rowEntries.push(textBody(theme, body, focus), spacer(15))
             break
         case BodyKind.TABLE:
             rowEntries.push(tableBody(theme, body), spacer(15))

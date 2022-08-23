@@ -5,9 +5,9 @@ import { Effects, UpdateResult } from "../ui/run"
 import { Model, NodePlacementLocation } from "../model"
 import { Focus, FocusFinder, FocusKind } from '../model/focus'
 import { PointerAction, PointerActionKind } from '../model/pointer_action'
-import { Body, BodyKind, GenerateUUID, NodeKind, NodeSource, Operation, Operations, Output, Position, UUID } from '../model/graph'
+import { Body, BodyKind, GenerateUUID, Graph, NodeKind, NodeSource, Operation, Operations, Output, Position, TextBody, UUID } from '../model/graph'
 import { Pointer } from "../ui"
-import { addNode, changeNumberText, changeNodePosition, removeInputEdge, removeNode, removeOutputEdges } from "./graph"
+import { addNode, changeNumberText, changeNodePosition, removeInputEdge, removeNode, removeOutputEdges, evaluateNode } from "./graph"
 import { maybeTriggerQuickSelect, quickSelectInput, quickSelectOutput, quickSelectNode, quickSelectBody } from "./quick_select"
 import { QuickSelectKind } from "../model/quick_select"
 import { clearFocus, selectInput, selectOutput } from "./focus"
@@ -457,6 +457,26 @@ export const removeNodeFromGraph = (model: Model, node: UUID): Model => clearFoc
     nodeOrder: model.nodeOrder.filter(n => n !== node),
 })
 
+export const updateBody = (model: Model, body: UUID, transform: (body: Body) => Body): UpdateResult<Model, AppEvent> => {
+    const currentBody = model.graph.bodys[body]
+    const nextBody = transform(currentBody)
+    const graph: Graph = {
+        ...model.graph,
+        bodys: {
+            ...model.graph.bodys,
+            [body]: nextBody
+        }
+    }
+    const node = graph.bodys[body].node
+    return {
+        model: {
+            ...model,
+            graph: evaluateNode(graph, node)
+        },
+        render: true
+    }
+}
+
 const keyDown = (model: Model, event: KeyDown, { generateUUID, currentTime }: Effects): UpdateResult<Model, AppEvent> => {
     const { key } = event
     switch (model.focus.quickSelect.kind) {
@@ -493,48 +513,81 @@ const keyDown = (model: Model, event: KeyDown, { generateUUID, currentTime }: Ef
                             return updateFinderSearch(model, model.focus, search => search + key)
                     }
                 case FocusKind.BODY:
-                    switch (key) {
-                        case 'Backspace':
-                            return updateNumberText(model, model.focus.body, text => {
-                                const nextText = text.slice(0, -1)
-                                return nextText === '' ? '0' : nextText
-                            })
-                        case '1':
-                        case '2':
-                        case '3':
-                        case '4':
-                        case '5':
-                        case '6':
-                        case '7':
-                        case '8':
-                        case '9':
-                        case '0':
-                            return updateNumberText(model, model.focus.body, text => {
-                                if (text === '0') { return key }
-                                else if (text === '-0') { return `-${key}` }
-                                else { return text + key }
-                            })
-                        case '.':
-                            return updateNumberText(model, model.focus.body, text => text.includes('.') ? text : text + key)
-                        case '-':
-                        case '+':
-                            return updateNumberText(model, model.focus.body, text => {
-                                if (text.length && text[0] === '-') {
-                                    return text.slice(1)
-                                } else {
-                                    return '-' + text
-                                }
-                            })
-                        case 'c':
-                            return updateNumberText(model, model.focus.body, () => '0')
-                        case 'Enter':
-                        case 'Escape':
-                            return {
-                                model: clearFocus(model),
-                                render: true
+                    const body = model.graph.bodys[model.focus.body]
+                    switch (body.kind) {
+                        case BodyKind.NUMBER:
+                            switch (key) {
+                                case 'Backspace':
+                                    return updateNumberText(model, model.focus.body, text => {
+                                        const nextText = text.slice(0, -1)
+                                        return nextText === '' ? '0' : nextText
+                                    })
+                                case '1':
+                                case '2':
+                                case '3':
+                                case '4':
+                                case '5':
+                                case '6':
+                                case '7':
+                                case '8':
+                                case '9':
+                                case '0':
+                                    return updateNumberText(model, model.focus.body, text => {
+                                        if (text === '0') { return key }
+                                        else if (text === '-0') { return `-${key}` }
+                                        else { return text + key }
+                                    })
+                                case '.':
+                                    return updateNumberText(model, model.focus.body, text => text.includes('.') ? text : text + key)
+                                case '-':
+                                case '+':
+                                    return updateNumberText(model, model.focus.body, text => {
+                                        if (text.length && text[0] === '-') {
+                                            return text.slice(1)
+                                        } else {
+                                            return '-' + text
+                                        }
+                                    })
+                                case 'c':
+                                    return updateNumberText(model, model.focus.body, () => '0')
+                                case 'Enter':
+                                case 'Escape':
+                                    return {
+                                        model: clearFocus(model),
+                                        render: true
+                                    }
+                                default:
+                                    return maybeTriggerQuickSelect(model, model.focus, key)
+                            }
+                        case BodyKind.TEXT:
+                            switch (key) {
+                                case 'Enter':
+                                case 'Escape':
+                                    return {
+                                        model: clearFocus(model),
+                                        render: true
+                                    }
+                                case 'Shift':
+                                    return { model }
+                                case 'Backspace':
+                                    return updateBody(model, body.uuid, body => {
+                                        const textBody = (body as TextBody)
+                                        return {
+                                            ...textBody,
+                                            value: textBody.value.slice(0, -1)
+                                        }
+                                    })
+                                default:
+                                    return updateBody(model, body.uuid, body => {
+                                        const textBody = (body as TextBody)
+                                        return {
+                                            ...textBody,
+                                            value: textBody.value + key
+                                        }
+                                    })
                             }
                         default:
-                            return maybeTriggerQuickSelect(model, model.focus, key)
+                            return { model }
                     }
                 case FocusKind.NODE:
                     switch (key) {

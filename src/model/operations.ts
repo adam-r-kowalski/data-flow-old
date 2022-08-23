@@ -1,14 +1,14 @@
 import * as tf from '@tensorflow/tfjs-core';
 import { normalize } from '../normalize';
 
-import { Operations, Body, Tensor, BodyKind, TensorBody, OperationKind, Function } from "./graph"
+import { Operations, Body, Tensor, BodyKind, TensorBody, OperationKind, Function, TableBody, TextBody } from "./graph"
 
 type TensorFunc = (...inputs: Tensor[]) => tf.Tensor<tf.Rank>
 
 export const tensorFunc = (f: TensorFunc): Function => {
     return ({ uuid, node }: Body, ...inputs: Body[]): Body => {
         const tensors = inputs
-            .filter(body => body.kind === BodyKind.TENSOR || body.kind === BodyKind.NUMBER)
+            .filter(body => [BodyKind.TENSOR, BodyKind.NUMBER, BodyKind.TEXT].includes(body.kind))
             .map(body => (body as TensorBody).value)
         try {
             const result = f(...tensors)
@@ -21,6 +21,7 @@ export const tensorFunc = (f: TensorFunc): Function => {
                 shape: result.shape,
             }
         } catch (e) {
+            console.log(e)
             return {
                 kind: BodyKind.ERROR,
                 uuid: uuid,
@@ -42,10 +43,36 @@ export const scatter = ({ uuid, node }: Body, ...inputs: Body[]): Body => {
     }
 }
 
+export const column = ({ uuid, node }: Body, ...inputs: Body[]): Body => {
+    const name = (inputs[1] as TextBody).value
+    const col = (inputs[0] as TableBody).table.find(column => column.name === name)
+    if (col === undefined) {
+        return {
+            kind: BodyKind.ERROR,
+            uuid: uuid,
+            node: node,
+        }
+    } else {
+        return {
+            kind: BodyKind.TENSOR,
+            uuid: uuid,
+            node: node,
+            value: col.data,
+            rank: 1,
+            shape: [col.data.length],
+        }
+    }
+}
+
 export const operations: Operations = {
     "number": {
         kind: OperationKind.NUMBER,
         name: "number",
+        outputs: ["out"],
+    },
+    "text": {
+        kind: OperationKind.TEXT,
+        name: "text",
         outputs: ["out"],
     },
     "abs": {
@@ -173,6 +200,13 @@ export const operations: Operations = {
         inputs: ["x"],
         outputs: ["out"],
         func: tensorFunc(tf.cosh)
+    },
+    "column": {
+        kind: OperationKind.TRANSFORM,
+        name: "column",
+        inputs: ["table", "column"],
+        outputs: ["data"],
+        func: column
     },
     "cumsum": {
         kind: OperationKind.TRANSFORM,

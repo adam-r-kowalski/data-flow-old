@@ -1,7 +1,7 @@
 import * as tf from '@tensorflow/tfjs-core';
 import '@tensorflow/tfjs-backend-cpu'
-import { column, tensorFunc } from '../src/model/operations';
-import { BodyKind, ColumnBody, ErrorBody, NoBody, TableBody, TensorBody, TextBody } from '../src/model/graph';
+import { column, tensorFunc, operations } from '../src/model/operations';
+import { BodyKind, ColumnBody, ErrorBody, NoBody, OperationTransform, TableBody, TensorBody, TextBody } from '../src/model/graph';
 
 test("tensor func add two tensors", () => {
     const current: NoBody = {
@@ -127,6 +127,74 @@ test("extract non existant column from table", () => {
         kind: BodyKind.ERROR,
         uuid: 'current',
         node: 'node 0',
+    }
+    expect(actual).toEqual(expected)
+})
+
+test("concat two tensors", () => {
+    const current: NoBody = {
+        kind: BodyKind.NO,
+        uuid: 'current',
+        node: 'node 0'
+    }
+    const x: TensorBody = {
+        kind: BodyKind.TENSOR,
+        uuid: 'x',
+        node: 'node 1',
+        value: [1, 2, 3],
+        rank: 1,
+        shape: [3],
+    }
+    const y: TensorBody = {
+        kind: BodyKind.TENSOR,
+        uuid: 'y',
+        node: 'node 2',
+        value: [4, 5, 6],
+        rank: 1,
+        shape: [3],
+    }
+    const actual = (operations['concat'] as OperationTransform).func(current, x, y)
+    const expected: TensorBody = {
+        kind: BodyKind.TENSOR,
+        uuid: 'current',
+        node: 'node 0',
+        value: [1, 2, 3, 4, 5, 6],
+        rank: 1,
+        shape: [6],
+    }
+    expect(actual).toEqual(expected)
+})
+
+test("tile", () => {
+    const current: NoBody = {
+        kind: BodyKind.NO,
+        uuid: 'current',
+        node: 'node 0'
+    }
+    const x: TensorBody = {
+        kind: BodyKind.TENSOR,
+        uuid: 'x',
+        node: 'node 1',
+        value: [1, 2, 3],
+        rank: 1,
+        shape: [3],
+    }
+    const reps: TensorBody = {
+        kind: BodyKind.TENSOR,
+        uuid: 'reps',
+        node: 'node 2',
+        value: 3,
+        rank: 0,
+        shape: [],
+    }
+    const actual = (operations['tile'] as OperationTransform).func(current, x, reps)
+    const expected: TensorBody = {
+        kind: BodyKind.TENSOR,
+        uuid: 'current',
+        node: 'node 0',
+        value: [1, 2, 3, 1, 2, 3, 1, 2, 3],
+        rank: 1,
+        shape: [9],
     }
     expect(actual).toEqual(expected)
 })

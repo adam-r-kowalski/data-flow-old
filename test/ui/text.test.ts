@@ -60,6 +60,23 @@ test("text layout", () => {
     expect(uiLayout).toEqual(expectedLayout)
 })
 
+test("text layout with empty text", () => {
+    const renderer = mockRenderer()
+    const ui = text({ size: 24 }, "")
+    const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
+    const uiLayout = layout(ui, constraints, renderer.measureText)
+    const expectedLayout = {
+        measurements: {
+            widths: [],
+            textureIndex: 1,
+            textureCoordinates: []
+        },
+        size: { width: 0, height: 24 }
+    }
+    expect(uiLayout).toEqual(expectedLayout)
+})
+
+
 test("text geometry", () => {
     const renderer = mockRenderer()
     const ui = text({ size: 24 }, "abc")

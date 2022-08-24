@@ -759,6 +759,7 @@ const uploadTable = (model: Model, event: UploadTable, generateUUID: GenerateUUI
         kind: BodyKind.TABLE,
         uuid: generateUUID(),
         node: nodeUUID,
+        name: event.name,
         value: event.table
     }
     const [x, y] = multiplyMatrixVector(model.camera, [event.position.x, event.position.y, 1])

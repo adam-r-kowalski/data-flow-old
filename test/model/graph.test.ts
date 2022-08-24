@@ -145,6 +145,55 @@ test("add operation with body to graph", () => {
 })
 
 
+test("add text operation", () => {
+    const generateUUID0 = generateUUID()
+    const generateUUID1 = generateUUID()
+    const graph = emptyGraph()
+    const { graph: graph1, node } = addNode({
+        graph,
+        operation: {
+            kind: OperationKind.TEXT,
+            name: 'text',
+            outputs: ['out'],
+        },
+        position: { x: 0, y: 0 },
+        generateUUID: generateUUID0
+    })
+    expect(graph).toEqual(emptyGraph())
+    const textUUID = generateUUID1()
+    const outUUID = generateUUID1()
+    const bodyUUID = generateUUID1()
+    const text: Node = {
+        kind: NodeKind.SOURCE,
+        uuid: textUUID,
+        name: 'text',
+        outputs: [outUUID],
+        body: bodyUUID,
+        position: { x: 0, y: 0 },
+    }
+    const out: Output = {
+        uuid: outUUID,
+        node: textUUID,
+        name: 'out',
+        edges: []
+    }
+    const body: Body = {
+        kind: BodyKind.TEXT,
+        uuid: bodyUUID,
+        node: textUUID,
+        value: '',
+    }
+    expect(graph1).toEqual({
+        nodes: { [text.uuid]: text },
+        edges: {},
+        inputs: {},
+        bodys: { [body.uuid]: body },
+        outputs: { [out.uuid]: out },
+    })
+    expect(node).toEqual(text.uuid)
+})
+
+
 test("add two operations to graph", () => {
     const generateUUID0 = generateUUID()
     const generateUUID1 = generateUUID()

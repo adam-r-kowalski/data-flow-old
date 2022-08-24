@@ -4,7 +4,7 @@ import { Model } from "../model"
 import { Theme } from '../model/theme'
 import { Focus, FocusFinder, FocusKind } from "../model/focus"
 import { text, stack, scene, row, container, column, Connection, UI } from '../ui'
-import { BodyKind, Graph, Input, NodeKind, NumberBody, Output, ScatterBody, TableBody, TensorBody, TextBody, UUID } from "../model/graph"
+import { BodyKind, ColumnBody, Graph, Input, NodeKind, NumberBody, Output, ScatterBody, TableBody, TensorBody, TextBody, UUID } from "../model/graph"
 import { contextMenu } from "./context_menu"
 import { QuickSelectKind } from "../model/quick_select"
 import { identity } from "../linear_algebra/matrix3x3"
@@ -121,12 +121,13 @@ export const textBody = (theme: Theme, body: TextBody, focus: Focus): UI<AppEven
 
 
 export const tableBody = (theme: Theme, body: TableBody): UI<AppEvent> => {
-    const columns = body.table.length
-    const rows = body.table[0].data.length
+    const keys = Object.keys(body.value)
+    const columns = keys.length
+    const rows = body.value[keys[0]].length
     return column([
         container({ padding: 5 }, text(`${columns} columns ${rows} rows`)),
         container({ color: theme.background },
-            row(body.table.map(({ name, data }) =>
+            row(Object.entries(body.value).map(([name, data]) =>
                 container({ padding: 5 },
                     column({ crossAxisAlignment: CrossAxisAlignment.END }, [
                         container({ padding: 5 }, text(name)),
@@ -137,7 +138,18 @@ export const tableBody = (theme: Theme, body: TableBody): UI<AppEvent> => {
                 )
             ))
         )
+    ])
+}
 
+export const columnBody = (theme: Theme, body: ColumnBody): UI<AppEvent> => {
+    const rows = body.value.length
+    return column([
+        container({ padding: 5 }, text(`${rows} rows`)),
+        container({ color: theme.background },
+            column({ crossAxisAlignment: CrossAxisAlignment.END },
+                body.value.slice(0, 10).map(value => container({ padding: 5 }, text(value === undefined ? 'NULL' : value.toString())))
+            )
+        )
     ])
 }
 
@@ -146,8 +158,6 @@ const formatCell = (value: number | string): string => {
     switch (typeof value) {
         case 'string': return value
         case 'number': return Number.isInteger(value) ? value.toString() : value.toFixed(2)
-        case 'undefined': return 'NULL'
-        default: return 'no format for this type'
     }
 }
 
@@ -228,6 +238,9 @@ export const nodeUi = (theme: Theme, nodeUUID: UUID, graph: Graph, focus: Focus)
             break
         case BodyKind.TABLE:
             rowEntries.push(tableBody(theme, body), spacer(15))
+            break
+        case BodyKind.COLUMN:
+            rowEntries.push(columnBody(theme, body), spacer(15))
             break
         case BodyKind.TENSOR:
             rowEntries.push(tensorBody(theme, body), spacer(15))

@@ -21,7 +21,6 @@ export const tensorFunc = (f: TensorFunc): Function => {
                 shape: result.shape,
             }
         } catch (e) {
-            console.log(e)
             return {
                 kind: BodyKind.ERROR,
                 uuid: uuid,

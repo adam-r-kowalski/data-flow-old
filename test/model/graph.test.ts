@@ -2,7 +2,7 @@ import * as tf from '@tensorflow/tfjs-core'
 
 import { emptyGraph, Input, Node, Output, Edge, Body, BodyKind, OperationKind, NodeKind, NodeTransform } from "../../src/model/graph"
 import { tensorFunc } from "../../src/model/operations"
-import { addNode, addEdge, changeNodePosition, removeNode, removeInputEdge, removeOutputEdges } from "../../src/update/graph"
+import { addNode, addEdge, changeNodePosition, removeNode, removeInputEdge, removeOutputEdges, parseNumber, changeNumberText } from "../../src/update/graph"
 
 const generateUUID = () => {
     let i = 0
@@ -12,6 +12,13 @@ const generateUUID = () => {
         return uuid
     }
 }
+
+test("parse number", () => {
+    expect(parseNumber('')).toEqual(0)
+    expect(parseNumber('-')).toEqual(0)
+    expect(parseNumber('.')).toEqual(0)
+    expect(parseNumber('2.3')).toEqual(2.3)
+})
 
 test("empty graph", () => {
     expect(emptyGraph()).toEqual({
@@ -1238,4 +1245,21 @@ test("remove output edge", () => {
             },
         })
     }
+})
+
+test("change number text of wrong body kind does nothing", () => {
+    const graph = emptyGraph()
+    const { graph: graph1, node } = addNode({
+        graph,
+        operation: {
+            kind: OperationKind.TEXT,
+            name: 'Text',
+            outputs: ['out'],
+        },
+        position: { x: 0, y: 0 },
+        generateUUID: generateUUID()
+    })
+    const body = graph1.nodes[node].body
+    const graph2 = changeNumberText(graph1, body, () => '100')
+    expect(graph2).toEqual(graph1)
 })

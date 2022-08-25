@@ -363,7 +363,7 @@ export const changeNodePosition = (graph: Graph, node: UUID, transform: (positio
     }
 }
 
-const parseNumber = (text: string): number => {
+export const parseNumber = (text: string): number => {
     switch (text) {
         case '':
         case '-':

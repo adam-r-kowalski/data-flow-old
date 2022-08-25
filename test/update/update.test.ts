@@ -1,7 +1,7 @@
 import * as tf from '@tensorflow/tfjs-core'
 
-import { addNodeToGraph, EventKind, openFinder, openNumericKeyboard, update, updateNumberText } from "../../src/update"
-import { BodyKind, NodeTransform, OperationKind, Operations } from "../../src/model/graph"
+import { addNodeToGraph, EventKind, openFinder, focusBody, update, updateBody, updateNumberText } from "../../src/update"
+import { BodyKind, NodeKind, NodeTransform, OperationKind, Operations } from "../../src/model/graph"
 import { addEdge, changeNodePosition } from "../../src/update/graph"
 import { translate } from "../../src/linear_algebra/matrix3x3"
 import { Model } from "../../src/model"
@@ -12,6 +12,7 @@ import { emptyModel } from "../../src/model/empty"
 import { QuickSelectKind } from "../../src/model/quick_select"
 import { defaultEffectModel, EffectModel, makeEffects } from "../mock_effects"
 import { tensorFunc } from "../../src/model/operations"
+import { Table } from '../../src/model/table'
 
 const model = emptyModel({ width: 500, height: 500 })
 const addFunc = tensorFunc(tf.add)
@@ -1250,7 +1251,7 @@ test("pressing number on keyboard appends to number node", () => {
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
     })
-    const model1 = openNumericKeyboard(model0, model0.graph.nodes[node].body!)
+    const model1 = focusBody(model0, model0.graph.nodes[node].body!)
     let model2 = model1
     for (const key of '1234567890') {
         const { model: model } = update(effects, model2, {
@@ -1301,9 +1302,60 @@ test("pressing -3.14 on keyboard writes a float for the number", () => {
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
     })
-    const model1 = openNumericKeyboard(model0, model0.graph.nodes[node].body!)
+    const model1 = focusBody(model0, model0.graph.nodes[node].body!)
     let model2 = model1
     for (const key of '-3.14') {
+        const { model: model } = update(effects, model2, {
+            kind: EventKind.KEYDOWN,
+            key,
+            ctrl: false
+        })
+        model2 = model
+    }
+    const body = makeEffects({ ...effectModel, uuid: effectModel.uuid - 1 }).generateUUID()
+    const expectedModel: Model = {
+        ...model0,
+        operations,
+        focus: {
+            kind: FocusKind.BODY,
+            body,
+            quickSelect: { kind: QuickSelectKind.NONE }
+        },
+        graph: {
+            ...model0.graph,
+            bodys: {
+                [body]: {
+                    kind: BodyKind.NUMBER,
+                    uuid: body,
+                    node,
+                    value: -3.14,
+                    text: '-3.14'
+                }
+            }
+        }
+    }
+    expect(model2).toEqual(expectedModel)
+})
+
+test("pressing -3.1.4 on keyboard ignores the second decimal", () => {
+    const effectModel = defaultEffectModel()
+    const effects = makeEffects(effectModel)
+    const operations: Operations = {
+        'Number': {
+            kind: OperationKind.NUMBER,
+            name: 'Number',
+            outputs: ['out']
+        }
+    }
+    const { model: model0, node } = addNodeToGraph({
+        model: { ...model, operations },
+        operation: operations['Number'],
+        position: { x: 0, y: 0 },
+        generateUUID: effects.generateUUID
+    })
+    const model1 = focusBody(model0, model0.graph.nodes[node].body!)
+    let model2 = model1
+    for (const key of '-3.1.4') {
         const { model: model } = update(effects, model2, {
             kind: EventKind.KEYDOWN,
             key,
@@ -1353,7 +1405,7 @@ test("pressing backspace on keyboard deletes from number node", () => {
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
     })
-    const model1 = openNumericKeyboard(model0, model0.graph.nodes[node].body!)
+    const model1 = focusBody(model0, model0.graph.nodes[node].body!)
     let model2 = model1
     for (const key of '1234567890') {
         const { model: model } = update(effects, model2, {
@@ -1409,7 +1461,7 @@ test("pressing backspace when number node value is 0 has no effect", () => {
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
     })
-    const model1 = openNumericKeyboard(model0, model0.graph.nodes[node].body!)
+    const model1 = focusBody(model0, model0.graph.nodes[node].body!)
     let model2 = model1
     for (let i = 0; i < 3; ++i) {
         const { model: model } = update(effects, model1, {
@@ -1460,7 +1512,7 @@ test("pressing enter on keyboard while editing number node exits virtual keyboar
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
     })
-    const model1 = openNumericKeyboard(model0, model0.graph.nodes[node].body!)
+    const model1 = focusBody(model0, model0.graph.nodes[node].body!)
     let model2 = model1
     for (const key of '1234567890') {
         const { model: model } = update(effects, model2, {
@@ -1512,7 +1564,7 @@ test("pressing non number on keyboard while editing number node is ignored", () 
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
     })
-    const model1 = openNumericKeyboard(model0, model0.graph.nodes[node].body)
+    const model1 = focusBody(model0, model0.graph.nodes[node].body)
     let model2 = model1
     for (const key of 'qwertyuiopasdfghjklzxvbnm') {
         const { model: model } = update(effects, model2, {
@@ -1560,7 +1612,7 @@ test("pressing - on keyboard while editing number node makes the number negative
         generateUUID: effects.generateUUID
     })
     const model1 = updateNumberText(model0, model0.graph.nodes[node].body, () => '10').model
-    const model2 = openNumericKeyboard(model1, model1.graph.nodes[node].body!)
+    const model2 = focusBody(model1, model1.graph.nodes[node].body!)
     const { model: model3 } = update(effects, model2, {
         kind: EventKind.KEYDOWN,
         key: '-',
@@ -1608,7 +1660,7 @@ test("pressing + on keyboard while editing number node makes the number negative
         generateUUID: effects.generateUUID
     })
     const model1 = updateNumberText(model0, model0.graph.nodes[node].body, () => '-10').model
-    const model2 = openNumericKeyboard(model1, model1.graph.nodes[node].body!)
+    const model2 = focusBody(model1, model1.graph.nodes[node].body!)
     const { model: model3 } = update(effects, model2, {
         kind: EventKind.KEYDOWN,
         key: '+',
@@ -1656,7 +1708,7 @@ test("pressing c on keyboard while editing number node makes the number 0", () =
         position: { x: 0, y: 0 },
         generateUUID: effects.generateUUID
     })
-    const model1 = openNumericKeyboard(model0, model0.graph.nodes[node].body!)
+    const model1 = focusBody(model0, model0.graph.nodes[node].body!)
     const { model: model2 } = update(effects, model1, {
         kind: EventKind.KEYDOWN,
         key: 'c',
@@ -1707,7 +1759,7 @@ test("clicking a number node opens the numeric keyboard", () => {
         kind: EventKind.CLICKED_BODY,
         body
     })
-    const expectedModel = openNumericKeyboard(model0, body)
+    const expectedModel = focusBody(model0, body)
     expect(model1).toEqual(expectedModel)
 })
 
@@ -1742,7 +1794,7 @@ test("clicking a number node when another number node is selected switches selec
         kind: EventKind.CLICKED_BODY,
         body: body1
     })
-    const expectedModel = openNumericKeyboard(model1, body1)
+    const expectedModel = focusBody(model1, body1)
     expect(model3).toEqual(expectedModel)
 })
 
@@ -3345,4 +3397,372 @@ test("pointer move after moving with keyboard stops showing node placement locat
     })
     expect(render2).toBeUndefined()
     expect(model3).toEqual(model2)
+})
+
+test("update body", () => {
+    const effects = makeEffects()
+    const model0: Model = {
+        ...model,
+        operations: {
+            'Number': {
+                kind: OperationKind.NUMBER,
+                name: 'Number',
+                outputs: ['out']
+            },
+        }
+    }
+    const { model: model1, node } = addNodeToGraph({
+        model: model0,
+        operation: model0.operations['Number'],
+        position: { x: 0, y: 0 },
+        generateUUID: effects.generateUUID
+    })
+    const body = model1.graph.nodes[node].body
+    const { model: model2 } = updateBody(model1, body, number => ({
+        ...number,
+        kind: BodyKind.NUMBER,
+        value: 10,
+        text: '10'
+    }))
+    const expectedModel: Model = {
+        ...model1,
+        graph: {
+            ...model1.graph,
+            bodys: {
+                [body]: {
+                    kind: BodyKind.NUMBER,
+                    uuid: body,
+                    node,
+                    value: 10,
+                    text: '10'
+                }
+            }
+        }
+    }
+    expect(model2).toEqual(expectedModel)
+})
+
+test("pressing any alphanumeric key while editing text node appends key to value", () => {
+    const effectModel = defaultEffectModel()
+    const effects = makeEffects(effectModel)
+    const operations: Operations = {
+        'Text': {
+            kind: OperationKind.TEXT,
+            name: 'Text',
+            outputs: ['out']
+        }
+    }
+    const { model: model0, node } = addNodeToGraph({
+        model: { ...model, operations },
+        operation: operations['Text'],
+        position: { x: 0, y: 0 },
+        generateUUID: effects.generateUUID
+    })
+    const body = model0.graph.nodes[node].body
+    const model2 = focusBody(model0, body)
+    let model3 = model2
+    for (const key of 'qwertyuiopasdfghjklzxcvbnm1234567890') {
+        const { model: nextModel } = update(effects, model3, {
+            kind: EventKind.KEYDOWN,
+            key: key,
+            ctrl: false
+        })
+        model3 = nextModel
+    }
+    const expectedModel: Model = {
+        ...model0,
+        operations,
+        graph: {
+            ...model0.graph,
+            bodys: {
+                [body]: {
+                    kind: BodyKind.TEXT,
+                    uuid: body,
+                    node,
+                    value: 'qwertyuiopasdfghjklzxcvbnm1234567890',
+                }
+            }
+        },
+        focus: {
+            kind: FocusKind.BODY,
+            body,
+            quickSelect: { kind: QuickSelectKind.NONE }
+        }
+    }
+    expect(model3).toEqual(expectedModel)
+})
+
+test("pressing backspace while editing text node removes letter from value", () => {
+    const effectModel = defaultEffectModel()
+    const effects = makeEffects(effectModel)
+    const operations: Operations = {
+        'Text': {
+            kind: OperationKind.TEXT,
+            name: 'Text',
+            outputs: ['out']
+        }
+    }
+    const { model: model0, node } = addNodeToGraph({
+        model: { ...model, operations },
+        operation: operations['Text'],
+        position: { x: 0, y: 0 },
+        generateUUID: effects.generateUUID
+    })
+    const body = model0.graph.nodes[node].body
+    const model2 = focusBody(model0, body)
+    let model3 = model2
+    for (const key of 'qwerty') {
+        const { model: nextModel } = update(effects, model3, {
+            kind: EventKind.KEYDOWN,
+            key: key,
+            ctrl: false
+        })
+        model3 = nextModel
+    }
+    const { model: model4 } = update(effects, model3, {
+        kind: EventKind.KEYDOWN,
+        key: 'Backspace',
+        ctrl: false
+    })
+    const expectedModel: Model = {
+        ...model0,
+        operations,
+        graph: {
+            ...model0.graph,
+            bodys: {
+                [body]: {
+                    kind: BodyKind.TEXT,
+                    uuid: body,
+                    node,
+                    value: 'qwert',
+                }
+            }
+        },
+        focus: {
+            kind: FocusKind.BODY,
+            body,
+            quickSelect: { kind: QuickSelectKind.NONE }
+        }
+    }
+    expect(model4).toEqual(expectedModel)
+})
+
+test("pressing enter while editing text node clears the focus", () => {
+    const effectModel = defaultEffectModel()
+    const effects = makeEffects(effectModel)
+    const operations: Operations = {
+        'Text': {
+            kind: OperationKind.TEXT,
+            name: 'Text',
+            outputs: ['out']
+        }
+    }
+    const { model: model0, node } = addNodeToGraph({
+        model: { ...model, operations },
+        operation: operations['Text'],
+        position: { x: 0, y: 0 },
+        generateUUID: effects.generateUUID
+    })
+    const body = model0.graph.nodes[node].body
+    const model2 = focusBody(model0, body)
+    let model3 = model2
+    for (const key of 'qwerty') {
+        const { model: nextModel } = update(effects, model3, {
+            kind: EventKind.KEYDOWN,
+            key: key,
+            ctrl: false
+        })
+        model3 = nextModel
+    }
+    const { model: model4 } = update(effects, model3, {
+        kind: EventKind.KEYDOWN,
+        key: 'Enter',
+        ctrl: false
+    })
+    const expectedModel: Model = {
+        ...model0,
+        operations,
+        graph: {
+            ...model0.graph,
+            bodys: {
+                [body]: {
+                    kind: BodyKind.TEXT,
+                    uuid: body,
+                    node,
+                    value: 'qwerty',
+                }
+            }
+        }
+    }
+    expect(model4).toEqual(expectedModel)
+})
+
+test("pressing escape while editing text node clears the focus", () => {
+    const effectModel = defaultEffectModel()
+    const effects = makeEffects(effectModel)
+    const operations: Operations = {
+        'Text': {
+            kind: OperationKind.TEXT,
+            name: 'Text',
+            outputs: ['out']
+        }
+    }
+    const { model: model0, node } = addNodeToGraph({
+        model: { ...model, operations },
+        operation: operations['Text'],
+        position: { x: 0, y: 0 },
+        generateUUID: effects.generateUUID
+    })
+    const body = model0.graph.nodes[node].body
+    const model2 = focusBody(model0, body)
+    let model3 = model2
+    for (const key of 'qwerty') {
+        const { model: nextModel } = update(effects, model3, {
+            kind: EventKind.KEYDOWN,
+            key: key,
+            ctrl: false
+        })
+        model3 = nextModel
+    }
+    const { model: model4 } = update(effects, model3, {
+        kind: EventKind.KEYDOWN,
+        key: 'Escape',
+        ctrl: false
+    })
+    const expectedModel: Model = {
+        ...model0,
+        operations,
+        graph: {
+            ...model0.graph,
+            bodys: {
+                [body]: {
+                    kind: BodyKind.TEXT,
+                    uuid: body,
+                    node,
+                    value: 'qwerty',
+                }
+            }
+        }
+    }
+    expect(model4).toEqual(expectedModel)
+})
+
+
+test("pressing shift while editing text node does nothing", () => {
+    const effectModel = defaultEffectModel()
+    const effects = makeEffects(effectModel)
+    const operations: Operations = {
+        'Text': {
+            kind: OperationKind.TEXT,
+            name: 'Text',
+            outputs: ['out']
+        }
+    }
+    const { model: model0, node } = addNodeToGraph({
+        model: { ...model, operations },
+        operation: operations['Text'],
+        position: { x: 0, y: 0 },
+        generateUUID: effects.generateUUID
+    })
+    const body = model0.graph.nodes[node].body
+    const model2 = focusBody(model0, body)
+    let model3 = model2
+    for (const key of 'qwerty') {
+        const { model: nextModel } = update(effects, model3, {
+            kind: EventKind.KEYDOWN,
+            key: key,
+            ctrl: false
+        })
+        model3 = nextModel
+    }
+    const { model: model4 } = update(effects, model3, {
+        kind: EventKind.KEYDOWN,
+        key: 'Shift',
+        ctrl: false
+    })
+    expect(model4).toEqual(model3)
+})
+
+test("pressing any key while focusing a body with no content does nothing", () => {
+    const effects = makeEffects()
+    const operations: Operations = {
+        'add': {
+            kind: OperationKind.TRANSFORM,
+            name: 'add',
+            inputs: ['x', 'y'],
+            outputs: ['out'],
+            func: addFunc
+        }
+    }
+    const { model: model0, node } = addNodeToGraph({
+        model: { ...model, operations },
+        operation: operations['add'],
+        position: { x: 0, y: 0 },
+        generateUUID: effects.generateUUID
+    })
+    const body = model0.graph.nodes[node].body
+    const model2 = focusBody(model0, body)
+    let model3 = model2
+    for (const key of 'qwertyuiopasdfghjklzxcvbnm1234567890') {
+        const { model: nextModel } = update(effects, model3, {
+            kind: EventKind.KEYDOWN,
+            key: key,
+            ctrl: false
+        })
+        model3 = nextModel
+    }
+    expect(model3).toEqual(model2)
+})
+
+test("upload table", () => {
+    const table: Table = {
+        'a': [1, 2, 3],
+        'b': [4, 5, 6]
+    }
+    const { model: model1 } = update(makeEffects(), model, {
+        kind: EventKind.UPLOAD_TABLE,
+        name: 'train.csv',
+        table,
+        position: { x: 0, y: 0 }
+    })
+    const generateUUID = makeEffects().generateUUID
+    const node = generateUUID()
+    const output = generateUUID()
+    const body = generateUUID()
+    const expectedModel: Model = {
+        ...model,
+        graph: {
+            nodes: {
+                [node]: {
+                    kind: NodeKind.SOURCE,
+                    uuid: node,
+                    name: 'train.csv',
+                    outputs: [output],
+                    body,
+                    position: { x: 0, y: 0 }
+                }
+            },
+            inputs: {},
+            bodys: {
+                [body]: {
+                    kind: BodyKind.TABLE,
+                    uuid: body,
+                    node,
+                    name: 'train.csv',
+                    value: table
+                }
+            },
+            outputs: {
+                [output]: {
+                    uuid: output,
+                    node,
+                    name: 'table',
+                    edges: []
+                }
+            },
+            edges: {},
+        },
+        nodeOrder: [node]
+    }
+    expect(model1).toEqual(expectedModel)
 })

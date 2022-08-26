@@ -26,6 +26,10 @@ import {
     virtualKey,
     virtualKeys,
     numberBody,
+    textBody,
+    tableBody,
+    columnBody,
+    formatCell,
 } from "../../src/view"
 import { contextMenu } from "../../src/view/context_menu"
 import { QuickSelectKind } from "../../src/model/quick_select"
@@ -300,6 +304,43 @@ test("bodyUi editing", () => {
     expect(actual).toEqual(expected)
 })
 
+test("tensorUi with scalar", () => {
+    const body: Body = {
+        kind: BodyKind.TENSOR,
+        uuid: 'body uuid',
+        node: 'node',
+        value: 5,
+        shape: [],
+        rank: 0,
+    }
+    const actual = tensorBody(theme, body)
+    const expected = container({
+        color: theme.background,
+        padding: 5
+    },
+        text('5'))
+    expect(actual).toEqual(expected)
+})
+
+test("tensorUi with scalar string", () => {
+    const body: Body = {
+        kind: BodyKind.TENSOR,
+        uuid: 'body uuid',
+        node: 'node',
+        value: 'hello',
+        shape: [],
+        rank: 0,
+    }
+    const actual = tensorBody(theme, body)
+    const expected = container({
+        color: theme.background,
+        padding: 5
+    },
+        text('hello'))
+    expect(actual).toEqual(expected)
+})
+
+
 test("tensorUi with vector", () => {
     const body: Body = {
         kind: BodyKind.TENSOR,
@@ -320,11 +361,33 @@ test("tensorUi with vector", () => {
             ])
         )
     ])
-
     expect(actual).toEqual(expected)
 })
 
-test("bodyUi with matrix", () => {
+test("tensorUi with string vector", () => {
+    const body: Body = {
+        kind: BodyKind.TENSOR,
+        uuid: 'body uuid',
+        node: 'node',
+        value: ['a', 'b', 'c'],
+        shape: [3],
+        rank: 1,
+    }
+    const actual = tensorBody(theme, body)
+    const expected = column([
+        container({ padding: 5 }, text("3 rows")),
+        container({ color: theme.background },
+            column({ crossAxisAlignment: CrossAxisAlignment.END }, [
+                container({ padding: 5 }, text("a")),
+                container({ padding: 5 }, text("b")),
+                container({ padding: 5 }, text("c")),
+            ])
+        )
+    ])
+    expect(actual).toEqual(expected)
+})
+
+test("tensorBody with matrix", () => {
     const body: Body = {
         kind: BodyKind.TENSOR,
         uuid: 'body uuid',
@@ -362,6 +425,21 @@ test("bodyUi with matrix", () => {
 
     expect(actual).toEqual(expected)
 })
+
+test("tensorBody with 3d body not yet implemented", () => {
+    const body: Body = {
+        kind: BodyKind.TENSOR,
+        uuid: 'body uuid',
+        node: 'node',
+        value: [[[5]]],
+        shape: [1, 1, 1],
+        rank: 3,
+    }
+    const actual = tensorBody(theme, body)
+    const expected = text("no view for this rank yet")
+    expect(actual).toEqual(expected)
+})
+
 
 test("bodyUi with scatter plot", () => {
     const body: Body = {
@@ -1112,6 +1190,121 @@ test("view with no nodes or edges but finder shown", () => {
     expect(actual).toEqual(expected)
 })
 
+test("view with positive number", () => {
+    const model: Model = {
+        graph: {
+            nodes: {
+                "number": {
+                    kind: NodeKind.SOURCE,
+                    uuid: "number",
+                    name: "number",
+                    body: 'body',
+                    outputs: [],
+                    position: { x: 0, y: 0 },
+                }
+            },
+            edges: {},
+            inputs: {},
+            outputs: {},
+            bodys: {
+                'body': {
+                    kind: BodyKind.NUMBER,
+                    uuid: 'body',
+                    node: 'number',
+                    value: 10,
+                    text: '10'
+                },
+            }
+        },
+        nodeOrder: ["number"],
+        pointers: [],
+        nodePlacementLocation: { x: 250, y: 250, show: false },
+        window: { width: 500, height: 500 },
+        focus: {
+            kind: FocusKind.BODY,
+            body: 'body',
+            quickSelect: { kind: QuickSelectKind.NONE },
+        },
+        openFinderFirstClick: false,
+        camera: identity(),
+        operations: {},
+        panCamera: { left: false, up: false, down: false, right: false, now: 0 },
+        zoomCamera: { in: false, out: false, now: 0 },
+        theme
+    }
+    const actual = view(model)
+    const expected = stack([
+        container({ color: model.theme.background, onClick: { kind: EventKind.CLICKED_BACKGROUND } }),
+        scene({
+            camera: model.camera,
+            children: [
+                nodeUi(model.theme, "number", model.graph, model.focus),
+            ],
+            connections: []
+        }),
+        numericVirtualKeyboard(model.theme, '-')
+    ])
+    expect(actual).toEqual(expected)
+})
+
+test("view with negative number", () => {
+    const model: Model = {
+        graph: {
+            nodes: {
+                "number": {
+                    kind: NodeKind.SOURCE,
+                    uuid: "number",
+                    name: "number",
+                    body: 'body',
+                    outputs: [],
+                    position: { x: 0, y: 0 },
+                }
+            },
+            edges: {},
+            inputs: {},
+            outputs: {},
+            bodys: {
+                'body': {
+                    kind: BodyKind.NUMBER,
+                    uuid: 'body',
+                    node: 'number',
+                    value: -10,
+                    text: '-10'
+                },
+            }
+        },
+        nodeOrder: ["number"],
+        pointers: [],
+        nodePlacementLocation: { x: 250, y: 250, show: false },
+        window: { width: 500, height: 500 },
+        focus: {
+            kind: FocusKind.BODY,
+            body: 'body',
+            quickSelect: { kind: QuickSelectKind.NONE },
+        },
+        openFinderFirstClick: false,
+        camera: identity(),
+        operations: {},
+        panCamera: { left: false, up: false, down: false, right: false, now: 0 },
+        zoomCamera: { in: false, out: false, now: 0 },
+        theme
+    }
+    const actual = view(model)
+    const expected = stack([
+        container({ color: model.theme.background, onClick: { kind: EventKind.CLICKED_BACKGROUND } }),
+        scene({
+            camera: model.camera,
+            children: [
+                nodeUi(model.theme, "number", model.graph, model.focus),
+            ],
+            connections: []
+        }),
+        numericVirtualKeyboard(model.theme, '+')
+    ])
+    expect(actual).toEqual(expected)
+})
+
+
 test("view with three nodes and no edges", () => {
     const model: Model = {
         graph: {
@@ -1785,4 +1978,498 @@ test("view with node placement location shown", () => {
         }),
     ])
     expect(actual).toEqual(expected)
+})
+
+
+test("textBody not focused", () => {
+    const body: Body = {
+        kind: BodyKind.TEXT,
+        uuid: 'body uuid',
+        node: 'node',
+        value: 'hello',
+    }
+    const focus: Focus = {
+        kind: FocusKind.NONE,
+        pointerAction: { kind: PointerActionKind.NONE },
+        quickSelect: { kind: QuickSelectKind.NONE }
+    }
+    const actual = textBody(theme, body, focus)
+    const expected = container({
+        color: theme.background,
+        padding: 5,
+        onClick: {
+            kind: EventKind.CLICKED_BODY,
+            body: 'body uuid'
+        }
+    },
+        text(body.value.toString()))
+    expect(actual).toEqual(expected)
+})
+
+test("textBody focused", () => {
+    const body: Body = {
+        kind: BodyKind.TEXT,
+        uuid: 'body uuid',
+        node: 'node',
+        value: 'hello',
+    }
+    const focus: Focus = {
+        kind: FocusKind.BODY,
+        body: 'body uuid',
+        quickSelect: { kind: QuickSelectKind.NONE }
+    }
+    const actual = textBody(theme, body, focus)
+    const expected = container({
+        color: theme.focusInput,
+        padding: 5,
+        onClick: {
+            kind: EventKind.CLICKED_BODY,
+            body: 'body uuid'
+        }
+    },
+        text(body.value.toString()))
+    expect(actual).toEqual(expected)
+})
+
+test("textBody quick select", () => {
+    const body: Body = {
+        kind: BodyKind.TEXT,
+        uuid: 'body uuid',
+        node: 'node',
+        value: 'hello',
+    }
+    const focus: Focus = {
+        kind: FocusKind.NONE,
+        pointerAction: { kind: PointerActionKind.NONE },
+        quickSelect: {
+            kind: QuickSelectKind.BODY,
+            hotkeys: { 'body uuid': 'a' }
+        }
+    }
+    const actual = textBody(theme, body, focus)
+    const expected = container({
+        color: theme.background,
+        padding: 5,
+        onClick: {
+            kind: EventKind.CLICKED_BODY,
+            body: 'body uuid'
+        }
+    },
+        text('a'))
+    expect(actual).toEqual(expected)
+})
+
+test("tableBody", () => {
+    const body: Body = {
+        kind: BodyKind.TABLE,
+        uuid: 'body uuid',
+        node: 'node',
+        name: 'table.csv',
+        value: {
+            'a': [1, 2, 3],
+            'b': [4, 5, undefined]
+        },
+    }
+    const actual = tableBody(theme, body)
+    const expected = column([
+        container({ padding: 5 }, text('2 columns 3 rows')),
+        container({ color: theme.background },
+            row([
+                container({ padding: 5 },
+                    column({ crossAxisAlignment: CrossAxisAlignment.END }, [
+                        container({ padding: 5 }, text('a')),
+                        container({ padding: 5 }, text('1')),
+                        container({ padding: 5 }, text('2')),
+                        container({ padding: 5 }, text('3')),
+                    ])
+                ),
+                container({ padding: 5 },
+                    column({ crossAxisAlignment: CrossAxisAlignment.END }, [
+                        container({ padding: 5 }, text('b')),
+                        container({ padding: 5 }, text('4')),
+                        container({ padding: 5 }, text('5')),
+                        container({ padding: 5 }, text('NULL')),
+                    ])
+                )
+            ]
+            ))
+    ])
+    expect(actual).toEqual(expected)
+})
+
+test("columnBody", () => {
+    const body: Body = {
+        kind: BodyKind.COLUMN,
+        uuid: 'body uuid',
+        node: 'node',
+        name: 'a',
+        value: [1, 2, undefined]
+    }
+    const actual = columnBody(theme, body)
+    const expected = column([
+        container({ padding: 5 }, text('3 rows')),
+        container({ color: theme.background },
+            column({ crossAxisAlignment: CrossAxisAlignment.END }, [
+                container({ padding: 5 }, text('1')),
+                container({ padding: 5 }, text('2')),
+                container({ padding: 5 }, text('NULL')),
+            ])
+        )
+    ])
+    expect(actual).toEqual(expected)
+})
+
+test("nodeUi with text body", () => {
+    const node: Node = {
+        kind: NodeKind.SOURCE,
+        uuid: 'node uuid',
+        name: "node",
+        position: { x: 0, y: 0 },
+        body: 'body uuid',
+        outputs: ['output uuid'],
+    }
+    const body: Body = {
+        kind: BodyKind.TEXT,
+        uuid: 'body uuid',
+        node: 'node',
+        value: 'hello',
+    }
+    const output: Output = {
+        uuid: 'output uuid',
+        node: 'node uuid',
+        name: 'first',
+        edges: []
+    }
+    const graph: Graph = {
+        ...emptyGraph(),
+        nodes: { [node.uuid]: node },
+        bodys: { [body.uuid]: body },
+        outputs: { [output.uuid]: output },
+    }
+    const focus: Focus = {
+        kind: FocusKind.NONE,
+        pointerAction: { kind: PointerActionKind.NONE },
+        quickSelect: { kind: QuickSelectKind.NONE }
+    }
+    const actual = nodeUi(theme, node.uuid, graph, focus)
+    const expected = container<AppEvent>(
+        {
+            color: theme.node,
+            padding: 4,
+            x: 0,
+            y: 0,
+            onClick: {
+                kind: EventKind.CLICKED_NODE,
+                node: 'node uuid'
+            }
+        },
+        column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
+            text("node"),
+            spacer(4),
+            row([
+                textBody(theme, body, focus),
+                spacer(15),
+                outputsUi(theme, node.outputs.map(o => graph.outputs[o]), focus)
+            ])
+        ])
+    )
+    expect(actual).toEqual(expected)
+})
+
+test("nodeUi with table body", () => {
+    const node: Node = {
+        kind: NodeKind.SOURCE,
+        uuid: 'node uuid',
+        name: "node",
+        position: { x: 0, y: 0 },
+        body: 'body uuid',
+        outputs: ['output uuid'],
+    }
+    const body: Body = {
+        kind: BodyKind.TABLE,
+        uuid: 'body uuid',
+        node: 'node',
+        name: 'table.csv',
+        value: {
+            'a': [1, 2, 3],
+            'b': [1, 2, undefined],
+        },
+    }
+    const output: Output = {
+        uuid: 'output uuid',
+        node: 'node uuid',
+        name: 'first',
+        edges: []
+    }
+    const graph: Graph = {
+        ...emptyGraph(),
+        nodes: { [node.uuid]: node },
+        bodys: { [body.uuid]: body },
+        outputs: { [output.uuid]: output },
+    }
+    const focus: Focus = {
+        kind: FocusKind.NONE,
+        pointerAction: { kind: PointerActionKind.NONE },
+        quickSelect: { kind: QuickSelectKind.NONE }
+    }
+    const actual = nodeUi(theme, node.uuid, graph, focus)
+    const expected = container<AppEvent>(
+        {
+            color: theme.node,
+            padding: 4,
+            x: 0,
+            y: 0,
+            onClick: {
+                kind: EventKind.CLICKED_NODE,
+                node: 'node uuid'
+            }
+        },
+        column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
+            text("node"),
+            spacer(4),
+            row([
+                tableBody(theme, body),
+                spacer(15),
+                outputsUi(theme, node.outputs.map(o => graph.outputs[o]), focus)
+            ])
+        ])
+    )
+    expect(actual).toEqual(expected)
+})
+
+test("nodeUi with column body", () => {
+    const node: Node = {
+        kind: NodeKind.SOURCE,
+        uuid: 'node uuid',
+        name: "node",
+        position: { x: 0, y: 0 },
+        body: 'body uuid',
+        outputs: ['output uuid'],
+    }
+    const body: Body = {
+        kind: BodyKind.COLUMN,
+        uuid: 'body uuid',
+        node: 'node',
+        name: 'a',
+        value: [1, 2, 3]
+    }
+    const output: Output = {
+        uuid: 'output uuid',
+        node: 'node uuid',
+        name: 'first',
+        edges: []
+    }
+    const graph: Graph = {
+        ...emptyGraph(),
+        nodes: { [node.uuid]: node },
+        bodys: { [body.uuid]: body },
+        outputs: { [output.uuid]: output },
+    }
+    const focus: Focus = {
+        kind: FocusKind.NONE,
+        pointerAction: { kind: PointerActionKind.NONE },
+        quickSelect: { kind: QuickSelectKind.NONE }
+    }
+    const actual = nodeUi(theme, node.uuid, graph, focus)
+    const expected = container<AppEvent>(
+        {
+            color: theme.node,
+            padding: 4,
+            x: 0,
+            y: 0,
+            onClick: {
+                kind: EventKind.CLICKED_NODE,
+                node: 'node uuid'
+            }
+        },
+        column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
+            text("node"),
+            spacer(4),
+            row([
+                columnBody(theme, body),
+                spacer(15),
+                outputsUi(theme, node.outputs.map(o => graph.outputs[o]), focus)
+            ])
+        ])
+    )
+    expect(actual).toEqual(expected)
+})
+
+test("nodeUi with tensor body", () => {
+    const node: Node = {
+        kind: NodeKind.SOURCE,
+        uuid: 'node uuid',
+        name: "node",
+        position: { x: 0, y: 0 },
+        body: 'body uuid',
+        outputs: ['output uuid'],
+    }
+    const body: Body = {
+        kind: BodyKind.TENSOR,
+        uuid: 'body uuid',
+        node: 'node',
+        value: [1, 2, 3],
+        shape: [3],
+        rank: 1
+    }
+    const output: Output = {
+        uuid: 'output uuid',
+        node: 'node uuid',
+        name: 'first',
+        edges: []
+    }
+    const graph: Graph = {
+        ...emptyGraph(),
+        nodes: { [node.uuid]: node },
+        bodys: { [body.uuid]: body },
+        outputs: { [output.uuid]: output },
+    }
+    const focus: Focus = {
+        kind: FocusKind.NONE,
+        pointerAction: { kind: PointerActionKind.NONE },
+        quickSelect: { kind: QuickSelectKind.NONE }
+    }
+    const actual = nodeUi(theme, node.uuid, graph, focus)
+    const expected = container<AppEvent>(
+        {
+            color: theme.node,
+            padding: 4,
+            x: 0,
+            y: 0,
+            onClick: {
+                kind: EventKind.CLICKED_NODE,
+                node: 'node uuid'
+            }
+        },
+        column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
+            text("node"),
+            spacer(4),
+            row([
+                tensorBody(theme, body),
+                spacer(15),
+                outputsUi(theme, node.outputs.map(o => graph.outputs[o]), focus)
+            ])
+        ])
+    )
+    expect(actual).toEqual(expected)
+})
+
+test("nodeUi with scatter body", () => {
+    const node: Node = {
+        kind: NodeKind.SOURCE,
+        uuid: 'node uuid',
+        name: "node",
+        position: { x: 0, y: 0 },
+        body: 'body uuid',
+        outputs: ['output uuid'],
+    }
+    const body: Body = {
+        kind: BodyKind.SCATTER,
+        uuid: 'body uuid',
+        node: 'node',
+        x: [1, 2, 3],
+        y: [4, 8, 12]
+    }
+    const output: Output = {
+        uuid: 'output uuid',
+        node: 'node uuid',
+        name: 'first',
+        edges: []
+    }
+    const graph: Graph = {
+        ...emptyGraph(),
+        nodes: { [node.uuid]: node },
+        bodys: { [body.uuid]: body },
+        outputs: { [output.uuid]: output },
+    }
+    const focus: Focus = {
+        kind: FocusKind.NONE,
+        pointerAction: { kind: PointerActionKind.NONE },
+        quickSelect: { kind: QuickSelectKind.NONE }
+    }
+    const actual = nodeUi(theme, node.uuid, graph, focus)
+    const expected = container<AppEvent>(
+        {
+            color: theme.node,
+            padding: 4,
+            x: 0,
+            y: 0,
+            onClick: {
+                kind: EventKind.CLICKED_NODE,
+                node: 'node uuid'
+            }
+        },
+        column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
+            text("node"),
+            spacer(4),
+            row([
+                scatterBody(theme, body),
+                spacer(15),
+                outputsUi(theme, node.outputs.map(o => graph.outputs[o]), focus)
+            ])
+        ])
+    )
+    expect(actual).toEqual(expected)
+})
+
+test("nodeUi with error body", () => {
+    const node: Node = {
+        kind: NodeKind.SOURCE,
+        uuid: 'node uuid',
+        name: "node",
+        position: { x: 0, y: 0 },
+        body: 'body uuid',
+        outputs: ['output uuid'],
+    }
+    const body: Body = {
+        kind: BodyKind.ERROR,
+        uuid: 'body uuid',
+        node: 'node',
+    }
+    const output: Output = {
+        uuid: 'output uuid',
+        node: 'node uuid',
+        name: 'first',
+        edges: []
+    }
+    const graph: Graph = {
+        ...emptyGraph(),
+        nodes: { [node.uuid]: node },
+        bodys: { [body.uuid]: body },
+        outputs: { [output.uuid]: output },
+    }
+    const focus: Focus = {
+        kind: FocusKind.NONE,
+        pointerAction: { kind: PointerActionKind.NONE },
+        quickSelect: { kind: QuickSelectKind.NONE }
+    }
+    const actual = nodeUi(theme, node.uuid, graph, focus)
+    const expected = container<AppEvent>(
+        {
+            color: theme.error,
+            padding: 4,
+            x: 0,
+            y: 0,
+            onClick: {
+                kind: EventKind.CLICKED_NODE,
+                node: 'node uuid'
+            }
+        },
+        column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
+            text("node"),
+            spacer(4),
+            row([
+                outputsUi(theme, node.outputs.map(o => graph.outputs[o]), focus)
+            ])
+        ])
+    )
+    expect(actual).toEqual(expected)
+})
+
+
+test("format cell", () => {
+    expect(formatCell("hello")).toEqual("hello")
+    expect(formatCell(10)).toEqual('10')
+    expect(formatCell(3.12)).toEqual('3.12')
+    expect(formatCell(3.124)).toEqual('3.12')
 })

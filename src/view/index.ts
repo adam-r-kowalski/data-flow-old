@@ -154,7 +154,7 @@ export const columnBody = (theme: Theme, body: ColumnBody): UI<AppEvent> => {
 }
 
 
-const formatCell = (value: number | string): string => {
+export const formatCell = (value: number | string): string => {
     switch (typeof value) {
         case 'string': return value
         case 'number': return Number.isInteger(value) ? value.toString() : value.toFixed(2)

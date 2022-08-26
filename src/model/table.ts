@@ -1,6 +1,5 @@
-export interface Column {
-    name: string
-    data: string[]
-}
+export type Value = string | number | boolean | undefined
 
-export type Table = Column[]
+export type Column = Value[]
+
+export type Table = { [name: string]: Column }

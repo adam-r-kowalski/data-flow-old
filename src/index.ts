@@ -7,7 +7,7 @@ import { view } from './view'
 import { demoModel } from "./model/demo"
 import { Document } from './ui/dom'
 import { ProgramKind } from "./ui/webgl2"
-import { Table } from './model/table'
+import { Table, Value } from './model/table'
 
 const generateUUID = () => crypto.randomUUID()
 const currentTime = () => performance.now()
@@ -123,22 +123,23 @@ document.addEventListener('drop', async e => {
         return
     }
     const file = e.dataTransfer.files[0]
-    type Row = { [name: string]: string }
+    type Row = { [name: string]: Value }
     papa.parse(file, {
         worker: true,
         header: true,
         dynamicTyping: true,
         complete: async results => {
-            const table: Table = results.meta.fields!.map(field => ({
-                name: field,
-                data: []
-            }))
+            const table: Table = {}
+            for (const name of results.meta.fields!) {
+                console.log(name)
+                table[name] = []
+            }
             const errorRows = results.errors.map(e => e.row)
             results.data.forEach((row, i) => {
                 if (!errorRows.includes(i)) {
-                    table.forEach(column => {
-                        column.data.push((row as Row)[column.name] ?? undefined)
-                    })
+                    for (const [name, value] of Object.entries(row as Row)) {
+                        table[name].push(value ?? undefined)
+                    }
                 }
             })
             dispatch({

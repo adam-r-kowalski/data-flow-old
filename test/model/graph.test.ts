@@ -2,7 +2,7 @@ import * as tf from '@tensorflow/tfjs-core'
 
 import { emptyGraph, Input, Node, Output, Edge, Body, BodyKind, OperationKind, NodeKind, NodeTransform } from "../../src/model/graph"
 import { tensorFunc } from "../../src/model/operations"
-import { addNode, addEdge, changeNodePosition, removeNode, removeInputEdge, removeOutputEdges } from "../../src/update/graph"
+import { addNode, addEdge, changeNodePosition, removeNode, removeInputEdge, removeOutputEdges, parseNumber, changeNumberText } from "../../src/update/graph"
 
 const generateUUID = () => {
     let i = 0
@@ -12,6 +12,13 @@ const generateUUID = () => {
         return uuid
     }
 }
+
+test("parse number", () => {
+    expect(parseNumber('')).toEqual(0)
+    expect(parseNumber('-')).toEqual(0)
+    expect(parseNumber('.')).toEqual(0)
+    expect(parseNumber('2.3')).toEqual(2.3)
+})
 
 test("empty graph", () => {
     expect(emptyGraph()).toEqual({
@@ -142,6 +149,55 @@ test("add operation with body to graph", () => {
         outputs: { [out.uuid]: out },
     })
     expect(node).toEqual(number.uuid)
+})
+
+
+test("add text operation", () => {
+    const generateUUID0 = generateUUID()
+    const generateUUID1 = generateUUID()
+    const graph = emptyGraph()
+    const { graph: graph1, node } = addNode({
+        graph,
+        operation: {
+            kind: OperationKind.TEXT,
+            name: 'text',
+            outputs: ['out'],
+        },
+        position: { x: 0, y: 0 },
+        generateUUID: generateUUID0
+    })
+    expect(graph).toEqual(emptyGraph())
+    const textUUID = generateUUID1()
+    const outUUID = generateUUID1()
+    const bodyUUID = generateUUID1()
+    const text: Node = {
+        kind: NodeKind.SOURCE,
+        uuid: textUUID,
+        name: 'text',
+        outputs: [outUUID],
+        body: bodyUUID,
+        position: { x: 0, y: 0 },
+    }
+    const out: Output = {
+        uuid: outUUID,
+        node: textUUID,
+        name: 'out',
+        edges: []
+    }
+    const body: Body = {
+        kind: BodyKind.TEXT,
+        uuid: bodyUUID,
+        node: textUUID,
+        value: '',
+    }
+    expect(graph1).toEqual({
+        nodes: { [text.uuid]: text },
+        edges: {},
+        inputs: {},
+        bodys: { [body.uuid]: body },
+        outputs: { [out.uuid]: out },
+    })
+    expect(node).toEqual(text.uuid)
 })
 
 
@@ -1189,4 +1245,21 @@ test("remove output edge", () => {
             },
         })
     }
+})
+
+test("change number text of wrong body kind does nothing", () => {
+    const graph = emptyGraph()
+    const { graph: graph1, node } = addNode({
+        graph,
+        operation: {
+            kind: OperationKind.TEXT,
+            name: 'Text',
+            outputs: ['out'],
+        },
+        position: { x: 0, y: 0 },
+        generateUUID: generateUUID()
+    })
+    const body = graph1.nodes[node].body
+    const graph2 = changeNumberText(graph1, body, () => '100')
+    expect(graph2).toEqual(graph1)
 })

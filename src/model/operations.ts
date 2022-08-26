@@ -8,7 +8,7 @@ type TensorFunc = (...inputs: Tensor[]) => tf.Tensor<tf.Rank>
 export const tensorFunc = (f: TensorFunc): Function => {
     return ({ uuid, node }: Body, ...inputs: Body[]): Body => {
         const tensors = inputs
-            .filter(body => [BodyKind.TENSOR, BodyKind.NUMBER, BodyKind.TEXT].includes(body.kind))
+            .filter(body => [BodyKind.TENSOR, BodyKind.NUMBER, BodyKind.TEXT, BodyKind.COLUMN].includes(body.kind))
             .map(body => (body as TensorBody).value)
         try {
             const result = f(...tensors)
@@ -21,7 +21,6 @@ export const tensorFunc = (f: TensorFunc): Function => {
                 shape: result.shape,
             }
         } catch (e) {
-            console.log(e)
             return {
                 kind: BodyKind.ERROR,
                 uuid: uuid,
@@ -45,7 +44,7 @@ export const scatter = ({ uuid, node }: Body, ...inputs: Body[]): Body => {
 
 export const column = ({ uuid, node }: Body, ...inputs: Body[]): Body => {
     const name = (inputs[1] as TextBody).value
-    const col = (inputs[0] as TableBody).table.find(column => column.name === name)
+    const col = (inputs[0] as TableBody).value[name]
     if (col === undefined) {
         return {
             kind: BodyKind.ERROR,
@@ -54,12 +53,11 @@ export const column = ({ uuid, node }: Body, ...inputs: Body[]): Body => {
         }
     } else {
         return {
-            kind: BodyKind.TENSOR,
+            kind: BodyKind.COLUMN,
             uuid: uuid,
             node: node,
-            value: col.data,
-            rank: 1,
-            shape: [col.data.length],
+            name,
+            value: col,
         }
     }
 }

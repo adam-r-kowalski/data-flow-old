@@ -677,7 +677,7 @@ const keyUp = (model: Model, event: KeyUp): UpdateResult<Model, AppEvent> => {
 const clickedFinderOption = (model: Model, { option }: ClickedFinderOption, generateUUID: GenerateUUID): UpdateResult<Model, AppEvent> =>
     insertOperationFromFinder(model, option, generateUUID)
 
-export const openNumericKeyboard = (model: Model, body: UUID): Model => ({
+export const focusBody = (model: Model, body: UUID): Model => ({
     ...model,
     focus: {
         kind: FocusKind.BODY,
@@ -687,7 +687,7 @@ export const openNumericKeyboard = (model: Model, body: UUID): Model => ({
 })
 
 const clickedNumber = (model: Model, { body }: ClickedNumber): UpdateResult<Model, AppEvent> => ({
-    model: openNumericKeyboard(clearFocus(model), body),
+    model: focusBody(clearFocus(model), body),
     render: true
 })
 
@@ -747,7 +747,7 @@ const deleteOutputEdges = (model: Model, { output }: DeleteOutputEdges): UpdateR
     render: true
 })
 
-const uploadTable = (model: Model, event: UploadTable, generateUUID: GenerateUUID): UpdateResult<Model, AppEvent> => {
+export const uploadTable = (model: Model, event: UploadTable, generateUUID: GenerateUUID): UpdateResult<Model, AppEvent> => {
     const nodeUUID = generateUUID()
     const output: Output = {
         uuid: generateUUID(),
@@ -759,7 +759,8 @@ const uploadTable = (model: Model, event: UploadTable, generateUUID: GenerateUUI
         kind: BodyKind.TABLE,
         uuid: generateUUID(),
         node: nodeUUID,
-        table: event.table
+        name: event.name,
+        value: event.table
     }
     const [x, y] = multiplyMatrixVector(model.camera, [event.position.x, event.position.y, 1])
     const node: NodeSource = {

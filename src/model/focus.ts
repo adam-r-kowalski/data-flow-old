@@ -7,7 +7,8 @@ export enum FocusKind {
     INPUT,
     OUTPUT,
     BODY,
-    FINDER,
+    FINDER_INSERT,
+    FINDER_CHANGE,
     NONE
 }
 
@@ -46,11 +47,19 @@ export interface FocusBody {
     readonly quickSelect: QuickSelect
 }
 
-export interface FocusFinder {
-    readonly kind: FocusKind.FINDER,
+export interface FocusFinderInsert {
+    readonly kind: FocusKind.FINDER_INSERT,
     readonly search: string
     readonly options: Readonly<string[]>
     readonly quickSelect: QuickSelectNone
+}
+
+export interface FocusFinderChange {
+    readonly kind: FocusKind.FINDER_CHANGE,
+    readonly search: string
+    readonly options: Readonly<string[]>
+    readonly quickSelect: QuickSelectNone
+    readonly node: UUID
 }
 
 export interface FocusNone {
@@ -64,5 +73,6 @@ export type Focus =
     | FocusInput
     | FocusOutput
     | FocusBody
-    | FocusFinder
+    | FocusFinderInsert
+    | FocusFinderChange
     | FocusNone

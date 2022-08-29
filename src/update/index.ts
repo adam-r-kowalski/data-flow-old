@@ -3,9 +3,9 @@ import { multiplyMatrices, multiplyMatrixVector, scale, translate } from "../lin
 import { length } from "../linear_algebra/vector3"
 import { Effects, UpdateResult } from "../ui/run"
 import { Model, NodePlacementLocation } from "../model"
-import { Focus, FocusFinder, FocusKind } from '../model/focus'
+import { Focus, FocusFinderInsert, FocusFinderChange, FocusKind } from '../model/focus'
 import { PointerAction, PointerActionKind } from '../model/pointer_action'
-import { Body, BodyKind, GenerateUUID, Graph, NodeKind, NodeSource, Operation, Operations, Output, Position, TextBody, UUID } from '../model/graph'
+import { Body, BodyKind, Bodys, GenerateUUID, Graph, NodeKind, Nodes, NodeSource, Operation, OperationKind, Operations, Output, Position, TextBody, UUID } from '../model/graph'
 import { Pointer } from "../ui"
 import { addNode, changeNumberText, changeNodePosition, removeInputEdge, removeNode, removeOutputEdges, evaluateNode } from "./graph"
 import { maybeTriggerQuickSelect, quickSelectInput, quickSelectOutput, quickSelectNode, quickSelectBody } from "./quick_select"
@@ -29,6 +29,7 @@ export enum EventKind {
     CLICKED_FINDER_OPTION,
     CLICKED_BODY,
     CLICKED_BACKGROUND,
+    CHANGE_NODE,
     DELETE_NODE,
     DELETE_INPUT_EDGE,
     DELETE_OUTPUT_EDGES,
@@ -84,7 +85,6 @@ export interface KeyUp {
     readonly ctrl: boolean
 }
 
-
 export interface KeyDown {
     readonly kind: EventKind.KEYDOWN
     readonly key: string
@@ -103,6 +103,11 @@ export interface ClickedNumber {
 
 export interface ClickedBackground {
     readonly kind: EventKind.CLICKED_BACKGROUND,
+}
+
+export interface ChangeNode {
+    readonly kind: EventKind.CHANGE_NODE,
+    readonly node: UUID
 }
 
 export interface DeleteNode {
@@ -154,6 +159,7 @@ export type AppEvent =
     | ClickedFinderOption
     | ClickedNumber
     | ClickedBackground
+    | ChangeNode
     | DeleteNode
     | DeleteInputEdge
     | DeleteOutputEdges
@@ -321,7 +327,8 @@ const pointerMove = (model: Model, event: PointerMove): UpdateResult<Model, AppE
             case FocusKind.INPUT:
             case FocusKind.OUTPUT:
                 return { model: { ...model, pointers, nodePlacementLocation } }
-            case FocusKind.FINDER:
+            case FocusKind.FINDER_INSERT:
+            case FocusKind.FINDER_CHANGE:
                 return { model: { ...model, pointers } }
         }
     })()
@@ -375,13 +382,26 @@ const finderOptions = (operations: Operations, search: string): string[] =>
     Object.keys(operations)
         .filter(item => fuzzyFind({ haystack: item, needle: search }))
 
-export const openFinder = (model: Model): Model => ({
+
+export const openFinderInsert = (model: Model): Model => ({
     ...model,
     focus: {
-        kind: FocusKind.FINDER,
+        kind: FocusKind.FINDER_INSERT,
         search: '',
         options: Object.keys(model.operations),
         quickSelect: { kind: QuickSelectKind.NONE }
+    },
+    openFinderFirstClick: false,
+})
+
+export const openFinderChange = (model: Model, node: UUID): Model => ({
+    ...model,
+    focus: {
+        kind: FocusKind.FINDER_CHANGE,
+        search: '',
+        options: Object.keys(model.operations),
+        quickSelect: { kind: QuickSelectKind.NONE },
+        node
     },
     openFinderFirstClick: false,
 })
@@ -400,16 +420,73 @@ const insertOperationFromFinder = (model: Model, name: string, generateUUID: Gen
     }
 }
 
-const updateFinderSearch = (model: Model, focus: FocusFinder, transform: (search: string) => string): UpdateResult<Model, AppEvent> => {
+const changeOperationFromFinder = (model: Model, name: string, nodeUUID: UUID): UpdateResult<Model, AppEvent> => {
+    const operation = model.operations[name]
+    switch (operation.kind) {
+        case OperationKind.TRANSFORM:
+            const node = model.graph.nodes[nodeUUID]
+            switch (node.kind) {
+                case NodeKind.TRANSFORM:
+                    const sameInputs = node.inputs.length === operation.inputs.length
+                    const sameOutputs = node.outputs.length === operation.outputs.length
+                    if (sameInputs && sameOutputs) {
+                        const nodes: Nodes = {
+                            ...model.graph.nodes,
+                            [node.uuid]: {
+                                ...node,
+                                name: operation.name,
+                                func: operation.func,
+                            }
+                        }
+                        const bodys: Bodys = {
+                            ...model.graph.bodys,
+                            [node.body]: {
+                                kind: BodyKind.NO,
+                                uuid: node.body,
+                                node: node.uuid
+                            }
+                        }
+                        const graph: Graph = {
+                            ...model.graph,
+                            nodes,
+                            bodys
+                        }
+                        return {
+                            model: clearFocus({
+                                ...model,
+                                graph: evaluateNode(graph, nodeUUID)
+                            }),
+                            render: true
+                        }
+                    } else {
+                        return {
+                            model: clearFocus(model),
+                            render: true
+                        }
+                    }
+                case NodeKind.SOURCE:
+                    return {
+                        model: clearFocus(model),
+                        render: true
+                    }
+            }
+        default:
+            return {
+                model: clearFocus(model),
+                render: true
+            }
+    }
+}
+
+const updateFinderSearch = (model: Model, focus: FocusFinderInsert | FocusFinderChange, transform: (search: string) => string): UpdateResult<Model, AppEvent> => {
     const search = transform(focus.search)
     return {
         model: {
             ...model,
             focus: {
-                kind: FocusKind.FINDER,
+                ...focus,
                 options: finderOptions(model.operations, search),
                 search,
-                quickSelect: { kind: QuickSelectKind.NONE }
             }
         },
         render: true
@@ -490,7 +567,8 @@ const keyDown = (model: Model, event: KeyDown, { generateUUID, currentTime }: Ef
             return quickSelectBody(model, model.focus.quickSelect, key)
         case QuickSelectKind.NONE:
             switch (model.focus.kind) {
-                case FocusKind.FINDER:
+                case FocusKind.FINDER_INSERT:
+                case FocusKind.FINDER_CHANGE:
                     switch (key) {
                         case 'Backspace':
                             return updateFinderSearch(model, model.focus, search => search.slice(0, -1))
@@ -503,7 +581,11 @@ const keyDown = (model: Model, event: KeyDown, { generateUUID, currentTime }: Ef
                         case 'Enter':
                             if (model.focus.options.length > 0) {
                                 const name = model.focus.options[0]
-                                return insertOperationFromFinder(model, name, generateUUID)
+                                switch (model.focus.kind) {
+                                    case FocusKind.FINDER_INSERT: return insertOperationFromFinder(model, name, generateUUID)
+                                    case FocusKind.FINDER_CHANGE: return changeOperationFromFinder(model, name, model.focus.node)
+                                }
+
                             } else {
                                 return { model: clearFocus(model), render: true }
                             }
@@ -592,7 +674,9 @@ const keyDown = (model: Model, event: KeyDown, { generateUUID, currentTime }: Ef
                 case FocusKind.NODE:
                     switch (key) {
                         case 'f':
-                            return { model: openFinder(model), render: true }
+                            return { model: openFinderInsert(model), render: true }
+                        case 'c':
+                            return { model: openFinderChange(model, model.focus.node), render: true }
                         case 'd':
                         case 'Backspace':
                         case 'Delete':
@@ -613,7 +697,7 @@ const keyDown = (model: Model, event: KeyDown, { generateUUID, currentTime }: Ef
                 case FocusKind.INPUT:
                     switch (key) {
                         case 'f':
-                            return { model: openFinder(model), render: true }
+                            return { model: openFinderInsert(model), render: true }
                         case 'd':
                         case 'Backspace':
                         case 'Delete':
@@ -632,7 +716,7 @@ const keyDown = (model: Model, event: KeyDown, { generateUUID, currentTime }: Ef
                 case FocusKind.OUTPUT:
                     switch (key) {
                         case 'f':
-                            return { model: openFinder(model), render: true }
+                            return { model: openFinderInsert(model), render: true }
                         case 'd':
                         case 'Backspace':
                         case 'Delete':
@@ -650,7 +734,7 @@ const keyDown = (model: Model, event: KeyDown, { generateUUID, currentTime }: Ef
                     }
                 case FocusKind.NONE:
                     if (key == 'f') {
-                        return { model: openFinder(model), render: true }
+                        return { model: openFinderInsert(model), render: true }
                     } else {
                         const result = maybeTriggerQuickSelect(model, model.focus, key)
                         if (result.render) {
@@ -674,8 +758,14 @@ const keyUp = (model: Model, event: KeyUp): UpdateResult<Model, AppEvent> => {
     }
 }
 
-const clickedFinderOption = (model: Model, { option }: ClickedFinderOption, generateUUID: GenerateUUID): UpdateResult<Model, AppEvent> =>
-    insertOperationFromFinder(model, option, generateUUID)
+const clickedFinderOption = (model: Model, { option }: ClickedFinderOption, generateUUID: GenerateUUID): UpdateResult<Model, AppEvent> => {
+    switch (model.focus.kind) {
+        case FocusKind.FINDER_INSERT: return insertOperationFromFinder(model, option, generateUUID)
+        case FocusKind.FINDER_CHANGE: return changeOperationFromFinder(model, option, model.focus.node)
+        default: return { model, render: true }
+    }
+
+}
 
 export const focusBody = (model: Model, body: UUID): Model => ({
     ...model,
@@ -692,7 +782,7 @@ const clickedNumber = (model: Model, { body }: ClickedNumber): UpdateResult<Mode
 })
 
 const clickedBackground = (model: Model): UpdateResult<Model, AppEvent> => {
-    if (model.focus.kind === FocusKind.FINDER) {
+    if ([FocusKind.FINDER_INSERT, FocusKind.FINDER_CHANGE].includes(model.focus.kind)) {
         return {
             model: clearFocus(model),
             render: true
@@ -700,7 +790,7 @@ const clickedBackground = (model: Model): UpdateResult<Model, AppEvent> => {
     } else if (model.openFinderFirstClick) {
         const { x, y } = model.pointers[0].position
         return {
-            model: openFinder({
+            model: openFinderInsert({
                 ...model,
                 nodePlacementLocation: { x, y, show: false },
             }),
@@ -726,10 +816,16 @@ const clickedBackground = (model: Model): UpdateResult<Model, AppEvent> => {
     }
 }
 
+const changeNode = (model: Model, { node }: ChangeNode): UpdateResult<Model, AppEvent> => ({
+    model: openFinderChange(model, node),
+    render: true
+})
+
 const deleteNode = (model: Model, { node }: DeleteNode): UpdateResult<Model, AppEvent> => ({
     model: removeNodeFromGraph(model, node),
     render: true
 })
+
 
 const deleteInputEdge = (model: Model, { input }: DeleteInputEdge, generateUUID: GenerateUUID): UpdateResult<Model, AppEvent> => ({
     model: clearFocus({
@@ -801,6 +897,7 @@ export const update = (effects: Effects, model: Model, event: AppEvent): UpdateR
         case EventKind.CLICKED_FINDER_OPTION: return clickedFinderOption(model, event, effects.generateUUID)
         case EventKind.CLICKED_BODY: return clickedNumber(model, event)
         case EventKind.CLICKED_BACKGROUND: return clickedBackground(model)
+        case EventKind.CHANGE_NODE: return changeNode(model, event)
         case EventKind.DELETE_NODE: return deleteNode(model, event)
         case EventKind.DELETE_INPUT_EDGE: return deleteInputEdge(model, event, effects.generateUUID)
         case EventKind.DELETE_OUTPUT_EDGES: return deleteOutputEdges(model, event)

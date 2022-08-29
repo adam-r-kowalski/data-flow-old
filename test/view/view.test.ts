@@ -5,7 +5,7 @@ import { Body, BodyKind, emptyGraph, Graph, Input, Node, NodeKind, Output } from
 import { identity } from "../../src/linear_algebra/matrix3x3"
 import { Model } from "../../src/model"
 import { Theme } from "../../src/model/theme"
-import { Focus, FocusFinder, FocusKind } from "../../src/model/focus"
+import { Focus, FocusFinderInsert, FocusKind } from "../../src/model/focus"
 import { PointerActionKind } from "../../src/model/pointer_action"
 import { column, container, row, scene, stack, text } from "../../src/ui"
 import { CrossAxisAlignment, MainAxisAlignment } from "../../src/ui/alignment"
@@ -976,7 +976,7 @@ test("nodeUi 1 input body and 1 output", () => {
 
 test("finder", () => {
     const actual = finder({
-        kind: FocusKind.FINDER,
+        kind: FocusKind.FINDER_INSERT,
         search: "text",
         options: ["foo", "bar"],
         quickSelect: { kind: QuickSelectKind.NONE }
@@ -1168,7 +1168,7 @@ test("view with no nodes or edges but finder shown", () => {
         nodePlacementLocation: { x: 250, y: 250, show: false },
         window: { width: 500, height: 500 },
         focus: {
-            kind: FocusKind.FINDER,
+            kind: FocusKind.FINDER_INSERT,
             search: "",
             options: [],
             quickSelect: { kind: QuickSelectKind.NONE }
@@ -1184,7 +1184,7 @@ test("view with no nodes or edges but finder shown", () => {
     const expected = stack([
         container({ color: model.theme.background, onClick: { kind: EventKind.CLICKED_BACKGROUND } }),
         scene({ camera: model.camera, children: [], connections: [] }),
-        finder(model.focus as FocusFinder, model.theme),
+        finder(model.focus as FocusFinderInsert, model.theme),
         alphabeticVirtualKeyboard(model.theme)
     ])
     expect(actual).toEqual(expected)
@@ -1480,14 +1480,23 @@ test("view with three nodes and no edges", () => {
             connections: []
         }),
         contextMenu({
-            items: [{
-                name: "Delete Node",
-                shortcut: 'd',
-                onClick: {
-                    kind: EventKind.DELETE_NODE,
-                    node: 'first'
-                }
-            }],
+            items: [
+                {
+                    name: "Change Node",
+                    shortcut: 'c',
+                    onClick: {
+                        kind: EventKind.CHANGE_NODE,
+                        node: 'first'
+                    }
+                },
+                {
+                    name: "Delete Node",
+                    shortcut: 'd',
+                    onClick: {
+                        kind: EventKind.DELETE_NODE,
+                        node: 'first'
+                    }
+                }],
             backgroundColor: model.theme.node
         })
     ])

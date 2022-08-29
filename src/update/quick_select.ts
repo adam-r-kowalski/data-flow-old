@@ -1,12 +1,12 @@
 import { AppEvent } from ".";
 import { Model } from "../model";
-import { Focus, FocusFinder, FocusKind } from "../model/focus";
+import { Focus, FocusFinderChange, FocusFinderInsert, FocusKind } from "../model/focus";
 import { BodyKind, GenerateUUID, UUID } from "../model/graph";
 import { QuickSelectInput, QuickSelectOutput, QuickSelectKind, QuickSelectNode, QuickSelectBody } from "../model/quick_select";
 import { UpdateResult } from "../ui/run";
 import { selectInput, selectOutput } from "./focus";
 
-export const maybeTriggerQuickSelect = (model: Model, focus: Exclude<Focus, FocusFinder>, key: string): UpdateResult<Model, AppEvent> => {
+export const maybeTriggerQuickSelect = (model: Model, focus: Exclude<Focus, FocusFinderInsert | FocusFinderChange>, key: string): UpdateResult<Model, AppEvent> => {
     switch (key) {
         case 'i': {
             const hotkeys: { [input: UUID]: string } = {}

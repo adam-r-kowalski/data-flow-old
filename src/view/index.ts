@@ -2,7 +2,7 @@ import { CrossAxisAlignment, MainAxisAlignment } from "../ui/alignment"
 import { AppEvent, EventKind } from "../update"
 import { Model } from "../model"
 import { Theme } from '../model/theme'
-import { Focus, FocusFinder, FocusKind } from "../model/focus"
+import { Focus, FocusFinderChange, FocusFinderInsert, FocusKind } from "../model/focus"
 import { text, stack, scene, row, container, column, Connection, UI } from '../ui'
 import { BodyKind, ColumnBody, Graph, Input, NodeKind, NumberBody, Output, ScatterBody, TableBody, TensorBody, TextBody, UUID } from "../model/graph"
 import { contextMenu } from "./context_menu"
@@ -280,7 +280,7 @@ export const nodeUi = (theme: Theme, nodeUUID: UUID, graph: Graph, focus: Focus)
 }
 
 
-export const finder = ({ search, options }: FocusFinder, theme: Theme): UI<AppEvent> =>
+export const finder = ({ search, options }: FocusFinderInsert | FocusFinderChange, theme: Theme): UI<AppEvent> =>
     column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
         container({ height: 10 }),
         container({ color: theme.node, padding: 4 },
@@ -414,7 +414,8 @@ export const view = (model: Model): UI<AppEvent> => {
         )
     }
     switch (model.focus.kind) {
-        case FocusKind.FINDER:
+        case FocusKind.FINDER_INSERT:
+        case FocusKind.FINDER_CHANGE:
             stacked.push(
                 finder(model.focus, model.theme),
                 alphabeticVirtualKeyboard(model.theme)
@@ -428,17 +429,28 @@ export const view = (model: Model): UI<AppEvent> => {
             }
             break
         case FocusKind.NODE:
-            stacked.push(contextMenu({
-                items: [{
-                    name: 'Delete Node',
-                    shortcut: 'd',
-                    onClick: {
-                        kind: EventKind.DELETE_NODE,
-                        node: model.focus.node
+            stacked.push(
+                contextMenu({
+                    items: [{
+                        name: 'Change Node',
+                        shortcut: 'c',
+                        onClick: {
+                            kind: EventKind.CHANGE_NODE,
+                            node: model.focus.node
+                        }
+                    },
+                    {
+                        name: 'Delete Node',
+                        shortcut: 'd',
+                        onClick: {
+                            kind: EventKind.DELETE_NODE,
+                            node: model.focus.node
+                        }
                     }
-                }],
-                backgroundColor: model.theme.node
-            }))
+                    ],
+                    backgroundColor: model.theme.node
+                }),
+            )
             break
         case FocusKind.INPUT:
             if (model.graph.inputs[model.focus.input].edge) {

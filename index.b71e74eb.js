@@ -45345,46 +45345,108 @@ const insertOperationFromFinder = (model, name, generateUUID)=>{
         render: true
     };
 };
-const changeOperationFromFinder = (model, name, nodeUUID)=>{
+const changeOperationFromFinder = (model, name, nodeUUID, generateUUID)=>{
     const operation = model.operations[name];
     switch(operation.kind){
         case (0, _graph.OperationKind).TRANSFORM:
             const node = model.graph.nodes[nodeUUID];
             switch(node.kind){
                 case (0, _graph.NodeKind).TRANSFORM:
-                    const sameInputs = node.inputs.length === operation.inputs.length;
-                    const sameOutputs = node.outputs.length === operation.outputs.length;
-                    if (sameInputs && sameOutputs) {
-                        const nodes = {
-                            ...model.graph.nodes,
-                            [node.uuid]: {
-                                ...node,
-                                name: operation.name,
-                                func: operation.func
-                            }
+                    const newInputs = [];
+                    const removedInputs = [];
+                    const inputs = (()=>{
+                        const inputs = {
+                            ...model.graph.inputs
                         };
-                        const bodys = {
-                            ...model.graph.bodys,
-                            [node.body]: {
-                                kind: (0, _graph.BodyKind).NO,
-                                uuid: node.body,
-                                node: node.uuid
-                            }
+                        if (node.inputs.length === operation.inputs.length) operation.inputs.forEach((name, i)=>{
+                            const input = model.graph.inputs[node.inputs[i]];
+                            inputs[input.uuid] = {
+                                ...input,
+                                name
+                            };
+                            newInputs.push(input.uuid);
+                        });
+                        else if (node.inputs.length < operation.inputs.length) {
+                            node.inputs.forEach((_, i)=>{
+                                const input = model.graph.inputs[node.inputs[i]];
+                                inputs[input.uuid] = {
+                                    ...input,
+                                    name: operation.inputs[i]
+                                };
+                                newInputs.push(input.uuid);
+                            });
+                            const rest = operation.inputs.slice(node.inputs.length);
+                            rest.forEach((name)=>{
+                                const uuid = generateUUID();
+                                inputs[uuid] = {
+                                    uuid,
+                                    node: node.uuid,
+                                    name
+                                };
+                                newInputs.push(uuid);
+                            });
+                        } else {
+                            operation.inputs.forEach((name, i)=>{
+                                const input = model.graph.inputs[node.inputs[i]];
+                                inputs[input.uuid] = {
+                                    ...input,
+                                    name
+                                };
+                                newInputs.push(input.uuid);
+                            });
+                            const rest1 = node.inputs.slice(operation.inputs.length);
+                            rest1.forEach((name)=>{
+                                delete inputs[name];
+                                removedInputs.push(name);
+                            });
+                        }
+                        return inputs;
+                    })();
+                    const outputs = (()=>{
+                        const outputs = {
+                            ...model.graph.outputs
                         };
-                        const graph = {
-                            ...model.graph,
-                            nodes,
-                            bodys
-                        };
-                        return {
-                            model: (0, _focus1.clearFocus)({
-                                ...model,
-                                graph: (0, _graph1.evaluateNode)(graph, nodeUUID)
-                            }),
-                            render: true
-                        };
-                    } else return {
-                        model: (0, _focus1.clearFocus)(model),
+                        if (node.outputs.length === operation.outputs.length) operation.outputs.forEach((name, i)=>{
+                            const output = model.graph.outputs[node.outputs[i]];
+                            outputs[output.uuid] = {
+                                ...output,
+                                name
+                            };
+                        });
+                        return outputs;
+                    })();
+                    const bodys = {
+                        ...model.graph.bodys,
+                        [node.body]: {
+                            kind: (0, _graph.BodyKind).NO,
+                            uuid: node.body,
+                            node: node.uuid
+                        }
+                    };
+                    const nodes = {
+                        ...model.graph.nodes,
+                        [node.uuid]: {
+                            ...node,
+                            name: operation.name,
+                            func: operation.func,
+                            inputs: newInputs
+                        }
+                    };
+                    let graph = model.graph;
+                    for (const input of removedInputs)graph = (0, _graph1.removeInputEdge)(graph, input);
+                    const graph1 = {
+                        ...graph,
+                        nodes,
+                        bodys,
+                        inputs,
+                        outputs
+                    };
+                    const graph2 = (0, _graph1.evaluateNode)(graph1, nodeUUID);
+                    return {
+                        model: (0, _focus1.clearFocus)({
+                            ...model,
+                            graph: graph2
+                        }),
                         render: true
                     };
                 case (0, _graph.NodeKind).SOURCE:
@@ -45499,7 +45561,7 @@ const keyDown = (model, event, { generateUUID , currentTime  })=>{
                                     case (0, _focus.FocusKind).FINDER_INSERT:
                                         return insertOperationFromFinder(model, name, generateUUID);
                                     case (0, _focus.FocusKind).FINDER_CHANGE:
-                                        return changeOperationFromFinder(model, name, model.focus.node);
+                                        return changeOperationFromFinder(model, name, model.focus.node, generateUUID);
                                 }
                             } else return {
                                 model: (0, _focus1.clearFocus)(model),
@@ -45633,7 +45695,7 @@ const keyDown = (model, event, { generateUUID , currentTime  })=>{
                             return {
                                 model: (0, _focus1.clearFocus)({
                                     ...model,
-                                    graph: (0, _graph1.removeInputEdge)(model.graph, model.focus.input, generateUUID)
+                                    graph: (0, _graph1.removeInputEdge)(model.graph, model.focus.input)
                                 }),
                                 render: true
                             };
@@ -45700,7 +45762,7 @@ const clickedFinderOption = (model, { option  }, generateUUID)=>{
         case (0, _focus.FocusKind).FINDER_INSERT:
             return insertOperationFromFinder(model, option, generateUUID);
         case (0, _focus.FocusKind).FINDER_CHANGE:
-            return changeOperationFromFinder(model, option, model.focus.node);
+            return changeOperationFromFinder(model, option, model.focus.node, generateUUID);
         default:
             return {
                 model,
@@ -45784,7 +45846,7 @@ const deleteNode = (model, { node  })=>({
 const deleteInputEdge = (model, { input  }, generateUUID)=>({
         model: (0, _focus1.clearFocus)({
             ...model,
-            graph: (0, _graph1.removeInputEdge)(model.graph, input, generateUUID)
+            graph: (0, _graph1.removeInputEdge)(model.graph, input)
         }),
         render: true
     });
@@ -46351,7 +46413,7 @@ const removeNode = (graph, node)=>{
         bodys
     };
 };
-const removeInputEdge = (graph, input, generateUUID)=>{
+const removeInputEdge = (graph, input)=>{
     const edgeUUID = graph.inputs[input].edge;
     if (edgeUUID) {
         const edge = graph.edges[edgeUUID];
@@ -46798,7 +46860,7 @@ const selectInput = (model, inputUUID, generateUUID)=>{
             model
         };
         else {
-            const graph0 = input.edge !== undefined ? (0, _graph.removeInputEdge)(model.graph, input.uuid, generateUUID) : model.graph;
+            const graph0 = input.edge !== undefined ? (0, _graph.removeInputEdge)(model.graph, input.uuid) : model.graph;
             const { graph: graph1  } = (0, _graph.addEdge)({
                 graph: graph0,
                 input: inputUUID,
@@ -46835,7 +46897,7 @@ const selectOutput = (model, outputUUID, generateUUID)=>{
             model
         };
         else {
-            const graph0 = input.edge !== undefined ? (0, _graph.removeInputEdge)(model.graph, input.uuid, generateUUID) : model.graph;
+            const graph0 = input.edge !== undefined ? (0, _graph.removeInputEdge)(model.graph, input.uuid) : model.graph;
             const { graph: graph1  } = (0, _graph.addEdge)({
                 graph: graph0,
                 input: model.focus.input,

@@ -11,7 +11,7 @@ import { Pointer } from "../../src/ui"
 import { emptyModel } from "../../src/model/empty"
 import { QuickSelectKind } from "../../src/model/quick_select"
 import { defaultEffectModel, EffectModel, makeEffects } from "../mock_effects"
-import { tensorFunc } from "../../src/model/operations"
+import { column, tensorFunc } from "../../src/model/operations"
 import { Table } from '../../src/model/table'
 
 const model = emptyModel({ width: 500, height: 500 })
@@ -3944,6 +3944,131 @@ test("pressing enter with finder in change mode replaces node but preserves inpu
                     ...node,
                     name: 'Sub',
                     func: subFunc,
+                }
+            }
+        }
+    }
+    expect(model11).toEqual(expectedModel)
+})
+
+test("change node with different input and output names", () => {
+    const effects = makeEffects()
+    const model0: Model = {
+        ...model,
+        operations: {
+            'Number': {
+                kind: OperationKind.NUMBER,
+                name: 'Number',
+                outputs: ['out'],
+            },
+            'Add': {
+                kind: OperationKind.TRANSFORM,
+                name: 'Add',
+                inputs: ['x', 'y'],
+                outputs: ['out'],
+                func: addFunc
+            },
+            'Column': {
+                kind: OperationKind.TRANSFORM,
+                name: 'Column',
+                inputs: ['table', 'column'],
+                outputs: ['data'],
+                func: column
+            },
+        }
+    }
+    const { model: model1, node: x } = addNodeToGraph({
+        model: model0,
+        operation: model0.operations['Number'],
+        position: { x: 0, y: 0 },
+        generateUUID: effects.generateUUID
+    })
+    const { model: model2, node: y } = addNodeToGraph({
+        model: model1,
+        operation: model1.operations['Number'],
+        position: { x: 0, y: 0 },
+        generateUUID: effects.generateUUID
+    })
+    const { model: model3, node: add } = addNodeToGraph({
+        model: model2,
+        operation: model0.operations['Add'],
+        position: { x: 0, y: 0 },
+        generateUUID: effects.generateUUID
+    })
+    const { model: model4 } = update(effects, model3, {
+        kind: EventKind.CLICKED_OUTPUT,
+        output: model3.graph.nodes[x].outputs[0]
+    })
+    const { model: model5 } = update(effects, model4, {
+        kind: EventKind.CLICKED_INPUT,
+        input: (model4.graph.nodes[add] as NodeTransform).inputs[0]
+    })
+    const { model: model6 } = update(effects, model5, {
+        kind: EventKind.CLICKED_OUTPUT,
+        output: model5.graph.nodes[y].outputs[0]
+    })
+    const { model: model7 } = update(effects, model6, {
+        kind: EventKind.CLICKED_INPUT,
+        input: (model6.graph.nodes[add] as NodeTransform).inputs[1]
+    })
+    const { model: model8 } = update(effects, model7, {
+        kind: EventKind.CLICKED_NODE,
+        node: add
+    })
+    const { model: model9 } = update(effects, model8, {
+        kind: EventKind.KEYDOWN,
+        key: 'c',
+        ctrl: false
+    })
+    let model10 = model9
+    for (const key of "Column") {
+        const { model: nextModel } = update(effects, model10, {
+            kind: EventKind.KEYDOWN,
+            key: key,
+            ctrl: false
+        })
+        model10 = nextModel
+    }
+    const { model: model11 } = update(effects, model10, {
+        kind: EventKind.KEYDOWN,
+        key: 'Enter',
+        ctrl: false
+    })
+    const node = model7.graph.nodes[add] as NodeTransform
+    const edges = Object.keys(model7.graph.edges)
+    const expectedModel: Model = {
+        ...model7,
+        graph: {
+            ...model7.graph,
+            nodes: {
+                ...model7.graph.nodes,
+                [node.uuid]: {
+                    ...node,
+                    name: 'Column',
+                    func: column,
+                }
+            },
+            inputs: {
+                [node.inputs[0]]: {
+                    uuid: node.inputs[0],
+                    node: node.uuid,
+                    name: 'table',
+                    edge: edges[0]
+                },
+                [node.inputs[1]]: {
+                    uuid: node.inputs[1],
+                    node: node.uuid,
+                    name: 'column',
+                    edge: edges[1]
+                }
+            },
+            outputs: {
+                ...model7.graph.outputs,
+                [node.outputs[0]]: {
+                    uuid: node.outputs[0],
+                    node: node.uuid,
+                    name: 'data',
+                    edges: []
                 }
             }
         }

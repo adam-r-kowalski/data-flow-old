@@ -438,6 +438,22 @@ const changeOperationFromFinder = (model: Model, name: string, nodeUUID: UUID): 
                                 func: operation.func,
                             }
                         }
+                        const inputs = { ...model.graph.inputs }
+                        operation.inputs.forEach((name, i) => {
+                            const input = model.graph.inputs[node.inputs[i]]
+                            inputs[input.uuid] = {
+                                ...input,
+                                name
+                            }
+                        })
+                        const outputs = { ...model.graph.outputs }
+                        operation.outputs.forEach((name, i) => {
+                            const output = model.graph.outputs[node.outputs[i]]
+                            outputs[output.uuid] = {
+                                ...output,
+                                name
+                            }
+                        })
                         const bodys: Bodys = {
                             ...model.graph.bodys,
                             [node.body]: {
@@ -449,7 +465,9 @@ const changeOperationFromFinder = (model: Model, name: string, nodeUUID: UUID): 
                         const graph: Graph = {
                             ...model.graph,
                             nodes,
-                            bodys
+                            bodys,
+                            inputs,
+                            outputs
                         }
                         return {
                             model: clearFocus({

@@ -1,4 +1,5 @@
 import * as tf from '@tensorflow/tfjs-core'
+import '@tensorflow/tfjs-backend-cpu'
 
 import { addNodeToGraph, EventKind, openFinderInsert, focusBody, update, updateBody, updateNumberText } from "../../src/update"
 import { BodyKind, NodeKind, NodeTransform, OperationKind, Operations } from "../../src/model/graph"
@@ -18,6 +19,7 @@ const model = emptyModel({ width: 500, height: 500 })
 const addFunc = tensorFunc(tf.add)
 const subFunc = tensorFunc(tf.sub)
 const divFunc = tensorFunc(tf.sub)
+const sinFunc = tensorFunc(tf.sin)
 const linspaceFunc = tensorFunc(tf.linspace as TensorFunc)
 
 test("two pointers down on background starts zooming", () => {
@@ -4200,6 +4202,135 @@ test("change node with more inputs then existing node", () => {
                     kind: BodyKind.NO,
                     uuid: node.body,
                     node: node.uuid
+                }
+            }
+        }
+    }
+    expect(model11).toEqual(expectedModel)
+})
+
+test("change node with fewer inputs then existing node", () => {
+    const effects = makeEffects()
+    const model0: Model = {
+        ...model,
+        operations: {
+            'Number': {
+                kind: OperationKind.NUMBER,
+                name: 'Number',
+                outputs: ['out'],
+            },
+            'Add': {
+                kind: OperationKind.TRANSFORM,
+                name: 'Add',
+                inputs: ['x', 'y'],
+                outputs: ['out'],
+                func: addFunc
+            },
+            'Sin': {
+                kind: OperationKind.TRANSFORM,
+                name: 'Sin',
+                inputs: ['x'],
+                outputs: ['out'],
+                func: sinFunc
+            },
+        }
+    }
+    const { model: model1, node: x } = addNodeToGraph({
+        model: model0,
+        operation: model0.operations['Number'],
+        position: { x: 0, y: 0 },
+        generateUUID: effects.generateUUID
+    })
+    const { model: model2, node: y } = addNodeToGraph({
+        model: model1,
+        operation: model1.operations['Number'],
+        position: { x: 0, y: 0 },
+        generateUUID: effects.generateUUID
+    })
+    const { model: model3, node: add } = addNodeToGraph({
+        model: model2,
+        operation: model0.operations['Add'],
+        position: { x: 0, y: 0 },
+        generateUUID: effects.generateUUID
+    })
+    const { model: model4 } = update(effects, model3, {
+        kind: EventKind.CLICKED_OUTPUT,
+        output: model3.graph.nodes[x].outputs[0]
+    })
+    const { model: model5 } = update(effects, model4, {
+        kind: EventKind.CLICKED_INPUT,
+        input: (model4.graph.nodes[add] as NodeTransform).inputs[0]
+    })
+    const { model: model6 } = update(effects, model5, {
+        kind: EventKind.CLICKED_OUTPUT,
+        output: model5.graph.nodes[y].outputs[0]
+    })
+    const { model: model7 } = update(effects, model6, {
+        kind: EventKind.CLICKED_INPUT,
+        input: (model6.graph.nodes[add] as NodeTransform).inputs[1]
+    })
+    const { model: model8 } = update(effects, model7, {
+        kind: EventKind.CLICKED_NODE,
+        node: add
+    })
+    const { model: model9 } = update(effects, model8, {
+        kind: EventKind.KEYDOWN,
+        key: 'c',
+        ctrl: false
+    })
+    let model10 = model9
+    for (const key of "Sin") {
+        const { model: nextModel } = update(effects, model10, {
+            kind: EventKind.KEYDOWN,
+            key: key,
+            ctrl: false
+        })
+        model10 = nextModel
+    }
+    const { model: model11 } = update(effects, model10, {
+        kind: EventKind.KEYDOWN,
+        key: 'Enter',
+        ctrl: false
+    })
+    const node = model7.graph.nodes[add] as NodeTransform
+    const edges = Object.keys(model7.graph.edges)
+    const expectedModel: Model = {
+        ...model7,
+        graph: {
+            ...model7.graph,
+            nodes: {
+                ...model7.graph.nodes,
+                [node.uuid]: {
+                    ...node,
+                    inputs: [node.inputs[0]],
+                    name: 'Sin',
+                    func: sinFunc,
+                }
+            },
+            inputs: {
+                [node.inputs[0]]: {
+                    uuid: node.inputs[0],
+                    node: node.uuid,
+                    name: 'x',
+                    edge: edges[0]
+                },
+            },
+            bodys: {
+                ...model7.graph.bodys,
+                [node.body]: {
+                    kind: BodyKind.TENSOR,
+                    uuid: node.body,
+                    node: node.uuid,
+                    value: 0,
+                    rank: 0,
+                    shape: []
+                }
+            },
+            edges: {
+                [edges[0]]: {
+                    uuid: edges[0],
+                    input: node.inputs[0],
+                    output: model7.graph.nodes[x].outputs[0]
                 }
             }
         }

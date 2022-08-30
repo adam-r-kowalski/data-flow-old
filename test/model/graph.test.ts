@@ -717,7 +717,7 @@ test("remove input edge", () => {
         output: out,
         generateUUID: generateUUID0
     })
-    const graph4 = removeInputEdge(graph3, x, generateUUID0)
+    const graph4 = removeInputEdge(graph3, x)
     {
         const addUUID = generateUUID1()
         const xUUID = generateUUID1()
@@ -1009,7 +1009,7 @@ test("remove input edge when node has no inputs nothing changes", () => {
         generateUUID: generateUUID0
     })
     const input = (graph2.nodes[add] as NodeTransform).inputs[0]
-    const graph3 = removeInputEdge(graph2, input, generateUUID0)
+    const graph3 = removeInputEdge(graph2, input)
     {
         const addUUID = generateUUID1()
         const xUUID = generateUUID1()

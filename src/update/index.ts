@@ -428,6 +428,7 @@ const changeOperationFromFinder = (model: Model, name: string, nodeUUID: UUID, g
             switch (node.kind) {
                 case NodeKind.TRANSFORM:
                     const newInputs: UUID[] = []
+                    const removedInputs: UUID[] = []
                     const inputs: Inputs = (() => {
                         const inputs = { ...model.graph.inputs }
                         if (node.inputs.length === operation.inputs.length) {
@@ -457,6 +458,20 @@ const changeOperationFromFinder = (model: Model, name: string, nodeUUID: UUID, g
                                     name
                                 }
                                 newInputs.push(uuid)
+                            })
+                        } else {
+                            operation.inputs.forEach((name, i) => {
+                                const input = model.graph.inputs[node.inputs[i]]
+                                inputs[input.uuid] = {
+                                    ...input,
+                                    name
+                                }
+                                newInputs.push(input.uuid)
+                            })
+                            const rest = node.inputs.slice(operation.inputs.length)
+                            rest.forEach(name => {
+                                delete inputs[name]
+                                removedInputs.push(name)
                             })
                         }
                         return inputs
@@ -491,18 +506,20 @@ const changeOperationFromFinder = (model: Model, name: string, nodeUUID: UUID, g
                             inputs: newInputs
                         }
                     }
-                    const graph: Graph = {
-                        ...model.graph,
+                    let graph = model.graph
+                    for (const input of removedInputs) {
+                        graph = removeInputEdge(graph, input)
+                    }
+                    const graph1: Graph = {
+                        ...graph,
                         nodes,
                         bodys,
                         inputs,
                         outputs
                     }
+                    const graph2 = evaluateNode(graph1, nodeUUID)
                     return {
-                        model: clearFocus({
-                            ...model,
-                            graph: evaluateNode(graph, nodeUUID)
-                        }),
+                        model: clearFocus({ ...model, graph: graph2 }),
                         render: true
                     }
                 case NodeKind.SOURCE:
@@ -745,7 +762,7 @@ const keyDown = (model: Model, event: KeyDown, { generateUUID, currentTime }: Ef
                             return {
                                 model: clearFocus({
                                     ...model,
-                                    graph: removeInputEdge(model.graph, model.focus.input, generateUUID),
+                                    graph: removeInputEdge(model.graph, model.focus.input),
                                 }),
                                 render: true
                             }
@@ -871,7 +888,7 @@ const deleteNode = (model: Model, { node }: DeleteNode): UpdateResult<Model, App
 const deleteInputEdge = (model: Model, { input }: DeleteInputEdge, generateUUID: GenerateUUID): UpdateResult<Model, AppEvent> => ({
     model: clearFocus({
         ...model,
-        graph: removeInputEdge(model.graph, input, generateUUID),
+        graph: removeInputEdge(model.graph, input),
     }),
     render: true
 })

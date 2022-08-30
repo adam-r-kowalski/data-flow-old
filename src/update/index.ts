@@ -5,7 +5,7 @@ import { Effects, UpdateResult } from "../ui/run"
 import { Model, NodePlacementLocation } from "../model"
 import { Focus, FocusFinderInsert, FocusFinderChange, FocusKind } from '../model/focus'
 import { PointerAction, PointerActionKind } from '../model/pointer_action'
-import { Body, BodyKind, Bodys, GenerateUUID, Graph, NodeKind, Nodes, NodeSource, Operation, OperationKind, Operations, Output, Position, TextBody, UUID } from '../model/graph'
+import { Body, BodyKind, Bodys, GenerateUUID, Graph, Inputs, NodeKind, Nodes, NodeSource, Operation, OperationKind, Operations, Output, Outputs, Position, TextBody, UUID } from '../model/graph'
 import { Pointer } from "../ui"
 import { addNode, changeNumberText, changeNodePosition, removeInputEdge, removeNode, removeOutputEdges, evaluateNode } from "./graph"
 import { maybeTriggerQuickSelect, quickSelectInput, quickSelectOutput, quickSelectNode, quickSelectBody } from "./quick_select"
@@ -420,67 +420,90 @@ const insertOperationFromFinder = (model: Model, name: string, generateUUID: Gen
     }
 }
 
-const changeOperationFromFinder = (model: Model, name: string, nodeUUID: UUID): UpdateResult<Model, AppEvent> => {
+const changeOperationFromFinder = (model: Model, name: string, nodeUUID: UUID, generateUUID: GenerateUUID): UpdateResult<Model, AppEvent> => {
     const operation = model.operations[name]
     switch (operation.kind) {
         case OperationKind.TRANSFORM:
             const node = model.graph.nodes[nodeUUID]
             switch (node.kind) {
                 case NodeKind.TRANSFORM:
-                    const sameInputs = node.inputs.length === operation.inputs.length
-                    const sameOutputs = node.outputs.length === operation.outputs.length
-                    if (sameInputs && sameOutputs) {
-                        const nodes: Nodes = {
-                            ...model.graph.nodes,
-                            [node.uuid]: {
-                                ...node,
-                                name: operation.name,
-                                func: operation.func,
-                            }
-                        }
+                    const newInputs: UUID[] = []
+                    const inputs: Inputs = (() => {
                         const inputs = { ...model.graph.inputs }
-                        operation.inputs.forEach((name, i) => {
-                            const input = model.graph.inputs[node.inputs[i]]
-                            inputs[input.uuid] = {
-                                ...input,
-                                name
-                            }
-                        })
+                        if (node.inputs.length === operation.inputs.length) {
+                            operation.inputs.forEach((name, i) => {
+                                const input = model.graph.inputs[node.inputs[i]]
+                                inputs[input.uuid] = {
+                                    ...input,
+                                    name
+                                }
+                                newInputs.push(input.uuid)
+                            })
+                        } else if (node.inputs.length < operation.inputs.length) {
+                            node.inputs.forEach((_, i) => {
+                                const input = model.graph.inputs[node.inputs[i]]
+                                inputs[input.uuid] = {
+                                    ...input,
+                                    name: operation.inputs[i]
+                                }
+                                newInputs.push(input.uuid)
+                            })
+                            const rest = operation.inputs.slice(node.inputs.length)
+                            rest.forEach(name => {
+                                const uuid = generateUUID()
+                                inputs[uuid] = {
+                                    uuid,
+                                    node: node.uuid,
+                                    name
+                                }
+                                newInputs.push(uuid)
+                            })
+                        }
+                        return inputs
+                    })()
+                    const outputs: Outputs = (() => {
                         const outputs = { ...model.graph.outputs }
-                        operation.outputs.forEach((name, i) => {
-                            const output = model.graph.outputs[node.outputs[i]]
-                            outputs[output.uuid] = {
-                                ...output,
-                                name
-                            }
-                        })
-                        const bodys: Bodys = {
-                            ...model.graph.bodys,
-                            [node.body]: {
-                                kind: BodyKind.NO,
-                                uuid: node.body,
-                                node: node.uuid
-                            }
+                        if (node.outputs.length === operation.outputs.length) {
+                            operation.outputs.forEach((name, i) => {
+                                const output = model.graph.outputs[node.outputs[i]]
+                                outputs[output.uuid] = {
+                                    ...output,
+                                    name
+                                }
+                            })
                         }
-                        const graph: Graph = {
-                            ...model.graph,
-                            nodes,
-                            bodys,
-                            inputs,
-                            outputs
+                        return outputs
+                    })()
+                    const bodys: Bodys = {
+                        ...model.graph.bodys,
+                        [node.body]: {
+                            kind: BodyKind.NO,
+                            uuid: node.body,
+                            node: node.uuid
                         }
-                        return {
-                            model: clearFocus({
-                                ...model,
-                                graph: evaluateNode(graph, nodeUUID)
-                            }),
-                            render: true
+                    }
+                    const nodes: Nodes = {
+                        ...model.graph.nodes,
+                        [node.uuid]: {
+                            ...node,
+                            name: operation.name,
+                            func: operation.func,
+                            inputs: newInputs
                         }
-                    } else {
-                        return {
-                            model: clearFocus(model),
-                            render: true
-                        }
+                    }
+                    const graph: Graph = {
+                        ...model.graph,
+                        nodes,
+                        bodys,
+                        inputs,
+                        outputs
+                    }
+                    return {
+                        model: clearFocus({
+                            ...model,
+                            graph: evaluateNode(graph, nodeUUID)
+                        }),
+                        render: true
                     }
                 case NodeKind.SOURCE:
                     return {
@@ -601,7 +624,7 @@ const keyDown = (model: Model, event: KeyDown, { generateUUID, currentTime }: Ef
                                 const name = model.focus.options[0]
                                 switch (model.focus.kind) {
                                     case FocusKind.FINDER_INSERT: return insertOperationFromFinder(model, name, generateUUID)
-                                    case FocusKind.FINDER_CHANGE: return changeOperationFromFinder(model, name, model.focus.node)
+                                    case FocusKind.FINDER_CHANGE: return changeOperationFromFinder(model, name, model.focus.node, generateUUID)
                                 }
 
                             } else {
@@ -779,7 +802,7 @@ const keyUp = (model: Model, event: KeyUp): UpdateResult<Model, AppEvent> => {
 const clickedFinderOption = (model: Model, { option }: ClickedFinderOption, generateUUID: GenerateUUID): UpdateResult<Model, AppEvent> => {
     switch (model.focus.kind) {
         case FocusKind.FINDER_INSERT: return insertOperationFromFinder(model, option, generateUUID)
-        case FocusKind.FINDER_CHANGE: return changeOperationFromFinder(model, option, model.focus.node)
+        case FocusKind.FINDER_CHANGE: return changeOperationFromFinder(model, option, model.focus.node, generateUUID)
         default: return { model, render: true }
     }
 

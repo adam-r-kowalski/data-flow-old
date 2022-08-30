@@ -11,13 +11,14 @@ import { Pointer } from "../../src/ui"
 import { emptyModel } from "../../src/model/empty"
 import { QuickSelectKind } from "../../src/model/quick_select"
 import { defaultEffectModel, EffectModel, makeEffects } from "../mock_effects"
-import { column, tensorFunc } from "../../src/model/operations"
+import { column, tensorFunc, TensorFunc } from "../../src/model/operations"
 import { Table } from '../../src/model/table'
 
 const model = emptyModel({ width: 500, height: 500 })
 const addFunc = tensorFunc(tf.add)
 const subFunc = tensorFunc(tf.sub)
 const divFunc = tensorFunc(tf.sub)
+const linspaceFunc = tensorFunc(tf.linspace as TensorFunc)
 
 test("two pointers down on background starts zooming", () => {
     const effects = makeEffects()
@@ -4069,6 +4070,136 @@ test("change node with different input and output names", () => {
                     node: node.uuid,
                     name: 'data',
                     edges: []
+                }
+            }
+        }
+    }
+    expect(model11).toEqual(expectedModel)
+})
+
+test("change node with more inputs then existing node", () => {
+    const effects = makeEffects()
+    const model0: Model = {
+        ...model,
+        operations: {
+            'Number': {
+                kind: OperationKind.NUMBER,
+                name: 'Number',
+                outputs: ['out'],
+            },
+            'Add': {
+                kind: OperationKind.TRANSFORM,
+                name: 'Add',
+                inputs: ['x', 'y'],
+                outputs: ['out'],
+                func: addFunc
+            },
+            'Linspace': {
+                kind: OperationKind.TRANSFORM,
+                name: 'Linspace',
+                inputs: ['start', 'stop', 'num'],
+                outputs: ['out'],
+                func: linspaceFunc
+            },
+        }
+    }
+    const { model: model1, node: x } = addNodeToGraph({
+        model: model0,
+        operation: model0.operations['Number'],
+        position: { x: 0, y: 0 },
+        generateUUID: effects.generateUUID
+    })
+    const { model: model2, node: y } = addNodeToGraph({
+        model: model1,
+        operation: model1.operations['Number'],
+        position: { x: 0, y: 0 },
+        generateUUID: effects.generateUUID
+    })
+    const { model: model3, node: add } = addNodeToGraph({
+        model: model2,
+        operation: model0.operations['Add'],
+        position: { x: 0, y: 0 },
+        generateUUID: effects.generateUUID
+    })
+    const { model: model4 } = update(effects, model3, {
+        kind: EventKind.CLICKED_OUTPUT,
+        output: model3.graph.nodes[x].outputs[0]
+    })
+    const { model: model5 } = update(effects, model4, {
+        kind: EventKind.CLICKED_INPUT,
+        input: (model4.graph.nodes[add] as NodeTransform).inputs[0]
+    })
+    const { model: model6 } = update(effects, model5, {
+        kind: EventKind.CLICKED_OUTPUT,
+        output: model5.graph.nodes[y].outputs[0]
+    })
+    const { model: model7 } = update(effects, model6, {
+        kind: EventKind.CLICKED_INPUT,
+        input: (model6.graph.nodes[add] as NodeTransform).inputs[1]
+    })
+    const { model: model8 } = update(effects, model7, {
+        kind: EventKind.CLICKED_NODE,
+        node: add
+    })
+    const { model: model9 } = update(effects, model8, {
+        kind: EventKind.KEYDOWN,
+        key: 'c',
+        ctrl: false
+    })
+    let model10 = model9
+    for (const key of "Linspace") {
+        const { model: nextModel } = update(effects, model10, {
+            kind: EventKind.KEYDOWN,
+            key: key,
+            ctrl: false
+        })
+        model10 = nextModel
+    }
+    const { model: model11 } = update(effects, model10, {
+        kind: EventKind.KEYDOWN,
+        key: 'Enter',
+        ctrl: false
+    })
+    const node = model7.graph.nodes[add] as NodeTransform
+    const edges = Object.keys(model7.graph.edges)
+    const expectedModel: Model = {
+        ...model7,
+        graph: {
+            ...model7.graph,
+            nodes: {
+                ...model7.graph.nodes,
+                [node.uuid]: {
+                    ...node,
+                    inputs: [...node.inputs, '13'],
+                    name: 'Linspace',
+                    func: linspaceFunc,
+                }
+            },
+            inputs: {
+                [node.inputs[0]]: {
+                    uuid: node.inputs[0],
+                    node: node.uuid,
+                    name: 'start',
+                    edge: edges[0]
+                },
+                [node.inputs[1]]: {
+                    uuid: node.inputs[1],
+                    node: node.uuid,
+                    name: 'stop',
+                    edge: edges[1]
+                },
+                '13': {
+                    uuid: '13',
+                    node: node.uuid,
+                    name: 'num',
+                }
+            },
+            bodys: {
+                ...model7.graph.bodys,
+                [node.body]: {
+                    kind: BodyKind.NO,
+                    uuid: node.body,
+                    node: node.uuid
                 }
             }
         }

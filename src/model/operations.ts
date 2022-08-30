@@ -3,7 +3,7 @@ import { normalize } from '../normalize';
 
 import { Operations, Body, Tensor, BodyKind, TensorBody, OperationKind, Function, TableBody, TextBody } from "./graph"
 
-type TensorFunc = (...inputs: Tensor[]) => tf.Tensor<tf.Rank>
+export type TensorFunc = (...inputs: Tensor[]) => tf.Tensor<tf.Rank>
 
 export const tensorFunc = (f: TensorFunc): Function => {
     return ({ uuid, node }: Body, ...inputs: Body[]): Body => {

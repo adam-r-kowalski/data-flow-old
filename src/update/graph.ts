@@ -180,7 +180,7 @@ export const removeNode = (graph: Graph, node: UUID): Graph => {
     }
 }
 
-export const removeInputEdge = (graph: Graph, input: UUID, generateUUID: GenerateUUID): Graph => {
+export const removeInputEdge = (graph: Graph, input: UUID): Graph => {
     const edgeUUID = graph.inputs[input].edge
     if (edgeUUID) {
         const edge = graph.edges[edgeUUID]

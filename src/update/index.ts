@@ -689,7 +689,36 @@ const keyDown = (model: Model, event: KeyDown, { generateUUID, currentTime }: Ef
                                 render: true
                             }
                         default:
-                            return updateFinderSearch(model, model.focus, search => search + key)
+                            if (event.ctrl) {
+                                switch (key) {
+                                    case 'j':
+                                        return {
+                                            model: {
+                                                ...model,
+                                                focus: {
+                                                    ...model.focus,
+                                                    selectedIndex: Math.min(model.focus.selectedIndex + 1, model.focus.options.length - 1, 9)
+                                                }
+                                            },
+                                            render: true
+                                        }
+                                    case 'k':
+                                        return {
+                                            model: {
+                                                ...model,
+                                                focus: {
+                                                    ...model.focus,
+                                                    selectedIndex: Math.max(0, model.focus.selectedIndex - 1)
+                                                }
+                                            },
+                                            render: true
+                                        }
+                                    default:
+                                        return updateFinderSearch(model, model.focus, search => search + key)
+                                }
+                            } else {
+                                return updateFinderSearch(model, model.focus, search => search + key)
+                            }
                     }
                 case FocusKind.BODY:
                     const body = model.graph.bodys[model.focus.body]

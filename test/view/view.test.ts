@@ -979,6 +979,7 @@ test("finder", () => {
         kind: FocusKind.FINDER_INSERT,
         search: "text",
         options: ["foo", "bar"],
+        selectedIndex: 0,
         quickSelect: { kind: QuickSelectKind.NONE }
     }, theme)
     const expected = column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
@@ -989,6 +990,7 @@ test("finder", () => {
                     text({ color: theme.input, size: 24 }, "text")),
                 container({ width: 10, height: 10 }),
                 container({
+                    width: 300,
                     padding: 4,
                     onClick: {
                         kind: EventKind.CLICKED_FINDER_OPTION,
@@ -1001,6 +1003,7 @@ test("finder", () => {
                     }, "foo")
                 ),
                 container({
+                    width: 300,
                     padding: 4,
                     onClick: {
                         kind: EventKind.CLICKED_FINDER_OPTION,
@@ -1171,6 +1174,7 @@ test("view with no nodes or edges but finder shown", () => {
             kind: FocusKind.FINDER_INSERT,
             search: "",
             options: [],
+            selectedIndex: 0,
             quickSelect: { kind: QuickSelectKind.NONE }
         },
         openFinderFirstClick: false,

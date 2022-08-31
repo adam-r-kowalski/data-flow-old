@@ -485,6 +485,17 @@ export const view = (model: Model): UI<AppEvent> => {
                 }))
             }
             break
+        case FocusKind.NONE:
+            stacked.push(contextMenu({
+                items: [
+                    {
+                        name: 'Reset Zoom',
+                        shortcut: 'z',
+                        onClick: { kind: EventKind.RESET_CAMERA }
+                    }
+                ],
+                backgroundColor: model.theme.node
+            }))
     }
     return stack(stacked)
 }

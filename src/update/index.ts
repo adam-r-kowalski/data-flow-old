@@ -1,5 +1,5 @@
 import { fuzzyFind } from "../fuzzy_find"
-import { multiplyMatrices, multiplyMatrixVector, scale, translate } from "../linear_algebra/matrix3x3"
+import { identity, multiplyMatrices, multiplyMatrixVector, scale, translate } from "../linear_algebra/matrix3x3"
 import { length } from "../linear_algebra/vector3"
 import { Effects, UpdateResult } from "../ui/run"
 import { Model, NodePlacementLocation } from "../model"
@@ -35,6 +35,7 @@ export enum EventKind {
     DELETE_OUTPUT_EDGES,
     PAN_CAMERA,
     ZOOM_CAMERA,
+    RESET_CAMERA,
     MOVE_NODE,
     UPLOAD_TABLE,
 }
@@ -133,6 +134,10 @@ export interface ZoomCamera {
     readonly kind: EventKind.ZOOM_CAMERA,
 }
 
+export interface ResetCamera {
+    readonly kind: EventKind.RESET_CAMERA,
+}
+
 export interface MoveNode {
     readonly kind: EventKind.MOVE_NODE,
 }
@@ -165,6 +170,7 @@ export type AppEvent =
     | DeleteOutputEdges
     | PanCamera
     | ZoomCamera
+    | ResetCamera
     | MoveNode
     | UploadTable
 
@@ -859,15 +865,24 @@ const keyDown = (model: Model, event: KeyDown, { generateUUID, currentTime }: Ef
                             return maybeTriggerQuickSelect(model, model.focus, key)
                     }
                 case FocusKind.NONE:
-                    if (key == 'f') {
-                        return { model: openFinderInsert(model), render: true }
-                    } else {
-                        const result = maybeTriggerQuickSelect(model, model.focus, key)
-                        if (result.render) {
-                            return result
-                        } else {
-                            return maybeStartMoveCamera(result.model, event, currentTime)
-                        }
+                    switch (key) {
+                        case 'f':
+                            return { model: openFinderInsert(model), render: true }
+                        case 'z':
+                            return {
+                                model: {
+                                    ...model,
+                                    camera: identity()
+                                },
+                                render: true
+                            }
+                        default:
+                            const result = maybeTriggerQuickSelect(model, model.focus, key)
+                            if (result.render) {
+                                return result
+                            } else {
+                                return maybeStartMoveCamera(result.model, event, currentTime)
+                            }
                     }
             }
     }
@@ -969,6 +984,14 @@ const deleteOutputEdges = (model: Model, { output }: DeleteOutputEdges): UpdateR
     render: true
 })
 
+const resetCamera = (model: Model): UpdateResult<Model, AppEvent> => ({
+    model: {
+        ...model,
+        camera: identity()
+    },
+    render: true
+})
+
 export const uploadTable = (model: Model, event: UploadTable, generateUUID: GenerateUUID): UpdateResult<Model, AppEvent> => {
     const nodeUUID = generateUUID()
     const output: Output = {
@@ -1029,6 +1052,7 @@ export const update = (effects: Effects, model: Model, event: AppEvent): UpdateR
         case EventKind.DELETE_OUTPUT_EDGES: return deleteOutputEdges(model, event)
         case EventKind.PAN_CAMERA: return panCamera(model, effects.currentTime)
         case EventKind.ZOOM_CAMERA: return zoomCamera(model, effects.currentTime)
+        case EventKind.RESET_CAMERA: return resetCamera(model)
         case EventKind.MOVE_NODE: return moveNode(model, effects.currentTime)
         case EventKind.UPLOAD_TABLE: return uploadTable(model, event, effects.generateUUID)
     }

@@ -1153,6 +1153,16 @@ test("view with no nodes or edges", () => {
     const expected = stack([
         container({ color: model.theme.background, onClick: { kind: EventKind.CLICKED_BACKGROUND } }),
         scene({ camera: model.camera, children: [], connections: [] }),
+        contextMenu({
+            items: [
+                {
+                    name: 'Reset Zoom',
+                    shortcut: 'z',
+                    onClick: { kind: EventKind.RESET_CAMERA }
+                },
+            ],
+            backgroundColor: model.theme.node
+        })
     ])
     expect(actual).toEqual(expected)
 })
@@ -1393,6 +1403,16 @@ test("view with three nodes and no edges", () => {
             ],
             connections: []
         }),
+        contextMenu({
+            items: [
+                {
+                    name: 'Reset Zoom',
+                    shortcut: 'z',
+                    onClick: { kind: EventKind.RESET_CAMERA }
+                },
+            ],
+            backgroundColor: model.theme.node
+        })
     ])
     expect(actual).toEqual(expected)
 })
@@ -1618,6 +1638,16 @@ test("view with three nodes and one edges", () => {
                 }
             ]
         }),
+        contextMenu({
+            items: [
+                {
+                    name: 'Reset Zoom',
+                    shortcut: 'z',
+                    onClick: { kind: EventKind.RESET_CAMERA }
+                },
+            ],
+            backgroundColor: model.theme.node
+        })
     ])
     expect(actual).toEqual(expected)
 })
@@ -1989,6 +2019,16 @@ test("view with node placement location shown", () => {
             ],
             connections: []
         }),
+        contextMenu({
+            items: [
+                {
+                    name: 'Reset Zoom',
+                    shortcut: 'z',
+                    onClick: { kind: EventKind.RESET_CAMERA }
+                },
+            ],
+            backgroundColor: model.theme.node
+        })
     ])
     expect(actual).toEqual(expected)
 })

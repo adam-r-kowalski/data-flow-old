@@ -389,6 +389,7 @@ export const openFinderInsert = (model: Model): Model => ({
         kind: FocusKind.FINDER_INSERT,
         search: '',
         options: Object.keys(model.operations),
+        selectedIndex: 0,
         quickSelect: { kind: QuickSelectKind.NONE }
     },
     openFinderFirstClick: false,
@@ -400,6 +401,7 @@ export const openFinderChange = (model: Model, node: UUID): Model => ({
         kind: FocusKind.FINDER_CHANGE,
         search: '',
         options: Object.keys(model.operations),
+        selectedIndex: 0,
         quickSelect: { kind: QuickSelectKind.NONE },
         node
     },
@@ -586,11 +588,26 @@ export const addNodeToGraph = ({ model, operation, position, generateUUID }: Add
     }
 }
 
-export const removeNodeFromGraph = (model: Model, node: UUID): Model => clearFocus({
-    ...model,
-    graph: removeNode(model.graph, node),
-    nodeOrder: model.nodeOrder.filter(n => n !== node),
-})
+export const removeNodeFromGraph = (model: Model, node: UUID): Model => {
+    const model1 = clearFocus({
+        ...model,
+        graph: removeNode(model.graph, node),
+        nodeOrder: model.nodeOrder.filter(n => n !== node),
+    })
+    const outputs = model.graph.nodes[node].outputs
+    return outputs.reduce((model2, output) => {
+        const edges = model.graph.outputs[output].edges
+        return edges.reduce((model3, edge) => {
+            const input = model.graph.edges[edge].input
+            const nodeUUID = model.graph.inputs[input].node
+            const graph = evaluateNode(model3.graph, nodeUUID)
+            return {
+                ...model3,
+                graph
+            }
+        }, model2)
+    }, model1)
+}
 
 export const updateBody = (model: Model, body: UUID, transform: (body: Body) => Body): UpdateResult<Model, AppEvent> => {
     const currentBody = model.graph.bodys[body]
@@ -638,7 +655,7 @@ const keyDown = (model: Model, event: KeyDown, { generateUUID, currentTime }: Ef
                             return { model }
                         case 'Enter':
                             if (model.focus.options.length > 0) {
-                                const name = model.focus.options[0]
+                                const name = model.focus.options[model.focus.selectedIndex]
                                 switch (model.focus.kind) {
                                     case FocusKind.FINDER_INSERT: return insertOperationFromFinder(model, name, generateUUID)
                                     case FocusKind.FINDER_CHANGE: return changeOperationFromFinder(model, name, model.focus.node, generateUUID)
@@ -649,6 +666,28 @@ const keyDown = (model: Model, event: KeyDown, { generateUUID, currentTime }: Ef
                             }
                         case 'Escape':
                             return { model: clearFocus(model), render: true }
+                        case 'ArrowUp':
+                            return {
+                                model: {
+                                    ...model,
+                                    focus: {
+                                        ...model.focus,
+                                        selectedIndex: Math.max(0, model.focus.selectedIndex - 1)
+                                    }
+                                },
+                                render: true
+                            }
+                        case 'ArrowDown':
+                            return {
+                                model: {
+                                    ...model,
+                                    focus: {
+                                        ...model.focus,
+                                        selectedIndex: Math.min(model.focus.selectedIndex + 1, model.focus.options.length - 1, 9)
+                                    }
+                                },
+                                render: true
+                            }
                         default:
                             return updateFinderSearch(model, model.focus, search => search + key)
                     }

@@ -94,6 +94,7 @@ test("double clicking background opens finder", () => {
             kind: FocusKind.FINDER_INSERT,
             search: '',
             options: [],
+            selectedIndex: 0,
             quickSelect: { kind: QuickSelectKind.NONE }
         },
         nodePlacementLocation: { x: 0, y: 0, show: false }
@@ -770,6 +771,7 @@ test("double click opens finder", () => {
             kind: FocusKind.FINDER_INSERT,
             search: '',
             options: ['Add', 'Sub'],
+            selectedIndex: 0,
             quickSelect: { kind: QuickSelectKind.NONE }
         },
         nodePlacementLocation: { x: 50, y: 50, show: false },
@@ -823,6 +825,7 @@ test("f key down when finder is not shown opens finder", () => {
             kind: FocusKind.FINDER_INSERT,
             search: '',
             options: ["Add", "Sub"],
+            selectedIndex: 0,
             quickSelect: { kind: QuickSelectKind.NONE }
         }
     }
@@ -902,6 +905,7 @@ test("key down when finder is shown appends to search", () => {
             kind: FocusKind.FINDER_INSERT,
             search: 'add',
             options: ['Add'],
+            selectedIndex: 0,
             quickSelect: { kind: QuickSelectKind.NONE }
         },
     }
@@ -954,6 +958,7 @@ test("backspace key down when finder is shown deletes from search", () => {
             kind: FocusKind.FINDER_INSERT,
             search: 'ad',
             options: ['Add'],
+            selectedIndex: 0,
             quickSelect: { kind: QuickSelectKind.NONE }
         }
     }
@@ -3181,6 +3186,7 @@ test("pressing f with node selected opens finder", () => {
             kind: FocusKind.FINDER_INSERT,
             search: '',
             options: ['Add'],
+            selectedIndex: 0,
             quickSelect: { kind: QuickSelectKind.NONE }
         }
     }
@@ -3235,6 +3241,7 @@ test("pressing f with input selected opens finder", () => {
             kind: FocusKind.FINDER_INSERT,
             search: '',
             options: ['Add'],
+            selectedIndex: 0,
             quickSelect: { kind: QuickSelectKind.NONE }
         }
     }
@@ -3288,6 +3295,7 @@ test("pressing f with output selected opens finder", () => {
             kind: FocusKind.FINDER_INSERT,
             search: '',
             options: ['Add'],
+            selectedIndex: 0,
             quickSelect: { kind: QuickSelectKind.NONE }
         }
     }
@@ -3846,6 +3854,7 @@ test("pressing c with node selected opens finder in change mode", () => {
             search: '',
             options: ['Number', 'Add', 'Sub'],
             node: add,
+            selectedIndex: 0,
             quickSelect: { kind: QuickSelectKind.NONE }
         }
     }
@@ -4072,6 +4081,14 @@ test("change node with different input and output names", () => {
                     node: node.uuid,
                     name: 'data',
                     edges: []
+                }
+            },
+            bodys: {
+                ...model7.graph.bodys,
+                [node.body]: {
+                    kind: BodyKind.ERROR,
+                    uuid: node.body,
+                    node: node.uuid
                 }
             }
         }

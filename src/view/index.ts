@@ -3,7 +3,7 @@ import { AppEvent, EventKind } from "../update"
 import { Model } from "../model"
 import { Theme } from '../model/theme'
 import { Focus, FocusFinderChange, FocusFinderInsert, FocusKind } from "../model/focus"
-import { text, stack, scene, row, container, column, Connection, UI } from '../ui'
+import { text, stack, scene, row, container, column, Connection, UI, Color } from '../ui'
 import { BodyKind, ColumnBody, Graph, Input, NodeKind, NumberBody, Output, ScatterBody, TableBody, TensorBody, TextBody, UUID } from "../model/graph"
 import { contextMenu } from "./context_menu"
 import { QuickSelectKind } from "../model/quick_select"
@@ -279,17 +279,18 @@ export const nodeUi = (theme: Theme, nodeUUID: UUID, graph: Graph, focus: Focus)
     )
 }
 
-
-export const finder = ({ search, options }: FocusFinderInsert | FocusFinderChange, theme: Theme): UI<AppEvent> =>
-    column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
+export const finder = ({ search, options, selectedIndex }: FocusFinderInsert | FocusFinderChange, theme: Theme): UI<AppEvent> => {
+    const white: Color = { red: 255, green: 255, blue: 255, alpha: 255 }
+    return column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
         container({ height: 10 }),
         container({ color: theme.node, padding: 4 },
             column([
                 container({ color: theme.background, width: 300, padding: 4 },
                     text({ color: theme.input, size: 24 }, search.length ? search : "Search ...")),
                 container({ width: 10, height: 10 }),
-                ...options.map((option, i) =>
+                ...options.slice(0, 10).map((option, i) =>
                     container<AppEvent>({
+                        width: 300,
                         padding: 4,
                         onClick: {
                             kind: EventKind.CLICKED_FINDER_OPTION,
@@ -298,14 +299,14 @@ export const finder = ({ search, options }: FocusFinderInsert | FocusFinderChang
                     },
                         text({
                             size: 18,
-                            color: i == 0 ? theme.input : { red: 255, green: 255, blue: 255, alpha: 255 }
+                            color: i == selectedIndex ? theme.input : white
                         }, option)
                     )
                 )
             ])
         )
     ])
-
+}
 
 export interface MappedVirtualKey {
     display: string

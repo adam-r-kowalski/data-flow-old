@@ -51,6 +51,7 @@ export interface FocusFinderInsert {
     readonly kind: FocusKind.FINDER_INSERT,
     readonly search: string
     readonly options: Readonly<string[]>
+    readonly selectedIndex: number
     readonly quickSelect: QuickSelectNone
 }
 
@@ -59,6 +60,7 @@ export interface FocusFinderChange {
     readonly search: string
     readonly options: Readonly<string[]>
     readonly quickSelect: QuickSelectNone
+    readonly selectedIndex: number
     readonly node: UUID
 }
 

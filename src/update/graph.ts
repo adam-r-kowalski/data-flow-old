@@ -311,10 +311,37 @@ interface AddEdgeInputs {
 
 interface AddEdgeOutputs {
     graph: Graph
-    edge: UUID
+    edge?: UUID
+}
+
+export const hasCycle = (graph: Graph, inputUUID: UUID, outputUUID: UUID): boolean => {
+    const visited: Set<UUID> = new Set()
+    visited.add(graph.outputs[outputUUID].node)
+    const visitNode = (nodeUUID: UUID): boolean => {
+        if (visited.has(nodeUUID)) {
+            return true
+        } else {
+            visited.add(nodeUUID)
+            for (const outputUUID of graph.nodes[nodeUUID].outputs) {
+                const output = graph.outputs[outputUUID]
+                for (const edgeUUID of output.edges) {
+                    const edge = graph.edges[edgeUUID]
+                    const input = graph.inputs[edge.input]
+                    if (visitNode(input.node)) {
+                        return true
+                    }
+                }
+            }
+            return false
+        }
+    }
+    return visitNode(graph.inputs[inputUUID].node)
 }
 
 export const addEdge = ({ graph, input, output, generateUUID }: AddEdgeInputs): AddEdgeOutputs => {
+    if (hasCycle(graph, input, output)) {
+        return { graph }
+    }
     const edge: Edge = {
         uuid: generateUUID(),
         input,

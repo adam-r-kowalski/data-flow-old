@@ -269,33 +269,34 @@ export const evaluateNode = (graph: Graph, nodeUUID: UUID): Graph => {
                 })
                 .map(bodyUUID => graph.bodys[bodyUUID!])
                 .filter(body => !(body.kind === BodyKind.NO || body.kind === BodyKind.ERROR))
-            if (values.length > 0 && values.length === node.inputs.length) {
-                const body = node.func(graph.bodys[node.body], ...values)
-                const graph1: Graph = {
-                    ...graph,
-                    bodys: {
-                        ...graph.bodys,
-                        [body.uuid]: body
+            const graph1: Graph = (() => {
+                if (values.length > 0 && values.length === node.inputs.length) {
+                    const body = node.func(graph.bodys[node.body], ...values)
+                    return {
+                        ...graph,
+                        bodys: {
+                            ...graph.bodys,
+                            [body.uuid]: body
+                        }
                     }
-                }
-                return evaluateNodeOutputs(graph1, node)
-            } else if (graph.bodys[node.body].kind !== BodyKind.NO) {
-                const body: Body = {
-                    kind: BodyKind.NO,
-                    uuid: node.body,
-                    node: node.uuid,
-                }
-                const graph1: Graph = {
-                    ...graph,
-                    bodys: {
-                        ...graph.bodys,
-                        [body.uuid]: body
+                } else if (graph.bodys[node.body].kind !== BodyKind.NO) {
+                    const body: Body = {
+                        kind: BodyKind.NO,
+                        uuid: node.body,
+                        node: node.uuid,
                     }
+                    return {
+                        ...graph,
+                        bodys: {
+                            ...graph.bodys,
+                            [body.uuid]: body
+                        }
+                    }
+                } else {
+                    return graph
                 }
-                return evaluateNodeOutputs(graph1, node)
-            } else {
-                return graph
-            }
+            })()
+            return evaluateNodeOutputs(graph1, node)
         }
     }
 }

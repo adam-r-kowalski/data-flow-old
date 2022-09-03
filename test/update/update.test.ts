@@ -4354,3 +4354,56 @@ test("change node with fewer inputs then existing node", () => {
     }
     expect(model11).toEqual(expectedModel)
 })
+
+test("prevent cycles from forming", () => {
+    const effects = makeEffects()
+    const model0: Model = {
+        ...model,
+        operations: {
+            'Sin': {
+                kind: OperationKind.TRANSFORM,
+                name: 'Sin',
+                inputs: ['x'],
+                outputs: ['out'],
+                func: sinFunc
+            },
+        }
+    }
+    const { model: model1, node: a } = addNodeToGraph({
+        model: model0,
+        operation: model0.operations['Sin'],
+        position: { x: 0, y: 0 },
+        generateUUID: effects.generateUUID
+    })
+    const { model: model2, node: b } = addNodeToGraph({
+        model: model1,
+        operation: model1.operations['Sin'],
+        position: { x: 0, y: 0 },
+        generateUUID: effects.generateUUID
+    })
+    const { model: model3 } = update(effects, model2, {
+        kind: EventKind.CLICKED_OUTPUT,
+        output: model2.graph.nodes[a].outputs[0]
+    })
+    const { model: model4 } = update(effects, model3, {
+        kind: EventKind.CLICKED_INPUT,
+        input: (model2.graph.nodes[b] as NodeTransform).inputs[0]
+    })
+    const { model: model5 } = update(effects, model4, {
+        kind: EventKind.CLICKED_OUTPUT,
+        output: model2.graph.nodes[b].outputs[0]
+    })
+    const { model: model6 } = update(effects, model5, {
+        kind: EventKind.CLICKED_INPUT,
+        input: (model2.graph.nodes[a] as NodeTransform).inputs[0]
+    })
+    const expectedModel: Model = {
+        ...model5,
+        focus: {
+            kind: FocusKind.NONE,
+            quickSelect: { kind: QuickSelectKind.NONE },
+            pointerAction: { kind: PointerActionKind.NONE }
+        }
+    }
+    expect(model6).toEqual(expectedModel)
+})

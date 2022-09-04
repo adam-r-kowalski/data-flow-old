@@ -349,7 +349,7 @@ test("pressing a non hotkey when nothing focused does nothing", () => {
     const effects = makeEffects()
     const { model: model1, dispatch: dispatch0 } = update(effects, model, {
         kind: EventKind.KEYDOWN,
-        key: 'z',
+        key: 'm',
         ctrl: false
     })
     expect(dispatch0).toBeUndefined()
@@ -366,7 +366,7 @@ test("pressing a non hotkey when nothing focused does nothing", () => {
     expect(model3).toEqual(model)
     const { model: model4, dispatch: dispatch1 } = update(effects, model3, {
         kind: EventKind.KEYUP,
-        key: 'z',
+        key: 'm',
         ctrl: false,
     })
     expect(dispatch1).toBeUndefined()
@@ -487,4 +487,38 @@ test("pressing ctrl j then ctrl k when nothing focused does nothing", () => {
         zoomCamera: { in: true, out: true, now: 1 },
         nodePlacementLocation: { x: 250, y: 250, show: true },
     })
+})
+
+test("clicking reset camera context menu resets camera", () => {
+    const effects = makeEffects()
+    const model0: Model = {
+        ...model,
+        camera: [
+            1, 2, 3,
+            4, 5, 6,
+            7, 8, 9,
+        ]
+    }
+    const { model: model1 } = update(effects, model0, {
+        kind: EventKind.RESET_CAMERA,
+    })
+    expect(model1).toEqual(model)
+})
+
+test("pressing z resets camera", () => {
+    const effects = makeEffects()
+    const model0: Model = {
+        ...model,
+        camera: [
+            1, 2, 3,
+            4, 5, 6,
+            7, 8, 9,
+        ]
+    }
+    const { model: model1 } = update(effects, model0, {
+        kind: EventKind.KEYDOWN,
+        key: 'z',
+        ctrl: false
+    })
+    expect(model1).toEqual(model)
 })

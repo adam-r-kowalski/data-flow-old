@@ -900,10 +900,10 @@ const keyUp = (model: Model, event: KeyUp): UpdateResult<Model, AppEvent> => {
 }
 
 const clickedFinderOption = (model: Model, { option }: ClickedFinderOption, generateUUID: GenerateUUID): UpdateResult<Model, AppEvent> => {
-    switch (model.focus.kind) {
+    const focus = model.focus as FocusFinderChange | FocusFinderInsert
+    switch (focus.kind) {
         case FocusKind.FINDER_INSERT: return insertOperationFromFinder(model, option, generateUUID)
-        case FocusKind.FINDER_CHANGE: return changeOperationFromFinder(model, option, model.focus.node, generateUUID)
-        default: return { model, render: true }
+        case FocusKind.FINDER_CHANGE: return changeOperationFromFinder(model, option, focus.node, generateUUID)
     }
 
 }

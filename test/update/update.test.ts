@@ -6,7 +6,7 @@ import { BodyKind, NodeKind, NodeTransform, OperationKind, Operations } from "..
 import { addEdge, changeNodePosition } from "../../src/update/graph"
 import { translate } from "../../src/linear_algebra/matrix3x3"
 import { Model } from "../../src/model"
-import { FocusKind } from "../../src/model/focus"
+import { FocusFinderInsert, FocusKind } from "../../src/model/focus"
 import { PointerActionKind } from "../../src/model/pointer_action"
 import { Pointer } from "../../src/ui"
 import { emptyModel } from "../../src/model/empty"
@@ -912,6 +912,217 @@ test("key down when finder is shown appends to search", () => {
     expect(model3).toEqual(expectedModel)
     expect(render).toEqual(true)
 })
+
+test("arrow down when finder is shown adds to selected index", () => {
+    const effects = makeEffects()
+    const operations: Operations = {
+        'Add': {
+            kind: OperationKind.TRANSFORM,
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out'],
+            func: addFunc
+        },
+        'Sub': {
+            kind: OperationKind.TRANSFORM,
+            name: 'Sub',
+            inputs: ['x', 'y'],
+            outputs: ['out'],
+            func: subFunc
+        }
+    }
+    const model0 = openFinderInsert({ ...model, operations })
+    const { model: model1, render } = update(effects, model0, {
+        kind: EventKind.KEYDOWN,
+        key: 'ArrowDown',
+        ctrl: false
+    })
+    const expectedModel: Model = {
+        ...model0,
+        focus: {
+            kind: FocusKind.FINDER_INSERT,
+            search: '',
+            options: ['Add', 'Sub'],
+            selectedIndex: 1,
+            quickSelect: { kind: QuickSelectKind.NONE }
+        },
+    }
+    expect(model1).toEqual(expectedModel)
+    expect(render).toEqual(true)
+})
+
+test("ctrl j when finder is shown adds to selected index", () => {
+    const effects = makeEffects()
+    const operations: Operations = {
+        'Add': {
+            kind: OperationKind.TRANSFORM,
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out'],
+            func: addFunc
+        },
+        'Sub': {
+            kind: OperationKind.TRANSFORM,
+            name: 'Sub',
+            inputs: ['x', 'y'],
+            outputs: ['out'],
+            func: subFunc
+        }
+    }
+    const model0 = openFinderInsert({ ...model, operations })
+    const { model: model1, render } = update(effects, model0, {
+        kind: EventKind.KEYDOWN,
+        key: 'j',
+        ctrl: true
+    })
+    const expectedModel: Model = {
+        ...model0,
+        focus: {
+            kind: FocusKind.FINDER_INSERT,
+            search: '',
+            options: ['Add', 'Sub'],
+            selectedIndex: 1,
+            quickSelect: { kind: QuickSelectKind.NONE }
+        },
+    }
+    expect(model1).toEqual(expectedModel)
+    expect(render).toEqual(true)
+})
+
+
+test("arrow up when finder is shown subtracts from selected index", () => {
+    const effects = makeEffects()
+    const operations: Operations = {
+        'Add': {
+            kind: OperationKind.TRANSFORM,
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out'],
+            func: addFunc
+        },
+        'Sub': {
+            kind: OperationKind.TRANSFORM,
+            name: 'Sub',
+            inputs: ['x', 'y'],
+            outputs: ['out'],
+            func: subFunc
+        }
+    }
+    const model0 = openFinderInsert({ ...model, operations })
+    const focus = model0.focus as FocusFinderInsert
+    const model1: Model = {
+        ...model0,
+        focus: {
+            ...focus,
+            selectedIndex: 1
+        }
+    }
+    const { model: model2, render } = update(effects, model1, {
+        kind: EventKind.KEYDOWN,
+        key: 'ArrowUp',
+        ctrl: false
+    })
+    const expectedModel: Model = {
+        ...model0,
+        focus: {
+            kind: FocusKind.FINDER_INSERT,
+            search: '',
+            options: ['Add', 'Sub'],
+            selectedIndex: 0,
+            quickSelect: { kind: QuickSelectKind.NONE }
+        },
+    }
+    expect(model2).toEqual(expectedModel)
+    expect(render).toEqual(true)
+})
+
+test("ctrl k when finder is shown subtracts from selected index", () => {
+    const effects = makeEffects()
+    const operations: Operations = {
+        'Add': {
+            kind: OperationKind.TRANSFORM,
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out'],
+            func: addFunc
+        },
+        'Sub': {
+            kind: OperationKind.TRANSFORM,
+            name: 'Sub',
+            inputs: ['x', 'y'],
+            outputs: ['out'],
+            func: subFunc
+        }
+    }
+    const model0 = openFinderInsert({ ...model, operations })
+    const focus = model0.focus as FocusFinderInsert
+    const model1: Model = {
+        ...model0,
+        focus: {
+            ...focus,
+            selectedIndex: 1
+        }
+    }
+    const { model: model2, render } = update(effects, model1, {
+        kind: EventKind.KEYDOWN,
+        key: 'k',
+        ctrl: true
+    })
+    const expectedModel: Model = {
+        ...model0,
+        focus: {
+            kind: FocusKind.FINDER_INSERT,
+            search: '',
+            options: ['Add', 'Sub'],
+            selectedIndex: 0,
+            quickSelect: { kind: QuickSelectKind.NONE }
+        },
+    }
+    expect(model2).toEqual(expectedModel)
+    expect(render).toEqual(true)
+})
+
+test("ctrl + key thats not j or k adds to finder search", () => {
+    const effects = makeEffects()
+    const operations: Operations = {
+        'Add': {
+            kind: OperationKind.TRANSFORM,
+            name: 'Add',
+            inputs: ['x', 'y'],
+            outputs: ['out'],
+            func: addFunc
+        },
+        'Sub': {
+            kind: OperationKind.TRANSFORM,
+            name: 'Sub',
+            inputs: ['x', 'y'],
+            outputs: ['out'],
+            func: subFunc
+        }
+    }
+    const model0 = openFinderInsert({ ...model, operations })
+    let model1 = model0
+    for (const key of 'qwertyuiopasdfghlzxcvbnm') {
+        const { model: nextModel } = update(effects, model1, {
+            kind: EventKind.KEYDOWN,
+            key: key,
+            ctrl: true
+        })
+        model1 = nextModel
+    }
+    const expectedModel: Model = {
+        ...model0,
+        focus: {
+            kind: FocusKind.FINDER_INSERT,
+            search: 'qwertyuiopasdfghlzxcvbnm',
+            options: [],
+            selectedIndex: 0,
+            quickSelect: { kind: QuickSelectKind.NONE }
+        },
+    }
+    expect(model1).toEqual(expectedModel)
+})
+
 
 test("backspace key down when finder is shown deletes from search", () => {
     const effects = makeEffects()
@@ -3861,6 +4072,88 @@ test("pressing c with node selected opens finder in change mode", () => {
     expect(model9).toEqual(expectedModel)
 })
 
+test("pressing change node context menu with node selected opens finder in change mode", () => {
+    const effects = makeEffects()
+    const model0: Model = {
+        ...model,
+        operations: {
+            'Number': {
+                kind: OperationKind.NUMBER,
+                name: 'Number',
+                outputs: ['out'],
+            },
+            'Add': {
+                kind: OperationKind.TRANSFORM,
+                name: 'Add',
+                inputs: ['x', 'y'],
+                outputs: ['out'],
+                func: addFunc
+            },
+            'Sub': {
+                kind: OperationKind.TRANSFORM,
+                name: 'Sub',
+                inputs: ['x', 'y'],
+                outputs: ['out'],
+                func: subFunc
+            },
+        }
+    }
+    const { model: model1, node: x } = addNodeToGraph({
+        model: model0,
+        operation: model0.operations['Number'],
+        position: { x: 0, y: 0 },
+        generateUUID: effects.generateUUID
+    })
+    const { model: model2, node: y } = addNodeToGraph({
+        model: model1,
+        operation: model1.operations['Number'],
+        position: { x: 0, y: 0 },
+        generateUUID: effects.generateUUID
+    })
+    const { model: model3, node: add } = addNodeToGraph({
+        model: model2,
+        operation: model0.operations['Add'],
+        position: { x: 0, y: 0 },
+        generateUUID: effects.generateUUID
+    })
+    const { model: model4 } = update(effects, model3, {
+        kind: EventKind.CLICKED_OUTPUT,
+        output: model3.graph.nodes[x].outputs[0]
+    })
+    const { model: model5 } = update(effects, model4, {
+        kind: EventKind.CLICKED_INPUT,
+        input: (model4.graph.nodes[add] as NodeTransform).inputs[0]
+    })
+    const { model: model6 } = update(effects, model5, {
+        kind: EventKind.CLICKED_OUTPUT,
+        output: model5.graph.nodes[y].outputs[0]
+    })
+    const { model: model7 } = update(effects, model6, {
+        kind: EventKind.CLICKED_INPUT,
+        input: (model6.graph.nodes[add] as NodeTransform).inputs[1]
+    })
+    const { model: model8 } = update(effects, model7, {
+        kind: EventKind.CLICKED_NODE,
+        node: add
+    })
+    const { model: model9 } = update(effects, model8, {
+        kind: EventKind.CHANGE_NODE,
+        node: add
+    })
+    const expectedModel: Model = {
+        ...model7,
+        focus: {
+            kind: FocusKind.FINDER_CHANGE,
+            search: '',
+            options: ['Number', 'Add', 'Sub'],
+            node: add,
+            selectedIndex: 0,
+            quickSelect: { kind: QuickSelectKind.NONE }
+        }
+    }
+    expect(model9).toEqual(expectedModel)
+})
+
 
 test("pressing enter with finder in change mode replaces node but preserves inputs and outputs", () => {
     const effects = makeEffects()
@@ -3962,6 +4255,98 @@ test("pressing enter with finder in change mode replaces node but preserves inpu
     }
     expect(model11).toEqual(expectedModel)
 })
+
+test("cllicking finder option with finder in change mode replaces node but preserves inputs and outputs", () => {
+    const effects = makeEffects()
+    const model0: Model = {
+        ...model,
+        operations: {
+            'Number': {
+                kind: OperationKind.NUMBER,
+                name: 'Number',
+                outputs: ['out'],
+            },
+            'Add': {
+                kind: OperationKind.TRANSFORM,
+                name: 'Add',
+                inputs: ['x', 'y'],
+                outputs: ['out'],
+                func: addFunc
+            },
+            'Sub': {
+                kind: OperationKind.TRANSFORM,
+                name: 'Sub',
+                inputs: ['x', 'y'],
+                outputs: ['out'],
+                func: subFunc
+            },
+        }
+    }
+    const { model: model1, node: x } = addNodeToGraph({
+        model: model0,
+        operation: model0.operations['Number'],
+        position: { x: 0, y: 0 },
+        generateUUID: effects.generateUUID
+    })
+    const { model: model2, node: y } = addNodeToGraph({
+        model: model1,
+        operation: model1.operations['Number'],
+        position: { x: 0, y: 0 },
+        generateUUID: effects.generateUUID
+    })
+    const { model: model3, node: add } = addNodeToGraph({
+        model: model2,
+        operation: model0.operations['Add'],
+        position: { x: 0, y: 0 },
+        generateUUID: effects.generateUUID
+    })
+    const { model: model4 } = update(effects, model3, {
+        kind: EventKind.CLICKED_OUTPUT,
+        output: model3.graph.nodes[x].outputs[0]
+    })
+    const { model: model5 } = update(effects, model4, {
+        kind: EventKind.CLICKED_INPUT,
+        input: (model4.graph.nodes[add] as NodeTransform).inputs[0]
+    })
+    const { model: model6 } = update(effects, model5, {
+        kind: EventKind.CLICKED_OUTPUT,
+        output: model5.graph.nodes[y].outputs[0]
+    })
+    const { model: model7 } = update(effects, model6, {
+        kind: EventKind.CLICKED_INPUT,
+        input: (model6.graph.nodes[add] as NodeTransform).inputs[1]
+    })
+    const { model: model8 } = update(effects, model7, {
+        kind: EventKind.CLICKED_NODE,
+        node: add
+    })
+    const { model: model9 } = update(effects, model8, {
+        kind: EventKind.KEYDOWN,
+        key: 'c',
+        ctrl: false
+    })
+    const { model: model10 } = update(effects, model9, {
+        kind: EventKind.CLICKED_FINDER_OPTION,
+        option: 'Sub'
+    })
+    const node = model7.graph.nodes[add] as NodeTransform
+    const expectedModel: Model = {
+        ...model7,
+        graph: {
+            ...model7.graph,
+            nodes: {
+                ...model7.graph.nodes,
+                [node.uuid]: {
+                    ...node,
+                    name: 'Sub',
+                    func: subFunc,
+                }
+            }
+        }
+    }
+    expect(model10).toEqual(expectedModel)
+})
+
 
 test("change node with different input and output names", () => {
     const effects = makeEffects()

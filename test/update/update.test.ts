@@ -4355,6 +4355,217 @@ test("change node with fewer inputs then existing node", () => {
     expect(model11).toEqual(expectedModel)
 })
 
+test("change from source node to a source node does nothing", () => {
+    const effects = makeEffects()
+    const model0: Model = {
+        ...model,
+        operations: {
+            'Number': {
+                kind: OperationKind.NUMBER,
+                name: 'Number',
+                outputs: ['out'],
+            },
+        }
+    }
+    const { model: model1, node: number } = addNodeToGraph({
+        model: model0,
+        operation: model0.operations['Number'],
+        position: { x: 0, y: 0 },
+        generateUUID: effects.generateUUID
+    })
+    const { model: model2 } = update(effects, model1, {
+        kind: EventKind.CLICKED_NODE,
+        node: number
+    })
+    const { model: model3 } = update(effects, model2, {
+        kind: EventKind.KEYDOWN,
+        key: 'c',
+        ctrl: false
+    })
+    const { model: model4 } = update(effects, model3, {
+        kind: EventKind.KEYDOWN,
+        key: 'Enter',
+        ctrl: false
+    })
+    expect(model4).toEqual(model1)
+})
+
+test("change from source node to a transform node does nothing", () => {
+    const effects = makeEffects()
+    const model0: Model = {
+        ...model,
+        operations: {
+            'Number': {
+                kind: OperationKind.NUMBER,
+                name: 'Number',
+                outputs: ['out'],
+            },
+            'Add': {
+                kind: OperationKind.TRANSFORM,
+                name: 'Add',
+                inputs: ['x', 'y'],
+                outputs: ['out'],
+                func: addFunc
+            },
+        }
+    }
+    const { model: model1, node: number } = addNodeToGraph({
+        model: model0,
+        operation: model0.operations['Number'],
+        position: { x: 0, y: 0 },
+        generateUUID: effects.generateUUID
+    })
+    const { model: model2 } = update(effects, model1, {
+        kind: EventKind.CLICKED_NODE,
+        node: number
+    })
+    const { model: model3 } = update(effects, model2, {
+        kind: EventKind.KEYDOWN,
+        key: 'c',
+        ctrl: false
+    })
+    let model4 = model3
+    for (const key of "Add") {
+        const { model: nextModel } = update(effects, model4, {
+            kind: EventKind.KEYDOWN,
+            key: key,
+            ctrl: false
+        })
+        model4 = nextModel
+    }
+    const { model: model5 } = update(effects, model4, {
+        kind: EventKind.KEYDOWN,
+        key: 'Enter',
+        ctrl: false
+    })
+    expect(model5).toEqual(model1)
+})
+
+test("deleting a node forces evaluation of outputs", () => {
+    const effects = makeEffects()
+    const model0: Model = {
+        ...model,
+        operations: {
+            'Number': {
+                kind: OperationKind.NUMBER,
+                name: 'Number',
+                outputs: ['out'],
+            },
+            'Add': {
+                kind: OperationKind.TRANSFORM,
+                name: 'Add',
+                inputs: ['x', 'y'],
+                outputs: ['out'],
+                func: addFunc
+            },
+        }
+    }
+    const { model: model1, node: x } = addNodeToGraph({
+        model: model0,
+        operation: model0.operations['Number'],
+        position: { x: 0, y: 0 },
+        generateUUID: effects.generateUUID
+    })
+    const { model: model2, node: y } = addNodeToGraph({
+        model: model1,
+        operation: model1.operations['Number'],
+        position: { x: 0, y: 0 },
+        generateUUID: effects.generateUUID
+    })
+    const { model: model3, node: add } = addNodeToGraph({
+        model: model2,
+        operation: model0.operations['Add'],
+        position: { x: 0, y: 0 },
+        generateUUID: effects.generateUUID
+    })
+    const { model: model4 } = update(effects, model3, {
+        kind: EventKind.CLICKED_OUTPUT,
+        output: model3.graph.nodes[x].outputs[0]
+    })
+    const { model: model5 } = update(effects, model4, {
+        kind: EventKind.CLICKED_INPUT,
+        input: (model4.graph.nodes[add] as NodeTransform).inputs[0]
+    })
+    const { model: model6 } = update(effects, model5, {
+        kind: EventKind.CLICKED_OUTPUT,
+        output: model5.graph.nodes[y].outputs[0]
+    })
+    const { model: model7 } = update(effects, model6, {
+        kind: EventKind.CLICKED_INPUT,
+        input: (model6.graph.nodes[add] as NodeTransform).inputs[1]
+    })
+    const { model: model8 } = update(effects, model7, {
+        kind: EventKind.CLICKED_NODE,
+        node: x
+    })
+    const { model: model9 } = update(effects, model8, {
+        kind: EventKind.KEYDOWN,
+        key: 'd',
+        ctrl: false
+    })
+    const edge = model7.graph.outputs[model7.graph.nodes[y].outputs[0]].edges[0]
+    const expectedModel: Model = {
+        ...model7,
+        graph: {
+            nodes: {
+                [add]: model7.graph.nodes[add],
+                [y]: model7.graph.nodes[y],
+            },
+            edges: {
+                [edge]: {
+                    uuid: edge,
+                    input: (model7.graph.nodes[add] as NodeTransform).inputs[1],
+                    output: model7.graph.nodes[y].outputs[0],
+                }
+            },
+            inputs: {
+                [(model7.graph.nodes[add] as NodeTransform).inputs[0]]: {
+                    uuid: (model7.graph.nodes[add] as NodeTransform).inputs[0],
+                    node: add,
+                    name: 'x'
+                },
+                [(model7.graph.nodes[add] as NodeTransform).inputs[1]]: {
+                    uuid: (model7.graph.nodes[add] as NodeTransform).inputs[1],
+                    node: add,
+                    name: 'y',
+                    edge
+                }
+            },
+            bodys: {
+                [model7.graph.nodes[add].body]: {
+                    kind: BodyKind.NO,
+                    uuid: model7.graph.nodes[add].body,
+                    node: add,
+                },
+                [model7.graph.nodes[y].body]: {
+                    kind: BodyKind.NUMBER,
+                    uuid: model7.graph.nodes[y].body,
+                    node: y,
+                    value: 0,
+                    text: '0'
+                },
+            },
+            outputs: {
+                [model7.graph.nodes[add].outputs[0]]: {
+                    uuid: model7.graph.nodes[add].outputs[0],
+                    node: add,
+                    name: 'out',
+                    edges: []
+                },
+                [model7.graph.nodes[y].outputs[0]]: {
+                    uuid: model7.graph.nodes[y].outputs[0],
+                    node: y,
+                    name: 'out',
+                    edges: [edge]
+                }
+            }
+        },
+        nodeOrder: [y, add]
+    }
+    expect(model9).toEqual(expectedModel)
+})
+
+
 test("prevent cycles from forming", () => {
     const effects = makeEffects()
     const model0: Model = {

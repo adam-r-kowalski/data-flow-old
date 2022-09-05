@@ -424,9 +424,18 @@ export const view = (model: Model): UI<AppEvent> => {
             break
         case FocusKind.BODY:
             const body = model.graph.bodys[model.focus.body]
-            if (body.kind === BodyKind.NUMBER) {
-                const sign = body.value >= 0 ? '-' : '+'
-                stacked.push(numericVirtualKeyboard(model.theme, sign))
+            switch (body.kind) {
+                case BodyKind.NUMBER: {
+                    const sign = body.value >= 0 ? '-' : '+'
+                    stacked.push(numericVirtualKeyboard(model.theme, sign))
+                    break
+                }
+                case BodyKind.TEXT: {
+                    stacked.push(alphabeticVirtualKeyboard(model.theme))
+                    break
+                }
+                default:
+                    break
             }
             break
         case FocusKind.NODE:

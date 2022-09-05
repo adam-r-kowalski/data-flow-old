@@ -6,7 +6,8 @@ export enum FocusKind {
     NODE,
     INPUT,
     OUTPUT,
-    BODY,
+    BODY_NUMBER,
+    BODY_TEXT,
     FINDER_INSERT,
     FINDER_CHANGE,
     NONE
@@ -41,10 +42,17 @@ export interface FocusOutput {
     readonly quickSelect: QuickSelect
 }
 
-export interface FocusBody {
-    readonly kind: FocusKind.BODY
+export interface FocusBodyNumber {
+    readonly kind: FocusKind.BODY_NUMBER
     readonly body: UUID
     readonly quickSelect: QuickSelect
+}
+
+export interface FocusBodyText {
+    readonly kind: FocusKind.BODY_TEXT
+    readonly body: UUID
+    readonly quickSelect: QuickSelect
+    readonly uppercase: boolean
 }
 
 export interface FocusFinderInsert {
@@ -53,6 +61,7 @@ export interface FocusFinderInsert {
     readonly options: Readonly<string[]>
     readonly selectedIndex: number
     readonly quickSelect: QuickSelectNone
+    readonly uppercase: boolean
 }
 
 export interface FocusFinderChange {
@@ -62,6 +71,7 @@ export interface FocusFinderChange {
     readonly quickSelect: QuickSelectNone
     readonly selectedIndex: number
     readonly node: UUID
+    readonly uppercase: boolean
 }
 
 export interface FocusNone {
@@ -74,7 +84,8 @@ export type Focus =
     | FocusNode
     | FocusInput
     | FocusOutput
-    | FocusBody
+    | FocusBodyNumber
+    | FocusBodyText
     | FocusFinderInsert
     | FocusFinderChange
     | FocusNone

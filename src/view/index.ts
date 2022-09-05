@@ -24,7 +24,9 @@ export const intersperse = <T>(array: T[], seperator: T): T[] => {
 
 export const isFocused = (focus: Focus, uuid: UUID): boolean => {
     switch (focus.kind) {
-        case FocusKind.BODY: return focus.body === uuid
+        case FocusKind.BODY_NUMBER:
+        case FocusKind.BODY_TEXT:
+            return focus.body === uuid
         case FocusKind.INPUT: return focus.input === uuid
         case FocusKind.NODE: return focus.node === uuid
         case FocusKind.OUTPUT: return focus.output === uuid
@@ -337,7 +339,7 @@ export const virtualKeys = (keys: VirtualKey[]) =>
     row(keys.map(virtualKey))
 
 
-export const alphabeticVirtualKeyboard = (theme: Theme) =>
+export const lowercaseAlphabeticVirtualKeyboard = (theme: Theme) =>
     column({ mainAxisAlignment: MainAxisAlignment.END }, [
         row({ mainAxisAlignment: MainAxisAlignment.SPACE_BETWEEN }, [
             container({ padding: 4, color: theme.node },
@@ -346,7 +348,7 @@ export const alphabeticVirtualKeyboard = (theme: Theme) =>
                     virtualKeys(['q', 'w', 'e', 'r', 't']),
                     virtualKeys(['a', 's', 'd', 'f', 'g']),
                     virtualKeys(['z', 'x', 'c', 'v']),
-                    virtualKeys([{ display: 'ret', event: 'Enter' }, 'space']),
+                    virtualKeys(['sft', { display: 'space', event: ' ' }]),
                 ])
             ),
             container({ padding: 4, color: theme.node },
@@ -355,12 +357,39 @@ export const alphabeticVirtualKeyboard = (theme: Theme) =>
                     virtualKeys(['y', 'u', 'i', 'o', 'p']),
                     virtualKeys(['h', 'j', 'k', 'l']),
                     virtualKeys(['b', 'n', 'm', { display: 'del', event: 'Backspace' }]),
-                    virtualKeys(['space', { display: 'ret', event: 'Enter' }]),
+                    virtualKeys([{ display: 'space', event: ' ' }, { display: 'ret', event: 'Enter' }]),
                 ])
             ),
         ]),
     ])
 
+
+export const uppercaseAlphabeticVirtualKeyboard = (theme: Theme) =>
+    column({ mainAxisAlignment: MainAxisAlignment.END }, [
+        row({ mainAxisAlignment: MainAxisAlignment.SPACE_BETWEEN }, [
+            container({ padding: 4, color: theme.node },
+                column([
+                    virtualKeys(['!', '@', '#', '$', '%']),
+                    virtualKeys(['Q', 'W', 'E', 'R', 'T']),
+                    virtualKeys(['A', 'S', 'D', 'F', 'G']),
+                    virtualKeys(['Z', 'X', 'C', 'V']),
+                    virtualKeys(['sft', { display: 'space', event: ' ' }]),
+                ])
+            ),
+            container({ padding: 4, color: theme.node },
+                column({ crossAxisAlignment: CrossAxisAlignment.END }, [
+                    virtualKeys(['^', '&', '*', '(', ')']),
+                    virtualKeys(['Y', 'U', 'I', 'O', 'P']),
+                    virtualKeys(['H', 'J', 'K', 'L']),
+                    virtualKeys(['B', 'N', 'M', { display: 'del', event: 'Backspace' }]),
+                    virtualKeys([{ display: 'space', event: ' ' }, { display: 'ret', event: 'Enter' }]),
+                ])
+            ),
+        ]),
+    ])
+
+export const alphabeticVirtualKeyboard = (theme: Theme, uppercase: boolean) =>
+    uppercase ? uppercaseAlphabeticVirtualKeyboard(theme) : lowercaseAlphabeticVirtualKeyboard(theme)
 
 export const numericVirtualKeyboard = (theme: Theme, sign: string) =>
     column({ mainAxisAlignment: MainAxisAlignment.END }, [
@@ -419,25 +448,19 @@ export const view = (model: Model): UI<AppEvent> => {
         case FocusKind.FINDER_CHANGE:
             stacked.push(
                 finder(model.focus, model.theme),
-                alphabeticVirtualKeyboard(model.theme)
+                alphabeticVirtualKeyboard(model.theme, model.focus.uppercase)
             )
             break
-        case FocusKind.BODY:
-            const body = model.graph.bodys[model.focus.body]
-            switch (body.kind) {
-                case BodyKind.NUMBER: {
-                    const sign = body.value >= 0 ? '-' : '+'
-                    stacked.push(numericVirtualKeyboard(model.theme, sign))
-                    break
-                }
-                case BodyKind.TEXT: {
-                    stacked.push(alphabeticVirtualKeyboard(model.theme))
-                    break
-                }
-                default:
-                    break
-            }
+        case FocusKind.BODY_NUMBER: {
+            const body = model.graph.bodys[model.focus.body] as NumberBody
+            const sign = body.value >= 0 ? '-' : '+'
+            stacked.push(numericVirtualKeyboard(model.theme, sign))
             break
+        }
+        case FocusKind.BODY_TEXT: {
+            stacked.push(alphabeticVirtualKeyboard(model.theme, model.focus.uppercase))
+            break
+        }
         case FocusKind.NODE:
             stacked.push(
                 contextMenu({

@@ -163,6 +163,7 @@ export enum OperationKind {
     NUMBER,
     TEXT,
     TRANSFORM,
+    UPLOAD_CSV,
 }
 
 export interface OperationNumber {
@@ -185,10 +186,17 @@ export interface OperationTransform {
     readonly func: Function
 }
 
+export interface OperationUploadCsv {
+    readonly kind: OperationKind.UPLOAD_CSV
+    readonly name: string
+    readonly outputs: Readonly<string[]>
+}
+
 export type Operation =
     | OperationNumber
     | OperationText
     | OperationTransform
+    | OperationUploadCsv
 
 export type Operations = { [name: string]: Operation }
 

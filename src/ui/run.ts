@@ -28,6 +28,7 @@ export interface UpdateResult<Model, AppEvent> {
     render?: boolean
     schedule?: Scheduled<AppEvent>[]
     dispatch?: AppEvent[]
+    promise?: Promise<AppEvent>
     cursor?: boolean
 }
 
@@ -86,6 +87,7 @@ export const run = <Model, AppEvent>(properties: Properties<Model, AppEvent>): S
                     render,
                     schedule,
                     dispatch: dispatchEvents,
+                    promise,
                     cursor
                 } = update(effects, model, event)
                 model = newModel
@@ -95,6 +97,7 @@ export const run = <Model, AppEvent>(properties: Properties<Model, AppEvent>): S
                     setTimeout(() => dispatch(event), milliseconds)
                 }
                 for (const event of dispatchEvents ?? []) dispatch(event)
+                if (promise !== undefined) promise.then(dispatch)
                 if (cursor !== undefined) {
                     document.body.style.cursor = cursor ? 'auto' : 'none'
                 }

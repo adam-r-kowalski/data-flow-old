@@ -5,7 +5,7 @@ import { Effects, UpdateResult } from "../ui/run"
 import { Model, NodePlacementLocation } from "../model"
 import { Focus, FocusFinderInsert, FocusFinderChange, FocusKind } from '../model/focus'
 import { PointerAction, PointerActionKind } from '../model/pointer_action'
-import { Body, BodyKind, Bodys, GenerateUUID, Graph, Inputs, NodeKind, Nodes, NodeSource, Operation, OperationKind, Operations, Output, Outputs, Position, TextBody, UUID } from '../model/graph'
+import { Body, BodyKind, Bodys, GenerateUUID, Graph, Inputs, Node, NodeKind, Nodes, NodeSource, Operation, OperationKind, Operations, Output, Outputs, Position, TextBody, UUID } from '../model/graph'
 import { Pointer } from "../ui"
 import { addNode, changeNumberText, changeNodePosition, removeInputEdge, removeNode, removeOutputEdges, evaluateNode } from "./graph"
 import { maybeTriggerQuickSelect, quickSelectInput, quickSelectOutput, quickSelectNode, quickSelectBody } from "./quick_select"
@@ -38,6 +38,7 @@ export enum EventKind {
     RESET_CAMERA,
     MOVE_NODE,
     UPLOAD_TABLE,
+    UPLOAD_CSV,
 }
 
 export interface PointerMove {
@@ -149,6 +150,13 @@ export interface UploadTable {
     readonly position: Position
 }
 
+export interface UploadCsv {
+    readonly kind: EventKind.UPLOAD_CSV
+    readonly name: string
+    readonly table: Table
+    readonly node: UUID
+}
+
 
 export type AppEvent =
     | PointerMove
@@ -173,6 +181,7 @@ export type AppEvent =
     | ResetCamera
     | MoveNode
     | UploadTable
+    | UploadCsv
 
 const pointerDown = (model: Model, event: PointerDown): UpdateResult<Model, AppEvent> => {
     const pointers = [...model.pointers, event.pointer]
@@ -421,10 +430,11 @@ const insertOperationFromFinder = (model: Model, name: string, generateUUID: Gen
         model.camera,
         [model.nodePlacementLocation.x, model.nodePlacementLocation.y, 1]
     )
-    const { model: nextModel } = addNodeToGraph({ model, operation, position: { x, y }, generateUUID })
+    const { model: nextModel, event } = addNodeToGraph({ model, operation, position: { x, y }, generateUUID })
     return {
         model: clearFocus(nextModel),
-        render: true
+        render: true,
+        promise: event
     }
 }
 
@@ -579,18 +589,20 @@ interface AddNodeInputs {
 interface AddNodeOutputs {
     model: Model
     node: UUID
+    event?: Promise<UploadCsv>
 }
 
 
 export const addNodeToGraph = ({ model, operation, position, generateUUID }: AddNodeInputs): AddNodeOutputs => {
-    const { graph, node } = addNode({ graph: model.graph, operation, position, generateUUID })
+    const { graph, node, event } = addNode({ graph: model.graph, operation, position, generateUUID })
     return {
         model: {
             ...model,
             graph,
             nodeOrder: [...model.nodeOrder, node]
         },
-        node
+        node,
+        event
     }
 }
 
@@ -1031,6 +1043,32 @@ export const uploadTable = (model: Model, event: UploadTable, generateUUID: Gene
     }
 }
 
+export const uploadCsv = (model: Model, event: UploadCsv): UpdateResult<Model, AppEvent> => {
+    const node: Node = {
+        ...model.graph.nodes[event.node],
+        name: event.name
+    }
+    const body: Body = {
+        kind: BodyKind.TABLE,
+        uuid: node.body,
+        node: node.uuid,
+        name: event.name,
+        value: event.table
+    }
+    return {
+        model: {
+            ...model,
+            graph: {
+                ...model.graph,
+                nodes: { ...model.graph.nodes, [node.uuid]: node },
+                bodys: { ...model.graph.bodys, [body.uuid]: body }
+            }
+        },
+        render: true
+    }
+}
+
+
 export const update = (effects: Effects, model: Model, event: AppEvent): UpdateResult<Model, AppEvent> => {
     switch (event.kind) {
         case EventKind.POINTER_DOWN: return pointerDown(model, event)
@@ -1055,5 +1093,6 @@ export const update = (effects: Effects, model: Model, event: AppEvent): UpdateR
         case EventKind.RESET_CAMERA: return resetCamera(model)
         case EventKind.MOVE_NODE: return moveNode(model, effects.currentTime)
         case EventKind.UPLOAD_TABLE: return uploadTable(model, event, effects.generateUUID)
+        case EventKind.UPLOAD_CSV: return uploadCsv(model, event)
     }
 }

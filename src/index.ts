@@ -131,7 +131,6 @@ document.addEventListener('drop', async e => {
         complete: async results => {
             const table: Table = {}
             for (const name of results.meta.fields!) {
-                console.log(name)
                 table[name] = []
             }
             const errorRows = results.errors.map(e => e.row)

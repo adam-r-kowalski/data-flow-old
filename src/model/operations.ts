@@ -780,6 +780,11 @@ export const operations: Operations = {
         outputs: ["out"],
         func: tensorFunc(tf.transpose as TensorFunc)
     },
+    "upload csv": {
+        kind: OperationKind.UPLOAD_CSV,
+        name: "upload csv",
+        outputs: ["table"]
+    },
     "where": {
         kind: OperationKind.TRANSFORM,
         name: "where",

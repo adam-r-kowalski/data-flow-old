@@ -1,4 +1,8 @@
+import * as papa from 'papaparse'
+import { EventKind, UploadCsv } from '.'
+
 import { Body, BodyKind, Edge, GenerateUUID, Graph, Inputs, Node, NodeKind, NodeSource, NodeTransform, Operation, OperationKind, Outputs, Position, UUID } from "../model/graph"
+import { Table, Value } from "../model/table"
 
 interface AddNodeInputs {
     graph: Graph
@@ -10,6 +14,7 @@ interface AddNodeInputs {
 interface AddNodeOutputs {
     graph: Graph
     node: UUID
+    event?: Promise<UploadCsv>
 }
 
 export const addNode = ({ graph, operation, position, generateUUID }: AddNodeInputs): AddNodeOutputs => {
@@ -17,118 +22,210 @@ export const addNode = ({ graph, operation, position, generateUUID }: AddNodeInp
     const inputs = { ...graph.inputs }
     const outputs = { ...graph.outputs }
     const bodys = { ...graph.bodys }
-    const node: Node = (() => {
-        switch (operation.kind) {
-            case OperationKind.NUMBER: {
-                const outputUUIDs = []
-                for (const name of operation.outputs) {
-                    const uuid = generateUUID()
-                    outputs[uuid] = {
-                        uuid,
-                        node: nodeUUID,
-                        name,
-                        edges: []
-                    }
-                    outputUUIDs.push(uuid)
-                }
-                const body: Body = {
-                    kind: BodyKind.NUMBER,
-                    uuid: generateUUID(),
+    switch (operation.kind) {
+        case OperationKind.NUMBER: {
+            const outputUUIDs = []
+            for (const name of operation.outputs) {
+                const uuid = generateUUID()
+                outputs[uuid] = {
+                    uuid,
                     node: nodeUUID,
-                    value: 0,
-                    text: '0'
+                    name,
+                    edges: []
                 }
-                const node: NodeSource = {
-                    kind: NodeKind.SOURCE,
-                    uuid: nodeUUID,
-                    name: operation.name,
-                    outputs: outputUUIDs,
-                    body: body.uuid,
-                    position,
-                }
-                bodys[body.uuid] = body
-                return node
+                outputUUIDs.push(uuid)
             }
-            case OperationKind.TEXT: {
-                const outputUUIDs = []
-                for (const name of operation.outputs) {
-                    const uuid = generateUUID()
-                    outputs[uuid] = {
-                        uuid,
-                        node: nodeUUID,
-                        name,
-                        edges: []
-                    }
-                    outputUUIDs.push(uuid)
-                }
-                const body: Body = {
-                    kind: BodyKind.TEXT,
-                    uuid: generateUUID(),
-                    node: nodeUUID,
-                    value: '',
-                }
-                const node: NodeSource = {
-                    kind: NodeKind.SOURCE,
-                    uuid: nodeUUID,
-                    name: operation.name,
-                    outputs: outputUUIDs,
-                    body: body.uuid,
-                    position,
-                }
-                bodys[body.uuid] = body
-                return node
+            const body: Body = {
+                kind: BodyKind.NUMBER,
+                uuid: generateUUID(),
+                node: nodeUUID,
+                value: 0,
+                text: '0'
             }
-            case OperationKind.TRANSFORM: {
-                const inputUUIDs = []
-                for (const name of operation.inputs) {
-                    const uuid = generateUUID()
-                    inputs[uuid] = {
-                        uuid,
-                        node: nodeUUID,
-                        name
-                    }
-                    inputUUIDs.push(uuid)
-                }
-                const outputUUIDs = []
-                for (const name of operation.outputs) {
-                    const uuid = generateUUID()
-                    outputs[uuid] = {
-                        uuid,
-                        node: nodeUUID,
-                        name,
-                        edges: []
-                    }
-                    outputUUIDs.push(uuid)
-                }
-                const body: Body = {
-                    kind: BodyKind.NO,
-                    uuid: generateUUID(),
-                    node: nodeUUID,
-                }
-                const node: NodeTransform = {
-                    kind: NodeKind.TRANSFORM,
-                    uuid: nodeUUID,
-                    name: operation.name,
-                    inputs: inputUUIDs,
-                    body: body.uuid,
-                    outputs: outputUUIDs,
-                    position,
-                    func: operation.func
-                }
-                bodys[body.uuid] = body
-                return node
+            const node: NodeSource = {
+                kind: NodeKind.SOURCE,
+                uuid: nodeUUID,
+                name: operation.name,
+                outputs: outputUUIDs,
+                body: body.uuid,
+                position,
+            }
+            bodys[body.uuid] = body
+            return {
+                graph: {
+                    ...graph,
+                    nodes: { ...graph.nodes, [node.uuid]: { ...node, body: node.body } },
+                    inputs,
+                    outputs,
+                    bodys
+                },
+                node: nodeUUID
             }
         }
-    })()
-    return {
-        graph: {
-            ...graph,
-            nodes: { ...graph.nodes, [node.uuid]: { ...node, body: node.body } },
-            inputs,
-            outputs,
-            bodys
-        },
-        node: nodeUUID
+        case OperationKind.TEXT: {
+            const outputUUIDs = []
+            for (const name of operation.outputs) {
+                const uuid = generateUUID()
+                outputs[uuid] = {
+                    uuid,
+                    node: nodeUUID,
+                    name,
+                    edges: []
+                }
+                outputUUIDs.push(uuid)
+            }
+            const body: Body = {
+                kind: BodyKind.TEXT,
+                uuid: generateUUID(),
+                node: nodeUUID,
+                value: '',
+            }
+            const node: NodeSource = {
+                kind: NodeKind.SOURCE,
+                uuid: nodeUUID,
+                name: operation.name,
+                outputs: outputUUIDs,
+                body: body.uuid,
+                position,
+            }
+            bodys[body.uuid] = body
+            return {
+                graph: {
+                    ...graph,
+                    nodes: { ...graph.nodes, [node.uuid]: { ...node, body: node.body } },
+                    inputs,
+                    outputs,
+                    bodys
+                },
+                node: nodeUUID
+            }
+        }
+        case OperationKind.TRANSFORM: {
+            const inputUUIDs = []
+            for (const name of operation.inputs) {
+                const uuid = generateUUID()
+                inputs[uuid] = {
+                    uuid,
+                    node: nodeUUID,
+                    name
+                }
+                inputUUIDs.push(uuid)
+            }
+            const outputUUIDs = []
+            for (const name of operation.outputs) {
+                const uuid = generateUUID()
+                outputs[uuid] = {
+                    uuid,
+                    node: nodeUUID,
+                    name,
+                    edges: []
+                }
+                outputUUIDs.push(uuid)
+            }
+            const body: Body = {
+                kind: BodyKind.NO,
+                uuid: generateUUID(),
+                node: nodeUUID,
+            }
+            const node: NodeTransform = {
+                kind: NodeKind.TRANSFORM,
+                uuid: nodeUUID,
+                name: operation.name,
+                inputs: inputUUIDs,
+                body: body.uuid,
+                outputs: outputUUIDs,
+                position,
+                func: operation.func
+            }
+            bodys[body.uuid] = body
+            return {
+                graph: {
+                    ...graph,
+                    nodes: { ...graph.nodes, [node.uuid]: { ...node, body: node.body } },
+                    inputs,
+                    outputs,
+                    bodys
+                },
+                node: nodeUUID
+            }
+        }
+        case OperationKind.UPLOAD_CSV: {
+            const outputUUIDs = []
+            for (const name of operation.outputs) {
+                const uuid = generateUUID()
+                outputs[uuid] = {
+                    uuid,
+                    node: nodeUUID,
+                    name,
+                    edges: []
+                }
+                outputUUIDs.push(uuid)
+            }
+            const body: Body = {
+                kind: BodyKind.NO,
+                uuid: generateUUID(),
+                node: nodeUUID,
+            }
+            const node: NodeSource = {
+                kind: NodeKind.SOURCE,
+                uuid: nodeUUID,
+                name: operation.name,
+                outputs: outputUUIDs,
+                body: body.uuid,
+                position,
+            }
+            bodys[body.uuid] = body
+            type Row = { [name: string]: Value }
+            const event = new Promise<File>((resolve, reject) => {
+                const element = document.createElement('input')
+                element.type = 'file'
+                element.accept = '.csv'
+                element.addEventListener('change', (event) => {
+                    const file = (event.target! as HTMLInputElement).files![0]
+                    resolve(file)
+                })
+                element.click()
+            }).then(file => {
+                return new Promise<UploadCsv>((resolve, reject) => {
+                    papa.parse(file, {
+                        worker: true,
+                        header: true,
+                        dynamicTyping: true,
+                        complete: async results => {
+                            const table: Table = {}
+                            for (const name of results.meta.fields!) {
+                                table[name] = []
+                            }
+                            const errorRows = results.errors.map(e => e.row)
+                            results.data.forEach((row, i) => {
+                                if (!errorRows.includes(i)) {
+                                    for (const [name, value] of Object.entries(row as Row)) {
+                                        table[name].push(value ?? undefined)
+                                    }
+                                }
+                            })
+                            resolve({
+                                kind: EventKind.UPLOAD_CSV,
+                                name: file.name,
+                                table,
+                                node: nodeUUID
+                            })
+                        }
+                    })
+                })
+            })
+            return {
+                graph: {
+                    ...graph,
+                    nodes: { ...graph.nodes, [node.uuid]: { ...node, body: node.body } },
+                    inputs,
+                    outputs,
+                    bodys
+                },
+                node: nodeUUID,
+                event
+            }
+        }
     }
 }
 

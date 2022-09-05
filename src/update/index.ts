@@ -98,7 +98,7 @@ export interface ClickedFinderOption {
     readonly option: string
 }
 
-export interface ClickedNumber {
+export interface ClickedBody {
     readonly kind: EventKind.CLICKED_BODY,
     readonly body: UUID
 }
@@ -170,7 +170,7 @@ export type AppEvent =
     | KeyDown
     | KeyUp
     | ClickedFinderOption
-    | ClickedNumber
+    | ClickedBody
     | ClickedBackground
     | ChangeNode
     | DeleteNode
@@ -338,7 +338,8 @@ const pointerMove = (model: Model, event: PointerMove): UpdateResult<Model, AppE
                 } else {
                     return { model: { ...model, pointers, nodePlacementLocation } }
                 }
-            case FocusKind.BODY:
+            case FocusKind.BODY_NUMBER:
+            case FocusKind.BODY_TEXT:
             case FocusKind.INPUT:
             case FocusKind.OUTPUT:
                 return { model: { ...model, pointers, nodePlacementLocation } }
@@ -405,7 +406,8 @@ export const openFinderInsert = (model: Model): Model => ({
         search: '',
         options: Object.keys(model.operations),
         selectedIndex: 0,
-        quickSelect: { kind: QuickSelectKind.NONE }
+        quickSelect: { kind: QuickSelectKind.NONE },
+        uppercase: false,
     },
     openFinderFirstClick: false,
 })
@@ -418,7 +420,8 @@ export const openFinderChange = (model: Model, node: UUID): Model => ({
         options: Object.keys(model.operations),
         selectedIndex: 0,
         quickSelect: { kind: QuickSelectKind.NONE },
-        node
+        node,
+        uppercase: false,
     },
     openFinderFirstClick: false,
 })
@@ -738,83 +741,91 @@ const keyDown = (model: Model, event: KeyDown, { generateUUID, currentTime }: Ef
                                 return updateFinderSearch(model, model.focus, search => search + key)
                             }
                     }
-                case FocusKind.BODY:
-                    const body = model.graph.bodys[model.focus.body]
-                    switch (body.kind) {
-                        case BodyKind.NUMBER:
-                            switch (key) {
-                                case 'Backspace':
-                                    return updateNumberText(model, model.focus.body, text => {
-                                        const nextText = text.slice(0, -1)
-                                        return nextText === '' ? '0' : nextText
-                                    })
-                                case '1':
-                                case '2':
-                                case '3':
-                                case '4':
-                                case '5':
-                                case '6':
-                                case '7':
-                                case '8':
-                                case '9':
-                                case '0':
-                                    return updateNumberText(model, model.focus.body, text => {
-                                        if (text === '0') { return key }
-                                        else if (text === '-0') { return `-${key}` }
-                                        else { return text + key }
-                                    })
-                                case '.':
-                                    return updateNumberText(model, model.focus.body, text => text.includes('.') ? text : text + key)
-                                case '-':
-                                case '+':
-                                    return updateNumberText(model, model.focus.body, text => {
-                                        if (text.length && text[0] === '-') {
-                                            return text.slice(1)
-                                        } else {
-                                            return '-' + text
-                                        }
-                                    })
-                                case 'c':
-                                    return updateNumberText(model, model.focus.body, () => '0')
-                                case 'Enter':
-                                case 'Escape':
-                                    return {
-                                        model: clearFocus(model),
-                                        render: true
-                                    }
-                                default:
-                                    return maybeTriggerQuickSelect(model, model.focus, key)
-                            }
-                        case BodyKind.TEXT:
-                            switch (key) {
-                                case 'Enter':
-                                case 'Escape':
-                                    return {
-                                        model: clearFocus(model),
-                                        render: true
-                                    }
-                                case 'Shift':
-                                    return { model }
-                                case 'Backspace':
-                                    return updateBody(model, body.uuid, body => {
-                                        const textBody = (body as TextBody)
-                                        return {
-                                            ...textBody,
-                                            value: textBody.value.slice(0, -1)
-                                        }
-                                    })
-                                default:
-                                    return updateBody(model, body.uuid, body => {
-                                        const textBody = (body as TextBody)
-                                        return {
-                                            ...textBody,
-                                            value: textBody.value + key
-                                        }
-                                    })
+                case FocusKind.BODY_NUMBER: {
+                    switch (key) {
+                        case 'Backspace':
+                            return updateNumberText(model, model.focus.body, text => {
+                                const nextText = text.slice(0, -1)
+                                return nextText === '' ? '0' : nextText
+                            })
+                        case '1':
+                        case '2':
+                        case '3':
+                        case '4':
+                        case '5':
+                        case '6':
+                        case '7':
+                        case '8':
+                        case '9':
+                        case '0':
+                            return updateNumberText(model, model.focus.body, text => {
+                                if (text === '0') { return key }
+                                else if (text === '-0') { return `-${key}` }
+                                else { return text + key }
+                            })
+                        case '.':
+                            return updateNumberText(model, model.focus.body, text => text.includes('.') ? text : text + key)
+                        case '-':
+                        case '+':
+                            return updateNumberText(model, model.focus.body, text => {
+                                if (text.length && text[0] === '-') {
+                                    return text.slice(1)
+                                } else {
+                                    return '-' + text
+                                }
+                            })
+                        case 'c':
+                            return updateNumberText(model, model.focus.body, () => '0')
+                        case 'Enter':
+                        case 'Escape':
+                            return {
+                                model: clearFocus(model),
+                                render: true
                             }
                         default:
-                            return { model }
+                            return maybeTriggerQuickSelect(model, model.focus, key)
                     }
+                }
+                case FocusKind.BODY_TEXT: {
+                    const body = model.graph.bodys[model.focus.body]
+                    switch (key) {
+                        case 'Enter':
+                        case 'Escape':
+                            return {
+                                model: clearFocus(model),
+                                render: true
+                            }
+                        case 'Shift':
+                            return { model }
+                        case 'sft':
+                            return {
+                                model: {
+                                    ...model,
+                                    focus: {
+                                        ...model.focus,
+                                        uppercase: !model.focus.uppercase
+                                    }
+                                },
+                                render: true
+                            }
+                        case 'Backspace':
+                            return updateBody(model, body.uuid, body => {
+                                const textBody = (body as TextBody)
+                                return {
+                                    ...textBody,
+                                    value: textBody.value.slice(0, -1)
+                                }
+                            })
+                        default:
+                            return updateBody(model, body.uuid, body => {
+                                const textBody = (body as TextBody)
+                                return {
+                                    ...textBody,
+                                    value: textBody.value + key
+                                }
+                            })
+                    }
+                }
                 case FocusKind.NODE:
                     switch (key) {
                         case 'f':
@@ -920,16 +931,34 @@ const clickedFinderOption = (model: Model, { option }: ClickedFinderOption, gene
 
 }
 
-export const focusBody = (model: Model, body: UUID): Model => ({
-    ...model,
-    focus: {
-        kind: FocusKind.BODY,
-        body,
-        quickSelect: { kind: QuickSelectKind.NONE }
+export const focusBody = (model: Model, bodyUUID: UUID): Model => {
+    const body = model.graph.bodys[bodyUUID]
+    switch (body.kind) {
+        case BodyKind.NUMBER:
+            return {
+                ...model,
+                focus: {
+                    kind: FocusKind.BODY_NUMBER,
+                    body: bodyUUID,
+                    quickSelect: { kind: QuickSelectKind.NONE },
+                }
+            }
+        case BodyKind.TEXT:
+            return {
+                ...model,
+                focus: {
+                    kind: FocusKind.BODY_TEXT,
+                    body: bodyUUID,
+                    quickSelect: { kind: QuickSelectKind.NONE },
+                    uppercase: false
+                }
+            }
+        default:
+            return model
     }
-})
+}
 
-const clickedNumber = (model: Model, { body }: ClickedNumber): UpdateResult<Model, AppEvent> => ({
+const clickedBody = (model: Model, { body }: ClickedBody): UpdateResult<Model, AppEvent> => ({
     model: focusBody(clearFocus(model), body),
     render: true
 })
@@ -1082,7 +1111,7 @@ export const update = (effects: Effects, model: Model, event: AppEvent): UpdateR
         case EventKind.KEYDOWN: return keyDown(model, event, effects)
         case EventKind.KEYUP: return keyUp(model, event)
         case EventKind.CLICKED_FINDER_OPTION: return clickedFinderOption(model, event, effects.generateUUID)
-        case EventKind.CLICKED_BODY: return clickedNumber(model, event)
+        case EventKind.CLICKED_BODY: return clickedBody(model, event)
         case EventKind.CLICKED_BACKGROUND: return clickedBackground(model)
         case EventKind.CHANGE_NODE: return changeNode(model, event)
         case EventKind.DELETE_NODE: return deleteNode(model, event)

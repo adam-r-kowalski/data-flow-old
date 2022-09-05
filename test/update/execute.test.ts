@@ -346,11 +346,11 @@ test("changing body retriggers evaluation", () => {
         nodeOrder: [x, y, add],
         operations,
         focus: {
-            kind: FocusKind.BODY,
+            kind: FocusKind.BODY_NUMBER,
             body: model5.graph.nodes[x].body,
             quickSelect: {
                 kind: QuickSelectKind.NONE
-            }
+            },
         }
     }
     expect(model11).toEqual(expectedModel)

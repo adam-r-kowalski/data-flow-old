@@ -188,7 +188,7 @@ test("pressing i with body focused launches quick select for inputs", () => {
     const expectedModel: Model = {
         ...model2,
         focus: {
-            kind: FocusKind.BODY,
+            kind: FocusKind.BODY_NUMBER,
             body,
             quickSelect: {
                 kind: QuickSelectKind.INPUT,
@@ -196,7 +196,7 @@ test("pressing i with body focused launches quick select for inputs", () => {
                     [inputs[0]]: 'a',
                     [inputs[1]]: 'b'
                 }
-            }
+            },
         }
     }
     expect(model4).toEqual(expectedModel)
@@ -464,7 +464,7 @@ test("pressing o with body focused launches quick select for outputs", () => {
     const expectedModel: Model = {
         ...model2,
         focus: {
-            kind: FocusKind.BODY,
+            kind: FocusKind.BODY_NUMBER,
             body,
             quickSelect: {
                 kind: QuickSelectKind.OUTPUT,
@@ -472,7 +472,7 @@ test("pressing o with body focused launches quick select for outputs", () => {
                     [output0]: 'a',
                     [output1]: 'b',
                 }
-            }
+            },
         }
     }
     expect(model4).toEqual(expectedModel)
@@ -786,9 +786,9 @@ test("pressing hotkey with body quick select will select the body and disable qu
     const expectedModel: Model = {
         ...model1,
         focus: {
-            kind: FocusKind.BODY,
+            kind: FocusKind.BODY_NUMBER,
             body,
-            quickSelect: { kind: QuickSelectKind.NONE }
+            quickSelect: { kind: QuickSelectKind.NONE },
         }
     }
     expect(model3).toEqual(expectedModel)

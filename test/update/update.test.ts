@@ -95,7 +95,8 @@ test("double clicking background opens finder", () => {
             search: '',
             options: [],
             selectedIndex: 0,
-            quickSelect: { kind: QuickSelectKind.NONE }
+            quickSelect: { kind: QuickSelectKind.NONE },
+            uppercase: false,
         },
         nodePlacementLocation: { x: 0, y: 0, show: false }
     }
@@ -772,7 +773,8 @@ test("double click opens finder", () => {
             search: '',
             options: ['Add', 'Sub'],
             selectedIndex: 0,
-            quickSelect: { kind: QuickSelectKind.NONE }
+            quickSelect: { kind: QuickSelectKind.NONE },
+            uppercase: false,
         },
         nodePlacementLocation: { x: 50, y: 50, show: false },
         pointers: [
@@ -826,7 +828,8 @@ test("f key down when finder is not shown opens finder", () => {
             search: '',
             options: ["Add", "Sub"],
             selectedIndex: 0,
-            quickSelect: { kind: QuickSelectKind.NONE }
+            quickSelect: { kind: QuickSelectKind.NONE },
+            uppercase: false,
         }
     }
     expect(model1).toEqual(expectedModel)
@@ -906,7 +909,8 @@ test("key down when finder is shown appends to search", () => {
             search: 'add',
             options: ['Add'],
             selectedIndex: 0,
-            quickSelect: { kind: QuickSelectKind.NONE }
+            quickSelect: { kind: QuickSelectKind.NONE },
+            uppercase: false,
         },
     }
     expect(model3).toEqual(expectedModel)
@@ -944,7 +948,8 @@ test("arrow down when finder is shown adds to selected index", () => {
             search: '',
             options: ['Add', 'Sub'],
             selectedIndex: 1,
-            quickSelect: { kind: QuickSelectKind.NONE }
+            quickSelect: { kind: QuickSelectKind.NONE },
+            uppercase: false,
         },
     }
     expect(model1).toEqual(expectedModel)
@@ -982,7 +987,8 @@ test("ctrl j when finder is shown adds to selected index", () => {
             search: '',
             options: ['Add', 'Sub'],
             selectedIndex: 1,
-            quickSelect: { kind: QuickSelectKind.NONE }
+            quickSelect: { kind: QuickSelectKind.NONE },
+            uppercase: false,
         },
     }
     expect(model1).toEqual(expectedModel)
@@ -1029,7 +1035,8 @@ test("arrow up when finder is shown subtracts from selected index", () => {
             search: '',
             options: ['Add', 'Sub'],
             selectedIndex: 0,
-            quickSelect: { kind: QuickSelectKind.NONE }
+            quickSelect: { kind: QuickSelectKind.NONE },
+            uppercase: false,
         },
     }
     expect(model2).toEqual(expectedModel)
@@ -1075,7 +1082,8 @@ test("ctrl k when finder is shown subtracts from selected index", () => {
             search: '',
             options: ['Add', 'Sub'],
             selectedIndex: 0,
-            quickSelect: { kind: QuickSelectKind.NONE }
+            quickSelect: { kind: QuickSelectKind.NONE },
+            uppercase: false,
         },
     }
     expect(model2).toEqual(expectedModel)
@@ -1117,7 +1125,8 @@ test("ctrl + key thats not j or k adds to finder search", () => {
             search: 'qwertyuiopasdfghlzxcvbnm',
             options: [],
             selectedIndex: 0,
-            quickSelect: { kind: QuickSelectKind.NONE }
+            quickSelect: { kind: QuickSelectKind.NONE },
+            uppercase: false,
         },
     }
     expect(model1).toEqual(expectedModel)
@@ -1170,7 +1179,8 @@ test("backspace key down when finder is shown deletes from search", () => {
             search: 'ad',
             options: ['Add'],
             selectedIndex: 0,
-            quickSelect: { kind: QuickSelectKind.NONE }
+            quickSelect: { kind: QuickSelectKind.NONE },
+            uppercase: false,
         }
     }
     expect(model4).toEqual(expectedModel)
@@ -1485,9 +1495,9 @@ test("pressing number on keyboard appends to number node", () => {
         ...model0,
         operations,
         focus: {
-            kind: FocusKind.BODY,
+            kind: FocusKind.BODY_NUMBER,
             body,
-            quickSelect: { kind: QuickSelectKind.NONE }
+            quickSelect: { kind: QuickSelectKind.NONE },
         },
         graph: {
             ...model0.graph,
@@ -1536,9 +1546,9 @@ test("pressing -3.14 on keyboard writes a float for the number", () => {
         ...model0,
         operations,
         focus: {
-            kind: FocusKind.BODY,
+            kind: FocusKind.BODY_NUMBER,
             body,
-            quickSelect: { kind: QuickSelectKind.NONE }
+            quickSelect: { kind: QuickSelectKind.NONE },
         },
         graph: {
             ...model0.graph,
@@ -1587,9 +1597,9 @@ test("pressing -3.1.4 on keyboard ignores the second decimal", () => {
         ...model0,
         operations,
         focus: {
-            kind: FocusKind.BODY,
+            kind: FocusKind.BODY_NUMBER,
             body,
-            quickSelect: { kind: QuickSelectKind.NONE }
+            quickSelect: { kind: QuickSelectKind.NONE },
         },
         graph: {
             ...model0.graph,
@@ -1644,9 +1654,9 @@ test("pressing backspace on keyboard deletes from number node", () => {
         ...model0,
         operations,
         focus: {
-            kind: FocusKind.BODY,
+            kind: FocusKind.BODY_NUMBER,
             body,
-            quickSelect: { kind: QuickSelectKind.NONE }
+            quickSelect: { kind: QuickSelectKind.NONE },
         },
         graph: {
             ...model0.graph,
@@ -1695,9 +1705,9 @@ test("pressing backspace when number node value is 0 has no effect", () => {
         ...model0,
         operations,
         focus: {
-            kind: FocusKind.BODY,
+            kind: FocusKind.BODY_NUMBER,
             body,
-            quickSelect: { kind: QuickSelectKind.NONE }
+            quickSelect: { kind: QuickSelectKind.NONE },
         },
         graph: {
             ...model0.graph,
@@ -1854,9 +1864,9 @@ test("pressing - on keyboard while editing number node makes the number negative
             }
         },
         focus: {
-            kind: FocusKind.BODY,
+            kind: FocusKind.BODY_NUMBER,
             body,
-            quickSelect: { kind: QuickSelectKind.NONE }
+            quickSelect: { kind: QuickSelectKind.NONE },
         }
     }
     expect(model3).toEqual(expectedModel)
@@ -1902,9 +1912,9 @@ test("pressing + on keyboard while editing number node makes the number negative
             }
         },
         focus: {
-            kind: FocusKind.BODY,
+            kind: FocusKind.BODY_NUMBER,
             body,
-            quickSelect: { kind: QuickSelectKind.NONE }
+            quickSelect: { kind: QuickSelectKind.NONE },
         }
     }
     expect(model3).toEqual(expectedModel)
@@ -1950,9 +1960,9 @@ test("pressing c on keyboard while editing number node makes the number 0", () =
             }
         },
         focus: {
-            kind: FocusKind.BODY,
+            kind: FocusKind.BODY_NUMBER,
             body,
-            quickSelect: { kind: QuickSelectKind.NONE }
+            quickSelect: { kind: QuickSelectKind.NONE },
         }
     }
     expect(model2).toEqual(expectedModel)
@@ -3398,7 +3408,8 @@ test("pressing f with node selected opens finder", () => {
             search: '',
             options: ['Add'],
             selectedIndex: 0,
-            quickSelect: { kind: QuickSelectKind.NONE }
+            quickSelect: { kind: QuickSelectKind.NONE },
+            uppercase: false,
         }
     }
     expect(model5).toEqual(expectedModel)
@@ -3453,7 +3464,8 @@ test("pressing f with input selected opens finder", () => {
             search: '',
             options: ['Add'],
             selectedIndex: 0,
-            quickSelect: { kind: QuickSelectKind.NONE }
+            quickSelect: { kind: QuickSelectKind.NONE },
+            uppercase: false,
         }
     }
     expect(model5).toEqual(expectedModel)
@@ -3507,7 +3519,8 @@ test("pressing f with output selected opens finder", () => {
             search: '',
             options: ['Add'],
             selectedIndex: 0,
-            quickSelect: { kind: QuickSelectKind.NONE }
+            quickSelect: { kind: QuickSelectKind.NONE },
+            uppercase: false,
         }
     }
     expect(model5).toEqual(expectedModel)
@@ -3706,9 +3719,10 @@ test("pressing any alphanumeric key while editing text node appends key to value
             }
         },
         focus: {
-            kind: FocusKind.BODY,
+            kind: FocusKind.BODY_TEXT,
             body,
-            quickSelect: { kind: QuickSelectKind.NONE }
+            quickSelect: { kind: QuickSelectKind.NONE },
+            uppercase: false,
         }
     }
     expect(model3).toEqual(expectedModel)
@@ -3761,9 +3775,10 @@ test("pressing backspace while editing text node removes letter from value", () 
             }
         },
         focus: {
-            kind: FocusKind.BODY,
+            kind: FocusKind.BODY_TEXT,
             body,
-            quickSelect: { kind: QuickSelectKind.NONE }
+            quickSelect: { kind: QuickSelectKind.NONE },
+            uppercase: false,
         }
     }
     expect(model4).toEqual(expectedModel)
@@ -3905,37 +3920,6 @@ test("pressing shift while editing text node does nothing", () => {
     expect(model4).toEqual(model3)
 })
 
-test("pressing any key while focusing a body with no content does nothing", () => {
-    const effects = makeEffects()
-    const operations: Operations = {
-        'add': {
-            kind: OperationKind.TRANSFORM,
-            name: 'add',
-            inputs: ['x', 'y'],
-            outputs: ['out'],
-            func: addFunc
-        }
-    }
-    const { model: model0, node } = addNodeToGraph({
-        model: { ...model, operations },
-        operation: operations['add'],
-        position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
-    })
-    const body = model0.graph.nodes[node].body
-    const model2 = focusBody(model0, body)
-    let model3 = model2
-    for (const key of 'qwertyuiopasdfghjklzxcvbnm1234567890') {
-        const { model: nextModel } = update(effects, model3, {
-            kind: EventKind.KEYDOWN,
-            key: key,
-            ctrl: false
-        })
-        model3 = nextModel
-    }
-    expect(model3).toEqual(model2)
-})
-
 test("upload table", () => {
     const table: Table = {
         'a': [1, 2, 3],
@@ -4066,7 +4050,8 @@ test("pressing c with node selected opens finder in change mode", () => {
             options: ['Number', 'Add', 'Sub'],
             node: add,
             selectedIndex: 0,
-            quickSelect: { kind: QuickSelectKind.NONE }
+            quickSelect: { kind: QuickSelectKind.NONE },
+            uppercase: false,
         }
     }
     expect(model9).toEqual(expectedModel)
@@ -4148,7 +4133,8 @@ test("pressing change node context menu with node selected opens finder in chang
             options: ['Number', 'Add', 'Sub'],
             node: add,
             selectedIndex: 0,
-            quickSelect: { kind: QuickSelectKind.NONE }
+            quickSelect: { kind: QuickSelectKind.NONE },
+            uppercase: false,
         }
     }
     expect(model9).toEqual(expectedModel)

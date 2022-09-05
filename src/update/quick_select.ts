@@ -162,16 +162,43 @@ export const quickSelectBody = (model: Model, quickSelect: QuickSelectBody, key:
     const entry = Object.entries(quickSelect.hotkeys).find(([_, hotkey]) => hotkey === key)
     if (entry !== undefined) {
         const [body, _] = entry
-        return {
-            model: {
-                ...model,
-                focus: {
-                    kind: FocusKind.BODY,
-                    body,
-                    quickSelect: { kind: QuickSelectKind.NONE }
+        switch (model.graph.bodys[body].kind) {
+            case BodyKind.NUMBER:
+                return {
+                    model: {
+                        ...model,
+                        focus: {
+                            kind: FocusKind.BODY_NUMBER,
+                            body,
+                            quickSelect: { kind: QuickSelectKind.NONE },
+                        }
+                    },
+                    render: true
                 }
-            },
-            render: true
+            case BodyKind.TEXT:
+                return {
+                    model: {
+                        ...model,
+                        focus: {
+                            kind: FocusKind.BODY_TEXT,
+                            body,
+                            quickSelect: { kind: QuickSelectKind.NONE },
+                            uppercase: false
+                        }
+                    },
+                    render: true
+                }
+            default:
+                return {
+                    model: {
+                        ...model,
+                        focus: {
+                            ...model.focus,
+                            quickSelect: { kind: QuickSelectKind.NONE }
+                        }
+                    },
+                    render: true
+                }
         }
     } else {
         return {

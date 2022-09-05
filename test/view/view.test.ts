@@ -288,9 +288,9 @@ test("bodyUi editing", () => {
         text: '0'
     }
     const actual = numberBody(theme, body, {
-        kind: FocusKind.BODY,
+        kind: FocusKind.BODY_NUMBER,
         body: 'body uuid',
-        quickSelect: { kind: QuickSelectKind.NONE }
+        quickSelect: { kind: QuickSelectKind.NONE },
     })
     const expected = container({
         color: theme.focusInput,
@@ -980,7 +980,8 @@ test("finder", () => {
         search: "text",
         options: ["foo", "bar"],
         selectedIndex: 0,
-        quickSelect: { kind: QuickSelectKind.NONE }
+        quickSelect: { kind: QuickSelectKind.NONE },
+        uppercase: false,
     }, theme)
     const expected = column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
         container({ height: 10 }),
@@ -1081,7 +1082,7 @@ test("virtual keys", () => {
 })
 
 test("alphabetic virtual keyboard", () => {
-    const actual = alphabeticVirtualKeyboard(theme)
+    const actual = alphabeticVirtualKeyboard(theme, false)
     const expected = column({ mainAxisAlignment: MainAxisAlignment.END }, [
         row({ mainAxisAlignment: MainAxisAlignment.SPACE_BETWEEN }, [
             container({ padding: 4, color: theme.node },
@@ -1090,7 +1091,7 @@ test("alphabetic virtual keyboard", () => {
                     virtualKeys(['q', 'w', 'e', 'r', 't']),
                     virtualKeys(['a', 's', 'd', 'f', 'g']),
                     virtualKeys(['z', 'x', 'c', 'v']),
-                    virtualKeys([{ display: 'ret', event: 'Enter' }, 'space']),
+                    virtualKeys(['sft', { display: 'space', event: ' ' }]),
                 ])
             ),
             container({ padding: 4, color: theme.node },
@@ -1099,7 +1100,7 @@ test("alphabetic virtual keyboard", () => {
                     virtualKeys(['y', 'u', 'i', 'o', 'p']),
                     virtualKeys(['h', 'j', 'k', 'l']),
                     virtualKeys(['b', 'n', 'm', { display: 'del', event: 'Backspace' }]),
-                    virtualKeys(['space', { display: 'ret', event: 'Enter' }]),
+                    virtualKeys([{ display: 'space', event: ' ' }, { display: 'ret', event: 'Enter' }]),
                 ])
             ),
         ]),
@@ -1185,7 +1186,8 @@ test("view with no nodes or edges but finder shown", () => {
             search: "",
             options: [],
             selectedIndex: 0,
-            quickSelect: { kind: QuickSelectKind.NONE }
+            quickSelect: { kind: QuickSelectKind.NONE },
+            uppercase: false,
         },
         openFinderFirstClick: false,
         camera: identity(),
@@ -1199,7 +1201,7 @@ test("view with no nodes or edges but finder shown", () => {
         container({ color: model.theme.background, onClick: { kind: EventKind.CLICKED_BACKGROUND } }),
         scene({ camera: model.camera, children: [], connections: [] }),
         finder(model.focus as FocusFinderInsert, model.theme),
-        alphabeticVirtualKeyboard(model.theme)
+        alphabeticVirtualKeyboard(model.theme, false)
     ])
     expect(actual).toEqual(expected)
 })
@@ -1235,7 +1237,7 @@ test("view with positive number", () => {
         nodePlacementLocation: { x: 250, y: 250, show: false },
         window: { width: 500, height: 500 },
         focus: {
-            kind: FocusKind.BODY,
+            kind: FocusKind.BODY_NUMBER,
             body: 'body',
             quickSelect: { kind: QuickSelectKind.NONE },
         },
@@ -1292,7 +1294,7 @@ test("view with negative number", () => {
         nodePlacementLocation: { x: 250, y: 250, show: false },
         window: { width: 500, height: 500 },
         focus: {
-            kind: FocusKind.BODY,
+            kind: FocusKind.BODY_NUMBER,
             body: 'body',
             quickSelect: { kind: QuickSelectKind.NONE },
         },
@@ -1690,7 +1692,7 @@ test("view with body selected", () => {
         nodePlacementLocation: { x: 250, y: 250, show: false },
         window: { width: 500, height: 500 },
         focus: {
-            kind: FocusKind.BODY,
+            kind: FocusKind.BODY_NUMBER,
             body: "body",
             quickSelect: { kind: QuickSelectKind.NONE },
         },
@@ -2067,9 +2069,9 @@ test("textBody focused", () => {
         value: 'hello',
     }
     const focus: Focus = {
-        kind: FocusKind.BODY,
+        kind: FocusKind.BODY_NUMBER,
         body: 'body uuid',
-        quickSelect: { kind: QuickSelectKind.NONE }
+        quickSelect: { kind: QuickSelectKind.NONE },
     }
     const actual = textBody(theme, body, focus)
     const expected = container({

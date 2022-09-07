@@ -37,6 +37,7 @@ export type CurrentTime = () => number
 export interface Effects {
     currentTime: CurrentTime
     generateUUID: GenerateUUID
+    promptUserForFile: (accept: string) => Promise<File>
 }
 
 type Update<Model, AppEvent> = (effects: Effects, model: Model, event: AppEvent) => UpdateResult<Model, AppEvent>

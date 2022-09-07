@@ -27,7 +27,7 @@ test("h when a node is focused moves node left", () => {
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model2 } = update(effects, model1, {
         kind: EventKind.CLICKED_NODE,
@@ -93,7 +93,7 @@ test("j when a node is focused moves node down", () => {
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model2 } = update(effects, model1, {
         kind: EventKind.CLICKED_NODE,
@@ -159,7 +159,7 @@ test("k when a node is focused moves node up", () => {
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model2 } = update(effects, model1, {
         kind: EventKind.CLICKED_NODE,
@@ -225,7 +225,7 @@ test("l when a node is focused moves node right", () => {
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model2 } = update(effects, model1, {
         kind: EventKind.CLICKED_NODE,
@@ -291,7 +291,7 @@ test("pressing a non hotkey when node focused does nothing", () => {
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model2 } = update(effects, model1, {
         kind: EventKind.CLICKED_NODE,
@@ -334,7 +334,7 @@ test("pressing h then l when node focused does nothing", () => {
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model2 } = update(effects, model1, {
         kind: EventKind.CLICKED_NODE,
@@ -384,7 +384,7 @@ test("move node when nothing focused does nothing", () => {
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model2, schedule } = update(effects, model1, {
         kind: EventKind.MOVE_NODE

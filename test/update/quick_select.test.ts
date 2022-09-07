@@ -29,7 +29,7 @@ test("pressing i with nothing focused launches quick select for inputs", () => {
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const inputs = (model1.graph.nodes[node] as NodeTransform).inputs
     const { model: model2 } = update(effects, model1, {
@@ -70,7 +70,7 @@ test("pressing i with output focused launches quick select for inputs", () => {
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const output = model1.graph.nodes[node].outputs[0]
     const { model: model2 } = update(effects, model1, {
@@ -116,7 +116,7 @@ test("pressing i with input focused launches quick select for inputs", () => {
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const inputs = (model1.graph.nodes[node] as NodeTransform).inputs
     const { model: model2 } = update(effects, model1, {
@@ -166,13 +166,13 @@ test("pressing i with body focused launches quick select for inputs", () => {
         model: model0,
         operation: operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model2, node: node1 } = addNodeToGraph({
         model: model1,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const body = model2.graph.nodes[node0].body!
     const { model: model3 } = update(effects, model2, {
@@ -218,7 +218,7 @@ test("pressing i with node focused launches quick select for inputs", () => {
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model2 } = update(effects, model1, {
         kind: EventKind.CLICKED_NODE,
@@ -266,7 +266,7 @@ test("pressing hotkey with input quick select will select the input and disable 
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const inputs = (model1.graph.nodes[node] as NodeTransform).inputs
     const { model: model2 } = update(effects, model1, {
@@ -307,7 +307,7 @@ test("pressing o with nothing focused launches quick select for outputs", () => 
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const output = model1.graph.nodes[node].outputs[0]
     const { model: model2 } = update(effects, model1, {
@@ -347,7 +347,7 @@ test("pressing o with output focused launches quick select for outputs", () => {
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const output = model1.graph.nodes[node].outputs[0]
     const { model: model2 } = update(effects, model1, {
@@ -391,7 +391,7 @@ test("pressing o with input focused launches quick select for outputs", () => {
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const inputs = (model1.graph.nodes[node] as NodeTransform).inputs
     const { model: model2 } = update(effects, model1, {
@@ -441,13 +441,13 @@ test("pressing o with body focused launches quick select for outputs", () => {
         model: model0,
         operation: operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model2, node: node1 } = addNodeToGraph({
         model: model1,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const body = model2.graph.nodes[node0].body!
     const { model: model3 } = update(effects, model2, {
@@ -494,7 +494,7 @@ test("pressing o with node focused launches quick select for outputs", () => {
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model2 } = update(effects, model1, {
         kind: EventKind.CLICKED_NODE,
@@ -540,7 +540,7 @@ test("pressing hotkey with output quick select will select the output and disabl
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const output = model1.graph.nodes[node].outputs[0]
     const { model: model2 } = update(effects, model1, {
@@ -580,7 +580,7 @@ test("pressing invalid hotkey with output quick select will disable quick select
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model2 } = update(effects, model1, {
         kind: EventKind.KEYDOWN,
@@ -619,7 +619,7 @@ test("pressing n with nothing focused launches quick select for nodes", () => {
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model2 } = update(effects, model1, {
         kind: EventKind.KEYDOWN,
@@ -656,7 +656,7 @@ test("pressing hotkey with node quick select will select the node and disable qu
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model2 } = update(effects, model1, {
         kind: EventKind.KEYDOWN,
@@ -697,7 +697,7 @@ test("pressing invalid hotkey with node quick select will disable quick select",
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model2 } = update(effects, model1, {
         kind: EventKind.KEYDOWN,
@@ -734,7 +734,7 @@ test("pressing b with nothing focused launches quick select for body", () => {
         model: model0,
         operation: operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model2 } = update(effects, model1, {
         kind: EventKind.KEYDOWN,
@@ -770,7 +770,7 @@ test("pressing hotkey with body quick select will select the body and disable qu
         model: model0,
         operation: operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model2 } = update(effects, model1, {
         kind: EventKind.KEYDOWN,
@@ -808,7 +808,7 @@ test("pressing invalid hotkey with body quick select will disable quick select",
         model: model0,
         operation: operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model2 } = update(effects, model1, {
         kind: EventKind.KEYDOWN,

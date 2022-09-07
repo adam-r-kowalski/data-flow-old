@@ -22,6 +22,7 @@ export const makeEffects = (maybeModel?: EffectModel): Effects => {
             const time = model.time
             ++model.time
             return time
-        }
+        },
+        promptUserForFile: async (accept: string): Promise<File> => new File(["content"], "foo.csv")
     }
 }

@@ -3,15 +3,7 @@ import * as tf from '@tensorflow/tfjs-core'
 import { emptyGraph, Input, Node, Output, Edge, Body, BodyKind, OperationKind, NodeKind, NodeTransform } from "../../src/model/graph"
 import { tensorFunc } from "../../src/model/operations"
 import { addNode, addEdge, changeNodePosition, removeNode, removeInputEdge, removeOutputEdges, parseNumber, changeNumberText } from "../../src/update/graph"
-
-const generateUUID = () => {
-    let i = 0
-    return () => {
-        const uuid = i.toString()
-        ++i
-        return uuid
-    }
-}
+import { makeEffects } from '../mock_effects'
 
 test("parse number", () => {
     expect(parseNumber('')).toEqual(0)
@@ -33,8 +25,6 @@ test("empty graph", () => {
 const addFunc = tensorFunc(tf.add)
 
 test("add operation to graph", () => {
-    const generateUUID0 = generateUUID()
-    const generateUUID1 = generateUUID()
     const graph = emptyGraph()
     const { graph: graph1, node } = addNode({
         graph,
@@ -46,14 +36,15 @@ test("add operation to graph", () => {
             func: addFunc
         },
         position: { x: 0, y: 0 },
-        generateUUID: generateUUID0
+        effects: makeEffects()
     })
     expect(graph).toEqual(emptyGraph())
-    const addUUID = generateUUID1()
-    const xUUID = generateUUID1()
-    const yUUID = generateUUID1()
-    const outUUID = generateUUID1()
-    const bodyUUID = generateUUID1()
+    const generateUUID = makeEffects().generateUUID
+    const addUUID = generateUUID()
+    const xUUID = generateUUID()
+    const yUUID = generateUUID()
+    const outUUID = generateUUID()
+    const bodyUUID = generateUUID()
     const add: Node = {
         kind: NodeKind.TRANSFORM,
         uuid: addUUID,
@@ -103,8 +94,6 @@ test("add operation to graph", () => {
 })
 
 test("add operation with body to graph", () => {
-    const generateUUID0 = generateUUID()
-    const generateUUID1 = generateUUID()
     const graph = emptyGraph()
     const { graph: graph1, node } = addNode({
         graph,
@@ -114,12 +103,13 @@ test("add operation with body to graph", () => {
             outputs: ['out'],
         },
         position: { x: 0, y: 0 },
-        generateUUID: generateUUID0
+        effects: makeEffects()
     })
     expect(graph).toEqual(emptyGraph())
-    const numberUUID = generateUUID1()
-    const outUUID = generateUUID1()
-    const bodyUUID = generateUUID1()
+    const generateUUID = makeEffects().generateUUID
+    const numberUUID = generateUUID()
+    const outUUID = generateUUID()
+    const bodyUUID = generateUUID()
     const number: Node = {
         kind: NodeKind.SOURCE,
         uuid: numberUUID,
@@ -153,8 +143,6 @@ test("add operation with body to graph", () => {
 
 
 test("add text operation", () => {
-    const generateUUID0 = generateUUID()
-    const generateUUID1 = generateUUID()
     const graph = emptyGraph()
     const { graph: graph1, node } = addNode({
         graph,
@@ -164,12 +152,13 @@ test("add text operation", () => {
             outputs: ['out'],
         },
         position: { x: 0, y: 0 },
-        generateUUID: generateUUID0
+        effects: makeEffects()
     })
     expect(graph).toEqual(emptyGraph())
-    const textUUID = generateUUID1()
-    const outUUID = generateUUID1()
-    const bodyUUID = generateUUID1()
+    const generateUUID = makeEffects().generateUUID
+    const textUUID = generateUUID()
+    const outUUID = generateUUID()
+    const bodyUUID = generateUUID()
     const text: Node = {
         kind: NodeKind.SOURCE,
         uuid: textUUID,
@@ -202,8 +191,7 @@ test("add text operation", () => {
 
 
 test("add two operations to graph", () => {
-    const generateUUID0 = generateUUID()
-    const generateUUID1 = generateUUID()
+    const effects = makeEffects()
     const graph = emptyGraph()
     const { graph: graph1, node: actualAddUUID } = addNode({
         graph,
@@ -215,7 +203,7 @@ test("add two operations to graph", () => {
             func: addFunc
         },
         position: { x: 0, y: 0 },
-        generateUUID: generateUUID0
+        effects,
     })
     const { graph: graph2, node: actualNumberUUID } = addNode({
         graph: graph1,
@@ -225,29 +213,30 @@ test("add two operations to graph", () => {
             outputs: ['out'],
         },
         position: { x: 50, y: 50 },
-        generateUUID: generateUUID0
+        effects,
     })
     expect(graph).toEqual(emptyGraph())
-    const addUUID = generateUUID1()
+    const generateUUID = makeEffects().generateUUID
+    const addUUID = generateUUID()
     const x: Input = {
-        uuid: generateUUID1(),
+        uuid: generateUUID(),
         node: addUUID,
         name: 'x'
     }
     const y: Input = {
-        uuid: generateUUID1(),
+        uuid: generateUUID(),
         node: addUUID,
         name: 'y'
     }
     const addOut: Output = {
-        uuid: generateUUID1(),
+        uuid: generateUUID(),
         node: addUUID,
         name: 'out',
         edges: []
     }
     const addBody: Body = {
         kind: BodyKind.NO,
-        uuid: generateUUID1(),
+        uuid: generateUUID(),
         node: addUUID,
     }
     const add: Node = {
@@ -260,16 +249,16 @@ test("add two operations to graph", () => {
         position: { x: 0, y: 0 },
         func: addFunc
     }
-    const numberUUID = generateUUID1()
+    const numberUUID = generateUUID()
     const numberOut: Output = {
-        uuid: generateUUID1(),
+        uuid: generateUUID(),
         node: numberUUID,
         name: 'out',
         edges: []
     }
     const numberBody: Body = {
         kind: BodyKind.NUMBER,
-        uuid: generateUUID1(),
+        uuid: generateUUID(),
         node: numberUUID,
         value: 0,
         text: '0'
@@ -320,8 +309,7 @@ test("add two operations to graph", () => {
 })
 
 test("add edge between two operations", () => {
-    const generateUUID0 = generateUUID()
-    const generateUUID1 = generateUUID()
+    const effects = makeEffects()
     const { graph, edge: actualEdgeUUID } = (() => {
         const graph = emptyGraph()
         const { graph: graph1, node: add } = addNode({
@@ -334,7 +322,7 @@ test("add edge between two operations", () => {
                 func: addFunc
             },
             position: { x: 0, y: 0 },
-            generateUUID: generateUUID0
+            effects,
         })
         const { graph: graph2, node: number } = addNode({
             graph: graph1,
@@ -344,7 +332,7 @@ test("add edge between two operations", () => {
                 outputs: ['out'],
             },
             position: { x: 50, y: 50 },
-            generateUUID: generateUUID0
+            effects,
         })
         const out = graph2.nodes[number].outputs[0]
         const x = (graph2.nodes[add] as NodeTransform).inputs[0]
@@ -352,18 +340,19 @@ test("add edge between two operations", () => {
             graph: graph2,
             input: x,
             output: out,
-            generateUUID: generateUUID0
+            generateUUID: effects.generateUUID,
         })
     })()
-    const addUUID = generateUUID1()
-    const xUUID = generateUUID1()
-    const yUUID = generateUUID1()
-    const outUUID = generateUUID1()
-    const addBodyUUID = generateUUID1()
-    const numberUUID = generateUUID1()
-    const numberOutUUID = generateUUID1()
-    const numberBodyUUID = generateUUID1()
-    const edgeUUID = generateUUID1()
+    const generateUUID = makeEffects().generateUUID
+    const addUUID = generateUUID()
+    const xUUID = generateUUID()
+    const yUUID = generateUUID()
+    const outUUID = generateUUID()
+    const addBodyUUID = generateUUID()
+    const numberUUID = generateUUID()
+    const numberOutUUID = generateUUID()
+    const numberBodyUUID = generateUUID()
+    const edgeUUID = generateUUID()
     const add: Node = {
         kind: NodeKind.TRANSFORM,
         uuid: addUUID,
@@ -447,8 +436,7 @@ test("add edge between two operations", () => {
 })
 
 test("change node position", () => {
-    const generateUUID0 = generateUUID()
-    const generateUUID1 = generateUUID()
+    const effects = makeEffects()
     const graph = emptyGraph()
     const { graph: graph1, node } = addNode({
         graph,
@@ -460,14 +448,15 @@ test("change node position", () => {
             func: addFunc
         },
         position: { x: 0, y: 0 },
-        generateUUID: generateUUID0
+        effects,
     })
     const graph2 = changeNodePosition(graph1, node, p => ({ x: p.x + 25, y: p.y - 25 }))
-    const addUUID = generateUUID1()
-    const xUUID = generateUUID1()
-    const yUUID = generateUUID1()
-    const outUUID = generateUUID1()
-    const bodyUUID = generateUUID1()
+    const generateUUID = makeEffects().generateUUID
+    const addUUID = generateUUID()
+    const xUUID = generateUUID()
+    const yUUID = generateUUID()
+    const outUUID = generateUUID()
+    const bodyUUID = generateUUID()
     const add: Node = {
         kind: NodeKind.TRANSFORM,
         uuid: addUUID,
@@ -540,8 +529,7 @@ test("change node position", () => {
 })
 
 test("remove node from graph", () => {
-    const generateUUID0 = generateUUID()
-    const generateUUID1 = generateUUID()
+    const effects = makeEffects()
     const graph = emptyGraph()
     const { graph: graph1, node: add } = addNode({
         graph,
@@ -553,7 +541,7 @@ test("remove node from graph", () => {
             func: addFunc
         },
         position: { x: 0, y: 0 },
-        generateUUID: generateUUID0
+        effects,
     })
     const { graph: graph2, node: number } = addNode({
         graph: graph1,
@@ -563,7 +551,7 @@ test("remove node from graph", () => {
             outputs: ['out'],
         },
         position: { x: 50, y: 50 },
-        generateUUID: generateUUID0
+        effects,
     })
     const out = graph2.nodes[number].outputs[0]
     const x = (graph2.nodes[add] as NodeTransform).inputs[0]
@@ -571,19 +559,20 @@ test("remove node from graph", () => {
         graph: graph2,
         input: x,
         output: out,
-        generateUUID: generateUUID0
+        generateUUID: effects.generateUUID,
     })
     const graph4 = removeNode(graph3, add)
     {
-        const addUUID = generateUUID1()
-        const xUUID = generateUUID1()
-        const yUUID = generateUUID1()
-        const outUUID = generateUUID1()
-        const addBodyUUID = generateUUID1()
-        const numberUUID = generateUUID1()
-        const numberOutUUID = generateUUID1()
-        const numberBodyUUID = generateUUID1()
-        const edgeUUID = generateUUID1()
+        const generateUUID = makeEffects().generateUUID
+        const addUUID = generateUUID()
+        const xUUID = generateUUID()
+        const yUUID = generateUUID()
+        const outUUID = generateUUID()
+        const addBodyUUID = generateUUID()
+        const numberUUID = generateUUID()
+        const numberOutUUID = generateUUID()
+        const numberBodyUUID = generateUUID()
+        const edgeUUID = generateUUID()
         const add: Node = {
             kind: NodeKind.TRANSFORM,
             uuid: addUUID,
@@ -684,8 +673,7 @@ test("remove node from graph", () => {
 })
 
 test("remove input edge", () => {
-    const generateUUID0 = generateUUID()
-    const generateUUID1 = generateUUID()
+    const effects = makeEffects()
     const graph = emptyGraph()
     const { graph: graph1, node: add } = addNode({
         graph,
@@ -697,7 +685,7 @@ test("remove input edge", () => {
             func: addFunc
         },
         position: { x: 0, y: 0 },
-        generateUUID: generateUUID0
+        effects,
     })
     const { graph: graph2, node: number } = addNode({
         graph: graph1,
@@ -707,7 +695,7 @@ test("remove input edge", () => {
             outputs: ['out'],
         },
         position: { x: 50, y: 50 },
-        generateUUID: generateUUID0
+        effects,
     })
     const x = (graph2.nodes[add] as NodeTransform).inputs[0]
     const out = graph2.nodes[number].outputs[0]
@@ -715,19 +703,20 @@ test("remove input edge", () => {
         graph: graph2,
         input: x,
         output: out,
-        generateUUID: generateUUID0
+        generateUUID: effects.generateUUID
     })
     const graph4 = removeInputEdge(graph3, x)
     {
-        const addUUID = generateUUID1()
-        const xUUID = generateUUID1()
-        const yUUID = generateUUID1()
-        const outUUID = generateUUID1()
-        const addBodyUUID = generateUUID1()
-        const numberUUID = generateUUID1()
-        const numberOutUUID = generateUUID1()
-        const numberBodyUUID = generateUUID1()
-        const edgeUUID = generateUUID1()
+        const generateUUID = makeEffects().generateUUID
+        const addUUID = generateUUID()
+        const xUUID = generateUUID()
+        const yUUID = generateUUID()
+        const outUUID = generateUUID()
+        const addBodyUUID = generateUUID()
+        const numberUUID = generateUUID()
+        const numberOutUUID = generateUUID()
+        const numberBodyUUID = generateUUID()
+        const edgeUUID = generateUUID()
         const add: Node = {
             kind: NodeKind.TRANSFORM,
             uuid: addUUID,
@@ -836,8 +825,7 @@ test("remove input edge", () => {
 })
 
 test("remove node with output edges", () => {
-    const generateUUID0 = generateUUID()
-    const generateUUID1 = generateUUID()
+    const effects = makeEffects()
     const graph = emptyGraph()
     const { graph: graph1, node: add } = addNode({
         graph,
@@ -849,7 +837,7 @@ test("remove node with output edges", () => {
             func: addFunc
         },
         position: { x: 0, y: 0 },
-        generateUUID: generateUUID0
+        effects,
     })
     const { graph: graph2, node: number } = addNode({
         graph: graph1,
@@ -859,7 +847,7 @@ test("remove node with output edges", () => {
             outputs: ['out'],
         },
         position: { x: 50, y: 50 },
-        generateUUID: generateUUID0
+        effects,
     })
     const x = (graph2.nodes[add] as NodeTransform).inputs[0]
     const out = graph2.nodes[number].outputs[0]
@@ -867,19 +855,20 @@ test("remove node with output edges", () => {
         graph: graph2,
         input: x,
         output: out,
-        generateUUID: generateUUID0
+        generateUUID: effects.generateUUID
     })
     const graph4 = removeNode(graph3, number)
     {
-        const addUUID = generateUUID1()
-        const xUUID = generateUUID1()
-        const yUUID = generateUUID1()
-        const outUUID = generateUUID1()
-        const addBodyUUID = generateUUID1()
-        const numberUUID = generateUUID1()
-        const numberOutUUID = generateUUID1()
-        const numberBodyUUID = generateUUID1()
-        const edgeUUID = generateUUID1()
+        const generateUUID = makeEffects().generateUUID
+        const addUUID = generateUUID()
+        const xUUID = generateUUID()
+        const yUUID = generateUUID()
+        const outUUID = generateUUID()
+        const addBodyUUID = generateUUID()
+        const numberUUID = generateUUID()
+        const numberOutUUID = generateUUID()
+        const numberBodyUUID = generateUUID()
+        const edgeUUID = generateUUID()
         const add: Node = {
             kind: NodeKind.TRANSFORM,
             uuid: addUUID,
@@ -983,8 +972,7 @@ test("remove node with output edges", () => {
 
 
 test("remove input edge when node has no inputs nothing changes", () => {
-    const generateUUID0 = generateUUID()
-    const generateUUID1 = generateUUID()
+    const effects = makeEffects()
     const graph = emptyGraph()
     const { graph: graph1, node: add } = addNode({
         graph,
@@ -996,7 +984,7 @@ test("remove input edge when node has no inputs nothing changes", () => {
             func: addFunc
         },
         position: { x: 0, y: 0 },
-        generateUUID: generateUUID0
+        effects,
     })
     const { graph: graph2 } = addNode({
         graph: graph1,
@@ -1006,19 +994,20 @@ test("remove input edge when node has no inputs nothing changes", () => {
             outputs: ['out'],
         },
         position: { x: 50, y: 50 },
-        generateUUID: generateUUID0
+        effects,
     })
     const input = (graph2.nodes[add] as NodeTransform).inputs[0]
     const graph3 = removeInputEdge(graph2, input)
     {
-        const addUUID = generateUUID1()
-        const xUUID = generateUUID1()
-        const yUUID = generateUUID1()
-        const outUUID = generateUUID1()
-        const addBodyUUID = generateUUID1()
-        const numberUUID = generateUUID1()
-        const numberOutUUID = generateUUID1()
-        const numberBodyUUID = generateUUID1()
+        const generateUUID = makeEffects().generateUUID
+        const addUUID = generateUUID()
+        const xUUID = generateUUID()
+        const yUUID = generateUUID()
+        const outUUID = generateUUID()
+        const addBodyUUID = generateUUID()
+        const numberUUID = generateUUID()
+        const numberOutUUID = generateUUID()
+        const numberBodyUUID = generateUUID()
         const add: Node = {
             kind: NodeKind.TRANSFORM,
             uuid: addUUID,
@@ -1096,8 +1085,7 @@ test("remove input edge when node has no inputs nothing changes", () => {
 
 
 test("remove output edge", () => {
-    const generateUUID0 = generateUUID()
-    const generateUUID1 = generateUUID()
+    const effects = makeEffects()
     const graph = emptyGraph()
     const { graph: graph1, node: add } = addNode({
         graph,
@@ -1109,7 +1097,7 @@ test("remove output edge", () => {
             func: addFunc
         },
         position: { x: 0, y: 0 },
-        generateUUID: generateUUID0
+        effects,
     })
     const { graph: graph2, node: number } = addNode({
         graph: graph1,
@@ -1119,7 +1107,7 @@ test("remove output edge", () => {
             outputs: ['out'],
         },
         position: { x: 50, y: 50 },
-        generateUUID: generateUUID0
+        effects,
     })
     const x = (graph2.nodes[add] as NodeTransform).inputs[0]
     const out = graph2.nodes[number].outputs[0]
@@ -1127,19 +1115,20 @@ test("remove output edge", () => {
         graph: graph2,
         input: x,
         output: out,
-        generateUUID: generateUUID0
+        generateUUID: effects.generateUUID
     })
     const graph4 = removeOutputEdges(graph3, out)
     {
-        const addUUID = generateUUID1()
-        const xUUID = generateUUID1()
-        const yUUID = generateUUID1()
-        const outUUID = generateUUID1()
-        const addBodyUUID = generateUUID1()
-        const numberUUID = generateUUID1()
-        const numberOutUUID = generateUUID1()
-        const numberBodyUUID = generateUUID1()
-        const edgeUUID = generateUUID1()
+        const generateUUID = makeEffects().generateUUID
+        const addUUID = generateUUID()
+        const xUUID = generateUUID()
+        const yUUID = generateUUID()
+        const outUUID = generateUUID()
+        const addBodyUUID = generateUUID()
+        const numberUUID = generateUUID()
+        const numberOutUUID = generateUUID()
+        const numberBodyUUID = generateUUID()
+        const edgeUUID = generateUUID()
         const add: Node = {
             kind: NodeKind.TRANSFORM,
             uuid: addUUID,
@@ -1257,7 +1246,7 @@ test("change number text of wrong body kind does nothing", () => {
             outputs: ['out'],
         },
         position: { x: 0, y: 0 },
-        generateUUID: generateUUID()
+        effects: makeEffects()
     })
     const body = graph1.nodes[node].body
     const graph2 = changeNumberText(graph1, body, () => '100')

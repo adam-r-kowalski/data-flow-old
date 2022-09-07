@@ -12,8 +12,22 @@ import { Table, Value } from './model/table'
 const generateUUID = () => crypto.randomUUID()
 const currentTime = () => performance.now()
 
+const promptUserForFile = (accept: string): Promise<File> =>
+    new Promise<File>((resolve, reject) => {
+        const element = document.createElement('input')
+        element.type = 'file'
+        element.accept = accept
+        element.addEventListener('change', (event) => {
+            const file = (event.target! as HTMLInputElement).files![0]
+            resolve(file)
+        })
+        element.click()
+    })
+
+const effects = { currentTime, generateUUID, promptUserForFile }
+
 const success_or_error = run({
-    model: demoModel({ width: window.innerWidth, height: window.innerHeight }, generateUUID),
+    model: demoModel({ width: window.innerWidth, height: window.innerHeight }, effects),
     view,
     update,
     window,
@@ -26,7 +40,7 @@ const success_or_error = run({
             pointer
         })
     },
-    effects: { currentTime, generateUUID }
+    effects,
 })
 
 if (success_or_error.kind == ProgramKind.ERROR) {

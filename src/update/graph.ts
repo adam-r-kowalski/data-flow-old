@@ -3,12 +3,13 @@ import { EventKind, UploadCsv } from '.'
 
 import { Body, BodyKind, Edge, GenerateUUID, Graph, Inputs, Node, NodeKind, NodeSource, NodeTransform, Operation, OperationKind, Outputs, Position, UUID } from "../model/graph"
 import { Table, Value } from "../model/table"
+import { Effects } from '../ui/run'
 
 interface AddNodeInputs {
     graph: Graph
     operation: Operation
     position: Position
-    generateUUID: GenerateUUID
+    effects: Effects
 }
 
 interface AddNodeOutputs {
@@ -17,7 +18,8 @@ interface AddNodeOutputs {
     event?: Promise<UploadCsv>
 }
 
-export const addNode = ({ graph, operation, position, generateUUID }: AddNodeInputs): AddNodeOutputs => {
+export const addNode = ({ graph, operation, position, effects }: AddNodeInputs): AddNodeOutputs => {
+    const { generateUUID, promptUserForFile } = effects
     const nodeUUID = generateUUID()
     const inputs = { ...graph.inputs }
     const outputs = { ...graph.outputs }
@@ -176,16 +178,7 @@ export const addNode = ({ graph, operation, position, generateUUID }: AddNodeInp
             }
             bodys[body.uuid] = body
             type Row = { [name: string]: Value }
-            const event = new Promise<File>((resolve, reject) => {
-                const element = document.createElement('input')
-                element.type = 'file'
-                element.accept = '.csv'
-                element.addEventListener('change', (event) => {
-                    const file = (event.target! as HTMLInputElement).files![0]
-                    resolve(file)
-                })
-                element.click()
-            }).then(file => {
+            const event = promptUserForFile('.csv').then(file => {
                 return new Promise<UploadCsv>((resolve, reject) => {
                     papa.parse(file, {
                         worker: true,

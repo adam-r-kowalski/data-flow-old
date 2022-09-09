@@ -7,24 +7,50 @@ import { view } from './view'
 import { demoModel } from "./model/demo"
 import { Document } from './ui/dom'
 import { ProgramKind } from "./ui/webgl2"
-import { Table, Value } from './model/table'
+import { Columns, Table, Value } from './model/table'
 
 const generateUUID = () => crypto.randomUUID()
 const currentTime = () => performance.now()
 
-const promptUserForFile = (accept: string): Promise<File> =>
-    new Promise<File>((resolve, reject) => {
+type Row = { [name: string]: Value }
+
+const promptUserForTable = (): Promise<Table> =>
+    new Promise<File>(resolve => {
         const element = document.createElement('input')
         element.type = 'file'
-        element.accept = accept
+        element.accept = '.csv'
         element.addEventListener('change', (event) => {
             const file = (event.target! as HTMLInputElement).files![0]
             resolve(file)
         })
         element.click()
-    })
+    }).then(file => new Promise<Table>(resolve => {
+        papa.parse(file, {
+            worker: true,
+            header: true,
+            dynamicTyping: true,
+            complete: async results => {
+                const columns: Columns = {}
+                for (const name of results.meta.fields!) {
+                    columns[name] = []
+                }
+                const errorRows = results.errors.map(e => e.row)
+                results.data.forEach((row, i) => {
+                    if (!errorRows.includes(i)) {
+                        for (const [name, value] of Object.entries(row as Row)) {
+                            columns[name].push(value ?? undefined)
+                        }
+                    }
+                })
+                resolve({
+                    name: file.name,
+                    columns
+                })
+            }
+        })
+    }))
 
-const effects = { currentTime, generateUUID, promptUserForFile }
+const effects = { currentTime, generateUUID, promptUserForTable }
 
 const success_or_error = run({
     model: demoModel({ width: window.innerWidth, height: window.innerHeight }, effects),
@@ -137,28 +163,29 @@ document.addEventListener('drop', async e => {
         return
     }
     const file = e.dataTransfer.files[0]
-    type Row = { [name: string]: Value }
     papa.parse(file, {
         worker: true,
         header: true,
         dynamicTyping: true,
         complete: async results => {
-            const table: Table = {}
+            const columns: Columns = {}
             for (const name of results.meta.fields!) {
-                table[name] = []
+                columns[name] = []
             }
             const errorRows = results.errors.map(e => e.row)
             results.data.forEach((row, i) => {
                 if (!errorRows.includes(i)) {
                     for (const [name, value] of Object.entries(row as Row)) {
-                        table[name].push(value ?? undefined)
+                        columns[name].push(value ?? undefined)
                     }
                 }
             })
             dispatch({
                 kind: EventKind.UPLOAD_TABLE,
-                name: file.name,
-                table,
+                table: {
+                    name: file.name,
+                    columns
+                },
                 position: {
                     x: e.clientX,
                     y: e.clientY,

@@ -145,14 +145,12 @@ export interface MoveNode {
 
 export interface UploadTable {
     readonly kind: EventKind.UPLOAD_TABLE
-    readonly name: string
     readonly table: Table
     readonly position: Position
 }
 
 export interface UploadCsv {
     readonly kind: EventKind.UPLOAD_CSV
-    readonly name: string
     readonly table: Table
     readonly node: UUID
 }
@@ -1046,14 +1044,13 @@ export const uploadTable = (model: Model, event: UploadTable, generateUUID: Gene
         kind: BodyKind.TABLE,
         uuid: generateUUID(),
         node: nodeUUID,
-        name: event.name,
         value: event.table
     }
     const [x, y] = multiplyMatrixVector(model.camera, [event.position.x, event.position.y, 1])
     const node: NodeSource = {
         kind: NodeKind.SOURCE,
         uuid: nodeUUID,
-        name: event.name,
+        name: event.table.name,
         outputs: [output.uuid],
         body: body.uuid,
         position: { x, y }
@@ -1076,13 +1073,12 @@ export const uploadTable = (model: Model, event: UploadTable, generateUUID: Gene
 export const uploadCsv = (model: Model, event: UploadCsv): UpdateResult<Model, AppEvent> => {
     const node: Node = {
         ...model.graph.nodes[event.node],
-        name: event.name
+        name: event.table.name
     }
     const body: Body = {
         kind: BodyKind.TABLE,
         uuid: node.body,
         node: node.uuid,
-        name: event.name,
         value: event.table
     }
     return {

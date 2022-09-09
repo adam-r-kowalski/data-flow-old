@@ -77,10 +77,13 @@ test("extract column from table", () => {
         kind: BodyKind.TABLE,
         uuid: 'table',
         node: 'node 0',
-        name: 'demo',
         value: {
-            'a': [1, 2, 3],
-            'b': [4, 5, 6],
+            name: 'demo',
+            columns: {
+
+                'a': [1, 2, 3],
+                'b': [4, 5, 6],
+            }
         }
     }
     const name: TextBody = {
@@ -110,10 +113,12 @@ test("extract non existant column from table", () => {
         kind: BodyKind.TABLE,
         uuid: 'table',
         node: 'node 0',
-        name: 'demo',
         value: {
-            'a': [1, 2, 3],
-            'b': [4, 5, 6],
+            name: 'demo',
+            'columns': {
+                'a': [1, 2, 3],
+                'b': [4, 5, 6],
+            }
         }
     }
     const name: TextBody = {

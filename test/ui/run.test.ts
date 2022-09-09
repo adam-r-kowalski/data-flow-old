@@ -173,6 +173,40 @@ test("if update returns dispatch events they get dispatched immediately", () => 
     expect(timeouts).toEqual([])
 })
 
+test("if update returns a promise of an event they get dispatched when completed", async () => {
+    type Model = number
+    type AppEvent = boolean
+    const model = 0
+    const view = (model: Model) => text<AppEvent>(model.toString())
+    const events: AppEvent[] = []
+    const update = (_: Effects, model: Model, event: AppEvent) => {
+        events.push(event)
+        return event ? {
+            model,
+            promise: (async (): Promise<AppEvent> => false)(),
+        } : { model }
+    }
+    const timeouts: number[] = []
+    const dispatch = extractDispatch(run({
+        model,
+        view,
+        update,
+        window: mockWindow(),
+        document: mockDocument(),
+        requestAnimationFrame: mockRequestAnimationFrame,
+        setTimeout: (callback: () => void, milliseconds: number) => {
+            timeouts.push(milliseconds)
+            callback()
+        },
+        pointerDown: () => { },
+        effects: makeEffects()
+    }))
+    await dispatch(true)
+    expect(events).toEqual([true, false])
+    expect(timeouts).toEqual([])
+})
+
+
 test("pointer down events can lead to on click handlers firing", () => {
     type Model = number
     enum AppEvent { A, B }

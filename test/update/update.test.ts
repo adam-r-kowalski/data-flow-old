@@ -3922,12 +3922,14 @@ test("pressing shift while editing text node does nothing", () => {
 
 test("upload table", () => {
     const table: Table = {
-        'a': [1, 2, 3],
-        'b': [4, 5, 6]
+        name: 'table.csv',
+        columns: {
+            'a': [1, 2, 3],
+            'b': [4, 5, 6]
+        }
     }
     const { model: model1 } = update(makeEffects(), model, {
         kind: EventKind.UPLOAD_TABLE,
-        name: 'train.csv',
         table,
         position: { x: 0, y: 0 }
     })
@@ -3942,7 +3944,7 @@ test("upload table", () => {
                 [node]: {
                     kind: NodeKind.SOURCE,
                     uuid: node,
-                    name: 'train.csv',
+                    name: 'table.csv',
                     outputs: [output],
                     body,
                     position: { x: 0, y: 0 }
@@ -3954,7 +3956,6 @@ test("upload table", () => {
                     kind: BodyKind.TABLE,
                     uuid: body,
                     node,
-                    name: 'train.csv',
                     value: table
                 }
             },
@@ -4988,4 +4989,70 @@ test("prevent cycles from forming", () => {
         }
     }
     expect(model6).toEqual(expectedModel)
+})
+
+test("upload csv using node prompts user for a table", async () => {
+    const effects = makeEffects()
+    const model0: Model = {
+        ...model,
+        operations: {
+            'upload csv': {
+                kind: OperationKind.UPLOAD_CSV,
+                name: 'upload csv',
+                outputs: ['out'],
+            },
+        }
+    }
+    const { model: model1, node, event } = addNodeToGraph({
+        model: model0,
+        operation: model0.operations['upload csv'],
+        position: { x: 0, y: 0 },
+        effects,
+    })
+    const body = model1.graph.nodes[node].body
+    const output = model1.graph.nodes[node].outputs[0]
+    const expectedModel: Model = {
+        ...model0,
+        graph: {
+            ...model0.graph,
+            bodys: {
+                [body]: {
+                    kind: BodyKind.NO,
+                    uuid: body,
+                    node
+                }
+            },
+            nodes: {
+                [node]: {
+                    kind: NodeKind.SOURCE,
+                    uuid: node,
+                    name: 'upload csv',
+                    body,
+                    outputs: [output],
+                    position: { x: 0, y: 0 }
+                }
+            },
+            outputs: {
+                [output]: {
+                    uuid: output,
+                    node,
+                    name: 'out',
+                    edges: []
+                }
+            }
+        },
+        nodeOrder: [node]
+    }
+    expect(model1).toEqual(expectedModel)
+    expect(await event).toEqual({
+        kind: EventKind.UPLOAD_CSV,
+        table: {
+            name: 'table.csv',
+            columns: {
+                'a': [1, 2, 3],
+                'b': [4, 5, 6],
+            }
+        },
+        node
+    })
 })

@@ -1,3 +1,4 @@
+import { Table } from "../src/model/table"
 import { Effects } from "../src/ui/run"
 
 export interface EffectModel {
@@ -23,6 +24,12 @@ export const makeEffects = (maybeModel?: EffectModel): Effects => {
             ++model.time
             return time
         },
-        promptUserForFile: async (accept: string): Promise<File> => new File(["content"], "foo.csv")
+        promptUserForTable: async (): Promise<Table> => ({
+            'name': 'table.csv',
+            'columns': {
+                'a': [1, 2, 3],
+                'b': [4, 5, 6],
+            },
+        })
     }
 }

@@ -4,13 +4,14 @@ import { ProgramError, ProgramKind, WebGL2Renderer, webGL2Renderer } from "./web
 import { Pointer, UI } from "."
 import { Document, Window, PointerEvent } from "./dom"
 import { GenerateUUID } from "../model/graph"
+import { Table } from "../model/table"
 
 export const transformPointer = (p: PointerEvent): Pointer => ({
     id: p.pointerId,
     position: { x: p.clientX, y: p.clientY }
 })
 
-export type Dispatch<AppEvent> = (event: AppEvent) => void
+export type Dispatch<AppEvent> = (event: AppEvent) => Promise<void>
 
 type View<Model, AppEvent> = (model: Model) => UI<AppEvent>
 
@@ -37,7 +38,7 @@ export type CurrentTime = () => number
 export interface Effects {
     currentTime: CurrentTime
     generateUUID: GenerateUUID
-    promptUserForFile: (accept: string) => Promise<File>
+    promptUserForTable: () => Promise<Table>
 }
 
 type Update<Model, AppEvent> = (effects: Effects, model: Model, event: AppEvent) => UpdateResult<Model, AppEvent>
@@ -82,7 +83,7 @@ export const run = <Model, AppEvent>(properties: Properties<Model, AppEvent>): S
                     })
                 }
             }
-            const dispatch = (event: AppEvent) => {
+            const dispatch = async (event: AppEvent): Promise<void> => {
                 const {
                     model: newModel,
                     render,
@@ -98,10 +99,10 @@ export const run = <Model, AppEvent>(properties: Properties<Model, AppEvent>): S
                     setTimeout(() => dispatch(event), milliseconds)
                 }
                 for (const event of dispatchEvents ?? []) dispatch(event)
-                if (promise !== undefined) promise.then(dispatch)
                 if (cursor !== undefined) {
                     document.body.style.cursor = cursor ? 'auto' : 'none'
                 }
+                if (promise !== undefined) await promise.then(dispatch)
             }
             renderer.dispatch = dispatch
             document.body.appendChild(renderer.canvas)

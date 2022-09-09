@@ -1,7 +1,7 @@
 import * as tf from '@tensorflow/tfjs-core';
 import { normalize } from '../normalize';
 
-import { Operations, Body, Tensor, BodyKind, TensorBody, OperationKind, Function, TableBody, TextBody } from "./graph"
+import { Operations, Body, Tensor, BodyKind, TensorBody, OperationKind, Function, ErrorBody } from "./graph"
 
 export type TensorFunc = (...inputs: Tensor[]) => tf.Tensor<tf.Rank>
 
@@ -43,22 +43,26 @@ export const scatter = ({ uuid, node }: Body, ...inputs: Body[]): Body => {
 }
 
 export const column = ({ uuid, node }: Body, ...inputs: Body[]): Body => {
-    const name = (inputs[1] as TextBody).value
-    const col = (inputs[0] as TableBody).value[name]
+    const table = inputs[0]
+    const name = inputs[1]
+    const error = (): ErrorBody => ({
+        kind: BodyKind.ERROR,
+        uuid: uuid,
+        node: node,
+    })
+    if (table.kind !== BodyKind.TABLE || name.kind !== BodyKind.TEXT) {
+        return error()
+    }
+    const col = table.value.columns[name.value]
     if (col === undefined) {
-        return {
-            kind: BodyKind.ERROR,
-            uuid: uuid,
-            node: node,
-        }
-    } else {
-        return {
-            kind: BodyKind.COLUMN,
-            uuid: uuid,
-            node: node,
-            name,
-            value: col,
-        }
+        return error()
+    }
+    return {
+        kind: BodyKind.COLUMN,
+        uuid: uuid,
+        node: node,
+        name: name.value,
+        value: col,
     }
 }
 

@@ -1,8 +1,6 @@
-import * as papa from 'papaparse'
 import { EventKind, UploadCsv } from '.'
 
 import { Body, BodyKind, Edge, GenerateUUID, Graph, Inputs, Node, NodeKind, NodeSource, NodeTransform, Operation, OperationKind, Outputs, Position, UUID } from "../model/graph"
-import { Table, Value } from "../model/table"
 import { Effects } from '../ui/run'
 
 interface AddNodeInputs {
@@ -19,7 +17,7 @@ interface AddNodeOutputs {
 }
 
 export const addNode = ({ graph, operation, position, effects }: AddNodeInputs): AddNodeOutputs => {
-    const { generateUUID, promptUserForFile } = effects
+    const { generateUUID, promptUserForTable } = effects
     const nodeUUID = generateUUID()
     const inputs = { ...graph.inputs }
     const outputs = { ...graph.outputs }
@@ -177,33 +175,12 @@ export const addNode = ({ graph, operation, position, effects }: AddNodeInputs):
                 position,
             }
             bodys[body.uuid] = body
-            type Row = { [name: string]: Value }
-            const event = promptUserForFile('.csv').then(file => {
-                return new Promise<UploadCsv>((resolve, reject) => {
-                    papa.parse(file, {
-                        worker: true,
-                        header: true,
-                        dynamicTyping: true,
-                        complete: async results => {
-                            const table: Table = {}
-                            for (const name of results.meta.fields!) {
-                                table[name] = []
-                            }
-                            const errorRows = results.errors.map(e => e.row)
-                            results.data.forEach((row, i) => {
-                                if (!errorRows.includes(i)) {
-                                    for (const [name, value] of Object.entries(row as Row)) {
-                                        table[name].push(value ?? undefined)
-                                    }
-                                }
-                            })
-                            resolve({
-                                kind: EventKind.UPLOAD_CSV,
-                                name: file.name,
-                                table,
-                                node: nodeUUID
-                            })
-                        }
+            const event = promptUserForTable().then(table => {
+                return new Promise<UploadCsv>((resolve) => {
+                    resolve({
+                        kind: EventKind.UPLOAD_CSV,
+                        table,
+                        node: nodeUUID
                     })
                 })
             })

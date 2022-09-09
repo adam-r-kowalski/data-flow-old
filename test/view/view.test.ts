@@ -2119,10 +2119,12 @@ test("tableBody", () => {
         kind: BodyKind.TABLE,
         uuid: 'body uuid',
         node: 'node',
-        name: 'table.csv',
         value: {
-            'a': [1, 2, 3],
-            'b': [4, 5, undefined]
+            name: 'table.csv',
+            columns: {
+                'a': [1, 2, 3],
+                'b': [4, 5, undefined]
+            }
         },
     }
     const actual = tableBody(theme, body)
@@ -2244,10 +2246,12 @@ test("nodeUi with table body", () => {
         kind: BodyKind.TABLE,
         uuid: 'body uuid',
         node: 'node',
-        name: 'table.csv',
         value: {
-            'a': [1, 2, 3],
-            'b': [1, 2, undefined],
+            name: 'table.csv',
+            columns: {
+                'a': [1, 2, 3],
+                'b': [1, 2, undefined],
+            }
         },
     }
     const output: Output = {

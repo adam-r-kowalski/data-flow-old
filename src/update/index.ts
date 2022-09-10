@@ -5,7 +5,7 @@ import { Effects, UpdateResult } from "../ui/run"
 import { Model, NodePlacementLocation } from "../model"
 import { Focus, FocusFinderInsert, FocusFinderChange, FocusKind } from '../model/focus'
 import { PointerAction, PointerActionKind } from '../model/pointer_action'
-import { Body, BodyKind, Bodys, GenerateUUID, Graph, Inputs, Node, NodeKind, Nodes, NodeSource, Operation, OperationKind, Operations, Output, Outputs, Position, TextBody, UUID } from '../model/graph'
+import { Body, BodyKind, Bodys, GenerateUUID, Graph, Inputs, Node, NodeKind, Nodes, NodeSource, NumberBody, Operation, OperationKind, Operations, Output, Outputs, Position, TextBody, UUID } from '../model/graph'
 import { Pointer } from "../ui"
 import { addNode, changeNumberText, changeNodePosition, removeInputEdge, removeNode, removeOutputEdges, evaluateNode } from "./graph"
 import { maybeTriggerQuickSelect, quickSelectInput, quickSelectOutput, quickSelectNode, quickSelectBody } from "./quick_select"
@@ -145,14 +145,12 @@ export interface MoveNode {
 
 export interface UploadTable {
     readonly kind: EventKind.UPLOAD_TABLE
-    readonly name: string
     readonly table: Table
     readonly position: Position
 }
 
 export interface UploadCsv {
     readonly kind: EventKind.UPLOAD_CSV
-    readonly name: string
     readonly table: Table
     readonly node: UUID
 }
@@ -427,13 +425,13 @@ export const openFinderChange = (model: Model, node: UUID): Model => ({
 })
 
 
-const insertOperationFromFinder = (model: Model, name: string, generateUUID: GenerateUUID): UpdateResult<Model, AppEvent> => {
+const insertOperationFromFinder = (model: Model, name: string, effects: Effects): UpdateResult<Model, AppEvent> => {
     const operation = model.operations[name]
     const [x, y, _] = multiplyMatrixVector(
         model.camera,
         [model.nodePlacementLocation.x, model.nodePlacementLocation.y, 1]
     )
-    const { model: nextModel, event } = addNodeToGraph({ model, operation, position: { x, y }, generateUUID })
+    const { model: nextModel, event } = addNodeToGraph({ model, operation, position: { x, y }, effects })
     return {
         model: clearFocus(nextModel),
         render: true,
@@ -586,7 +584,7 @@ interface AddNodeInputs {
     model: Model
     operation: Operation
     position: Position
-    generateUUID: GenerateUUID
+    effects: Effects
 }
 
 interface AddNodeOutputs {
@@ -596,8 +594,8 @@ interface AddNodeOutputs {
 }
 
 
-export const addNodeToGraph = ({ model, operation, position, generateUUID }: AddNodeInputs): AddNodeOutputs => {
-    const { graph, node, event } = addNode({ graph: model.graph, operation, position, generateUUID })
+export const addNodeToGraph = ({ model, operation, position, effects }: AddNodeInputs): AddNodeOutputs => {
+    const { graph, node, event } = addNode({ graph: model.graph, operation, position, effects })
     return {
         model: {
             ...model,
@@ -650,7 +648,8 @@ export const updateBody = (model: Model, body: UUID, transform: (body: Body) => 
     }
 }
 
-const keyDown = (model: Model, event: KeyDown, { generateUUID, currentTime }: Effects): UpdateResult<Model, AppEvent> => {
+const keyDown = (model: Model, event: KeyDown, effects: Effects): UpdateResult<Model, AppEvent> => {
+    const { generateUUID, currentTime } = effects
     const { key } = event
     switch (model.focus.quickSelect.kind) {
         case QuickSelectKind.INPUT:
@@ -678,7 +677,7 @@ const keyDown = (model: Model, event: KeyDown, { generateUUID, currentTime }: Ef
                             if (model.focus.options.length > 0) {
                                 const name = model.focus.options[model.focus.selectedIndex]
                                 switch (model.focus.kind) {
-                                    case FocusKind.FINDER_INSERT: return insertOperationFromFinder(model, name, generateUUID)
+                                    case FocusKind.FINDER_INSERT: return insertOperationFromFinder(model, name, effects)
                                     case FocusKind.FINDER_CHANGE: return changeOperationFromFinder(model, name, model.focus.node, generateUUID)
                                 }
 
@@ -922,17 +921,17 @@ const keyUp = (model: Model, event: KeyUp): UpdateResult<Model, AppEvent> => {
     }
 }
 
-const clickedFinderOption = (model: Model, { option }: ClickedFinderOption, generateUUID: GenerateUUID): UpdateResult<Model, AppEvent> => {
+const clickedFinderOption = (model: Model, { option }: ClickedFinderOption, effects: Effects): UpdateResult<Model, AppEvent> => {
     const focus = model.focus as FocusFinderChange | FocusFinderInsert
     switch (focus.kind) {
-        case FocusKind.FINDER_INSERT: return insertOperationFromFinder(model, option, generateUUID)
-        case FocusKind.FINDER_CHANGE: return changeOperationFromFinder(model, option, focus.node, generateUUID)
+        case FocusKind.FINDER_INSERT: return insertOperationFromFinder(model, option, effects)
+        case FocusKind.FINDER_CHANGE: return changeOperationFromFinder(model, option, focus.node, effects.generateUUID)
     }
 
 }
 
 export const focusBody = (model: Model, bodyUUID: UUID): Model => {
-    const body = model.graph.bodys[bodyUUID]
+    const body = model.graph.bodys[bodyUUID] as NumberBody | TextBody
     switch (body.kind) {
         case BodyKind.NUMBER:
             return {
@@ -953,8 +952,6 @@ export const focusBody = (model: Model, bodyUUID: UUID): Model => {
                     uppercase: false
                 }
             }
-        default:
-            return model
     }
 }
 
@@ -1045,14 +1042,13 @@ export const uploadTable = (model: Model, event: UploadTable, generateUUID: Gene
         kind: BodyKind.TABLE,
         uuid: generateUUID(),
         node: nodeUUID,
-        name: event.name,
         value: event.table
     }
     const [x, y] = multiplyMatrixVector(model.camera, [event.position.x, event.position.y, 1])
     const node: NodeSource = {
         kind: NodeKind.SOURCE,
         uuid: nodeUUID,
-        name: event.name,
+        name: event.table.name,
         outputs: [output.uuid],
         body: body.uuid,
         position: { x, y }
@@ -1075,13 +1071,12 @@ export const uploadTable = (model: Model, event: UploadTable, generateUUID: Gene
 export const uploadCsv = (model: Model, event: UploadCsv): UpdateResult<Model, AppEvent> => {
     const node: Node = {
         ...model.graph.nodes[event.node],
-        name: event.name
+        name: event.table.name
     }
     const body: Body = {
         kind: BodyKind.TABLE,
         uuid: node.body,
         node: node.uuid,
-        name: event.name,
         value: event.table
     }
     return {
@@ -1110,7 +1105,7 @@ export const update = (effects: Effects, model: Model, event: AppEvent): UpdateR
         case EventKind.OPEN_FINDER_TIMEOUT: return openFinderTimeout(model, event)
         case EventKind.KEYDOWN: return keyDown(model, event, effects)
         case EventKind.KEYUP: return keyUp(model, event)
-        case EventKind.CLICKED_FINDER_OPTION: return clickedFinderOption(model, event, effects.generateUUID)
+        case EventKind.CLICKED_FINDER_OPTION: return clickedFinderOption(model, event, effects)
         case EventKind.CLICKED_BODY: return clickedBody(model, event)
         case EventKind.CLICKED_BACKGROUND: return clickedBackground(model)
         case EventKind.CHANGE_NODE: return changeNode(model, event)

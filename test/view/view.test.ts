@@ -1108,6 +1108,34 @@ test("alphabetic virtual keyboard", () => {
     expect(actual).toEqual(expected)
 })
 
+test("alphabetic virtual keyboard capitalized", () => {
+    const actual = alphabeticVirtualKeyboard(theme, true)
+    const expected = column({ mainAxisAlignment: MainAxisAlignment.END }, [
+        row({ mainAxisAlignment: MainAxisAlignment.SPACE_BETWEEN }, [
+            container({ padding: 4, color: theme.node },
+                column([
+                    virtualKeys(['!', '@', '#', '$', '%']),
+                    virtualKeys(['Q', 'W', 'E', 'R', 'T']),
+                    virtualKeys(['A', 'S', 'D', 'F', 'G']),
+                    virtualKeys(['Z', 'X', 'C', 'V']),
+                    virtualKeys(['sft', { display: 'space', event: ' ' }]),
+                ])
+            ),
+            container({ padding: 4, color: theme.node },
+                column({ crossAxisAlignment: CrossAxisAlignment.END }, [
+                    virtualKeys(['^', '&', '*', '(', ')']),
+                    virtualKeys(['Y', 'U', 'I', 'O', 'P']),
+                    virtualKeys(['H', 'J', 'K', 'L']),
+                    virtualKeys(['B', 'N', 'M', { display: 'del', event: 'Backspace' }]),
+                    virtualKeys([{ display: 'space', event: ' ' }, { display: 'ret', event: 'Enter' }]),
+                ])
+            ),
+        ]),
+    ])
+    expect(actual).toEqual(expected)
+})
+
+
 test("numeric virtual keyboard", () => {
     const actual = numericVirtualKeyboard(theme, '-')
     const expected = column({ mainAxisAlignment: MainAxisAlignment.END }, [
@@ -1205,6 +1233,45 @@ test("view with no nodes or edges but finder shown", () => {
     ])
     expect(actual).toEqual(expected)
 })
+
+test("view with no nodes or edges but finder shown capitalized", () => {
+    const model: Model = {
+        graph: {
+            nodes: {},
+            edges: {},
+            inputs: {},
+            outputs: {},
+            bodys: {}
+        },
+        nodeOrder: [],
+        pointers: [],
+        nodePlacementLocation: { x: 250, y: 250, show: false },
+        window: { width: 500, height: 500 },
+        focus: {
+            kind: FocusKind.FINDER_INSERT,
+            search: "",
+            options: [],
+            selectedIndex: 0,
+            quickSelect: { kind: QuickSelectKind.NONE },
+            uppercase: true,
+        },
+        openFinderFirstClick: false,
+        camera: identity(),
+        operations: {},
+        panCamera: { left: false, up: false, down: false, right: false, now: 0 },
+        zoomCamera: { in: false, out: false, now: 0 },
+        theme
+    }
+    const actual = view(model)
+    const expected = stack([
+        container({ color: model.theme.background, onClick: { kind: EventKind.CLICKED_BACKGROUND } }),
+        scene({ camera: model.camera, children: [], connections: [] }),
+        finder(model.focus as FocusFinderInsert, model.theme),
+        alphabeticVirtualKeyboard(model.theme, true)
+    ])
+    expect(actual).toEqual(expected)
+})
+
 
 test("view with positive number", () => {
     const model: Model = {
@@ -1316,6 +1383,64 @@ test("view with negative number", () => {
             connections: []
         }),
         numericVirtualKeyboard(model.theme, '+')
+    ])
+    expect(actual).toEqual(expected)
+})
+
+
+test("view with text", () => {
+    const model: Model = {
+        graph: {
+            nodes: {
+                "text": {
+                    kind: NodeKind.SOURCE,
+                    uuid: "text",
+                    name: "text",
+                    body: 'body',
+                    outputs: [],
+                    position: { x: 0, y: 0 },
+                }
+            },
+            edges: {},
+            inputs: {},
+            outputs: {},
+            bodys: {
+                'body': {
+                    kind: BodyKind.TEXT,
+                    uuid: 'body',
+                    node: 'text',
+                    value: 'hello',
+                },
+            }
+        },
+        nodeOrder: ["text"],
+        pointers: [],
+        nodePlacementLocation: { x: 250, y: 250, show: false },
+        window: { width: 500, height: 500 },
+        focus: {
+            kind: FocusKind.BODY_TEXT,
+            body: 'body',
+            quickSelect: { kind: QuickSelectKind.NONE },
+            uppercase: false,
+        },
+        openFinderFirstClick: false,
+        camera: identity(),
+        operations: {},
+        panCamera: { left: false, up: false, down: false, right: false, now: 0 },
+        zoomCamera: { in: false, out: false, now: 0 },
+        theme
+    }
+    const actual = view(model)
+    const expected = stack([
+        container({ color: model.theme.background, onClick: { kind: EventKind.CLICKED_BACKGROUND } }),
+        scene({
+            camera: model.camera,
+            children: [
+                nodeUi(model.theme, "text", model.graph, model.focus),
+            ],
+            connections: []
+        }),
+        alphabeticVirtualKeyboard(model.theme, false)
     ])
     expect(actual).toEqual(expected)
 })
@@ -2119,10 +2244,12 @@ test("tableBody", () => {
         kind: BodyKind.TABLE,
         uuid: 'body uuid',
         node: 'node',
-        name: 'table.csv',
         value: {
-            'a': [1, 2, 3],
-            'b': [4, 5, undefined]
+            name: 'table.csv',
+            columns: {
+                'a': [1, 2, 3],
+                'b': [4, 5, undefined]
+            }
         },
     }
     const actual = tableBody(theme, body)
@@ -2244,10 +2371,12 @@ test("nodeUi with table body", () => {
         kind: BodyKind.TABLE,
         uuid: 'body uuid',
         node: 'node',
-        name: 'table.csv',
         value: {
-            'a': [1, 2, 3],
-            'b': [1, 2, undefined],
+            name: 'table.csv',
+            columns: {
+                'a': [1, 2, 3],
+                'b': [1, 2, undefined],
+            }
         },
     }
     const output: Output = {

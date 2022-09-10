@@ -55,7 +55,6 @@ export interface TableBody {
     readonly kind: BodyKind.TABLE
     readonly uuid: UUID
     readonly node: UUID
-    readonly name: string
     readonly value: Table
 }
 

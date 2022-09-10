@@ -123,13 +123,13 @@ export const textBody = (theme: Theme, body: TextBody, focus: Focus): UI<AppEven
 
 
 export const tableBody = (theme: Theme, body: TableBody): UI<AppEvent> => {
-    const keys = Object.keys(body.value)
+    const keys = Object.keys(body.value.columns)
     const columns = keys.length
-    const rows = body.value[keys[0]].length
+    const rows = body.value.columns[keys[0]].length
     return column([
         container({ padding: 5 }, text(`${columns} columns ${rows} rows`)),
         container({ color: theme.background },
-            row(Object.entries(body.value).map(([name, data]) =>
+            row(Object.entries(body.value.columns).map(([name, data]) =>
                 container({ padding: 5 },
                     column({ crossAxisAlignment: CrossAxisAlignment.END }, [
                         container({ padding: 5 }, text(name)),

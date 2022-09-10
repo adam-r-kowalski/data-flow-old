@@ -36,21 +36,21 @@ test("connecting all inputs for node evaluates operation", () => {
         model: model0,
         operation: operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const model2 = updateNumberText(model1, model1.graph.nodes[x].body, () => '5').model
     const { model: model3, node: y } = addNodeToGraph({
         model: model2,
         operation: operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const model4 = updateNumberText(model3, model3.graph.nodes[y].body, () => '5').model
     const { model: model5, node: add } = addNodeToGraph({
         model: model4,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model6 } = update(effects, model5, {
         kind: EventKind.CLICKED_INPUT,
@@ -200,21 +200,21 @@ test("changing body retriggers evaluation", () => {
         model: model0,
         operation: operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const model2 = updateNumberText(model1, model1.graph.nodes[x].body, () => '5').model
     const { model: model3, node: y } = addNodeToGraph({
         model: model2,
         operation: operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const model4 = updateNumberText(model3, model3.graph.nodes[y].body, () => '5').model
     const { model: model5, node: add } = addNodeToGraph({
         model: model4,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model6 } = update(effects, model5, {
         kind: EventKind.CLICKED_INPUT,
@@ -378,21 +378,21 @@ test("deleting input edge deletes body in associated input node and propagates o
         model: model0,
         operation: operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const model2 = updateNumberText(model1, model1.graph.nodes[x].body, () => '5').model
     const { model: model3, node: y } = addNodeToGraph({
         model: model2,
         operation: operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const model4 = updateNumberText(model3, model3.graph.nodes[y].body, () => '5').model
     const { model: model5, node: add } = addNodeToGraph({
         model: model4,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model6 } = update(effects, model5, {
         kind: EventKind.CLICKED_INPUT,
@@ -540,21 +540,21 @@ test("deleting output edge deletes body in associated input node and propagates 
         model: model0,
         operation: operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const model2 = updateNumberText(model1, model1.graph.nodes[x].body, () => '5').model
     const { model: model3, node: y } = addNodeToGraph({
         model: model2,
         operation: operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const model4 = updateNumberText(model3, model3.graph.nodes[y].body, () => '5').model
     const { model: model5, node: add } = addNodeToGraph({
         model: model4,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model6 } = update(effects, model5, {
         kind: EventKind.CLICKED_INPUT,

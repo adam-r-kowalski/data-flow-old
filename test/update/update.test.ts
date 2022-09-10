@@ -235,13 +235,13 @@ test("clicking node selects it and puts it on top of of the node order", () => {
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model2, node: node1 } = addNodeToGraph({
         model: model1,
         operation: operations['Sub'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model3, render } = update(effects, model2, {
         kind: EventKind.CLICKED_NODE,
@@ -337,13 +337,13 @@ test("pointer move after clicking node pointer down drags node", () => {
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model2, node: node1 } = addNodeToGraph({
         model: model1,
         operation: operations['Sub'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model3 } = update(effects, model2, {
         kind: EventKind.CLICKED_NODE,
@@ -401,7 +401,7 @@ test("pointer move after clicking node, pointer down, then pointer up", () => {
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model2 } = update(effects, model1, {
         kind: EventKind.CLICKED_NODE,
@@ -476,7 +476,7 @@ test("clicking input selects it", () => {
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const input = (model1.graph.nodes[node0] as NodeTransform).inputs[0]
     const { model: model2, render } = update(effects, model1, {
@@ -511,7 +511,7 @@ test("clicking new input selects it and deselects old input", () => {
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const [input0, input1] = (model1.graph.nodes[node0] as NodeTransform).inputs
     const { model: model2 } = update(effects, model1, {
@@ -558,13 +558,13 @@ test("clicking output after clicking input adds connection", () => {
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model2, node: node1 } = addNodeToGraph({
         model: model1,
         operation: operations['Sub'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const input = (model2.graph.nodes[node0] as NodeTransform).inputs[0]
     const { model: model3 } = update(effects, model2, {
@@ -606,7 +606,7 @@ test("clicking output selects it", () => {
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const output = model1.graph.nodes[node0].outputs[0]
     const { model: model2, render } = update(effects, model1, {
@@ -641,7 +641,7 @@ test("clicking new output selects it and deselects old output", () => {
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const [output0, output1] = model1.graph.nodes[node0].outputs
     const { model: model2 } = update(effects, model1, {
@@ -688,13 +688,13 @@ test("clicking input after clicking output adds connection", () => {
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model2, node: node1 } = addNodeToGraph({
         model: model1,
         operation: operations['Sub'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const output = model2.graph.nodes[node1].outputs[0]
     const { model: model3, render } = update(effects, model2, {
@@ -862,7 +862,7 @@ test("clicking a finder option adds node to graph", () => {
         model: { ...model, operations },
         position: { x: 250, y: 250 },
         operation: operations['Add'],
-        generateUUID: makeEffects().generateUUID
+        effects: makeEffects(),
     })
     expect(model1).toEqual(expectedModel)
     expect(render).toEqual(true)
@@ -1214,7 +1214,7 @@ test("enter key down when finder is shown closes finder and adds node", () => {
         model: { ...model, operations },
         position: { x: 250, y: 250 },
         operation: operations['Add'],
-        generateUUID: makeEffects().generateUUID
+        effects: makeEffects()
     })
     expect(model1).toEqual(expectedModel)
     expect(render).toEqual(true)
@@ -1257,7 +1257,7 @@ test("enter key down when finder is shown and finder has search closes finder an
         model: { ...model, operations },
         operation: operations['Add'],
         position: { x: 250, y: 250 },
-        generateUUID: makeEffects().generateUUID
+        effects: makeEffects()
     })
     expect(model2).toEqual(expectedModel)
 })
@@ -1478,7 +1478,7 @@ test("pressing number on keyboard appends to number node", () => {
         model: { ...model, operations },
         operation: operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const model1 = focusBody(model0, model0.graph.nodes[node].body!)
     let model2 = model1
@@ -1529,7 +1529,7 @@ test("pressing -3.14 on keyboard writes a float for the number", () => {
         model: { ...model, operations },
         operation: operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const model1 = focusBody(model0, model0.graph.nodes[node].body!)
     let model2 = model1
@@ -1580,7 +1580,7 @@ test("pressing -3.1.4 on keyboard ignores the second decimal", () => {
         model: { ...model, operations },
         operation: operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const model1 = focusBody(model0, model0.graph.nodes[node].body!)
     let model2 = model1
@@ -1632,7 +1632,7 @@ test("pressing backspace on keyboard deletes from number node", () => {
         model: { ...model, operations },
         operation: operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const model1 = focusBody(model0, model0.graph.nodes[node].body!)
     let model2 = model1
@@ -1688,7 +1688,7 @@ test("pressing backspace when number node value is 0 has no effect", () => {
         model: { ...model, operations },
         operation: operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const model1 = focusBody(model0, model0.graph.nodes[node].body!)
     let model2 = model1
@@ -1739,7 +1739,7 @@ test("pressing enter on keyboard while editing number node exits virtual keyboar
         model: { ...model, operations },
         operation: operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const model1 = focusBody(model0, model0.graph.nodes[node].body!)
     let model2 = model1
@@ -1791,7 +1791,7 @@ test("pressing non number on keyboard while editing number node is ignored", () 
         model: { ...model, operations },
         operation: operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const model1 = focusBody(model0, model0.graph.nodes[node].body)
     let model2 = model1
@@ -1838,7 +1838,7 @@ test("pressing - on keyboard while editing number node makes the number negative
         model: { ...model, operations },
         operation: operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const model1 = updateNumberText(model0, model0.graph.nodes[node].body, () => '10').model
     const model2 = focusBody(model1, model1.graph.nodes[node].body!)
@@ -1886,7 +1886,7 @@ test("pressing + on keyboard while editing number node makes the number negative
         model: { ...model, operations },
         operation: operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const model1 = updateNumberText(model0, model0.graph.nodes[node].body, () => '-10').model
     const model2 = focusBody(model1, model1.graph.nodes[node].body!)
@@ -1935,7 +1935,7 @@ test("pressing c on keyboard while editing number node makes the number 0", () =
         model: { ...model, operations },
         operation: operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const model1 = focusBody(model0, model0.graph.nodes[node].body!)
     const { model: model2 } = update(effects, model1, {
@@ -1981,7 +1981,7 @@ test("clicking a number node opens the numeric keyboard", () => {
         model: { ...model, operations },
         operation: operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const body = model0.graph.nodes[node].body!
     const { model: model1 } = update(effects, model0, {
@@ -2005,13 +2005,13 @@ test("clicking a number node when another number node is selected switches selec
         model: { ...model, operations },
         operation: operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model1, node: node1 } = addNodeToGraph({
         model: model0,
         operation: operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const body0 = model1.graph.nodes[node0].body!
     const { model: model2 } = update(effects, model1, {
@@ -2040,7 +2040,7 @@ test("clicking background when a number node is selected deselects it", () => {
         model: { ...model, operations },
         operation: operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const body = model0.graph.nodes[node].body!
     const pointer: Pointer = {
@@ -2092,7 +2092,7 @@ test("pressing Escape when a number node is selected deselects it", () => {
         model: { ...model, operations },
         operation: operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const body = model0.graph.nodes[node].body!
     const { model: model1 } = update(effects, model0, {
@@ -2127,13 +2127,13 @@ test("clicking input when a number node is selected deselects it and selects inp
         model: { ...model, operations },
         operation: operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model1, node: add } = addNodeToGraph({
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const body = model1.graph.nodes[number].body!
     const { model: model2 } = update(effects, model1, {
@@ -2169,7 +2169,7 @@ test("clicking output when a number node is selected deselects it and selects ou
         model: { ...model, operations },
         operation: operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const body = model0.graph.nodes[node].body!
     const { model: model1 } = update(effects, model0, {
@@ -2205,7 +2205,7 @@ test("clicking node when a number node is selected deselects it and selects node
         model: { ...model, operations },
         operation: operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const body = model0.graph.nodes[node].body!
     const { model: model1 } = update(effects, model0, {
@@ -2338,7 +2338,7 @@ test("pressing d on keyboard with node selected deletes it", () => {
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model2 } = update(effects, model1, {
         kind: EventKind.CLICKED_NODE,
@@ -2368,7 +2368,7 @@ test("clicking background when a node is selected deselects it", () => {
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const pointer: Pointer = {
         id: 0,
@@ -2422,7 +2422,7 @@ test("pressing escape when a node is selected deselects it", () => {
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model2 } = update(effects, model1, {
         kind: EventKind.CLICKED_NODE,
@@ -2453,7 +2453,7 @@ test("clicking background when a input is selected deselects it", () => {
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const pointer: Pointer = {
         id: 0,
@@ -2508,7 +2508,7 @@ test("pressing escape when a input is selected deselects it", () => {
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const input = (model1.graph.nodes[node] as NodeTransform).inputs[0]
     const { model: model2 } = update(effects, model1, {
@@ -2540,7 +2540,7 @@ test("clicking background when a output is selected deselects it", () => {
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const pointer: Pointer = {
         id: 0,
@@ -2595,7 +2595,7 @@ test("pressing escape when a output is selected deselects it", () => {
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const output = model1.graph.nodes[node].outputs[0]
     const { model: model2 } = update(effects, model1, {
@@ -2626,7 +2626,7 @@ test("delete node", () => {
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model2 } = update(effects, model1, {
         kind: EventKind.DELETE_NODE,
@@ -2659,13 +2659,13 @@ test("delete input edge", () => {
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model2, node: node1 } = addNodeToGraph({
         model: model1,
         operation: operations['Sub'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const input = (model2.graph.nodes[node0] as NodeTransform).inputs[0]
     const { model: model3 } = update(effects, model2, {
@@ -2707,13 +2707,13 @@ test("pressing d on keyboard with input selected delete edge attached", () => {
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model2, node: node1 } = addNodeToGraph({
         model: model1,
         operation: operations['Sub'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const input = (model2.graph.nodes[node0] as NodeTransform).inputs[0]
     const { model: model3 } = update(effects, model2, {
@@ -2760,13 +2760,13 @@ test("delete output edges", () => {
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model2, node: node1 } = addNodeToGraph({
         model: model1,
         operation: operations['Sub'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const [input0, input1] = (model2.graph.nodes[node0] as NodeTransform).inputs
     const { model: model3 } = update(effects, model2, {
@@ -2816,13 +2816,13 @@ test("pressing d on keyboard with output selected delete edges attached", () => 
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model2, node: node1 } = addNodeToGraph({
         model: model1,
         operation: operations['Sub'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const [input0, input1] = (model2.graph.nodes[node0] as NodeTransform).inputs
     const { model: model3 } = update(effects, model2, {
@@ -2870,7 +2870,7 @@ test("connecting output of same node where input is selected is not allowed", ()
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const input = (model1.graph.nodes[node0] as NodeTransform).inputs[0]
     const { model: model2 } = update(effects, model1, {
@@ -2902,7 +2902,7 @@ test("connecting input of same node where output is selected is not allowed", ()
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const output = model1.graph.nodes[node0].outputs[0]
     const { model: model2 } = update(effects, model1, {
@@ -2948,19 +2948,19 @@ test("connecting output to input if input already has edge replaces it", () => {
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model2, node: node1 } = addNodeToGraph({
         model: model1,
         operation: operations['Sub'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model3, node: node2 } = addNodeToGraph({
         model: model2,
         operation: operations['Div'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const input = (model3.graph.nodes[node0] as NodeTransform).inputs[0]
     const { model: model4 } = update(effects, model3, {
@@ -3025,19 +3025,19 @@ test("connecting input to output if input already has edge replaces it", () => {
         model: model0,
         operation: operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model2, node: node1 } = addNodeToGraph({
         model: model1,
         operation: operations['Sub'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model3, node: node2 } = addNodeToGraph({
         model: model2,
         operation: operations['Div'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const input = (model3.graph.nodes[node0] as NodeTransform).inputs[0]
     const { model: model4 } = update(effects, model3, {
@@ -3126,7 +3126,7 @@ test("three pointers down on node then one up keeps state dragging", () => {
         model: model0,
         operation: model0.operations['Add'],
         position: { x: 250, y: 250 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const pointer0: Pointer = {
         id: 0,
@@ -3188,7 +3188,7 @@ test("pointer move when input selected updates node placement location", () => {
         model: model0,
         operation: model0.operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const pointer0: Pointer = {
         id: 0,
@@ -3236,7 +3236,7 @@ test("pointer move when output selected updates node placement location", () => 
         model: model0,
         operation: model0.operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const pointer0: Pointer = {
         id: 0,
@@ -3282,7 +3282,7 @@ test("pointer move when body selected updates node placement location", () => {
         model: model0,
         operation: model0.operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const pointer0: Pointer = {
         id: 0,
@@ -3378,7 +3378,7 @@ test("pressing f with node selected opens finder", () => {
         model: model0,
         operation: model0.operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const pointer0: Pointer = {
         id: 0,
@@ -3434,7 +3434,7 @@ test("pressing f with input selected opens finder", () => {
         model: model0,
         operation: model0.operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const pointer0: Pointer = {
         id: 0,
@@ -3489,7 +3489,7 @@ test("pressing f with output selected opens finder", () => {
         model: model0,
         operation: model0.operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const pointer0: Pointer = {
         id: 0,
@@ -3544,7 +3544,7 @@ test("key up with input selected does nothing", () => {
         model: model0,
         operation: model0.operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const pointer0: Pointer = {
         id: 0,
@@ -3650,7 +3650,7 @@ test("update body", () => {
         model: model0,
         operation: model0.operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const body = model1.graph.nodes[node].body
     const { model: model2 } = updateBody(model1, body, number => ({
@@ -3691,7 +3691,7 @@ test("pressing any alphanumeric key while editing text node appends key to value
         model: { ...model, operations },
         operation: operations['Text'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const body = model0.graph.nodes[node].body
     const model2 = focusBody(model0, body)
@@ -3742,7 +3742,7 @@ test("pressing backspace while editing text node removes letter from value", () 
         model: { ...model, operations },
         operation: operations['Text'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const body = model0.graph.nodes[node].body
     const model2 = focusBody(model0, body)
@@ -3798,7 +3798,7 @@ test("pressing enter while editing text node clears the focus", () => {
         model: { ...model, operations },
         operation: operations['Text'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const body = model0.graph.nodes[node].body
     const model2 = focusBody(model0, body)
@@ -3848,7 +3848,7 @@ test("pressing escape while editing text node clears the focus", () => {
         model: { ...model, operations },
         operation: operations['Text'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const body = model0.graph.nodes[node].body
     const model2 = focusBody(model0, body)
@@ -3899,7 +3899,7 @@ test("pressing shift while editing text node does nothing", () => {
         model: { ...model, operations },
         operation: operations['Text'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const body = model0.graph.nodes[node].body
     const model2 = focusBody(model0, body)
@@ -3922,12 +3922,14 @@ test("pressing shift while editing text node does nothing", () => {
 
 test("upload table", () => {
     const table: Table = {
-        'a': [1, 2, 3],
-        'b': [4, 5, 6]
+        name: 'table.csv',
+        columns: {
+            'a': [1, 2, 3],
+            'b': [4, 5, 6]
+        }
     }
     const { model: model1 } = update(makeEffects(), model, {
         kind: EventKind.UPLOAD_TABLE,
-        name: 'train.csv',
         table,
         position: { x: 0, y: 0 }
     })
@@ -3942,7 +3944,7 @@ test("upload table", () => {
                 [node]: {
                     kind: NodeKind.SOURCE,
                     uuid: node,
-                    name: 'train.csv',
+                    name: 'table.csv',
                     outputs: [output],
                     body,
                     position: { x: 0, y: 0 }
@@ -3954,7 +3956,6 @@ test("upload table", () => {
                     kind: BodyKind.TABLE,
                     uuid: body,
                     node,
-                    name: 'train.csv',
                     value: table
                 }
             },
@@ -4003,19 +4004,19 @@ test("pressing c with node selected opens finder in change mode", () => {
         model: model0,
         operation: model0.operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model2, node: y } = addNodeToGraph({
         model: model1,
         operation: model1.operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model3, node: add } = addNodeToGraph({
         model: model2,
         operation: model0.operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model4 } = update(effects, model3, {
         kind: EventKind.CLICKED_OUTPUT,
@@ -4087,19 +4088,19 @@ test("pressing change node context menu with node selected opens finder in chang
         model: model0,
         operation: model0.operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model2, node: y } = addNodeToGraph({
         model: model1,
         operation: model1.operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model3, node: add } = addNodeToGraph({
         model: model2,
         operation: model0.operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model4 } = update(effects, model3, {
         kind: EventKind.CLICKED_OUTPUT,
@@ -4171,19 +4172,19 @@ test("pressing enter with finder in change mode replaces node but preserves inpu
         model: model0,
         operation: model0.operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model2, node: y } = addNodeToGraph({
         model: model1,
         operation: model1.operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model3, node: add } = addNodeToGraph({
         model: model2,
         operation: model0.operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model4 } = update(effects, model3, {
         kind: EventKind.CLICKED_OUTPUT,
@@ -4272,19 +4273,19 @@ test("cllicking finder option with finder in change mode replaces node but prese
         model: model0,
         operation: model0.operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model2, node: y } = addNodeToGraph({
         model: model1,
         operation: model1.operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model3, node: add } = addNodeToGraph({
         model: model2,
         operation: model0.operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model4 } = update(effects, model3, {
         kind: EventKind.CLICKED_OUTPUT,
@@ -4364,19 +4365,19 @@ test("change node with different input and output names", () => {
         model: model0,
         operation: model0.operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model2, node: y } = addNodeToGraph({
         model: model1,
         operation: model1.operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model3, node: add } = addNodeToGraph({
         model: model2,
         operation: model0.operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model4 } = update(effects, model3, {
         kind: EventKind.CLICKED_OUTPUT,
@@ -4497,19 +4498,19 @@ test("change node with more inputs then existing node", () => {
         model: model0,
         operation: model0.operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model2, node: y } = addNodeToGraph({
         model: model1,
         operation: model1.operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model3, node: add } = addNodeToGraph({
         model: model2,
         operation: model0.operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model4 } = update(effects, model3, {
         kind: EventKind.CLICKED_OUTPUT,
@@ -4627,19 +4628,19 @@ test("change node with fewer inputs then existing node", () => {
         model: model0,
         operation: model0.operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model2, node: y } = addNodeToGraph({
         model: model1,
         operation: model1.operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model3, node: add } = addNodeToGraph({
         model: model2,
         operation: model0.operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model4 } = update(effects, model3, {
         kind: EventKind.CLICKED_OUTPUT,
@@ -4742,7 +4743,7 @@ test("change from source node to a source node does nothing", () => {
         model: model0,
         operation: model0.operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model2 } = update(effects, model1, {
         kind: EventKind.CLICKED_NODE,
@@ -4784,7 +4785,7 @@ test("change from source node to a transform node does nothing", () => {
         model: model0,
         operation: model0.operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model2 } = update(effects, model1, {
         kind: EventKind.CLICKED_NODE,
@@ -4835,19 +4836,19 @@ test("deleting a node forces evaluation of outputs", () => {
         model: model0,
         operation: model0.operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model2, node: y } = addNodeToGraph({
         model: model1,
         operation: model1.operations['Number'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model3, node: add } = addNodeToGraph({
         model: model2,
         operation: model0.operations['Add'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model4 } = update(effects, model3, {
         kind: EventKind.CLICKED_OUTPUT,
@@ -4955,13 +4956,13 @@ test("prevent cycles from forming", () => {
         model: model0,
         operation: model0.operations['Sin'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model2, node: b } = addNodeToGraph({
         model: model1,
         operation: model1.operations['Sin'],
         position: { x: 0, y: 0 },
-        generateUUID: effects.generateUUID
+        effects,
     })
     const { model: model3 } = update(effects, model2, {
         kind: EventKind.CLICKED_OUTPUT,
@@ -4988,4 +4989,160 @@ test("prevent cycles from forming", () => {
         }
     }
     expect(model6).toEqual(expectedModel)
+})
+
+test("upload csv using node prompts user for a table", async () => {
+    const effects = makeEffects()
+    const model0: Model = {
+        ...model,
+        operations: {
+            'upload csv': {
+                kind: OperationKind.UPLOAD_CSV,
+                name: 'upload csv',
+                outputs: ['out'],
+            },
+        }
+    }
+    const { model: model1, node, event } = addNodeToGraph({
+        model: model0,
+        operation: model0.operations['upload csv'],
+        position: { x: 0, y: 0 },
+        effects,
+    })
+    const body = model1.graph.nodes[node].body
+    const output = model1.graph.nodes[node].outputs[0]
+    const expectedModel: Model = {
+        ...model0,
+        graph: {
+            ...model0.graph,
+            bodys: {
+                [body]: {
+                    kind: BodyKind.NO,
+                    uuid: body,
+                    node
+                }
+            },
+            nodes: {
+                [node]: {
+                    kind: NodeKind.SOURCE,
+                    uuid: node,
+                    name: 'upload csv',
+                    body,
+                    outputs: [output],
+                    position: { x: 0, y: 0 }
+                }
+            },
+            outputs: {
+                [output]: {
+                    uuid: output,
+                    node,
+                    name: 'out',
+                    edges: []
+                }
+            }
+        },
+        nodeOrder: [node]
+    }
+    expect(model1).toEqual(expectedModel)
+    expect(await event).toEqual({
+        kind: EventKind.UPLOAD_CSV,
+        table: {
+            name: 'table.csv',
+            columns: {
+                'a': [1, 2, 3],
+                'b': [4, 5, 6],
+            }
+        },
+        node
+    })
+})
+
+test("upload csv event replaces node body with a table", async () => {
+    const effects = makeEffects()
+    const model0: Model = {
+        ...model,
+        operations: {
+            'upload csv': {
+                kind: OperationKind.UPLOAD_CSV,
+                name: 'upload csv',
+                outputs: ['out'],
+            },
+        }
+    }
+    const { model: model1, node, event } = addNodeToGraph({
+        model: model0,
+        operation: model0.operations['upload csv'],
+        position: { x: 0, y: 0 },
+        effects,
+    })
+    const body = model1.graph.nodes[node].body
+    const output = model1.graph.nodes[node].outputs[0]
+    const { model: model2 } = update(effects, model1, (await event)!)
+    const expectedModel: Model = {
+        ...model1,
+        graph: {
+            ...model1.graph,
+            nodes: {
+                [node]: {
+                    kind: NodeKind.SOURCE,
+                    uuid: node,
+                    name: 'table.csv',
+                    body,
+                    outputs: [output],
+                    position: { x: 0, y: 0 }
+                }
+            },
+            bodys: {
+                [body]: {
+                    kind: BodyKind.TABLE,
+                    uuid: body,
+                    node,
+                    value: {
+                        name: 'table.csv',
+                        columns: {
+                            a: [1, 2, 3],
+                            b: [4, 5, 6],
+                        }
+                    }
+                }
+            }
+        }
+    }
+    expect(model2).toEqual(expectedModel)
+})
+
+
+test("pressing sft on virtual keyboard toggles upppercase", () => {
+    const effectModel = defaultEffectModel()
+    const effects = makeEffects(effectModel)
+    const operations: Operations = {
+        'Text': {
+            kind: OperationKind.TEXT,
+            name: 'Text',
+            outputs: ['out']
+        }
+    }
+    const { model: model0, node } = addNodeToGraph({
+        model: { ...model, operations },
+        operation: operations['Text'],
+        position: { x: 0, y: 0 },
+        effects,
+    })
+    const body = model0.graph.nodes[node].body
+    const model1 = focusBody(model0, body)
+    const { model: model2 } = update(effects, model1, {
+        kind: EventKind.KEYDOWN,
+        key: 'sft',
+        ctrl: false
+    })
+    const expectedModel: Model = {
+        ...model1,
+        focus: {
+            kind: FocusKind.BODY_TEXT,
+            body,
+            quickSelect: { kind: QuickSelectKind.NONE },
+            uppercase: true
+        },
+    }
+    expect(model2).toEqual(expectedModel)
 })

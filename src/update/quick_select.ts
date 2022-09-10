@@ -1,7 +1,7 @@
 import { AppEvent } from ".";
 import { Model } from "../model";
 import { Focus, FocusFinderChange, FocusFinderInsert, FocusKind } from "../model/focus";
-import { BodyKind, GenerateUUID, UUID } from "../model/graph";
+import { BodyKind, GenerateUUID, NumberBody, TextBody, UUID } from "../model/graph";
 import { QuickSelectInput, QuickSelectOutput, QuickSelectKind, QuickSelectNode, QuickSelectBody } from "../model/quick_select";
 import { UpdateResult } from "../ui/run";
 import { selectInput, selectOutput } from "./focus";
@@ -161,15 +161,16 @@ export const quickSelectNode = (model: Model, quickSelect: QuickSelectNode, key:
 export const quickSelectBody = (model: Model, quickSelect: QuickSelectBody, key: string): UpdateResult<Model, AppEvent> => {
     const entry = Object.entries(quickSelect.hotkeys).find(([_, hotkey]) => hotkey === key)
     if (entry !== undefined) {
-        const [body, _] = entry
-        switch (model.graph.bodys[body].kind) {
+        const [bodyUUID, _] = entry
+        const body = model.graph.bodys[bodyUUID] as NumberBody | TextBody
+        switch (body.kind) {
             case BodyKind.NUMBER:
                 return {
                     model: {
                         ...model,
                         focus: {
                             kind: FocusKind.BODY_NUMBER,
-                            body,
+                            body: bodyUUID,
                             quickSelect: { kind: QuickSelectKind.NONE },
                         }
                     },
@@ -181,20 +182,9 @@ export const quickSelectBody = (model: Model, quickSelect: QuickSelectBody, key:
                         ...model,
                         focus: {
                             kind: FocusKind.BODY_TEXT,
-                            body,
+                            body: bodyUUID,
                             quickSelect: { kind: QuickSelectKind.NONE },
                             uppercase: false
-                        }
-                    },
-                    render: true
-                }
-            default:
-                return {
-                    model: {
-                        ...model,
-                        focus: {
-                            ...model.focus,
-                            quickSelect: { kind: QuickSelectKind.NONE }
                         }
                     },
                     render: true

@@ -5,7 +5,7 @@ import { Effects, UpdateResult } from "../ui/run"
 import { Model, NodePlacementLocation } from "../model"
 import { Focus, FocusFinderInsert, FocusFinderChange, FocusKind } from '../model/focus'
 import { PointerAction, PointerActionKind } from '../model/pointer_action'
-import { Body, BodyKind, Bodys, GenerateUUID, Graph, Inputs, Node, NodeKind, Nodes, NodeSource, Operation, OperationKind, Operations, Output, Outputs, Position, TextBody, UUID } from '../model/graph'
+import { Body, BodyKind, Bodys, GenerateUUID, Graph, Inputs, Node, NodeKind, Nodes, NodeSource, NumberBody, Operation, OperationKind, Operations, Output, Outputs, Position, TextBody, UUID } from '../model/graph'
 import { Pointer } from "../ui"
 import { addNode, changeNumberText, changeNodePosition, removeInputEdge, removeNode, removeOutputEdges, evaluateNode } from "./graph"
 import { maybeTriggerQuickSelect, quickSelectInput, quickSelectOutput, quickSelectNode, quickSelectBody } from "./quick_select"
@@ -931,7 +931,7 @@ const clickedFinderOption = (model: Model, { option }: ClickedFinderOption, effe
 }
 
 export const focusBody = (model: Model, bodyUUID: UUID): Model => {
-    const body = model.graph.bodys[bodyUUID]
+    const body = model.graph.bodys[bodyUUID] as NumberBody | TextBody
     switch (body.kind) {
         case BodyKind.NUMBER:
             return {
@@ -952,8 +952,6 @@ export const focusBody = (model: Model, bodyUUID: UUID): Model => {
                     uppercase: false
                 }
             }
-        default:
-            return model
     }
 }
 

@@ -794,6 +794,46 @@ test("pressing hotkey with body quick select will select the body and disable qu
     expect(model3).toEqual(expectedModel)
 })
 
+test("pressing hotkey with body quick select will select the text body and disable quick select", () => {
+    const effects = makeEffects()
+    const operations: Operations = {
+        'Text': {
+            kind: OperationKind.TEXT,
+            name: 'Text',
+            outputs: ['out']
+        },
+    }
+    const model0: Model = { ...model, operations }
+    const { model: model1, node } = addNodeToGraph({
+        model: model0,
+        operation: operations['Text'],
+        position: { x: 0, y: 0 },
+        effects,
+    })
+    const { model: model2 } = update(effects, model1, {
+        kind: EventKind.KEYDOWN,
+        key: 'b',
+        ctrl: false
+    })
+    const { model: model3 } = update(effects, model2, {
+        kind: EventKind.KEYDOWN,
+        key: 'a',
+        ctrl: false
+    })
+    const body = model3.graph.nodes[node].body!
+    const expectedModel: Model = {
+        ...model1,
+        focus: {
+            kind: FocusKind.BODY_TEXT,
+            body,
+            quickSelect: { kind: QuickSelectKind.NONE },
+            uppercase: false
+        }
+    }
+    expect(model3).toEqual(expectedModel)
+})
+
+
 test("pressing invalid hotkey with body quick select will disable quick select", () => {
     const effects = makeEffects()
     const operations: Operations = {

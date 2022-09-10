@@ -5056,3 +5056,93 @@ test("upload csv using node prompts user for a table", async () => {
         node
     })
 })
+
+test("upload csv event replaces node body with a table", async () => {
+    const effects = makeEffects()
+    const model0: Model = {
+        ...model,
+        operations: {
+            'upload csv': {
+                kind: OperationKind.UPLOAD_CSV,
+                name: 'upload csv',
+                outputs: ['out'],
+            },
+        }
+    }
+    const { model: model1, node, event } = addNodeToGraph({
+        model: model0,
+        operation: model0.operations['upload csv'],
+        position: { x: 0, y: 0 },
+        effects,
+    })
+    const body = model1.graph.nodes[node].body
+    const output = model1.graph.nodes[node].outputs[0]
+    const { model: model2 } = update(effects, model1, (await event)!)
+    const expectedModel: Model = {
+        ...model1,
+        graph: {
+            ...model1.graph,
+            nodes: {
+                [node]: {
+                    kind: NodeKind.SOURCE,
+                    uuid: node,
+                    name: 'table.csv',
+                    body,
+                    outputs: [output],
+                    position: { x: 0, y: 0 }
+                }
+            },
+            bodys: {
+                [body]: {
+                    kind: BodyKind.TABLE,
+                    uuid: body,
+                    node,
+                    value: {
+                        name: 'table.csv',
+                        columns: {
+                            a: [1, 2, 3],
+                            b: [4, 5, 6],
+                        }
+                    }
+                }
+            }
+        }
+    }
+    expect(model2).toEqual(expectedModel)
+})
+
+
+test("pressing sft on virtual keyboard toggles upppercase", () => {
+    const effectModel = defaultEffectModel()
+    const effects = makeEffects(effectModel)
+    const operations: Operations = {
+        'Text': {
+            kind: OperationKind.TEXT,
+            name: 'Text',
+            outputs: ['out']
+        }
+    }
+    const { model: model0, node } = addNodeToGraph({
+        model: { ...model, operations },
+        operation: operations['Text'],
+        position: { x: 0, y: 0 },
+        effects,
+    })
+    const body = model0.graph.nodes[node].body
+    const model1 = focusBody(model0, body)
+    const { model: model2 } = update(effects, model1, {
+        kind: EventKind.KEYDOWN,
+        key: 'sft',
+        ctrl: false
+    })
+    const expectedModel: Model = {
+        ...model1,
+        focus: {
+            kind: FocusKind.BODY_TEXT,
+            body,
+            quickSelect: { kind: QuickSelectKind.NONE },
+            uppercase: true
+        },
+    }
+    expect(model2).toEqual(expectedModel)
+})

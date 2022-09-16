@@ -137,12 +137,6 @@ export interface KeyUp {
     readonly ctrl: boolean
 }
 
-export interface KeyDown {
-    readonly kind: EventKind.KEYDOWN
-    readonly key: string
-    readonly ctrl: boolean
-}
-
 export interface ClickedFinderOption {
     readonly kind: EventKind.CLICKED_FINDER_OPTION
     readonly option: string
@@ -1468,8 +1462,7 @@ export const update = (
             return clickedOutput(model, event, effects.generateUUID)
         case EventKind.OPEN_FINDER_TIMEOUT:
             return openFinderTimeout(model, event)
-        case EventKind.KEYDOWN:
-        case virtualKeys.EventKind:
+        case keydown.eventKind:
             return keyDown(model, event, effects)
         case EventKind.KEYUP:
             return keyUp(model, event)

@@ -16,7 +16,7 @@ import { Model } from "../../src/model"
 import { Theme } from "../../src/model/theme"
 import { Focus, FocusFinderInsert, FocusKind } from "../../src/model/focus"
 import { PointerActionKind } from "../../src/model/pointer_action"
-import { column, container, row, scene, stack, text } from "../../src/ui"
+import { column, container, row, scene, stack, text, UI } from "../../src/ui"
 import {
     finder,
     inputsUi,
@@ -41,6 +41,7 @@ import { normalize } from "../../src/normalize"
 import { tensorFunc } from "../../src/model/operations"
 import * as alphabeticVirtualKeyboard from "../../src/alphabetic_virtual_keyboard"
 import * as numericVirtualKeyboard from "../../src/numeric_virtual_keyboard"
+import { CrossAxisAlignment } from "../../src/ui/alignment"
 
 const addFunc = tensorFunc(tf.add)
 const subFunc = tensorFunc(tf.sub)
@@ -1220,14 +1221,17 @@ test("view with no nodes or edges but finder shown", () => {
         theme,
     }
     const actual = view(model)
-    const expected = stack([
+    const expected: UI<AppEvent> = stack([
         container({
             color: model.theme.background,
             onClick: { kind: EventKind.CLICKED_BACKGROUND },
         }),
         scene({ camera: model.camera, children: [], connections: [] }),
         finder(model.focus as FocusFinderInsert, model.theme),
-        alphabeticVirtualKeyboard(model.theme, false),
+        alphabeticVirtualKeyboard.view({
+            color: model.theme.node,
+            uppercase: false,
+        }),
     ])
     expect(actual).toEqual(expected)
 })
@@ -1267,14 +1271,17 @@ test("view with no nodes or edges but finder shown capitalized", () => {
         theme,
     }
     const actual = view(model)
-    const expected = stack([
+    const expected: UI<AppEvent> = stack([
         container({
             color: model.theme.background,
             onClick: { kind: EventKind.CLICKED_BACKGROUND },
         }),
         scene({ camera: model.camera, children: [], connections: [] }),
         finder(model.focus as FocusFinderInsert, model.theme),
-        alphabeticVirtualKeyboard(model.theme, true),
+        alphabeticVirtualKeyboard.view({
+            color: model.theme.node,
+            uppercase: true,
+        }),
     ])
     expect(actual).toEqual(expected)
 })
@@ -1328,7 +1335,7 @@ test("view with positive number", () => {
         theme,
     }
     const actual = view(model)
-    const expected = stack([
+    const expected: UI<AppEvent> = stack([
         container({
             color: model.theme.background,
             onClick: { kind: EventKind.CLICKED_BACKGROUND },
@@ -1338,7 +1345,10 @@ test("view with positive number", () => {
             children: [nodeUi(model.theme, "number", model.graph, model.focus)],
             connections: [],
         }),
-        numericVirtualKeyboard(model.theme, "-"),
+        numericVirtualKeyboard.view({
+            color: model.theme.node,
+            positive: true,
+        }),
     ])
     expect(actual).toEqual(expected)
 })
@@ -1392,7 +1402,7 @@ test("view with negative number", () => {
         theme,
     }
     const actual = view(model)
-    const expected = stack([
+    const expected: UI<AppEvent> = stack([
         container({
             color: model.theme.background,
             onClick: { kind: EventKind.CLICKED_BACKGROUND },
@@ -1402,7 +1412,10 @@ test("view with negative number", () => {
             children: [nodeUi(model.theme, "number", model.graph, model.focus)],
             connections: [],
         }),
-        numericVirtualKeyboard(model.theme, "+"),
+        numericVirtualKeyboard.view({
+            color: model.theme.node,
+            positive: false,
+        }),
     ])
     expect(actual).toEqual(expected)
 })
@@ -1456,7 +1469,7 @@ test("view with text", () => {
         theme,
     }
     const actual = view(model)
-    const expected = stack([
+    const expected: UI<AppEvent> = stack([
         container({
             color: model.theme.background,
             onClick: { kind: EventKind.CLICKED_BACKGROUND },
@@ -1466,7 +1479,10 @@ test("view with text", () => {
             children: [nodeUi(model.theme, "text", model.graph, model.focus)],
             connections: [],
         }),
-        alphabeticVirtualKeyboard(model.theme, false),
+        alphabeticVirtualKeyboard.view({
+            color: model.theme.node,
+            uppercase: false,
+        }),
     ])
     expect(actual).toEqual(expected)
 })
@@ -1550,7 +1566,7 @@ test("view with three nodes and no edges", () => {
         theme,
     }
     const actual = view(model)
-    const expected = stack([
+    const expected: UI<AppEvent> = stack([
         container({
             color: model.theme.background,
             onClick: { kind: EventKind.CLICKED_BACKGROUND },
@@ -1659,7 +1675,7 @@ test("view with three nodes and no edges", () => {
         theme,
     }
     const actual = view(model)
-    const expected = stack([
+    const expected: UI<AppEvent> = stack([
         container({
             color: model.theme.background,
             onClick: { kind: EventKind.CLICKED_BACKGROUND },
@@ -1797,7 +1813,7 @@ test("view with three nodes and one edges", () => {
         theme,
     }
     const actual = view(model)
-    const expected = stack([
+    const expected: UI<AppEvent> = stack([
         container({
             color: model.theme.background,
             onClick: { kind: EventKind.CLICKED_BACKGROUND },
@@ -1887,7 +1903,7 @@ test("view with body selected", () => {
         theme,
     }
     const actual = view(model)
-    const expected = stack([
+    const expected: UI<AppEvent> = stack([
         container({
             color: model.theme.background,
             onClick: { kind: EventKind.CLICKED_BACKGROUND },
@@ -1897,7 +1913,10 @@ test("view with body selected", () => {
             children: [nodeUi(model.theme, "number", model.graph, model.focus)],
             connections: [],
         }),
-        numericVirtualKeyboard(model.theme, "-"),
+        numericVirtualKeyboard.view({
+            color: model.theme.node,
+            positive: true,
+        }),
     ])
     expect(actual).toEqual(expected)
 })
@@ -2007,7 +2026,7 @@ test("view with input selected", () => {
         theme,
     }
     const actual = view(model)
-    const expected = stack([
+    const expected: UI<AppEvent> = stack([
         container({
             color: model.theme.background,
             onClick: { kind: EventKind.CLICKED_BACKGROUND },
@@ -2148,7 +2167,7 @@ test("view with output selected", () => {
         theme,
     }
     const actual = view(model)
-    const expected = stack([
+    const expected: UI<AppEvent> = stack([
         container({
             color: model.theme.background,
             onClick: { kind: EventKind.CLICKED_BACKGROUND },

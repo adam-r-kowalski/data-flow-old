@@ -1,26 +1,35 @@
-import * as tf from '@tensorflow/tfjs-core';
-import '@tensorflow/tfjs-backend-cpu'
-import { column, tensorFunc, operations } from '../src/model/operations';
-import { BodyKind, ColumnBody, ErrorBody, NoBody, OperationTransform, TableBody, TensorBody, TextBody } from '../src/model/graph';
+import * as tf from "@tensorflow/tfjs-core"
+import "@tensorflow/tfjs-backend-cpu"
+import { column, tensorFunc, operations } from "../src/model/operations"
+import {
+    BodyKind,
+    ColumnBody,
+    ErrorBody,
+    NoBody,
+    OperationTransform,
+    TableBody,
+    TensorBody,
+    TextBody,
+} from "../src/model/graph"
 
 test("tensor func add two tensors", () => {
     const current: NoBody = {
         kind: BodyKind.NO,
-        uuid: 'current',
-        node: 'node 0'
+        uuid: "current",
+        node: "node 0",
     }
     const x: TensorBody = {
         kind: BodyKind.TENSOR,
-        uuid: 'x',
-        node: 'node 1',
+        uuid: "x",
+        node: "node 1",
         value: [1, 2, 3],
         rank: 1,
         shape: [3],
     }
     const y: TensorBody = {
         kind: BodyKind.TENSOR,
-        uuid: 'y',
-        node: 'node 2',
+        uuid: "y",
+        node: "node 2",
         value: [4, 5, 6],
         rank: 1,
         shape: [3],
@@ -29,8 +38,8 @@ test("tensor func add two tensors", () => {
     const actual = add(current, x, y)
     const expected: TensorBody = {
         kind: BodyKind.TENSOR,
-        uuid: 'current',
-        node: 'node 0',
+        uuid: "current",
+        node: "node 0",
         value: [5, 7, 9],
         rank: 1,
         shape: [3],
@@ -41,28 +50,28 @@ test("tensor func add two tensors", () => {
 test("tensor func add tensor and nothing produces error", () => {
     const current: NoBody = {
         kind: BodyKind.NO,
-        uuid: 'current',
-        node: 'node 0'
+        uuid: "current",
+        node: "node 0",
     }
     const x: TensorBody = {
         kind: BodyKind.TENSOR,
-        uuid: 'x',
-        node: 'node 1',
+        uuid: "x",
+        node: "node 1",
         value: [1, 2, 3],
         rank: 1,
         shape: [3],
     }
     const y: NoBody = {
         kind: BodyKind.NO,
-        uuid: 'y',
-        node: 'node 2',
+        uuid: "y",
+        node: "node 2",
     }
     const add = tensorFunc(tf.add)
     const actual = add(current, x, y)
     const expected: ErrorBody = {
         kind: BodyKind.ERROR,
-        uuid: 'current',
-        node: 'node 0',
+        uuid: "current",
+        node: "node 0",
     }
     expect(actual).toEqual(expected)
 })
@@ -70,35 +79,34 @@ test("tensor func add tensor and nothing produces error", () => {
 test("extract column from table", () => {
     const current: NoBody = {
         kind: BodyKind.NO,
-        uuid: 'current',
-        node: 'node 0',
+        uuid: "current",
+        node: "node 0",
     }
     const table: TableBody = {
         kind: BodyKind.TABLE,
-        uuid: 'table',
-        node: 'node 0',
+        uuid: "table",
+        node: "node 0",
         value: {
-            name: 'demo',
+            name: "demo",
             columns: {
-
-                'a': [1, 2, 3],
-                'b': [4, 5, 6],
-            }
-        }
+                a: [1, 2, 3],
+                b: [4, 5, 6],
+            },
+        },
     }
     const name: TextBody = {
         kind: BodyKind.TEXT,
-        uuid: 'y',
-        node: 'node 2',
-        value: 'a'
+        uuid: "y",
+        node: "node 2",
+        value: "a",
     }
     const actual = column(current, table, name)
     const expected: ColumnBody = {
         kind: BodyKind.COLUMN,
-        uuid: 'current',
-        node: 'node 0',
-        name: 'a',
-        value: [1, 2, 3]
+        uuid: "current",
+        node: "node 0",
+        name: "a",
+        value: [1, 2, 3],
     }
     expect(actual).toEqual(expected)
 })
@@ -106,32 +114,32 @@ test("extract column from table", () => {
 test("extract non existant column from table", () => {
     const current: NoBody = {
         kind: BodyKind.NO,
-        uuid: 'current',
-        node: 'node 0',
+        uuid: "current",
+        node: "node 0",
     }
     const table: TableBody = {
         kind: BodyKind.TABLE,
-        uuid: 'table',
-        node: 'node 0',
+        uuid: "table",
+        node: "node 0",
         value: {
-            name: 'demo',
-            'columns': {
-                'a': [1, 2, 3],
-                'b': [4, 5, 6],
-            }
-        }
+            name: "demo",
+            columns: {
+                a: [1, 2, 3],
+                b: [4, 5, 6],
+            },
+        },
     }
     const name: TextBody = {
         kind: BodyKind.TEXT,
-        uuid: 'y',
-        node: 'node 2',
-        value: 'c'
+        uuid: "y",
+        node: "node 2",
+        value: "c",
     }
     const actual = column(current, table, name)
     const expected: ErrorBody = {
         kind: BodyKind.ERROR,
-        uuid: 'current',
-        node: 'node 0',
+        uuid: "current",
+        node: "node 0",
     }
     expect(actual).toEqual(expected)
 })
@@ -139,30 +147,34 @@ test("extract non existant column from table", () => {
 test("concat two tensors", () => {
     const current: NoBody = {
         kind: BodyKind.NO,
-        uuid: 'current',
-        node: 'node 0'
+        uuid: "current",
+        node: "node 0",
     }
     const x: TensorBody = {
         kind: BodyKind.TENSOR,
-        uuid: 'x',
-        node: 'node 1',
+        uuid: "x",
+        node: "node 1",
         value: [1, 2, 3],
         rank: 1,
         shape: [3],
     }
     const y: TensorBody = {
         kind: BodyKind.TENSOR,
-        uuid: 'y',
-        node: 'node 2',
+        uuid: "y",
+        node: "node 2",
         value: [4, 5, 6],
         rank: 1,
         shape: [3],
     }
-    const actual = (operations['concat'] as OperationTransform).func(current, x, y)
+    const actual = (operations["concat"] as OperationTransform).func(
+        current,
+        x,
+        y
+    )
     const expected: TensorBody = {
         kind: BodyKind.TENSOR,
-        uuid: 'current',
-        node: 'node 0',
+        uuid: "current",
+        node: "node 0",
         value: [1, 2, 3, 4, 5, 6],
         rank: 1,
         shape: [6],
@@ -173,33 +185,63 @@ test("concat two tensors", () => {
 test("tile", () => {
     const current: NoBody = {
         kind: BodyKind.NO,
-        uuid: 'current',
-        node: 'node 0'
+        uuid: "current",
+        node: "node 0",
     }
     const x: TensorBody = {
         kind: BodyKind.TENSOR,
-        uuid: 'x',
-        node: 'node 1',
+        uuid: "x",
+        node: "node 1",
         value: [1, 2, 3],
         rank: 1,
         shape: [3],
     }
     const reps: TensorBody = {
         kind: BodyKind.TENSOR,
-        uuid: 'reps',
-        node: 'node 2',
+        uuid: "reps",
+        node: "node 2",
         value: 3,
         rank: 0,
         shape: [],
     }
-    const actual = (operations['tile'] as OperationTransform).func(current, x, reps)
+    const actual = (operations["tile"] as OperationTransform).func(
+        current,
+        x,
+        reps
+    )
     const expected: TensorBody = {
         kind: BodyKind.TENSOR,
-        uuid: 'current',
-        node: 'node 0',
+        uuid: "current",
+        node: "node 0",
         value: [1, 2, 3, 1, 2, 3, 1, 2, 3],
         rank: 1,
         shape: [9],
+    }
+    expect(actual).toEqual(expected)
+})
+
+test("unique", () => {
+    const current: NoBody = {
+        kind: BodyKind.NO,
+        uuid: "current",
+        node: "node 0",
+    }
+    const x: TensorBody = {
+        kind: BodyKind.TENSOR,
+        uuid: "x",
+        node: "node 1",
+        value: [1, 2, 1, 3, 2, 3, 4],
+        rank: 1,
+        shape: [8],
+    }
+    const actual = (operations["unique"] as OperationTransform).func(current, x)
+    const expected: TensorBody = {
+        kind: BodyKind.TENSOR,
+        uuid: "current",
+        node: "node 0",
+        value: [1, 2, 3, 4],
+        rank: 1,
+        shape: [4],
     }
     expect(actual).toEqual(expected)
 })

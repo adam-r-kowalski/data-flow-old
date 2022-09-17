@@ -1,0 +1,6 @@
+* TODO extract virtual keyboard to own file
+  - [ ] extract model
+  - [ ] extract update
+  - [ ] extract view
+  - [ ] unit test virtual keyboard in isolation
+  - [ ] use extracted virtual keyboard from top level code

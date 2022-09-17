@@ -1,15 +1,31 @@
-import * as tf from '@tensorflow/tfjs-core';
-import { normalize } from '../normalize';
+import * as tf from "@tensorflow/tfjs-core"
+import { normalize } from "../normalize"
 
-import { Operations, Body, Tensor, BodyKind, TensorBody, OperationKind, Function, ErrorBody } from "./graph"
+import {
+    Operations,
+    Body,
+    Tensor,
+    BodyKind,
+    TensorBody,
+    OperationKind,
+    Function,
+    ErrorBody,
+} from "./graph"
 
 export type TensorFunc = (...inputs: Tensor[]) => tf.Tensor<tf.Rank>
 
 export const tensorFunc = (f: TensorFunc): Function => {
     return ({ uuid, node }: Body, ...inputs: Body[]): Body => {
         const tensors = inputs
-            .filter(body => [BodyKind.TENSOR, BodyKind.NUMBER, BodyKind.TEXT, BodyKind.COLUMN].includes(body.kind))
-            .map(body => (body as TensorBody).value)
+            .filter((body) =>
+                [
+                    BodyKind.TENSOR,
+                    BodyKind.NUMBER,
+                    BodyKind.TEXT,
+                    BodyKind.COLUMN,
+                ].includes(body.kind)
+            )
+            .map((body) => (body as TensorBody).value)
         try {
             const result = f(...tensors)
             return {
@@ -67,747 +83,748 @@ export const column = ({ uuid, node }: Body, ...inputs: Body[]): Body => {
 }
 
 export const operations: Operations = {
-    "number": {
+    number: {
         kind: OperationKind.NUMBER,
         name: "number",
         outputs: ["out"],
     },
-    "text": {
+    text: {
         kind: OperationKind.TEXT,
         name: "text",
         outputs: ["out"],
     },
-    "abs": {
+    abs: {
         kind: OperationKind.TRANSFORM,
         name: "abs",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.abs)
+        func: tensorFunc(tf.abs),
     },
-    "acos": {
+    acos: {
         kind: OperationKind.TRANSFORM,
         name: "acos",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.acos)
+        func: tensorFunc(tf.acos),
     },
-    "acosh": {
+    acosh: {
         kind: OperationKind.TRANSFORM,
         name: "acosh",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.acosh)
+        func: tensorFunc(tf.acosh),
     },
-    "add": {
+    add: {
         kind: OperationKind.TRANSFORM,
         name: "add",
         inputs: ["x", "y"],
         outputs: ["out"],
-        func: tensorFunc(tf.add)
+        func: tensorFunc(tf.add),
     },
-    "all": {
+    all: {
         kind: OperationKind.TRANSFORM,
         name: "all",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.all as TensorFunc)
+        func: tensorFunc(tf.all as TensorFunc),
     },
-    "any": {
+    any: {
         kind: OperationKind.TRANSFORM,
         name: "any",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.any as TensorFunc)
+        func: tensorFunc(tf.any as TensorFunc),
     },
     "arg max": {
         kind: OperationKind.TRANSFORM,
         name: "arg max",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.argMax as TensorFunc)
+        func: tensorFunc(tf.argMax as TensorFunc),
     },
     "arg min": {
         kind: OperationKind.TRANSFORM,
         name: "arg min",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.argMin as TensorFunc)
+        func: tensorFunc(tf.argMin as TensorFunc),
     },
-    "asin": {
+    asin: {
         kind: OperationKind.TRANSFORM,
         name: "asin",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.asin)
+        func: tensorFunc(tf.asin),
     },
-    "asinh": {
+    asinh: {
         kind: OperationKind.TRANSFORM,
         name: "asinh",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.asinh)
+        func: tensorFunc(tf.asinh),
     },
-    "atan": {
+    atan: {
         kind: OperationKind.TRANSFORM,
         name: "atan",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.atan)
+        func: tensorFunc(tf.atan),
     },
-    "atanh": {
+    atanh: {
         kind: OperationKind.TRANSFORM,
         name: "atanh",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.atanh)
+        func: tensorFunc(tf.atanh),
     },
-    "ceil": {
+    ceil: {
         kind: OperationKind.TRANSFORM,
         name: "ceil",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.ceil)
+        func: tensorFunc(tf.ceil),
     },
-    "clip": {
+    clip: {
         kind: OperationKind.TRANSFORM,
         name: "clip",
         inputs: ["x", "min", "max"],
         outputs: ["out"],
-        func: tensorFunc(tf.clipByValue as TensorFunc)
+        func: tensorFunc(tf.clipByValue as TensorFunc),
     },
-    "complex": {
+    complex: {
         kind: OperationKind.TRANSFORM,
         name: "complex",
         inputs: ["real", "imag"],
         outputs: ["out"],
-        func: tensorFunc(tf.complex)
+        func: tensorFunc(tf.complex),
     },
-    "concat": {
+    concat: {
         kind: OperationKind.TRANSFORM,
         name: "concat",
         inputs: ["x", "y"],
         outputs: ["out"],
-        func: tensorFunc((x, y) => tf.concat([x, y]))
+        func: tensorFunc((x, y) => tf.concat([x, y])),
     },
-    "cos": {
+    cos: {
         kind: OperationKind.TRANSFORM,
         name: "cos",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.cos)
+        func: tensorFunc(tf.cos),
     },
-    "cosh": {
+    cosh: {
         kind: OperationKind.TRANSFORM,
         name: "cosh",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.cosh)
+        func: tensorFunc(tf.cosh),
     },
-    "column": {
+    column: {
         kind: OperationKind.TRANSFORM,
         name: "column",
         inputs: ["table", "column"],
         outputs: ["data"],
-        func: column
+        func: column,
     },
-    "cumsum": {
+    cumsum: {
         kind: OperationKind.TRANSFORM,
         name: "cumsum",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.cumsum as TensorFunc)
+        func: tensorFunc(tf.cumsum as TensorFunc),
     },
-    "cumprod": {
+    cumprod: {
         kind: OperationKind.TRANSFORM,
         name: "cumprod",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.cumprod as TensorFunc)
+        func: tensorFunc(tf.cumprod as TensorFunc),
     },
-    "diag": {
+    diag: {
         kind: OperationKind.TRANSFORM,
         name: "diag",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.diag as TensorFunc)
+        func: tensorFunc(tf.diag as TensorFunc),
     },
-    "div": {
+    div: {
         kind: OperationKind.TRANSFORM,
         name: "div",
         inputs: ["x", "y"],
         outputs: ["out"],
-        func: tensorFunc(tf.div)
+        func: tensorFunc(tf.div),
     },
     "div no nan": {
         kind: OperationKind.TRANSFORM,
         name: "div no nan",
         inputs: ["x", "y"],
         outputs: ["out"],
-        func: tensorFunc(tf.divNoNan)
+        func: tensorFunc(tf.divNoNan),
     },
-    "dot": {
+    dot: {
         kind: OperationKind.TRANSFORM,
         name: "dot",
         inputs: ["x", "y"],
         outputs: ["out"],
-        func: tensorFunc(tf.dot)
+        func: tensorFunc(tf.dot),
     },
-    "elu": {
+    elu: {
         kind: OperationKind.TRANSFORM,
         name: "elu",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.elu)
+        func: tensorFunc(tf.elu),
     },
-    "erf": {
+    erf: {
         kind: OperationKind.TRANSFORM,
         name: "erf",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.erf)
+        func: tensorFunc(tf.erf),
     },
-    "equal": {
+    equal: {
         kind: OperationKind.TRANSFORM,
         name: "equal",
         inputs: ["x", "y"],
         outputs: ["out"],
-        func: tensorFunc(tf.equal)
+        func: tensorFunc(tf.equal),
     },
-    "euclideanNorm": {
+    euclideanNorm: {
         kind: OperationKind.TRANSFORM,
         name: "euclideanNorm",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.euclideanNorm as TensorFunc)
+        func: tensorFunc(tf.euclideanNorm as TensorFunc),
     },
-    "exp": {
+    exp: {
         kind: OperationKind.TRANSFORM,
         name: "exp",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.exp)
+        func: tensorFunc(tf.exp),
     },
-    "expm1": {
+    expm1: {
         kind: OperationKind.TRANSFORM,
         name: "expm1",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.expm1)
+        func: tensorFunc(tf.expm1),
     },
-    "eye": {
+    eye: {
         kind: OperationKind.TRANSFORM,
         name: "eye",
         inputs: ["size"],
         outputs: ["out"],
-        func: tensorFunc(tf.eye as TensorFunc)
+        func: tensorFunc(tf.eye as TensorFunc),
     },
-    "fill": {
+    fill: {
         kind: OperationKind.TRANSFORM,
         name: "fill",
         inputs: ["shape", "value"],
         outputs: ["out"],
-        func: tensorFunc(tf.fill as TensorFunc)
+        func: tensorFunc(tf.fill as TensorFunc),
     },
-    "floor": {
+    floor: {
         kind: OperationKind.TRANSFORM,
         name: "floor",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.floor)
+        func: tensorFunc(tf.floor),
     },
     "floor div": {
         kind: OperationKind.TRANSFORM,
         name: "floor div",
         inputs: ["x", "y"],
         outputs: ["out"],
-        func: tensorFunc(tf.floorDiv)
+        func: tensorFunc(tf.floorDiv),
     },
-    "gather": {
+    gather: {
         kind: OperationKind.TRANSFORM,
         name: "gather",
         inputs: ["x", "indices"],
         outputs: ["out"],
-        func: tensorFunc(tf.gather as TensorFunc)
+        func: tensorFunc(tf.gather as TensorFunc),
     },
-    "greater": {
+    greater: {
         kind: OperationKind.TRANSFORM,
         name: "greater",
         inputs: ["x", "y"],
         outputs: ["out"],
-        func: tensorFunc(tf.greater)
+        func: tensorFunc(tf.greater),
     },
     "greater equal": {
         kind: OperationKind.TRANSFORM,
         name: "greater equal",
         inputs: ["x", "y"],
         outputs: ["out"],
-        func: tensorFunc(tf.greaterEqual)
+        func: tensorFunc(tf.greaterEqual),
     },
-    "imag": {
+    imag: {
         kind: OperationKind.TRANSFORM,
         name: "imag",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.imag)
+        func: tensorFunc(tf.imag),
     },
     "is finite": {
         kind: OperationKind.TRANSFORM,
         name: "is finite",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.isFinite)
+        func: tensorFunc(tf.isFinite),
     },
     "is inf": {
         kind: OperationKind.TRANSFORM,
         name: "is inf",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.isInf)
+        func: tensorFunc(tf.isInf),
     },
     "is nan": {
         kind: OperationKind.TRANSFORM,
         name: "is nan",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.isNaN)
+        func: tensorFunc(tf.isNaN),
     },
     "leaky relu": {
         kind: OperationKind.TRANSFORM,
         name: "leaky relu",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.leakyRelu as TensorFunc)
+        func: tensorFunc(tf.leakyRelu as TensorFunc),
     },
-    "less": {
+    less: {
         kind: OperationKind.TRANSFORM,
         name: "less",
         inputs: ["x", "y"],
         outputs: ["out"],
-        func: tensorFunc(tf.less)
+        func: tensorFunc(tf.less),
     },
     "less equal": {
         kind: OperationKind.TRANSFORM,
         name: "less equal",
         inputs: ["x", "y"],
         outputs: ["out"],
-        func: tensorFunc(tf.lessEqual)
+        func: tensorFunc(tf.lessEqual),
     },
-    "linspace": {
+    linspace: {
         kind: OperationKind.TRANSFORM,
         name: "linspace",
         inputs: ["start", "stop", "num"],
         outputs: ["out"],
-        func: tensorFunc(tf.linspace as TensorFunc)
+        func: tensorFunc(tf.linspace as TensorFunc),
     },
-    "log": {
+    log: {
         kind: OperationKind.TRANSFORM,
         name: "log",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.log)
+        func: tensorFunc(tf.log),
     },
-    "log1p": {
+    log1p: {
         kind: OperationKind.TRANSFORM,
         name: "log1p",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.log1p)
+        func: tensorFunc(tf.log1p),
     },
     "log sigmoid": {
         kind: OperationKind.TRANSFORM,
         name: "log sigmoid",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.logSigmoid)
+        func: tensorFunc(tf.logSigmoid),
     },
     "log softmax": {
         kind: OperationKind.TRANSFORM,
         name: "log softmax",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.logSoftmax as TensorFunc)
+        func: tensorFunc(tf.logSoftmax as TensorFunc),
     },
     "log sum exp": {
         kind: OperationKind.TRANSFORM,
         name: "log sum exp",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.logSumExp as TensorFunc)
+        func: tensorFunc(tf.logSumExp as TensorFunc),
     },
-    "and": {
+    and: {
         kind: OperationKind.TRANSFORM,
         name: "and",
         inputs: ["x", "y"],
         outputs: ["out"],
-        func: tensorFunc(tf.logicalAnd)
+        func: tensorFunc(tf.logicalAnd),
     },
-    "not": {
+    not: {
         kind: OperationKind.TRANSFORM,
         name: "not",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.logicalNot)
+        func: tensorFunc(tf.logicalNot),
     },
-    "oneHot": {
-        kind: OperationKind.TRANSFORM,
-        name: "oneHot",
-        inputs: ["indices", "depth"],
-        outputs: ["out"],
-        func: tensorFunc(tf.oneHot as TensorFunc)
-    },
-    "ones": {
+    ones: {
         kind: OperationKind.TRANSFORM,
         name: "ones",
         inputs: ["shape"],
         outputs: ["out"],
-        func: tensorFunc(tf.ones as TensorFunc)
+        func: tensorFunc(tf.ones as TensorFunc),
     },
     "ones like": {
         kind: OperationKind.TRANSFORM,
         name: "ones like",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.onesLike)
+        func: tensorFunc(tf.onesLike),
     },
-    "or": {
+    or: {
         kind: OperationKind.TRANSFORM,
         name: "or",
         inputs: ["x", "y"],
         outputs: ["out"],
-        func: tensorFunc(tf.logicalOr)
+        func: tensorFunc(tf.logicalOr),
     },
-    "xor": {
+    xor: {
         kind: OperationKind.TRANSFORM,
         name: "xor",
         inputs: ["x", "y"],
         outputs: ["out"],
-        func: tensorFunc(tf.logicalXor)
+        func: tensorFunc(tf.logicalXor),
     },
     "mat mul": {
         kind: OperationKind.TRANSFORM,
         name: "mat mul",
         inputs: ["x", "y"],
         outputs: ["out"],
-        func: tensorFunc(tf.matMul as TensorFunc)
+        func: tensorFunc(tf.matMul as TensorFunc),
     },
-    "max": {
+    max: {
         kind: OperationKind.TRANSFORM,
         name: "max",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.max as TensorFunc)
+        func: tensorFunc(tf.max as TensorFunc),
     },
-    "maximum": {
+    maximum: {
         kind: OperationKind.TRANSFORM,
         name: "maximum",
         inputs: ["x", "y"],
         outputs: ["out"],
-        func: tensorFunc(tf.maximum)
+        func: tensorFunc(tf.maximum),
     },
-    "minimum": {
+    minimum: {
         kind: OperationKind.TRANSFORM,
         name: "minimum",
         inputs: ["x", "y"],
         outputs: ["out"],
-        func: tensorFunc(tf.minimum)
+        func: tensorFunc(tf.minimum),
     },
-    "min": {
+    min: {
         kind: OperationKind.TRANSFORM,
         name: "min",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.min as TensorFunc)
+        func: tensorFunc(tf.min as TensorFunc),
     },
-    "mean": {
+    mean: {
         kind: OperationKind.TRANSFORM,
         name: "mean",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.mean as TensorFunc)
+        func: tensorFunc(tf.mean as TensorFunc),
     },
-    "mod": {
+    mod: {
         kind: OperationKind.TRANSFORM,
         name: "mod",
         inputs: ["x", "y"],
         outputs: ["out"],
-        func: tensorFunc(tf.mod)
+        func: tensorFunc(tf.mod),
     },
-    "mul": {
+    mul: {
         kind: OperationKind.TRANSFORM,
         name: "mul",
         inputs: ["x", "y"],
         outputs: ["out"],
-        func: tensorFunc(tf.mul)
+        func: tensorFunc(tf.mul),
     },
-    "multinomial": {
+    multinomial: {
         kind: OperationKind.TRANSFORM,
         name: "multinomial",
         inputs: ["logits", "num samples"],
         outputs: ["out"],
-        func: tensorFunc(tf.multinomial as TensorFunc)
+        func: tensorFunc(tf.multinomial as TensorFunc),
     },
-    "neg": {
+    neg: {
         kind: OperationKind.TRANSFORM,
         name: "neg",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.neg)
+        func: tensorFunc(tf.neg),
     },
     "not equal": {
         kind: OperationKind.TRANSFORM,
         name: "not equal",
         inputs: ["x", "y"],
         outputs: ["out"],
-        func: tensorFunc(tf.notEqual)
+        func: tensorFunc(tf.notEqual),
     },
-    "norm": {
+    norm: {
         kind: OperationKind.TRANSFORM,
         name: "norm",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.norm as TensorFunc)
+        func: tensorFunc(tf.norm as TensorFunc),
     },
     "outer product": {
         kind: OperationKind.TRANSFORM,
         name: "outer product",
         inputs: ["x", "y"],
         outputs: ["out"],
-        func: tensorFunc(tf.outerProduct as TensorFunc)
+        func: tensorFunc(tf.outerProduct as TensorFunc),
     },
-    "pow": {
+    pow: {
         kind: OperationKind.TRANSFORM,
         name: "pow",
         inputs: ["base", "exp"],
         outputs: ["out"],
-        func: tensorFunc(tf.pow)
+        func: tensorFunc(tf.pow),
     },
-    "prelu": {
+    prelu: {
         kind: OperationKind.TRANSFORM,
         name: "prelu",
         inputs: ["x", "alpha"],
         outputs: ["out"],
-        func: tensorFunc(tf.prelu)
+        func: tensorFunc(tf.prelu),
     },
-    "prod": {
+    prod: {
         kind: OperationKind.TRANSFORM,
         name: "prod",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.prod as TensorFunc)
+        func: tensorFunc(tf.prod as TensorFunc),
     },
-    "range": {
+    range: {
         kind: OperationKind.TRANSFORM,
         name: "range",
         inputs: ["start", "stop", "step"],
         outputs: ["out"],
-        func: tensorFunc(tf.range as TensorFunc)
+        func: tensorFunc(tf.range as TensorFunc),
     },
-    "reciprocal": {
+    reciprocal: {
         kind: OperationKind.TRANSFORM,
         name: "reciprocal",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.reciprocal)
+        func: tensorFunc(tf.reciprocal),
     },
-    "real": {
+    real: {
         kind: OperationKind.TRANSFORM,
         name: "real",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.real)
+        func: tensorFunc(tf.real),
     },
-    "relu": {
+    relu: {
         kind: OperationKind.TRANSFORM,
         name: "relu",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.relu)
+        func: tensorFunc(tf.relu),
     },
-    "relu6": {
+    relu6: {
         kind: OperationKind.TRANSFORM,
         name: "relu6",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.relu6)
+        func: tensorFunc(tf.relu6),
     },
-    "reverse": {
+    reverse: {
         kind: OperationKind.TRANSFORM,
         name: "reverse",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.reverse as TensorFunc)
+        func: tensorFunc(tf.reverse as TensorFunc),
     },
-    "round": {
+    round: {
         kind: OperationKind.TRANSFORM,
         name: "round",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.round)
+        func: tensorFunc(tf.round),
     },
-    "rsqrt": {
+    rsqrt: {
         kind: OperationKind.TRANSFORM,
         name: "rsqrt",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.rsqrt)
+        func: tensorFunc(tf.rsqrt),
     },
-    "scatter": {
+    scatter: {
         kind: OperationKind.TRANSFORM,
         name: "scatter",
         inputs: ["x", "y"],
         outputs: ["plot"],
-        func: scatter
+        func: scatter,
     },
-    "selu": {
+    selu: {
         kind: OperationKind.TRANSFORM,
         name: "selu",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.selu)
+        func: tensorFunc(tf.selu),
     },
-    "sigmoid": {
+    sigmoid: {
         kind: OperationKind.TRANSFORM,
         name: "sigmoid",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.sigmoid)
+        func: tensorFunc(tf.sigmoid),
     },
-    "sign": {
+    sign: {
         kind: OperationKind.TRANSFORM,
         name: "sign",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.sign)
+        func: tensorFunc(tf.sign),
     },
-    "sin": {
+    sin: {
         kind: OperationKind.TRANSFORM,
         name: "sin",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.sin)
+        func: tensorFunc(tf.sin),
     },
-    "sinh": {
+    sinh: {
         kind: OperationKind.TRANSFORM,
         name: "sinh",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.sin)
+        func: tensorFunc(tf.sin),
     },
-    "slice": {
+    slice: {
         kind: OperationKind.TRANSFORM,
         name: "slice",
         inputs: ["x", "begin", "size"],
         outputs: ["out"],
-        func: tensorFunc(tf.slice as TensorFunc)
+        func: tensorFunc(tf.slice as TensorFunc),
     },
-    "softplus": {
+    softplus: {
         kind: OperationKind.TRANSFORM,
         name: "softplus",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.softplus)
+        func: tensorFunc(tf.softplus),
     },
-    "sqrt": {
+    sqrt: {
         kind: OperationKind.TRANSFORM,
         name: "sqrt",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.sqrt)
+        func: tensorFunc(tf.sqrt),
     },
-    "square": {
+    square: {
         kind: OperationKind.TRANSFORM,
         name: "square",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.square)
+        func: tensorFunc(tf.square),
     },
     "squared difference": {
         kind: OperationKind.TRANSFORM,
         name: "squared difference",
         inputs: ["x", "y"],
         outputs: ["out"],
-        func: tensorFunc(tf.squaredDifference)
+        func: tensorFunc(tf.squaredDifference),
     },
-    "sub": {
+    sub: {
         kind: OperationKind.TRANSFORM,
         name: "sub",
         inputs: ["x", "y"],
         outputs: ["out"],
-        func: tensorFunc(tf.sub)
+        func: tensorFunc(tf.sub),
     },
-    "sum": {
+    sum: {
         kind: OperationKind.TRANSFORM,
         name: "sum",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.sum as TensorFunc)
+        func: tensorFunc(tf.sum as TensorFunc),
     },
-    "stack": {
+    stack: {
         kind: OperationKind.TRANSFORM,
         name: "stack",
         inputs: ["x", "y"],
         outputs: ["out"],
-        func: tensorFunc((x, y) => tf.stack([x, y], 1))
+        func: tensorFunc((x, y) => tf.stack([x, y], 1)),
     },
-    "step": {
+    step: {
         kind: OperationKind.TRANSFORM,
         name: "step",
         inputs: ["x", "alpha"],
         outputs: ["out"],
-        func: tensorFunc(tf.step as TensorFunc)
+        func: tensorFunc(tf.step as TensorFunc),
     },
-    "tan": {
+    tan: {
         kind: OperationKind.TRANSFORM,
         name: "tan",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.tan)
+        func: tensorFunc(tf.tan),
     },
-    "tanh": {
+    tanh: {
         kind: OperationKind.TRANSFORM,
         name: "tanh",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.tanh)
+        func: tensorFunc(tf.tanh),
     },
-    "tile": {
+    tile: {
         kind: OperationKind.TRANSFORM,
         name: "tile",
         inputs: ["x", "reps"],
         outputs: ["out"],
-        func: tensorFunc(((x, reps: number) => tf.tile(x, [reps])) as TensorFunc)
+        func: tensorFunc(((x, reps: number) =>
+            tf.tile(x, [reps])) as TensorFunc),
     },
-    "transpose": {
+    transpose: {
         kind: OperationKind.TRANSFORM,
         name: "transpose",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.transpose as TensorFunc)
+        func: tensorFunc(tf.transpose as TensorFunc),
+    },
+    unique: {
+        kind: OperationKind.TRANSFORM,
+        name: "unique",
+        inputs: ["x"],
+        outputs: ["out"],
+        func: tensorFunc((x) => tf.unique(x).values),
     },
     "upload csv": {
         kind: OperationKind.UPLOAD_CSV,
         name: "upload csv",
-        outputs: ["table"]
+        outputs: ["table"],
     },
-    "where": {
+    where: {
         kind: OperationKind.TRANSFORM,
         name: "where",
         inputs: ["condition", "true", "false"],
         outputs: ["out"],
-        func: tensorFunc(tf.where)
+        func: tensorFunc(tf.where),
     },
-    "zeros": {
+    zeros: {
         kind: OperationKind.TRANSFORM,
         name: "zeros",
         inputs: ["shape"],
         outputs: ["out"],
-        func: tensorFunc(tf.zeros as TensorFunc)
+        func: tensorFunc(tf.zeros as TensorFunc),
     },
     "zeros like": {
         kind: OperationKind.TRANSFORM,
         name: "zeros like",
         inputs: ["x"],
         outputs: ["out"],
-        func: tensorFunc(tf.zerosLike)
+        func: tensorFunc(tf.zerosLike),
     },
 }

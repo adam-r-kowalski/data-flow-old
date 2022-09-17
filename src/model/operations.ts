@@ -464,13 +464,6 @@ export const operations: Operations = {
         outputs: ["out"],
         func: tensorFunc(tf.logicalNot),
     },
-    oneHot: {
-        kind: OperationKind.TRANSFORM,
-        name: "oneHot",
-        inputs: ["indices", "depth"],
-        outputs: ["out"],
-        func: tensorFunc(tf.oneHot as TensorFunc),
-    },
     ones: {
         kind: OperationKind.TRANSFORM,
         name: "ones",

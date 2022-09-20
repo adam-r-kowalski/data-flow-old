@@ -4,12 +4,12 @@ import * as virtualKeys from "./virtual_keys"
 
 export type Event = virtualKeys.Event
 
-interface Options {
+interface Properties {
     color: Color
     positive: boolean
 }
 
-export const view = ({ color, positive }: Options): UI<Event> =>
+export const view = ({ color, positive }: Properties): UI<Event> =>
     column({ mainAxisAlignment: MainAxisAlignment.END }, [
         row({ mainAxisAlignment: MainAxisAlignment.END }, [
             container(

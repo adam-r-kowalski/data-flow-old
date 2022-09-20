@@ -199,6 +199,17 @@ export interface UploadCsv {
     readonly node: UUID
 }
 
+export interface FinderInsert {
+    readonly kind: "finder/insert"
+    readonly option: string
+}
+
+export interface FinderChange {
+    readonly kind: "finder/change"
+    readonly option: string
+    readonly node: UUID
+}
+
 export type AppEvent =
     | PointerMove
     | PointerDown
@@ -223,6 +234,8 @@ export type AppEvent =
     | MoveNode
     | UploadTable
     | UploadCsv
+    | FinderInsert
+    | FinderChange
 
 const pointerDown = (
     model: Model,

@@ -1,33 +1,38 @@
 import { pointerDown } from "./pointer_down"
 import { render } from "./render"
-import { ProgramError, ProgramKind, WebGL2Renderer, webGL2Renderer } from "./webgl2"
-import { Pointer, UI } from "."
+import {
+    ProgramError,
+    ProgramKind,
+    WebGL2Renderer,
+    webGL2Renderer,
+} from "./webgl2"
+import { Pointer, UI, AppEvent } from "."
 import { Document, Window, PointerEvent } from "./dom"
 import { GenerateUUID } from "../model/graph"
 import { Table } from "../model/table"
 
 export const transformPointer = (p: PointerEvent): Pointer => ({
     id: p.pointerId,
-    position: { x: p.clientX, y: p.clientY }
+    position: { x: p.clientX, y: p.clientY },
 })
 
-export type Dispatch<AppEvent> = (event: AppEvent) => Promise<void>
+export type Dispatch = (event: AppEvent) => Promise<void>
 
-type View<Model, AppEvent> = (model: Model) => UI<AppEvent>
+type View<Model> = (model: Model) => UI
 
 interface Milliseconds {
     milliseconds: number
 }
 
-interface Scheduled<AppEvent> {
+interface Scheduled {
     after: Milliseconds
     event: AppEvent
 }
 
-export interface UpdateResult<Model, AppEvent> {
+export interface UpdateResult<Model> {
     model: Model
     render?: boolean
-    schedule?: Scheduled<AppEvent>[]
+    schedule?: Scheduled[]
     dispatch?: AppEvent[]
     promise?: Promise<AppEvent>
     cursor?: boolean
@@ -41,28 +46,43 @@ export interface Effects {
     promptUserForTable: () => Promise<Table>
 }
 
-type Update<Model, AppEvent> = (effects: Effects, model: Model, event: AppEvent) => UpdateResult<Model, AppEvent>
+type Update<Model> = (
+    effects: Effects,
+    model: Model,
+    event: AppEvent
+) => UpdateResult<Model>
 
-interface Properties<Model, AppEvent> {
+interface Properties<Model> {
     model: Model
-    view: View<Model, AppEvent>
-    update: Update<Model, AppEvent>
+    view: View<Model>
+    update: Update<Model>
     window: Window
     document: Document
     requestAnimationFrame: (callback: () => void) => void
     setTimeout: (callback: () => void, milliseconds: number) => void
-    pointerDown: (dispatch: Dispatch<AppEvent>, pointer: Pointer) => void
+    pointerDown: (dispatch: Dispatch, pointer: Pointer) => void
     effects: Effects
 }
 
-export interface Success<AppEvent> {
+export interface Success {
     kind: ProgramKind.DATA
-    dispatch: Dispatch<AppEvent>
+    dispatch: Dispatch
 }
 
-export const run = <Model, AppEvent>(properties: Properties<Model, AppEvent>): Success<AppEvent> | ProgramError => {
-    let { model, view, update, window, document, requestAnimationFrame, setTimeout, effects } = properties
-    const renderer_or_error = webGL2Renderer<AppEvent>({
+export const run = <Model>(
+    properties: Properties<Model>
+): Success | ProgramError => {
+    let {
+        model,
+        view,
+        update,
+        window,
+        document,
+        requestAnimationFrame,
+        setTimeout,
+        effects,
+    } = properties
+    const renderer_or_error = webGL2Renderer({
         width: window.innerWidth,
         height: window.innerHeight,
         window,
@@ -90,7 +110,7 @@ export const run = <Model, AppEvent>(properties: Properties<Model, AppEvent>): S
                     schedule,
                     dispatch: dispatchEvents,
                     promise,
-                    cursor
+                    cursor,
                 } = update(effects, model, event)
                 model = newModel
                 if (render) scheduleRender()
@@ -100,19 +120,22 @@ export const run = <Model, AppEvent>(properties: Properties<Model, AppEvent>): S
                 }
                 for (const event of dispatchEvents ?? []) dispatch(event)
                 if (cursor !== undefined) {
-                    document.body.style.cursor = cursor ? 'auto' : 'none'
+                    document.body.style.cursor = cursor ? "auto" : "none"
                 }
                 if (promise !== undefined) await promise.then(dispatch)
             }
             renderer.dispatch = dispatch
             document.body.appendChild(renderer.canvas)
-            document.addEventListener("pointerdown", p => {
+            document.addEventListener("pointerdown", (p) => {
                 const transformed = transformPointer(p)
                 properties.pointerDown(dispatch, transformed)
-                renderer = pointerDown<AppEvent, WebGL2Renderer<AppEvent>>(renderer, transformed)
+                renderer = pointerDown<WebGL2Renderer>(renderer, transformed)
             })
             window.addEventListener("resize", () => {
-                renderer.size = { width: window.innerWidth, height: window.innerHeight }
+                renderer.size = {
+                    width: window.innerWidth,
+                    height: window.innerHeight,
+                }
                 scheduleRender()
             })
             scheduleRender()

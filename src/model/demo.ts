@@ -1,15 +1,14 @@
-
-import { NodeTransform } from './graph'
+import { NodeTransform } from "./graph"
 import { addEdge, addNode, changeNumberText } from "../update/graph"
-import { Model, Window } from '.'
-import { emptyModel } from './empty'
-import { operations } from './operations'
-import { Effects } from '../ui/run'
+import { Model, Window } from "."
+import { emptyModel } from "./empty"
+import { operations } from "./operations"
+import { Effects } from "../ui/run"
 
 export const demoModel = (window: Window, effects: Effects): Model => {
     const model: Model = {
         ...emptyModel(window),
-        operations
+        operations,
     }
     const { graph: graph0, node: start } = addNode({
         graph: model.graph,
@@ -17,21 +16,25 @@ export const demoModel = (window: Window, effects: Effects): Model => {
         position: { x: 25, y: 20 },
         effects,
     })
-    const graph1 = changeNumberText(graph0, graph0.nodes[start].body!, () => '-5')
+    const graph1 = changeNumberText(
+        graph0,
+        graph0.nodes[start].body!,
+        () => "-5"
+    )
     const { graph: graph2, node: stop } = addNode({
         graph: graph1,
         operation: model.operations["number"],
         position: { x: 25, y: 90 },
         effects,
     })
-    const graph3 = changeNumberText(graph2, graph2.nodes[stop].body!, () => '9')
+    const graph3 = changeNumberText(graph2, graph2.nodes[stop].body!, () => "9")
     const { graph: graph4, node: num } = addNode({
         graph: graph3,
         operation: model.operations["number"],
         position: { x: 25, y: 160 },
         effects,
     })
-    const graph5 = changeNumberText(graph4, graph4.nodes[num].body!, () => '10')
+    const graph5 = changeNumberText(graph4, graph4.nodes[num].body!, () => "10")
     const { graph: graph6, node: linspace } = addNode({
         graph: graph5,
         operation: model.operations["linspace"],
@@ -107,6 +110,6 @@ export const demoModel = (window: Window, effects: Effects): Model => {
     return {
         ...model,
         graph: graph17,
-        nodeOrder: [start, stop, num, linspace, square, scatter, stack]
+        nodeOrder: [start, stop, num, linspace, square, scatter, stack],
     }
 }

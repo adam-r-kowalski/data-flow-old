@@ -1,5 +1,21 @@
-import { UI, Size, Layout, Constraints, MeasureText, UIKind, layout, Color, Offset, WorldSpace, Geometry, geometry, Entry, traverse, } from '.'
-import { CameraStack, transformWorldSpace, activeCamera } from './camera_stack'
+import {
+    UI,
+    Size,
+    Layout,
+    Constraints,
+    MeasureText,
+    UIKind,
+    layout,
+    Color,
+    Offset,
+    WorldSpace,
+    Geometry,
+    geometry,
+    Entry,
+    traverse,
+    AppEvent,
+} from "."
+import { CameraStack, transformWorldSpace, activeCamera } from "./camera_stack"
 
 export interface ContainerLayout {
     readonly size: Size
@@ -24,20 +40,20 @@ export interface Padding {
     readonly left: number
 }
 
-export interface Container<AppEvent> {
+export interface Container {
     readonly id?: string
     readonly onClick?: AppEvent
-    readonly kind: UIKind.CONTAINER,
+    readonly kind: UIKind.CONTAINER
     readonly padding: Padding
     readonly width?: number
     readonly height?: number
     readonly x?: number
     readonly y?: number
     readonly color?: Color
-    readonly child?: UI<AppEvent>
+    readonly child?: UI
 }
 
-interface Properties<AppEvent> {
+interface Properties {
     readonly padding?: number | Padding
     readonly width?: number
     readonly height?: number
@@ -50,8 +66,13 @@ interface Properties<AppEvent> {
 
 const transformPadding = (padding?: number | Padding): Padding => {
     if (padding) {
-        if (typeof padding === 'number') {
-            return { top: padding, right: padding, bottom: padding, left: padding }
+        if (typeof padding === "number") {
+            return {
+                top: padding,
+                right: padding,
+                bottom: padding,
+                left: padding,
+            }
         } else {
             return padding
         }
@@ -60,7 +81,10 @@ const transformPadding = (padding?: number | Padding): Padding => {
     }
 }
 
-export const container = <AppEvent>({ padding, width, height, color, x, y, onClick, id }: Properties<AppEvent>, child?: UI<AppEvent>): Container<AppEvent> => {
+export const container = (
+    { padding, width, height, color, x, y, onClick, id }: Properties,
+    child?: UI
+): Container => {
     return {
         kind: UIKind.CONTAINER,
         padding: transformPadding(padding),
@@ -71,11 +95,15 @@ export const container = <AppEvent>({ padding, width, height, color, x, y, onCli
         color,
         onClick,
         id,
-        child
+        child,
     }
 }
 
-export const containerLayout = <AppEvent>(ui: Container<AppEvent>, constraints: Constraints, measureText: MeasureText): ContainerLayout => {
+export const containerLayout = (
+    ui: Container,
+    constraints: Constraints,
+    measureText: MeasureText
+): ContainerLayout => {
     const { top, right, bottom, left } = ui.padding
     if (ui.child) {
         const childLayout = layout(ui.child, constraints, measureText)
@@ -83,7 +111,7 @@ export const containerLayout = <AppEvent>(ui: Container<AppEvent>, constraints: 
         const height = ui.height ?? childLayout.size.height + top + bottom
         return {
             size: { width, height },
-            child: childLayout
+            child: childLayout,
         }
     }
     const width = (() => {
@@ -97,7 +125,12 @@ export const containerLayout = <AppEvent>(ui: Container<AppEvent>, constraints: 
     return { size: { width, height } }
 }
 
-export const containerGeometry = <AppEvent>(ui: Container<AppEvent>, layout: ContainerLayout, offset: Offset, cameraStack: CameraStack): ContainerGeometry => {
+export const containerGeometry = (
+    ui: Container,
+    layout: ContainerLayout,
+    offset: Offset,
+    cameraStack: CameraStack
+): ContainerGeometry => {
     const x0 = offset.x + (ui.x ?? 0)
     const x1 = x0 + layout.size.width
     const y0 = offset.y + (ui.y ?? 0)
@@ -108,7 +141,7 @@ export const containerGeometry = <AppEvent>(ui: Container<AppEvent>, layout: Con
             const childLayout = layout.child!
             const childOffset = {
                 x: x0 + ui.padding.left,
-                y: y0 + ui.padding.top
+                y: y0 + ui.padding.top,
             }
             return geometry(ui.child, childLayout, childOffset, cameraStack)
         }
@@ -118,26 +151,30 @@ export const containerGeometry = <AppEvent>(ui: Container<AppEvent>, layout: Con
         const { red, green, blue, alpha } = ui.color
         return {
             worldSpace,
-            vertices: [
-                x0, y0,
-                x0, y1,
-                x1, y0,
-                x1, y1,
-            ],
+            vertices: [x0, y0, x0, y1, x1, y0, x1, y1],
             colors: [
-                red, green, blue, alpha,
-                red, green, blue, alpha,
-                red, green, blue, alpha,
-                red, green, blue, alpha,
+                red,
+                green,
+                blue,
+                alpha,
+                red,
+                green,
+                blue,
+                alpha,
+                red,
+                green,
+                blue,
+                alpha,
+                red,
+                green,
+                blue,
+                alpha,
             ],
-            vertexIndices: [
-                0, 1, 2,
-                1, 2, 3
-            ],
+            vertexIndices: [0, 1, 2, 1, 2, 3],
             cameraIndex: Array(4).fill(activeCamera(cameraStack)),
             textureIndex: 0,
             textureCoordinates: Array(8).fill(0),
-            child: childGeometry
+            child: childGeometry,
         }
     }
     return {
@@ -148,11 +185,16 @@ export const containerGeometry = <AppEvent>(ui: Container<AppEvent>, layout: Con
         cameraIndex: [],
         textureIndex: 0,
         textureCoordinates: [],
-        child: childGeometry
+        child: childGeometry,
     }
 }
 
-export function* containerTraverse<AppEvent>(ui: Container<AppEvent>, layout: ContainerLayout, geometry: ContainerGeometry, z: number): Generator<Entry<AppEvent>> {
+export function* containerTraverse(
+    ui: Container,
+    layout: ContainerLayout,
+    geometry: ContainerGeometry,
+    z: number
+): Generator<Entry> {
     yield { ui, layout, geometry, z }
     if (ui.child) {
         const childLayout = layout.child!

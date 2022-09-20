@@ -1,4 +1,5 @@
 import { Color } from "../ui"
+import * as finder from "../finder"
 
 export interface Theme {
     readonly background: Color
@@ -9,4 +10,5 @@ export interface Theme {
     readonly focusInput: Color
     readonly connection: Color
     readonly error: Color
+    readonly finder: finder.Theme
 }

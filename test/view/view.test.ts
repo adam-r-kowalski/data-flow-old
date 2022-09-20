@@ -1,6 +1,6 @@
 import * as tf from "@tensorflow/tfjs-core"
 
-import { AppEvent, EventKind } from "../../src/update"
+import { EventKind } from "../../src/update"
 import {
     Body,
     BodyKind,
@@ -16,9 +16,8 @@ import { Model } from "../../src/model"
 import { Theme } from "../../src/model/theme"
 import { Focus, FocusFinderInsert, FocusKind } from "../../src/model/focus"
 import { PointerActionKind } from "../../src/model/pointer_action"
-import { column, container, row, scene, stack, text, UI } from "../../src/ui"
+import { column, container, row, scene, stack, text } from "../../src/ui"
 import {
-    finder,
     inputsUi,
     inputUi,
     intersperse,
@@ -63,6 +62,13 @@ const theme: Theme = {
     focusInput: { red: 175, green: 122, blue: 208, alpha: 255 },
     connection: { red: 255, green: 255, blue: 255, alpha: 255 },
     error: { red: 199, green: 56, blue: 65, alpha: 255 },
+    finder: {
+        background: { red: 41, green: 95, blue: 120, alpha: 255 },
+        searchBackground: { red: 2, green: 22, blue: 39, alpha: 255 },
+        searchText: { red: 188, green: 240, blue: 192, alpha: 255 },
+        selected: { red: 188, green: 240, blue: 192, alpha: 255 },
+        unselected: { red: 255, green: 255, blue: 255, alpha: 255 },
+    },
 }
 
 test("inputUi not focused", () => {
@@ -77,10 +83,10 @@ test("inputUi not focused", () => {
         quickSelect: { kind: QuickSelectKind.NONE },
     }
     const actual = inputUi(theme, input, focus)
-    const expected = container<AppEvent>(
+    const expected = container(
         {
             onClick: {
-                kind: EventKind.CLICKED_INPUT,
+                kind: "clicked_input",
                 input: "uuid",
             },
         },
@@ -111,10 +117,10 @@ test("inputUi focused", () => {
         input: "uuid",
         quickSelect: { kind: QuickSelectKind.NONE },
     })
-    const expected = container<AppEvent>(
+    const expected = container(
         {
             onClick: {
-                kind: EventKind.CLICKED_INPUT,
+                kind: "clicked_input",
                 input: "uuid",
             },
         },
@@ -181,10 +187,10 @@ test("outputUi not focused", () => {
         quickSelect: { kind: QuickSelectKind.NONE },
     }
     const actual = outputUi(theme, output, focus)
-    const expected = container<AppEvent>(
+    const expected = container(
         {
             onClick: {
-                kind: EventKind.CLICKED_OUTPUT,
+                kind: "clicked_output",
                 output: "uuid",
             },
         },
@@ -216,10 +222,10 @@ test("outputUi focused", () => {
         output: "uuid",
         quickSelect: { kind: QuickSelectKind.NONE },
     })
-    const expected = container<AppEvent>(
+    const expected = container(
         {
             onClick: {
-                kind: EventKind.CLICKED_OUTPUT,
+                kind: "clicked_output",
                 output: "uuid",
             },
         },
@@ -295,7 +301,7 @@ test("numberBody not focused", () => {
             color: theme.background,
             padding: 5,
             onClick: {
-                kind: EventKind.CLICKED_BODY,
+                kind: "clicked_body",
                 body: "body uuid",
             },
         },
@@ -322,7 +328,7 @@ test("bodyUi editing", () => {
             color: theme.focusInput,
             padding: 5,
             onClick: {
-                kind: EventKind.CLICKED_BODY,
+                kind: "clicked_body",
                 body: "body uuid",
             },
         },
@@ -549,14 +555,14 @@ test("nodeUi no body 1 outputs", () => {
         quickSelect: { kind: QuickSelectKind.NONE },
     }
     const actual = nodeUi(theme, node.uuid, graph, focus)
-    const expected = container<AppEvent>(
+    const expected = container(
         {
             color: theme.node,
             padding: 4,
             x: 0,
             y: 0,
             onClick: {
-                kind: EventKind.CLICKED_NODE,
+                kind: "clicked_node",
                 node: "uuid",
             },
         },
@@ -615,14 +621,14 @@ test("nodeUi 1 input, no body and 1 outputs", () => {
         quickSelect: { kind: QuickSelectKind.NONE },
     }
     const actual = nodeUi(theme, node.uuid, graph, focus)
-    const expected = container<AppEvent>(
+    const expected = container(
         {
             color: theme.node,
             padding: 4,
             x: 0,
             y: 0,
             onClick: {
-                kind: EventKind.CLICKED_NODE,
+                kind: "clicked_node",
                 node: "node uuid",
             },
         },
@@ -679,14 +685,14 @@ test("nodeUi 1 output, no body and no inputs", () => {
         quickSelect: { kind: QuickSelectKind.NONE },
     }
     const actual = nodeUi(theme, node.uuid, graph, focus)
-    const expected = container<AppEvent>(
+    const expected = container(
         {
             color: theme.node,
             padding: 4,
             x: 0,
             y: 0,
             onClick: {
-                kind: EventKind.CLICKED_NODE,
+                kind: "clicked_node",
                 node: "node uuid",
             },
         },
@@ -739,14 +745,14 @@ test("nodeUi no inputs 1 outputs but body defined", () => {
         quickSelect: { kind: QuickSelectKind.NONE },
     }
     const actual = nodeUi(theme, node.uuid, graph, focus)
-    const expected = container<AppEvent>(
+    const expected = container(
         {
             color: theme.node,
             padding: 4,
             x: 0,
             y: 0,
             onClick: {
-                kind: EventKind.CLICKED_NODE,
+                kind: "clicked_node",
                 node: "node uuid",
             },
         },
@@ -807,14 +813,14 @@ test("nodeUi 1 input and 1 output but no body", () => {
         quickSelect: { kind: QuickSelectKind.NONE },
     }
     const actual = nodeUi(theme, node.uuid, graph, focus)
-    const expected = container<AppEvent>(
+    const expected = container(
         {
             color: theme.node,
             padding: 4,
             x: 0,
             y: 0,
             onClick: {
-                kind: EventKind.CLICKED_NODE,
+                kind: "clicked_node",
                 node: "node uuid",
             },
         },
@@ -881,14 +887,14 @@ test("nodeUi 1 input body and output", () => {
         quickSelect: { kind: QuickSelectKind.NONE },
     }
     const actual = nodeUi(theme, node.uuid, graph, focus)
-    const expected = container<AppEvent>(
+    const expected = container(
         {
             color: theme.node,
             padding: 4,
             x: 0,
             y: 0,
             onClick: {
-                kind: EventKind.CLICKED_NODE,
+                kind: "clicked_node",
                 node: "node uuid",
             },
         },
@@ -957,14 +963,14 @@ test("nodeUi 1 input output body", () => {
         quickSelect: { kind: QuickSelectKind.NONE },
     }
     const actual = nodeUi(theme, node.uuid, graph, focus)
-    const expected = container<AppEvent>(
+    const expected = container(
         {
             color: theme.node,
             padding: 4,
             x: 0,
             y: 0,
             onClick: {
-                kind: EventKind.CLICKED_NODE,
+                kind: "clicked_node",
                 node: "node uuid",
             },
         },
@@ -1033,14 +1039,14 @@ test("nodeUi 1 input body and 1 output", () => {
         quickSelect: { kind: QuickSelectKind.NONE },
     }
     const actual = nodeUi(theme, node.uuid, graph, focus)
-    const expected = container<AppEvent>(
+    const expected = container(
         {
             color: theme.node,
             padding: 4,
             x: 0,
             y: 0,
             onClick: {
-                kind: EventKind.CLICKED_NODE,
+                kind: "clicked_node",
                 node: "node uuid",
             },
         },
@@ -1064,73 +1070,6 @@ test("nodeUi 1 input body and 1 output", () => {
             ]),
         ])
     )
-    expect(actual).toEqual(expected)
-})
-
-test("finder", () => {
-    const actual = finder(
-        {
-            kind: FocusKind.FINDER_INSERT,
-            search: "text",
-            options: ["foo", "bar"],
-            selectedIndex: 0,
-            quickSelect: { kind: QuickSelectKind.NONE },
-            uppercase: false,
-        },
-        theme
-    )
-    const expected = column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
-        container({ height: 10 }),
-        container(
-            { color: theme.node, padding: 4 },
-            column([
-                container(
-                    { color: theme.background, width: 300, padding: 4 },
-                    text({ color: theme.input, size: 24 }, "text")
-                ),
-                container({ width: 10, height: 10 }),
-                container(
-                    {
-                        width: 300,
-                        padding: 4,
-                        onClick: {
-                            kind: EventKind.CLICKED_FINDER_OPTION,
-                            option: "foo",
-                        },
-                    },
-                    text(
-                        {
-                            size: 18,
-                            color: theme.input,
-                        },
-                        "foo"
-                    )
-                ),
-                container(
-                    {
-                        width: 300,
-                        padding: 4,
-                        onClick: {
-                            kind: EventKind.CLICKED_FINDER_OPTION,
-                            option: "bar",
-                        },
-                    },
-                    text(
-                        {
-                            size: 18,
-                            color: {
-                                red: 255,
-                                green: 255,
-                                blue: 255,
-                                alpha: 255,
-                            },
-                        },
-                        "bar"
-                    )
-                ),
-            ])
-        ),
-    ])
     expect(actual).toEqual(expected)
 })
 
@@ -1169,7 +1108,7 @@ test("view with no nodes or edges", () => {
     const expected = stack([
         container({
             color: model.theme.background,
-            onClick: { kind: EventKind.CLICKED_BACKGROUND },
+            onClick: { kind: "clicked_background" },
         }),
         scene({ camera: model.camera, children: [], connections: [] }),
         contextMenu({
@@ -1221,10 +1160,10 @@ test("view with no nodes or edges but finder shown", () => {
         theme,
     }
     const actual = view(model)
-    const expected: UI<AppEvent> = stack([
+    const expected = stack([
         container({
             color: model.theme.background,
-            onClick: { kind: EventKind.CLICKED_BACKGROUND },
+            onClick: { kind: "clicked_background" },
         }),
         scene({ camera: model.camera, children: [], connections: [] }),
         finder(model.focus as FocusFinderInsert, model.theme),
@@ -1271,10 +1210,10 @@ test("view with no nodes or edges but finder shown capitalized", () => {
         theme,
     }
     const actual = view(model)
-    const expected: UI<AppEvent> = stack([
+    const expected = stack([
         container({
             color: model.theme.background,
-            onClick: { kind: EventKind.CLICKED_BACKGROUND },
+            onClick: { kind: "clicked_background" },
         }),
         scene({ camera: model.camera, children: [], connections: [] }),
         finder(model.focus as FocusFinderInsert, model.theme),
@@ -1335,10 +1274,10 @@ test("view with positive number", () => {
         theme,
     }
     const actual = view(model)
-    const expected: UI<AppEvent> = stack([
+    const expected = stack([
         container({
             color: model.theme.background,
-            onClick: { kind: EventKind.CLICKED_BACKGROUND },
+            onClick: { kind: "clicked_background" },
         }),
         scene({
             camera: model.camera,
@@ -1402,10 +1341,10 @@ test("view with negative number", () => {
         theme,
     }
     const actual = view(model)
-    const expected: UI<AppEvent> = stack([
+    const expected = stack([
         container({
             color: model.theme.background,
-            onClick: { kind: EventKind.CLICKED_BACKGROUND },
+            onClick: { kind: "clicked_background" },
         }),
         scene({
             camera: model.camera,
@@ -1469,10 +1408,10 @@ test("view with text", () => {
         theme,
     }
     const actual = view(model)
-    const expected: UI<AppEvent> = stack([
+    const expected = stack([
         container({
             color: model.theme.background,
-            onClick: { kind: EventKind.CLICKED_BACKGROUND },
+            onClick: { kind: "clicked_background" },
         }),
         scene({
             camera: model.camera,
@@ -1566,10 +1505,10 @@ test("view with three nodes and no edges", () => {
         theme,
     }
     const actual = view(model)
-    const expected: UI<AppEvent> = stack([
+    const expected = stack([
         container({
             color: model.theme.background,
-            onClick: { kind: EventKind.CLICKED_BACKGROUND },
+            onClick: { kind: "clicked_background" },
         }),
         scene({
             camera: model.camera,
@@ -1675,10 +1614,10 @@ test("view with three nodes and no edges", () => {
         theme,
     }
     const actual = view(model)
-    const expected: UI<AppEvent> = stack([
+    const expected = stack([
         container({
             color: model.theme.background,
-            onClick: { kind: EventKind.CLICKED_BACKGROUND },
+            onClick: { kind: "clicked_background" },
         }),
         scene({
             camera: model.camera,
@@ -1813,10 +1752,10 @@ test("view with three nodes and one edges", () => {
         theme,
     }
     const actual = view(model)
-    const expected: UI<AppEvent> = stack([
+    const expected = stack([
         container({
             color: model.theme.background,
-            onClick: { kind: EventKind.CLICKED_BACKGROUND },
+            onClick: { kind: "clicked_background" },
         }),
         scene({
             camera: model.camera,
@@ -1903,10 +1842,10 @@ test("view with body selected", () => {
         theme,
     }
     const actual = view(model)
-    const expected: UI<AppEvent> = stack([
+    const expected = stack([
         container({
             color: model.theme.background,
-            onClick: { kind: EventKind.CLICKED_BACKGROUND },
+            onClick: { kind: "clicked_background" },
         }),
         scene({
             camera: model.camera,
@@ -2026,10 +1965,10 @@ test("view with input selected", () => {
         theme,
     }
     const actual = view(model)
-    const expected: UI<AppEvent> = stack([
+    const expected = stack([
         container({
             color: model.theme.background,
-            onClick: { kind: EventKind.CLICKED_BACKGROUND },
+            onClick: { kind: "clicked_background" },
         }),
         scene({
             camera: model.camera,
@@ -2167,10 +2106,10 @@ test("view with output selected", () => {
         theme,
     }
     const actual = view(model)
-    const expected: UI<AppEvent> = stack([
+    const expected = stack([
         container({
             color: model.theme.background,
-            onClick: { kind: EventKind.CLICKED_BACKGROUND },
+            onClick: { kind: "clicked_background" },
         }),
         scene({
             camera: model.camera,
@@ -2238,7 +2177,7 @@ test("view with node placement location shown", () => {
     const expected = stack([
         container({
             color: model.theme.background,
-            onClick: { kind: EventKind.CLICKED_BACKGROUND },
+            onClick: { kind: "clicked_background" },
         }),
         scene({ camera: model.camera, children: [], connections: [] }),
         scene({
@@ -2286,7 +2225,7 @@ test("textBody not focused", () => {
             color: theme.background,
             padding: 5,
             onClick: {
-                kind: EventKind.CLICKED_BODY,
+                kind: "clicked_body",
                 body: "body uuid",
             },
         },
@@ -2313,7 +2252,7 @@ test("textBody focused", () => {
             color: theme.focusInput,
             padding: 5,
             onClick: {
-                kind: EventKind.CLICKED_BODY,
+                kind: "clicked_body",
                 body: "body uuid",
             },
         },
@@ -2343,7 +2282,7 @@ test("textBody quick select", () => {
             color: theme.background,
             padding: 5,
             onClick: {
-                kind: EventKind.CLICKED_BODY,
+                kind: "clicked_body",
                 body: "body uuid",
             },
         },
@@ -2451,14 +2390,14 @@ test("nodeUi with text body", () => {
         quickSelect: { kind: QuickSelectKind.NONE },
     }
     const actual = nodeUi(theme, node.uuid, graph, focus)
-    const expected = container<AppEvent>(
+    const expected = container(
         {
             color: theme.node,
             padding: 4,
             x: 0,
             y: 0,
             onClick: {
-                kind: EventKind.CLICKED_NODE,
+                kind: "clicked_node",
                 node: "node uuid",
             },
         },
@@ -2518,14 +2457,14 @@ test("nodeUi with table body", () => {
         quickSelect: { kind: QuickSelectKind.NONE },
     }
     const actual = nodeUi(theme, node.uuid, graph, focus)
-    const expected = container<AppEvent>(
+    const expected = container(
         {
             color: theme.node,
             padding: 4,
             x: 0,
             y: 0,
             onClick: {
-                kind: EventKind.CLICKED_NODE,
+                kind: "clicked_node",
                 node: "node uuid",
             },
         },
@@ -2580,14 +2519,14 @@ test("nodeUi with column body", () => {
         quickSelect: { kind: QuickSelectKind.NONE },
     }
     const actual = nodeUi(theme, node.uuid, graph, focus)
-    const expected = container<AppEvent>(
+    const expected = container(
         {
             color: theme.node,
             padding: 4,
             x: 0,
             y: 0,
             onClick: {
-                kind: EventKind.CLICKED_NODE,
+                kind: "clicked_node",
                 node: "node uuid",
             },
         },
@@ -2643,14 +2582,14 @@ test("nodeUi with tensor body", () => {
         quickSelect: { kind: QuickSelectKind.NONE },
     }
     const actual = nodeUi(theme, node.uuid, graph, focus)
-    const expected = container<AppEvent>(
+    const expected = container(
         {
             color: theme.node,
             padding: 4,
             x: 0,
             y: 0,
             onClick: {
-                kind: EventKind.CLICKED_NODE,
+                kind: "clicked_node",
                 node: "node uuid",
             },
         },
@@ -2705,14 +2644,14 @@ test("nodeUi with scatter body", () => {
         quickSelect: { kind: QuickSelectKind.NONE },
     }
     const actual = nodeUi(theme, node.uuid, graph, focus)
-    const expected = container<AppEvent>(
+    const expected = container(
         {
             color: theme.node,
             padding: 4,
             x: 0,
             y: 0,
             onClick: {
-                kind: EventKind.CLICKED_NODE,
+                kind: "clicked_node",
                 node: "node uuid",
             },
         },
@@ -2765,14 +2704,14 @@ test("nodeUi with error body", () => {
         quickSelect: { kind: QuickSelectKind.NONE },
     }
     const actual = nodeUi(theme, node.uuid, graph, focus)
-    const expected = container<AppEvent>(
+    const expected = container(
         {
             color: theme.error,
             padding: 4,
             x: 0,
             y: 0,
             onClick: {
-                kind: EventKind.CLICKED_NODE,
+                kind: "clicked_node",
                 node: "node uuid",
             },
         },

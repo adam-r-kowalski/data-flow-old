@@ -72,10 +72,10 @@ export const uppercaseKeyboard = (color: Color) =>
         ]),
     ])
 
-interface Options {
+interface Properties {
     color: Color
     uppercase: boolean
 }
 
-export const view = ({ color, uppercase }: Options): UI<Event> =>
+export const view = ({ color, uppercase }: Properties): UI<Event> =>
     uppercase ? uppercaseKeyboard(color) : lowercaseKeyboard(color)

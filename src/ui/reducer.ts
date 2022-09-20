@@ -8,23 +8,23 @@ import * as layerGeometry from "./layer_geometry"
 import { Connections } from "./gather_connections"
 import * as gatherConnections from "./gather_connections"
 
-export interface Accumulator<AppEvent> {
-    layers: Layers,
-    clickHandlers: ClickHandlers<AppEvent>,
+export interface Accumulator {
+    layers: Layers
+    clickHandlers: ClickHandlers
     idToWorldSpace: IdToWorldSpace
     connections: Connections
 }
 
-export const initial = <AppEvent>(): Accumulator<AppEvent> => ({
+export const initial = (): Accumulator => ({
     layers: layerGeometry.initial(),
     clickHandlers: gatherOnClickHandlers.initial(),
     idToWorldSpace: buildIdToWorldSpace.initial(),
-    connections: gatherConnections.initial()
+    connections: gatherConnections.initial(),
 })
 
-export const combine = <AppEvent>(acc: Accumulator<AppEvent>, entry: Entry<AppEvent>): Accumulator<AppEvent> => ({
+export const combine = (acc: Accumulator, entry: Entry): Accumulator => ({
     layers: layerGeometry.combine(acc.layers, entry),
     clickHandlers: gatherOnClickHandlers.combine(acc.clickHandlers, entry),
     idToWorldSpace: buildIdToWorldSpace.combine(acc.idToWorldSpace, entry),
-    connections: gatherConnections.combine(acc.connections, entry)
+    connections: gatherConnections.combine(acc.connections, entry),
 })

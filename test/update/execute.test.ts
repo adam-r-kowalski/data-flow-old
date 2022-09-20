@@ -1,4 +1,4 @@
-import "@tensorflow/tfjs-backend-cpu"
+import "@tensorflow/tfjs-node"
 import * as tf from "@tensorflow/tfjs-core"
 
 import { Model } from "../../src/model"

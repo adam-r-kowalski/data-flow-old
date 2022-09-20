@@ -1,6 +1,7 @@
 import { UUID } from "./graph"
 import { PointerAction } from "./pointer_action"
 import { QuickSelect, QuickSelectNone } from "./quick_select"
+import * as finder from "../finder"
 
 export enum FocusKind {
     NODE,
@@ -10,7 +11,7 @@ export enum FocusKind {
     BODY_TEXT,
     FINDER_INSERT,
     FINDER_CHANGE,
-    NONE
+    NONE,
 }
 
 export interface MoveNode {
@@ -20,7 +21,6 @@ export interface MoveNode {
     readonly right: boolean
     readonly now: number
 }
-
 
 export interface FocusNode {
     readonly kind: FocusKind.NODE
@@ -56,22 +56,18 @@ export interface FocusBodyText {
 }
 
 export interface FocusFinderInsert {
-    readonly kind: FocusKind.FINDER_INSERT,
-    readonly search: string
-    readonly options: Readonly<string[]>
-    readonly selectedIndex: number
+    readonly kind: FocusKind.FINDER_INSERT
+    readonly finder: finder.Model
     readonly quickSelect: QuickSelectNone
     readonly uppercase: boolean
 }
 
 export interface FocusFinderChange {
-    readonly kind: FocusKind.FINDER_CHANGE,
-    readonly search: string
-    readonly options: Readonly<string[]>
+    readonly kind: FocusKind.FINDER_CHANGE
+    readonly finder: finder.Model
     readonly quickSelect: QuickSelectNone
-    readonly selectedIndex: number
-    readonly node: UUID
     readonly uppercase: boolean
+    readonly node: UUID
 }
 
 export interface FocusNone {

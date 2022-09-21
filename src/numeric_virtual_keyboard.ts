@@ -2,14 +2,12 @@ import { Color, column, container, row, UI } from "./ui"
 import { CrossAxisAlignment, MainAxisAlignment } from "./ui/alignment"
 import * as virtualKeys from "./virtual_keys"
 
-export type Event = virtualKeys.Event
-
 interface Properties {
     color: Color
     positive: boolean
 }
 
-export const view = ({ color, positive }: Properties): UI<Event> =>
+export const view = ({ color, positive }: Properties): UI =>
     column({ mainAxisAlignment: MainAxisAlignment.END }, [
         row({ mainAxisAlignment: MainAxisAlignment.END }, [
             container(

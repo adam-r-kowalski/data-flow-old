@@ -1,26 +1,28 @@
-import { container, center, layout, geometry, UIKind } from '../../src/ui'
-import { WebGL2Renderer, webGL2Renderer } from '../../src/ui/webgl2'
-import { mockDocument, mockWindow } from '../../src/ui/mock'
-import { initCameraStack } from '../../src/ui/camera_stack'
-import * as layerGeometry from '../../src/ui/layer_geometry'
-import { reduce } from '../../src/ui/reduce'
+import { container, center, layout, geometry, UIKind } from "../../src/ui"
+import { WebGL2Renderer, webGL2Renderer } from "../../src/ui/webgl2"
+import { mockDocument, mockWindow } from "../../src/ui/mock"
+import { initCameraStack } from "../../src/ui/camera_stack"
+import * as layerGeometry from "../../src/ui/layer_geometry"
+import { reduce } from "../../src/ui/reduce"
 
 const red = { red: 255, green: 0, blue: 0, alpha: 255 }
 
-const mockRenderer = <T>() => webGL2Renderer<T>({
-    width: 500,
-    height: 500,
-    document: mockDocument(),
-    window: mockWindow()
-}) as WebGL2Renderer<T>
+const mockRenderer = () =>
+    webGL2Renderer({
+        width: 500,
+        height: 500,
+        document: mockDocument(),
+        window: mockWindow(),
+    }) as WebGL2Renderer
 
 test("center ui", () => {
     const ui = center(
         container({
             width: 50,
             height: 50,
-            color: red
-        }))
+            color: red,
+        })
+    )
     const expectedUi = {
         kind: UIKind.CENTER,
         child: {
@@ -28,8 +30,8 @@ test("center ui", () => {
             padding: { top: 0, right: 0, bottom: 0, left: 0 },
             width: 50,
             height: 50,
-            color: red
-        }
+            color: red,
+        },
     }
     expect(ui).toEqual(expectedUi)
 })
@@ -40,15 +42,21 @@ test("center layout", () => {
         container({
             width: 50,
             height: 50,
-            color: red
-        }))
-    const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
+            color: red,
+        })
+    )
+    const constraints = {
+        minWidth: 0,
+        maxWidth: 100,
+        minHeight: 0,
+        maxHeight: 100,
+    }
     const uiLayout = layout(ui, constraints, renderer.measureText)
     const expectedLayout = {
         size: { width: 100, height: 100 },
         child: {
-            size: { width: 50, height: 50 }
-        }
+            size: { width: 50, height: 50 },
+        },
     }
     expect(uiLayout).toEqual(expectedLayout)
 })
@@ -59,9 +67,15 @@ test("center geometry", () => {
         container({
             width: 50,
             height: 50,
-            color: red
-        }))
-    const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
+            color: red,
+        })
+    )
+    const constraints = {
+        minWidth: 0,
+        maxWidth: 100,
+        minHeight: 0,
+        maxHeight: 100,
+    }
     const uiLayout = layout(ui, constraints, renderer.measureText)
     const offsets = { x: 0, y: 0 }
     const cameraStack = initCameraStack()
@@ -70,26 +84,15 @@ test("center geometry", () => {
         worldSpace: { x0: 0, y0: 0, x1: 100, y1: 100 },
         child: {
             worldSpace: { x0: 25, y0: 25, x1: 75, y1: 75 },
-            vertices: [
-                25, 25,
-                25, 75,
-                75, 25,
-                75, 75,
-            ],
+            vertices: [25, 25, 25, 75, 75, 25, 75, 75],
             colors: [
-                255, 0, 0, 255,
-                255, 0, 0, 255,
-                255, 0, 0, 255,
-                255, 0, 0, 255,
+                255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255,
             ],
-            vertexIndices: [
-                0, 1, 2,
-                1, 2, 3
-            ],
+            vertexIndices: [0, 1, 2, 1, 2, 3],
             cameraIndex: Array(4).fill(0),
             textureIndex: 0,
-            textureCoordinates: Array(8).fill(0)
-        }
+            textureCoordinates: Array(8).fill(0),
+        },
     }
     expect(uiGeometry).toEqual(expectedGeometry)
 })
@@ -100,9 +103,15 @@ test("center layers", () => {
         container({
             width: 50,
             height: 50,
-            color: red
-        }))
-    const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
+            color: red,
+        })
+    )
+    const constraints = {
+        minWidth: 0,
+        maxWidth: 100,
+        minHeight: 0,
+        maxHeight: 100,
+    }
     const uiLayout = layout(ui, constraints, renderer.measureText)
     const offsets = { x: 0, y: 0 }
     const uiGeometry = geometry(ui, uiLayout, offsets, initCameraStack())
@@ -113,29 +122,18 @@ test("center layers", () => {
             0: [
                 {
                     worldSpace: { x0: 25, y0: 25, x1: 75, y1: 75 },
-                    vertices: [
-                        25, 25,
-                        25, 75,
-                        75, 25,
-                        75, 75,
-                    ],
+                    vertices: [25, 25, 25, 75, 75, 25, 75, 75],
                     colors: [
-                        255, 0, 0, 255,
-                        255, 0, 0, 255,
-                        255, 0, 0, 255,
-                        255, 0, 0, 255,
+                        255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0,
+                        0, 255,
                     ],
-                    vertexIndices: [
-                        0, 1, 2,
-                        1, 2, 3
-                    ],
+                    vertexIndices: [0, 1, 2, 1, 2, 3],
                     cameraIndex: Array(4).fill(0),
                     textureIndex: 0,
-                    textureCoordinates: Array(8).fill(0)
-                }
-
-            ]
-        }
+                    textureCoordinates: Array(8).fill(0),
+                },
+            ],
+        },
     ]
     expect(layers).toEqual(expectedLayers)
 })

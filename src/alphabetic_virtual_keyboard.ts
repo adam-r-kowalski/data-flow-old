@@ -2,8 +2,6 @@ import { Color, column, container, row, UI } from "./ui"
 import { CrossAxisAlignment, MainAxisAlignment } from "./ui/alignment"
 import * as virtualKeys from "./virtual_keys"
 
-export type Event = virtualKeys.Event
-
 export const lowercaseKeyboard = (color: Color) =>
     column({ mainAxisAlignment: MainAxisAlignment.END }, [
         row({ mainAxisAlignment: MainAxisAlignment.SPACE_BETWEEN }, [
@@ -77,5 +75,5 @@ interface Properties {
     uppercase: boolean
 }
 
-export const view = ({ color, uppercase }: Properties): UI<Event> =>
+export const view = ({ color, uppercase }: Properties): UI =>
     uppercase ? uppercaseKeyboard(color) : lowercaseKeyboard(color)

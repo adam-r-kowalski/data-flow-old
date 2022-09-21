@@ -1,8 +1,6 @@
 import { container, row, text, UI } from "./ui"
 import * as keydown from "./keyboard/keydown"
 
-export type Event = keydown.Event
-
 export type Key =
     | string
     | {
@@ -10,7 +8,7 @@ export type Key =
           event: string
       }
 
-export const virtualKey = (key: Key): UI<keydown.Event> => {
+export const virtualKey = (key: Key): UI => {
     const { display, event } = (() =>
         typeof key === "string" ? { display: key, event: key } : key)()
     return container(

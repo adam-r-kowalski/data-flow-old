@@ -1,5 +1,4 @@
 import { CrossAxisAlignment } from "../ui/alignment"
-import { AppEvent, EventKind } from "../update"
 import { Model } from "../model"
 import { Theme } from "../model/theme"
 import { Focus, FocusKind } from "../model/focus"
@@ -34,8 +33,7 @@ import * as alphabeticVirtualKeyboard from "../alphabetic_virtual_keyboard"
 import * as numericVirtualKeyboard from "../numeric_virtual_keyboard"
 import * as finder from "../finder"
 
-export const spacer = (size: number): UI<AppEvent> =>
-    container({ width: size, height: size })
+export const spacer = (size: number) => container({ width: size, height: size })
 
 export const intersperse = <T>(array: T[], seperator: T): T[] => {
     const result = [array[0]]
@@ -65,11 +63,11 @@ export const inputUi = (
     theme: Theme,
     { name, uuid }: Input,
     focus: Focus
-): UI<AppEvent> =>
+): UI =>
     container(
         {
             onClick: {
-                kind: EventKind.CLICKED_INPUT,
+                kind: "clicked_input",
                 input: uuid,
             },
         },
@@ -94,7 +92,7 @@ export const inputUi = (
         ])
     )
 
-export const inputsUi = (theme: Theme, inputs: Input[], focus: Focus) =>
+export const inputsUi = (theme: Theme, inputs: Input[], focus: Focus): UI =>
     column(
         intersperse(
             inputs.map((input) => inputUi(theme, input, focus)),
@@ -106,7 +104,7 @@ export const outputUi = (
     theme: Theme,
     { name, uuid }: Output,
     focus: Focus
-): UI<AppEvent> => {
+): UI => {
     const value =
         focus.quickSelect.kind === QuickSelectKind.OUTPUT
             ? focus.quickSelect.hotkeys[uuid]
@@ -114,7 +112,7 @@ export const outputUi = (
     return container(
         {
             onClick: {
-                kind: EventKind.CLICKED_OUTPUT,
+                kind: "clicked_output",
                 output: uuid,
             },
         },
@@ -135,7 +133,7 @@ export const outputUi = (
     )
 }
 
-export const outputsUi = (theme: Theme, outputs: Output[], focus: Focus) =>
+export const outputsUi = (theme: Theme, outputs: Output[], focus: Focus): UI =>
     column(
         intersperse(
             outputs.map((output) => outputUi(theme, output, focus)),
@@ -147,7 +145,7 @@ export const numberBody = (
     theme: Theme,
     body: NumberBody,
     focus: Focus
-): UI<AppEvent> => {
+): UI => {
     const value =
         focus.quickSelect.kind === QuickSelectKind.BODY
             ? focus.quickSelect.hotkeys[body.uuid]
@@ -159,7 +157,7 @@ export const numberBody = (
                 : theme.background,
             padding: 5,
             onClick: {
-                kind: EventKind.CLICKED_BODY,
+                kind: "clicked_body",
                 body: body.uuid,
             },
         },
@@ -167,11 +165,7 @@ export const numberBody = (
     )
 }
 
-export const textBody = (
-    theme: Theme,
-    body: TextBody,
-    focus: Focus
-): UI<AppEvent> => {
+export const textBody = (theme: Theme, body: TextBody, focus: Focus): UI => {
     const value =
         focus.quickSelect.kind === QuickSelectKind.BODY
             ? focus.quickSelect.hotkeys[body.uuid]
@@ -183,7 +177,7 @@ export const textBody = (
                 : theme.background,
             padding: 5,
             onClick: {
-                kind: EventKind.CLICKED_BODY,
+                kind: "clicked_body",
                 body: body.uuid,
             },
         },
@@ -191,7 +185,7 @@ export const textBody = (
     )
 }
 
-export const tableBody = (theme: Theme, body: TableBody): UI<AppEvent> => {
+export const tableBody = (theme: Theme, body: TableBody): UI => {
     const keys = Object.keys(body.value.columns)
     const columns = keys.length
     const rows = body.value.columns[keys[0]].length
@@ -208,7 +202,7 @@ export const tableBody = (theme: Theme, body: TableBody): UI<AppEvent> => {
                             ...data
                                 .slice(0, 10)
                                 .map((value) =>
-                                    container<AppEvent>(
+                                    container(
                                         { padding: 5 },
                                         text(
                                             value === undefined
@@ -225,7 +219,7 @@ export const tableBody = (theme: Theme, body: TableBody): UI<AppEvent> => {
     ])
 }
 
-export const columnBody = (theme: Theme, body: ColumnBody): UI<AppEvent> => {
+export const columnBody = (theme: Theme, body: ColumnBody): UI => {
     const rows = body.value.length
     return column([
         container({ padding: 5 }, text(`${rows} rows`)),
@@ -257,7 +251,7 @@ export const formatCell = (value: number | string): string => {
     }
 }
 
-export const tensorBody = (theme: Theme, body: TensorBody): UI<AppEvent> => {
+export const tensorBody = (theme: Theme, body: TensorBody): UI => {
     switch (body.rank) {
         case 0: {
             const value = formatCell(body.value as number | string)
@@ -331,7 +325,7 @@ export const tensorBody = (theme: Theme, body: TensorBody): UI<AppEvent> => {
     }
 }
 
-export const scatterBody = (theme: Theme, body: ScatterBody): UI<AppEvent> => {
+export const scatterBody = (theme: Theme, body: ScatterBody): UI => {
     return container(
         { width: 300, height: 300, color: theme.background },
         stack(
@@ -353,9 +347,9 @@ export const nodeUi = (
     nodeUUID: UUID,
     graph: Graph,
     focus: Focus
-): UI<AppEvent> => {
+): UI => {
     const node = graph.nodes[nodeUUID]
-    const rowEntries: UI<AppEvent>[] = []
+    const rowEntries: UI[] = []
     if (node.kind === NodeKind.TRANSFORM) {
         rowEntries.push(
             inputsUi(
@@ -412,7 +406,7 @@ export const nodeUi = (
             x: node.position.x,
             y: node.position.y,
             onClick: {
-                kind: EventKind.CLICKED_NODE,
+                kind: "clicked_node",
                 node: node.uuid,
             },
         },
@@ -426,7 +420,7 @@ export const nodeUi = (
 
 const identityCamera = identity()
 
-export const view = (model: Model): UI<AppEvent> => {
+export const view = (model: Model): UI => {
     const nodes = model.nodeOrder.map((node) =>
         nodeUi(model.theme, node, model.graph, model.focus)
     )
@@ -437,10 +431,10 @@ export const view = (model: Model): UI<AppEvent> => {
             color: model.theme.connection,
         })
     )
-    const stacked: UI<AppEvent>[] = [
+    const stacked: UI[] = [
         container({
             color: model.theme.background,
-            onClick: { kind: EventKind.CLICKED_BACKGROUND },
+            onClick: { kind: "clicked_background" },
         }),
         scene({ camera: model.camera, children: nodes, connections }),
     ]
@@ -525,7 +519,7 @@ export const view = (model: Model): UI<AppEvent> => {
                             name: "Change Node",
                             shortcut: "c",
                             onClick: {
-                                kind: EventKind.CHANGE_NODE,
+                                kind: "change_node",
                                 node: focus.node,
                             },
                         },
@@ -533,7 +527,7 @@ export const view = (model: Model): UI<AppEvent> => {
                             name: "Delete Node",
                             shortcut: "d",
                             onClick: {
-                                kind: EventKind.DELETE_NODE,
+                                kind: "delete_node",
                                 node: focus.node,
                             },
                         },
@@ -551,7 +545,7 @@ export const view = (model: Model): UI<AppEvent> => {
                                 name: "Delete Edge",
                                 shortcut: "d",
                                 onClick: {
-                                    kind: EventKind.DELETE_INPUT_EDGE,
+                                    kind: "delete_input_edge",
                                     input: focus.input,
                                 },
                             },
@@ -570,7 +564,7 @@ export const view = (model: Model): UI<AppEvent> => {
                                 name: "Delete Edge",
                                 shortcut: "d",
                                 onClick: {
-                                    kind: EventKind.DELETE_OUTPUT_EDGES,
+                                    kind: "delete_output_edges",
                                     output: focus.output,
                                 },
                             },
@@ -587,7 +581,7 @@ export const view = (model: Model): UI<AppEvent> => {
                         {
                             name: "Reset Zoom",
                             shortcut: "z",
-                            onClick: { kind: EventKind.RESET_CAMERA },
+                            onClick: { kind: "reset_camera" },
                         },
                     ],
                     backgroundColor: model.theme.node,

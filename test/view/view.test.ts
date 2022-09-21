@@ -1,6 +1,5 @@
 import * as tf from "@tensorflow/tfjs-core"
 
-import { EventKind } from "../../src/update"
 import {
     Body,
     BodyKind,
@@ -40,6 +39,7 @@ import { normalize } from "../../src/normalize"
 import { tensorFunc } from "../../src/model/operations"
 import * as alphabeticVirtualKeyboard from "../../src/alphabetic_virtual_keyboard"
 import * as numericVirtualKeyboard from "../../src/numeric_virtual_keyboard"
+import * as finder from "../../src/finder"
 import { CrossAxisAlignment } from "../../src/ui/alignment"
 
 const addFunc = tensorFunc(tf.add)
@@ -1116,7 +1116,7 @@ test("view with no nodes or edges", () => {
                 {
                     name: "Reset Zoom",
                     shortcut: "z",
-                    onClick: { kind: EventKind.RESET_CAMERA },
+                    onClick: { kind: "reset_camera" },
                 },
             ],
             backgroundColor: model.theme.node,
@@ -1126,6 +1126,16 @@ test("view with no nodes or edges", () => {
 })
 
 test("view with no nodes or edges but finder shown", () => {
+    const focus: FocusFinderInsert = {
+        kind: FocusKind.FINDER_INSERT,
+        finder: {
+            search: "",
+            options: [],
+            selectedIndex: 0,
+        },
+        quickSelect: { kind: QuickSelectKind.NONE },
+        uppercase: false,
+    }
     const model: Model = {
         graph: {
             nodes: {},
@@ -1138,14 +1148,7 @@ test("view with no nodes or edges but finder shown", () => {
         pointers: [],
         nodePlacementLocation: { x: 250, y: 250, show: false },
         window: { width: 500, height: 500 },
-        focus: {
-            kind: FocusKind.FINDER_INSERT,
-            search: "",
-            options: [],
-            selectedIndex: 0,
-            quickSelect: { kind: QuickSelectKind.NONE },
-            uppercase: false,
-        },
+        focus,
         openFinderFirstClick: false,
         camera: identity(),
         operations: {},
@@ -1166,7 +1169,11 @@ test("view with no nodes or edges but finder shown", () => {
             onClick: { kind: "clicked_background" },
         }),
         scene({ camera: model.camera, children: [], connections: [] }),
-        finder(model.focus as FocusFinderInsert, model.theme),
+        finder.view({
+            model: focus.finder,
+            theme: model.theme.finder,
+            onClick: (option) => ({ kind: "finder/insert", option }),
+        }),
         alphabeticVirtualKeyboard.view({
             color: model.theme.node,
             uppercase: false,
@@ -1176,6 +1183,16 @@ test("view with no nodes or edges but finder shown", () => {
 })
 
 test("view with no nodes or edges but finder shown capitalized", () => {
+    const focus: FocusFinderInsert = {
+        kind: FocusKind.FINDER_INSERT,
+        finder: {
+            search: "",
+            options: [],
+            selectedIndex: 0,
+        },
+        quickSelect: { kind: QuickSelectKind.NONE },
+        uppercase: true,
+    }
     const model: Model = {
         graph: {
             nodes: {},
@@ -1188,14 +1205,7 @@ test("view with no nodes or edges but finder shown capitalized", () => {
         pointers: [],
         nodePlacementLocation: { x: 250, y: 250, show: false },
         window: { width: 500, height: 500 },
-        focus: {
-            kind: FocusKind.FINDER_INSERT,
-            search: "",
-            options: [],
-            selectedIndex: 0,
-            quickSelect: { kind: QuickSelectKind.NONE },
-            uppercase: true,
-        },
+        focus,
         openFinderFirstClick: false,
         camera: identity(),
         operations: {},
@@ -1216,7 +1226,11 @@ test("view with no nodes or edges but finder shown capitalized", () => {
             onClick: { kind: "clicked_background" },
         }),
         scene({ camera: model.camera, children: [], connections: [] }),
-        finder(model.focus as FocusFinderInsert, model.theme),
+        finder.view({
+            model: focus.finder,
+            theme: theme.finder,
+            onClick: (option) => ({ kind: "finder/insert", option }),
+        }),
         alphabeticVirtualKeyboard.view({
             color: model.theme.node,
             uppercase: true,
@@ -1524,7 +1538,7 @@ test("view with three nodes and no edges", () => {
                 {
                     name: "Reset Zoom",
                     shortcut: "z",
-                    onClick: { kind: EventKind.RESET_CAMERA },
+                    onClick: { kind: "reset_camera" },
                 },
             ],
             backgroundColor: model.theme.node,
@@ -1634,7 +1648,7 @@ test("view with three nodes and no edges", () => {
                     name: "Change Node",
                     shortcut: "c",
                     onClick: {
-                        kind: EventKind.CHANGE_NODE,
+                        kind: "change_node",
                         node: "first",
                     },
                 },
@@ -1642,7 +1656,7 @@ test("view with three nodes and no edges", () => {
                     name: "Delete Node",
                     shortcut: "d",
                     onClick: {
-                        kind: EventKind.DELETE_NODE,
+                        kind: "delete_node",
                         node: "first",
                     },
                 },
@@ -1777,7 +1791,7 @@ test("view with three nodes and one edges", () => {
                 {
                     name: "Reset Zoom",
                     shortcut: "z",
-                    onClick: { kind: EventKind.RESET_CAMERA },
+                    onClick: { kind: "reset_camera" },
                 },
             ],
             backgroundColor: model.theme.node,
@@ -1990,7 +2004,7 @@ test("view with input selected", () => {
                     name: "Delete Edge",
                     shortcut: "d",
                     onClick: {
-                        kind: EventKind.DELETE_INPUT_EDGE,
+                        kind: "delete_input_edge",
                         input: "x1",
                     },
                 },
@@ -2131,7 +2145,7 @@ test("view with output selected", () => {
                     name: "Delete Edge",
                     shortcut: "d",
                     onClick: {
-                        kind: EventKind.DELETE_OUTPUT_EDGES,
+                        kind: "delete_output_edges",
                         output: "out0",
                     },
                 },
@@ -2198,7 +2212,7 @@ test("view with node placement location shown", () => {
                 {
                     name: "Reset Zoom",
                     shortcut: "z",
-                    onClick: { kind: EventKind.RESET_CAMERA },
+                    onClick: { kind: "reset_camera" },
                 },
             ],
             backgroundColor: model.theme.node,

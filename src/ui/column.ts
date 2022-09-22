@@ -12,10 +12,10 @@ import {
     UI,
     UIKind,
     WorldSpace,
-    AppEvent,
 } from "."
 import { MainAxisAlignment, CrossAxisAlignment } from "./alignment"
 import { CameraStack, transformWorldSpace } from "./camera_stack"
+import { AppEvent } from "../event"
 
 export interface ColumnLayout {
     readonly size: Size

@@ -13,9 +13,9 @@ import {
     geometry,
     Entry,
     traverse,
-    AppEvent,
 } from "."
 import { CameraStack, transformWorldSpace, activeCamera } from "./camera_stack"
+import { AppEvent } from "../event"
 
 export interface ContainerLayout {
     readonly size: Size

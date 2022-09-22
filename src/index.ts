@@ -1,14 +1,13 @@
 import "@tensorflow/tfjs-backend-cpu"
 import * as papa from "papaparse"
 
-import { EventKind, update } from "./update"
-import { run, transformPointer } from "./ui/run"
+import { update } from "./update"
+import { run, transformPointer } from "./run"
 import { view } from "./view"
 import { demoModel } from "./model/demo"
 import { Document } from "./ui/dom"
-import { ProgramKind } from "./ui/webgl2"
 import { Columns, Table, Value } from "./model/table"
-import * as keydown from "./keyboard/keydown"
+import { EventKind } from "./event"
 
 const generateUUID = () => crypto.randomUUID()
 const currentTime = () => performance.now()
@@ -58,7 +57,7 @@ const promptUserForTable = (): Promise<Table> =>
 
 const effects = { currentTime, generateUUID, promptUserForTable }
 
-const success_or_error = run({
+const dispatch = run({
     model: demoModel(
         { width: window.innerWidth, height: window.innerHeight },
         effects
@@ -71,24 +70,18 @@ const success_or_error = run({
     setTimeout,
     pointerDown: (dispatch, pointer) => {
         dispatch({
-            kind: EventKind.POINTER_DOWN,
+            kind: "pointer_down",
             pointer,
         })
     },
     effects,
 })
 
-if (success_or_error.kind == ProgramKind.ERROR) {
-    throw success_or_error
-}
-
-const dispatch = success_or_error.dispatch
-
 if (typeof PointerEvent.prototype.getCoalescedEvents === "function") {
     document.addEventListener("pointermove", (e) => {
         e.getCoalescedEvents().forEach((p) => {
             dispatch({
-                kind: EventKind.POINTER_MOVE,
+                kind: "pointer_move",
                 pointer: transformPointer(p),
             })
         })
@@ -96,7 +89,7 @@ if (typeof PointerEvent.prototype.getCoalescedEvents === "function") {
 } else {
     document.addEventListener("pointermove", (p) =>
         dispatch({
-            kind: EventKind.POINTER_MOVE,
+            kind: "pointer_move",
             pointer: transformPointer(p),
         })
     )
@@ -104,7 +97,7 @@ if (typeof PointerEvent.prototype.getCoalescedEvents === "function") {
 
 document.addEventListener("pointerup", (p) => {
     dispatch({
-        kind: EventKind.POINTER_UP,
+        kind: "pointer_up",
         pointer: transformPointer(p),
     })
 })
@@ -114,7 +107,7 @@ document.addEventListener(
     (e) => {
         e.preventDefault()
         dispatch({
-            kind: EventKind.WHEEL,
+            kind: "wheel",
             position: { x: e.clientX, y: e.clientY },
             deltaY: e.deltaY,
         })
@@ -141,17 +134,15 @@ document.addEventListener("keydown", (e) => {
         }
     }
     dispatch({
-        kind: keydown.eventKind,
-        key: e.key,
-        ctrl: e.ctrlKey,
+        kind: EventKind.KEYDOWN,
+        key: e.ctrlKey ? `<c-${e.key}>` : e.key,
     })
 })
 
 document.addEventListener("keyup", (e) => {
     dispatch({
-        kind: EventKind.KEYUP,
-        key: e.key,
-        ctrl: e.ctrlKey,
+        kind: "keyup",
+        key: e.ctrlKey ? `<c-${e.key}>` : e.key,
     })
 })
 
@@ -193,7 +184,7 @@ document.addEventListener("drop", async (e) => {
                 }
             })
             dispatch({
-                kind: EventKind.UPLOAD_TABLE,
+                kind: "upload_table",
                 table: {
                     name: file.name,
                     columns,

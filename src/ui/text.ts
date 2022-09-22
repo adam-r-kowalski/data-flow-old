@@ -9,9 +9,9 @@ import {
     TextMeasurements,
     UIKind,
     WorldSpace,
-    AppEvent,
 } from "."
 import { activeCamera, CameraStack, transformWorldSpace } from "./camera_stack"
+import { AppEvent } from "../event"
 
 export interface TextLayout {
     readonly measurements: TextMeasurements

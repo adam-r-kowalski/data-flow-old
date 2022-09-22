@@ -1,4 +1,3 @@
-import { fuzzyFind } from "../fuzzy_find"
 import {
     identity,
     multiplyMatrices,
@@ -7,14 +6,9 @@ import {
     translate,
 } from "../linear_algebra/matrix3x3"
 import { length } from "../linear_algebra/vector3"
-import { Effects, UpdateResult } from "../ui/run"
+import { Effects, UpdateResult } from "../run"
 import { Model, NodePlacementLocation } from "../model"
-import {
-    Focus,
-    FocusFinderInsert,
-    FocusFinderChange,
-    FocusKind,
-} from "../model/focus"
+import { Focus, FocusKind } from "../model/focus"
 import { PointerAction, PointerActionKind } from "../model/pointer_action"
 import {
     Body,
@@ -30,14 +24,12 @@ import {
     NumberBody,
     Operation,
     OperationKind,
-    Operations,
     Output,
     Outputs,
     Position,
     TextBody,
     UUID,
 } from "../model/graph"
-import { Pointer } from "../ui"
 import {
     addNode,
     changeNumberText,
@@ -63,184 +55,31 @@ import {
     zoomCamera,
 } from "./move_camera"
 import { maybeStartMoveNode, maybeStopMoveNode, moveNode } from "./move_node"
-import { Table } from "../model/table"
-import * as keydown from "../keyboard/keydown"
+import {
+    AppEvent,
+    ChangeNode,
+    ClickedBody,
+    ClickedInput,
+    ClickedNode,
+    ClickedOutput,
+    DeleteInputEdge,
+    DeleteNode,
+    DeleteOutputEdges,
+    EventKind,
+    FinderChange,
+    FinderInsert,
+    KeyDown,
+    KeyUp,
+    PointerDown,
+    PointerMove,
+    PointerUp,
+    UploadCsv,
+    UploadTable,
+    Wheel,
+} from "../event"
+import * as finder from "../finder"
 
-export enum EventKind {
-    POINTER_MOVE,
-    POINTER_DOWN,
-    POINTER_UP,
-    CLICKED_NODE,
-    WHEEL,
-    CLICKED_INPUT,
-    CLICKED_OUTPUT,
-    OPEN_FINDER_TIMEOUT,
-    KEYUP,
-    CLICKED_FINDER_OPTION,
-    CLICKED_BODY,
-    CLICKED_BACKGROUND,
-    CHANGE_NODE,
-    DELETE_NODE,
-    DELETE_INPUT_EDGE,
-    DELETE_OUTPUT_EDGES,
-    PAN_CAMERA,
-    ZOOM_CAMERA,
-    RESET_CAMERA,
-    MOVE_NODE,
-    UPLOAD_TABLE,
-    UPLOAD_CSV,
-}
-
-export interface PointerMove {
-    readonly kind: EventKind.POINTER_MOVE
-    readonly pointer: Pointer
-}
-
-export interface PointerDown {
-    readonly kind: EventKind.POINTER_DOWN
-    readonly pointer: Pointer
-}
-
-export interface PointerUp {
-    readonly kind: EventKind.POINTER_UP
-    readonly pointer: Pointer
-}
-
-export interface ClickedNode {
-    readonly kind: EventKind.CLICKED_NODE
-    readonly node: UUID
-}
-
-export interface Wheel {
-    readonly kind: EventKind.WHEEL
-    readonly position: Position
-    readonly deltaY: number
-}
-
-export interface ClickedInput {
-    readonly kind: EventKind.CLICKED_INPUT
-    readonly input: UUID
-}
-
-export interface ClickedOutput {
-    readonly kind: EventKind.CLICKED_OUTPUT
-    readonly output: UUID
-}
-
-export interface OpenFinderTimeout {
-    readonly kind: EventKind.OPEN_FINDER_TIMEOUT
-}
-
-export interface KeyUp {
-    readonly kind: EventKind.KEYUP
-    readonly key: string
-    readonly ctrl: boolean
-}
-
-export interface ClickedFinderOption {
-    readonly kind: EventKind.CLICKED_FINDER_OPTION
-    readonly option: string
-}
-
-export interface ClickedBody {
-    readonly kind: EventKind.CLICKED_BODY
-    readonly body: UUID
-}
-
-export interface ClickedBackground {
-    readonly kind: EventKind.CLICKED_BACKGROUND
-}
-
-export interface ChangeNode {
-    readonly kind: EventKind.CHANGE_NODE
-    readonly node: UUID
-}
-
-export interface DeleteNode {
-    readonly kind: EventKind.DELETE_NODE
-    readonly node: UUID
-}
-
-export interface DeleteInputEdge {
-    readonly kind: EventKind.DELETE_INPUT_EDGE
-    readonly input: UUID
-}
-
-export interface DeleteOutputEdges {
-    readonly kind: EventKind.DELETE_OUTPUT_EDGES
-    readonly output: UUID
-}
-
-export interface PanCamera {
-    readonly kind: EventKind.PAN_CAMERA
-}
-
-export interface ZoomCamera {
-    readonly kind: EventKind.ZOOM_CAMERA
-}
-
-export interface ResetCamera {
-    readonly kind: EventKind.RESET_CAMERA
-}
-
-export interface MoveNode {
-    readonly kind: EventKind.MOVE_NODE
-}
-
-export interface UploadTable {
-    readonly kind: EventKind.UPLOAD_TABLE
-    readonly table: Table
-    readonly position: Position
-}
-
-export interface UploadCsv {
-    readonly kind: EventKind.UPLOAD_CSV
-    readonly table: Table
-    readonly node: UUID
-}
-
-export interface FinderInsert {
-    readonly kind: "finder/insert"
-    readonly option: string
-}
-
-export interface FinderChange {
-    readonly kind: "finder/change"
-    readonly option: string
-    readonly node: UUID
-}
-
-export type AppEvent =
-    | PointerMove
-    | PointerDown
-    | PointerUp
-    | ClickedNode
-    | Wheel
-    | ClickedInput
-    | ClickedOutput
-    | OpenFinderTimeout
-    | keydown.Event
-    | KeyUp
-    | ClickedFinderOption
-    | ClickedBody
-    | ClickedBackground
-    | ChangeNode
-    | DeleteNode
-    | DeleteInputEdge
-    | DeleteOutputEdges
-    | PanCamera
-    | ZoomCamera
-    | ResetCamera
-    | MoveNode
-    | UploadTable
-    | UploadCsv
-    | FinderInsert
-    | FinderChange
-
-const pointerDown = (
-    model: Model,
-    event: PointerDown
-): UpdateResult<Model, AppEvent> => {
+const pointerDown = (model: Model, event: PointerDown): UpdateResult => {
     const pointers = [...model.pointers, event.pointer]
     if (model.focus.kind !== FocusKind.NONE) {
         return { model: { ...model, pointers } }
@@ -280,10 +119,7 @@ const pointerDown = (
     }
 }
 
-const pointerUp = (
-    model: Model,
-    event: PointerUp
-): UpdateResult<Model, AppEvent> => {
+const pointerUp = (model: Model, event: PointerUp): UpdateResult => {
     const pointers = model.pointers.filter((p) => p.id !== event.pointer.id)
     switch (model.focus.kind) {
         case FocusKind.NONE:
@@ -333,10 +169,7 @@ export const changeNth = <T>(xs: Readonly<T[]>, i: number, x: T): T[] => [
     ...xs.slice(i + 1),
 ]
 
-const pointerMove = (
-    model: Model,
-    event: PointerMove
-): UpdateResult<Model, AppEvent> => {
+const pointerMove = (model: Model, event: PointerMove): UpdateResult => {
     const result = (() => {
         const index = model.pointers.findIndex((p) => p.id === event.pointer.id)
         const pointer = model.pointers[index]
@@ -457,10 +290,7 @@ const pointerMove = (
     return { ...result, cursor: true }
 }
 
-const clickedNode = (
-    model: Model,
-    event: ClickedNode
-): UpdateResult<Model, AppEvent> => {
+const clickedNode = (model: Model, event: ClickedNode): UpdateResult => {
     const nodeOrder = model.nodeOrder.filter((uuid) => uuid !== event.node)
     nodeOrder.push(event.node)
     return {
@@ -485,7 +315,7 @@ const clickedNode = (
     }
 }
 
-const wheel = (model: Model, event: Wheel): UpdateResult<Model, AppEvent> => {
+const wheel = (model: Model, event: Wheel): UpdateResult => {
     const move = translate(event.position.x, event.position.y)
     const zoom = Math.pow(2, event.deltaY * 0.01)
     const moveBack = translate(-event.position.x, -event.position.y)
@@ -505,38 +335,30 @@ const clickedInput = (
     model: Model,
     event: ClickedInput,
     generateUUID: GenerateUUID
-): UpdateResult<Model, AppEvent> =>
-    selectInput(model, event.input, generateUUID)
+): UpdateResult => selectInput(model, event.input, generateUUID)
 
 const clickedOutput = (
     model: Model,
     event: ClickedOutput,
     generateUUID: GenerateUUID
-): UpdateResult<Model, AppEvent> =>
-    selectOutput(model, event.output, generateUUID)
+): UpdateResult => selectOutput(model, event.output, generateUUID)
 
-const openFinderTimeout = (
-    model: Model,
-    _: OpenFinderTimeout
-): UpdateResult<Model, AppEvent> => ({
+const openFinderTimeout = (model: Model): UpdateResult => ({
     model: {
         ...model,
         openFinderFirstClick: false,
     },
 })
 
-const finderOptions = (operations: Operations, search: string): string[] =>
-    Object.keys(operations).filter((item) =>
-        fuzzyFind({ haystack: item, needle: search })
-    )
-
 export const openFinderInsert = (model: Model): Model => ({
     ...model,
     focus: {
         kind: FocusKind.FINDER_INSERT,
-        search: "",
-        options: Object.keys(model.operations),
-        selectedIndex: 0,
+        finder: {
+            search: "",
+            options: Object.keys(model.operations),
+            selectedIndex: 0,
+        },
         quickSelect: { kind: QuickSelectKind.NONE },
         uppercase: false,
     },
@@ -547,9 +369,11 @@ export const openFinderChange = (model: Model, node: UUID): Model => ({
     ...model,
     focus: {
         kind: FocusKind.FINDER_CHANGE,
-        search: "",
-        options: Object.keys(model.operations),
-        selectedIndex: 0,
+        finder: {
+            search: "",
+            options: Object.keys(model.operations),
+            selectedIndex: 0,
+        },
         quickSelect: { kind: QuickSelectKind.NONE },
         node,
         uppercase: false,
@@ -557,18 +381,614 @@ export const openFinderChange = (model: Model, node: UUID): Model => ({
     openFinderFirstClick: false,
 })
 
-const insertOperationFromFinder = (
+export const updateNumberText = (
     model: Model,
-    name: string,
+    body: UUID,
+    transform: (text: string) => string
+): UpdateResult => {
+    return {
+        model: {
+            ...model,
+            graph: changeNumberText(model.graph, body, transform),
+        },
+        render: true,
+    }
+}
+
+interface AddNodeInputs {
+    model: Model
+    operation: Operation
+    position: Position
     effects: Effects
-): UpdateResult<Model, AppEvent> => {
-    const operation = model.operations[name]
+}
+
+interface AddNodeOutputs {
+    model: Model
+    node: UUID
+    event?: Promise<UploadCsv>
+}
+
+export const addNodeToGraph = ({
+    model,
+    operation,
+    position,
+    effects,
+}: AddNodeInputs): AddNodeOutputs => {
+    const { graph, node, event } = addNode({
+        graph: model.graph,
+        operation,
+        position,
+        effects,
+    })
+    return {
+        model: {
+            ...model,
+            graph,
+            nodeOrder: [...model.nodeOrder, node],
+        },
+        node,
+        event,
+    }
+}
+
+export const removeNodeFromGraph = (model: Model, node: UUID): Model => {
+    const model1 = clearFocus({
+        ...model,
+        graph: removeNode(model.graph, node),
+        nodeOrder: model.nodeOrder.filter((n) => n !== node),
+    })
+    const outputs = model.graph.nodes[node].outputs
+    return outputs.reduce((model2, output) => {
+        const edges = model.graph.outputs[output].edges
+        return edges.reduce((model3, edge) => {
+            const input = model.graph.edges[edge].input
+            const nodeUUID = model.graph.inputs[input].node
+            const graph = evaluateNode(model3.graph, nodeUUID)
+            return {
+                ...model3,
+                graph,
+            }
+        }, model2)
+    }, model1)
+}
+
+export const updateBody = (
+    model: Model,
+    body: UUID,
+    transform: (body: Body) => Body
+): UpdateResult => {
+    const currentBody = model.graph.bodys[body]
+    const nextBody = transform(currentBody)
+    const graph: Graph = {
+        ...model.graph,
+        bodys: {
+            ...model.graph.bodys,
+            [body]: nextBody,
+        },
+    }
+    const node = graph.bodys[body].node
+    return {
+        model: {
+            ...model,
+            graph: evaluateNode(graph, node),
+        },
+        render: true,
+    }
+}
+
+const keyDown = (
+    model: Model,
+    event: KeyDown,
+    effects: Effects
+): UpdateResult => {
+    const { generateUUID, currentTime } = effects
+    const { key } = event
+    switch (model.focus.quickSelect.kind) {
+        case QuickSelectKind.INPUT:
+            return quickSelectInput(
+                model,
+                model.focus.quickSelect,
+                key,
+                generateUUID
+            )
+        case QuickSelectKind.OUTPUT:
+            return quickSelectOutput(
+                model,
+                model.focus.quickSelect,
+                key,
+                generateUUID
+            )
+        case QuickSelectKind.NODE:
+            return quickSelectNode(model, model.focus.quickSelect, key)
+        case QuickSelectKind.BODY:
+            return quickSelectBody(model, model.focus.quickSelect, key)
+        case QuickSelectKind.NONE:
+            const focus = model.focus
+            switch (focus.kind) {
+                case FocusKind.FINDER_INSERT: {
+                    const result = finder.update({
+                        model: focus.finder,
+                        event,
+                        onClose: { kind: EventKind.FINDER_CLOSE },
+                        onSelect: (option) => ({
+                            kind: EventKind.FINDER_INSERT,
+                            option,
+                        }),
+                    })
+                    const dispatch = result.event ? [result.event] : undefined
+                    return {
+                        model: {
+                            ...model,
+                            focus: {
+                                ...focus,
+                                finder: result.model,
+                            },
+                        },
+                        dispatch,
+                    }
+                }
+                case FocusKind.FINDER_CHANGE: {
+                    const result = finder.update({
+                        model: focus.finder,
+                        event,
+                        onClose: { kind: EventKind.FINDER_CLOSE },
+                        onSelect: (option) => ({
+                            kind: EventKind.FINDER_CHANGE,
+                            option,
+                            node: focus.node,
+                        }),
+                    })
+                    const dispatch = result.event ? [result.event] : undefined
+                    return {
+                        model: {
+                            ...model,
+                            focus: {
+                                ...focus,
+                                finder: result.model,
+                            },
+                        },
+                        dispatch,
+                    }
+                }
+
+                case FocusKind.BODY_NUMBER: {
+                    switch (key) {
+                        case "Backspace":
+                            return updateNumberText(
+                                model,
+                                focus.body,
+                                (text) => {
+                                    const nextText = text.slice(0, -1)
+                                    return nextText === "" ? "0" : nextText
+                                }
+                            )
+                        case "1":
+                        case "2":
+                        case "3":
+                        case "4":
+                        case "5":
+                        case "6":
+                        case "7":
+                        case "8":
+                        case "9":
+                        case "0":
+                            return updateNumberText(
+                                model,
+                                focus.body,
+                                (text) => {
+                                    if (text === "0") {
+                                        return key
+                                    } else if (text === "-0") {
+                                        return `-${key}`
+                                    } else {
+                                        return text + key
+                                    }
+                                }
+                            )
+                        case ".":
+                            return updateNumberText(model, focus.body, (text) =>
+                                text.includes(".") ? text : text + key
+                            )
+                        case "-":
+                        case "+":
+                            return updateNumberText(
+                                model,
+                                focus.body,
+                                (text) => {
+                                    if (text.length && text[0] === "-") {
+                                        return text.slice(1)
+                                    } else {
+                                        return "-" + text
+                                    }
+                                }
+                            )
+                        case "c":
+                            return updateNumberText(
+                                model,
+                                focus.body,
+                                () => "0"
+                            )
+                        case "Enter":
+                        case "Escape":
+                            return {
+                                model: clearFocus(model),
+                                render: true,
+                            }
+                        default:
+                            return maybeTriggerQuickSelect(model, focus, key)
+                    }
+                }
+                case FocusKind.BODY_TEXT: {
+                    const body = model.graph.bodys[focus.body]
+                    switch (key) {
+                        case "Enter":
+                        case "Escape":
+                            return {
+                                model: clearFocus(model),
+                                render: true,
+                            }
+                        case "Shift":
+                            return { model }
+                        case "sft":
+                            return {
+                                model: {
+                                    ...model,
+                                    focus: {
+                                        ...focus,
+                                        uppercase: !focus.uppercase,
+                                    },
+                                },
+                                render: true,
+                            }
+                        case "Backspace":
+                            return updateBody(model, body.uuid, (body) => {
+                                const textBody = body as TextBody
+                                return {
+                                    ...textBody,
+                                    value: textBody.value.slice(0, -1),
+                                }
+                            })
+                        default:
+                            return updateBody(model, body.uuid, (body) => {
+                                const textBody = body as TextBody
+                                return {
+                                    ...textBody,
+                                    value: textBody.value + key,
+                                }
+                            })
+                    }
+                }
+                case FocusKind.NODE:
+                    switch (key) {
+                        case "f":
+                            return {
+                                model: openFinderInsert(model),
+                                render: true,
+                            }
+                        case "c":
+                            return {
+                                model: openFinderChange(model, focus.node),
+                                render: true,
+                            }
+                        case "d":
+                        case "Backspace":
+                        case "Delete":
+                            return {
+                                model: removeNodeFromGraph(model, focus.node),
+                                render: true,
+                            }
+                        case "Escape":
+                            return { model: clearFocus(model), render: true }
+                        default:
+                            const result = maybeTriggerQuickSelect(
+                                model,
+                                focus,
+                                key
+                            )
+                            if (result.render) {
+                                return result
+                            } else {
+                                return maybeStartMoveNode(
+                                    result.model,
+                                    focus,
+                                    key,
+                                    currentTime
+                                )
+                            }
+                    }
+                case FocusKind.INPUT:
+                    switch (key) {
+                        case "f":
+                            return {
+                                model: openFinderInsert(model),
+                                render: true,
+                            }
+                        case "d":
+                        case "Backspace":
+                        case "Delete":
+                            return {
+                                model: clearFocus({
+                                    ...model,
+                                    graph: removeInputEdge(
+                                        model.graph,
+                                        focus.input
+                                    ),
+                                }),
+                                render: true,
+                            }
+                        case "Escape":
+                            return { model: clearFocus(model), render: true }
+                        default:
+                            return maybeTriggerQuickSelect(model, focus, key)
+                    }
+                case FocusKind.OUTPUT:
+                    switch (key) {
+                        case "f":
+                            return {
+                                model: openFinderInsert(model),
+                                render: true,
+                            }
+                        case "d":
+                        case "Backspace":
+                        case "Delete":
+                            return {
+                                model: clearFocus({
+                                    ...model,
+                                    graph: removeOutputEdges(
+                                        model.graph,
+                                        focus.output
+                                    ),
+                                }),
+                                render: true,
+                            }
+                        case "Escape":
+                            return { model: clearFocus(model), render: true }
+                        default:
+                            return maybeTriggerQuickSelect(model, focus, key)
+                    }
+                case FocusKind.NONE:
+                    switch (key) {
+                        case "f":
+                            return {
+                                model: openFinderInsert(model),
+                                render: true,
+                            }
+                        case "z":
+                            return {
+                                model: {
+                                    ...model,
+                                    camera: identity(),
+                                },
+                                render: true,
+                            }
+                        default:
+                            const result = maybeTriggerQuickSelect(
+                                model,
+                                focus,
+                                key
+                            )
+                            if (result.render) {
+                                return result
+                            } else {
+                                return maybeStartMoveCamera(
+                                    result.model,
+                                    event,
+                                    currentTime
+                                )
+                            }
+                    }
+            }
+    }
+}
+
+const keyUp = (model: Model, event: KeyUp): UpdateResult => {
+    switch (model.focus.kind) {
+        case FocusKind.NONE:
+            return maybeStopMoveCamera(model, event)
+        case FocusKind.NODE:
+            return maybeStopMoveNode(model, model.focus, event.key)
+        default:
+            return { model }
+    }
+}
+
+export const focusBody = (model: Model, bodyUUID: UUID): Model => {
+    const body = model.graph.bodys[bodyUUID] as NumberBody | TextBody
+    switch (body.kind) {
+        case BodyKind.NUMBER:
+            return {
+                ...model,
+                focus: {
+                    kind: FocusKind.BODY_NUMBER,
+                    body: bodyUUID,
+                    quickSelect: { kind: QuickSelectKind.NONE },
+                },
+            }
+        case BodyKind.TEXT:
+            return {
+                ...model,
+                focus: {
+                    kind: FocusKind.BODY_TEXT,
+                    body: bodyUUID,
+                    quickSelect: { kind: QuickSelectKind.NONE },
+                    uppercase: false,
+                },
+            }
+    }
+}
+
+const clickedBody = (model: Model, { body }: ClickedBody): UpdateResult => ({
+    model: focusBody(clearFocus(model), body),
+    render: true,
+})
+
+const clickedBackground = (model: Model): UpdateResult => {
+    if (
+        [FocusKind.FINDER_INSERT, FocusKind.FINDER_CHANGE].includes(
+            model.focus.kind
+        )
+    ) {
+        return {
+            model: clearFocus(model),
+            render: true,
+        }
+    } else if (model.openFinderFirstClick) {
+        const { x, y } = model.pointers[0].position
+        return {
+            model: openFinderInsert({
+                ...model,
+                nodePlacementLocation: { x, y, show: false },
+            }),
+            render: true,
+        }
+    } else {
+        const focus: Focus =
+            model.focus.kind === FocusKind.NONE
+                ? model.focus
+                : {
+                      kind: FocusKind.NONE,
+                      pointerAction: { kind: PointerActionKind.PAN },
+                      quickSelect: { kind: QuickSelectKind.NONE },
+                  }
+        return {
+            model: {
+                ...model,
+                openFinderFirstClick: model.pointers.length == 1,
+                focus,
+            },
+            schedule: [
+                {
+                    after: { milliseconds: 300 },
+                    event: { kind: EventKind.OPEN_FINDER_TIMEOUT },
+                },
+            ],
+            render: true,
+        }
+    }
+}
+
+const changeNode = (model: Model, { node }: ChangeNode): UpdateResult => ({
+    model: openFinderChange(model, node),
+    render: true,
+})
+
+const deleteNode = (model: Model, { node }: DeleteNode): UpdateResult => ({
+    model: removeNodeFromGraph(model, node),
+    render: true,
+})
+
+const deleteInputEdge = (
+    model: Model,
+    { input }: DeleteInputEdge
+): UpdateResult => ({
+    model: clearFocus({
+        ...model,
+        graph: removeInputEdge(model.graph, input),
+    }),
+    render: true,
+})
+
+const deleteOutputEdges = (
+    model: Model,
+    { output }: DeleteOutputEdges
+): UpdateResult => ({
+    model: clearFocus({
+        ...model,
+        graph: removeOutputEdges(model.graph, output),
+    }),
+    render: true,
+})
+
+const resetCamera = (model: Model): UpdateResult => ({
+    model: {
+        ...model,
+        camera: identity(),
+    },
+    render: true,
+})
+
+export const uploadTable = (
+    model: Model,
+    event: UploadTable,
+    generateUUID: GenerateUUID
+): UpdateResult => {
+    const nodeUUID = generateUUID()
+    const output: Output = {
+        uuid: generateUUID(),
+        node: nodeUUID,
+        name: "table",
+        edges: [],
+    }
+    const body: Body = {
+        kind: BodyKind.TABLE,
+        uuid: generateUUID(),
+        node: nodeUUID,
+        value: event.table,
+    }
+    const [x, y] = multiplyMatrixVector(model.camera, [
+        event.position.x,
+        event.position.y,
+        1,
+    ])
+    const node: NodeSource = {
+        kind: NodeKind.SOURCE,
+        uuid: nodeUUID,
+        name: event.table.name,
+        outputs: [output.uuid],
+        body: body.uuid,
+        position: { x, y },
+    }
+    return {
+        model: {
+            ...model,
+            graph: {
+                ...model.graph,
+                nodes: { ...model.graph.nodes, [node.uuid]: node },
+                bodys: { ...model.graph.bodys, [body.uuid]: body },
+                outputs: { ...model.graph.outputs, [output.uuid]: output },
+            },
+            nodeOrder: [...model.nodeOrder, node.uuid],
+        },
+        render: true,
+    }
+}
+
+export const uploadCsv = (model: Model, event: UploadCsv): UpdateResult => {
+    const node: Node = {
+        ...model.graph.nodes[event.node],
+        name: event.table.name,
+    }
+    const body: Body = {
+        kind: BodyKind.TABLE,
+        uuid: node.body,
+        node: node.uuid,
+        value: event.table,
+    }
+    return {
+        model: {
+            ...model,
+            graph: {
+                ...model.graph,
+                nodes: { ...model.graph.nodes, [node.uuid]: node },
+                bodys: { ...model.graph.bodys, [body.uuid]: body },
+            },
+        },
+        render: true,
+    }
+}
+
+export const finderInsert = (
+    model: Model,
+    event: FinderInsert,
+    effects: Effects
+): UpdateResult => {
+    const operation = model.operations[event.option]
     const [x, y, _] = multiplyMatrixVector(model.camera, [
         model.nodePlacementLocation.x,
         model.nodePlacementLocation.y,
         1,
     ])
-    const { model: nextModel, event } = addNodeToGraph({
+    const { model: nextModel, event: promise } = addNodeToGraph({
         model,
         operation,
         position: { x, y },
@@ -577,20 +997,19 @@ const insertOperationFromFinder = (
     return {
         model: clearFocus(nextModel),
         render: true,
-        promise: event,
+        promise,
     }
 }
 
-const changeOperationFromFinder = (
+export const finderChange = (
     model: Model,
-    name: string,
-    nodeUUID: UUID,
+    event: FinderChange,
     generateUUID: GenerateUUID
-): UpdateResult<Model, AppEvent> => {
-    const operation = model.operations[name]
+): UpdateResult => {
+    const operation = model.operations[event.option]
     switch (operation.kind) {
         case OperationKind.TRANSFORM:
-            const node = model.graph.nodes[nodeUUID]
+            const node = model.graph.nodes[event.node]
             switch (node.kind) {
                 case NodeKind.TRANSFORM:
                     const newInputs: UUID[] = []
@@ -690,7 +1109,7 @@ const changeOperationFromFinder = (
                         inputs,
                         outputs,
                     }
-                    const graph2 = evaluateNode(graph1, nodeUUID)
+                    const graph2 = evaluateNode(graph1, event.node)
                     return {
                         model: clearFocus({ ...model, graph: graph2 }),
                         render: true,
@@ -709,762 +1128,23 @@ const changeOperationFromFinder = (
     }
 }
 
-const updateFinderSearch = (
-    model: Model,
-    focus: FocusFinderInsert | FocusFinderChange,
-    transform: (search: string) => string
-): UpdateResult<Model, AppEvent> => {
-    const search = transform(focus.search)
-    return {
-        model: {
-            ...model,
-            focus: {
-                ...focus,
-                options: finderOptions(model.operations, search),
-                search,
-            },
-        },
-        render: true,
-    }
-}
-
-export const updateNumberText = (
-    model: Model,
-    body: UUID,
-    transform: (text: string) => string
-): UpdateResult<Model, AppEvent> => {
-    return {
-        model: {
-            ...model,
-            graph: changeNumberText(model.graph, body, transform),
-        },
-        render: true,
-    }
-}
-
-interface AddNodeInputs {
-    model: Model
-    operation: Operation
-    position: Position
-    effects: Effects
-}
-
-interface AddNodeOutputs {
-    model: Model
-    node: UUID
-    event?: Promise<UploadCsv>
-}
-
-export const addNodeToGraph = ({
-    model,
-    operation,
-    position,
-    effects,
-}: AddNodeInputs): AddNodeOutputs => {
-    const { graph, node, event } = addNode({
-        graph: model.graph,
-        operation,
-        position,
-        effects,
-    })
-    return {
-        model: {
-            ...model,
-            graph,
-            nodeOrder: [...model.nodeOrder, node],
-        },
-        node,
-        event,
-    }
-}
-
-export const removeNodeFromGraph = (model: Model, node: UUID): Model => {
-    const model1 = clearFocus({
-        ...model,
-        graph: removeNode(model.graph, node),
-        nodeOrder: model.nodeOrder.filter((n) => n !== node),
-    })
-    const outputs = model.graph.nodes[node].outputs
-    return outputs.reduce((model2, output) => {
-        const edges = model.graph.outputs[output].edges
-        return edges.reduce((model3, edge) => {
-            const input = model.graph.edges[edge].input
-            const nodeUUID = model.graph.inputs[input].node
-            const graph = evaluateNode(model3.graph, nodeUUID)
-            return {
-                ...model3,
-                graph,
-            }
-        }, model2)
-    }, model1)
-}
-
-export const updateBody = (
-    model: Model,
-    body: UUID,
-    transform: (body: Body) => Body
-): UpdateResult<Model, AppEvent> => {
-    const currentBody = model.graph.bodys[body]
-    const nextBody = transform(currentBody)
-    const graph: Graph = {
-        ...model.graph,
-        bodys: {
-            ...model.graph.bodys,
-            [body]: nextBody,
-        },
-    }
-    const node = graph.bodys[body].node
-    return {
-        model: {
-            ...model,
-            graph: evaluateNode(graph, node),
-        },
-        render: true,
-    }
-}
-
-const keyDown = (
-    model: Model,
-    event: keydown.Event,
-    effects: Effects
-): UpdateResult<Model, AppEvent> => {
-    const { generateUUID, currentTime } = effects
-    const { key } = event
-    switch (model.focus.quickSelect.kind) {
-        case QuickSelectKind.INPUT:
-            return quickSelectInput(
-                model,
-                model.focus.quickSelect,
-                key,
-                generateUUID
-            )
-        case QuickSelectKind.OUTPUT:
-            return quickSelectOutput(
-                model,
-                model.focus.quickSelect,
-                key,
-                generateUUID
-            )
-        case QuickSelectKind.NODE:
-            return quickSelectNode(model, model.focus.quickSelect, key)
-        case QuickSelectKind.BODY:
-            return quickSelectBody(model, model.focus.quickSelect, key)
-        case QuickSelectKind.NONE:
-            switch (model.focus.kind) {
-                case FocusKind.FINDER_INSERT:
-                case FocusKind.FINDER_CHANGE:
-                    switch (key) {
-                        case "Backspace":
-                            return updateFinderSearch(
-                                model,
-                                model.focus,
-                                (search) => search.slice(0, -1)
-                            )
-                        case "Shift":
-                        case "Alt":
-                        case "Control":
-                        case "Meta":
-                        case "Tab":
-                            return { model }
-                        case "Enter":
-                            if (model.focus.options.length > 0) {
-                                const name =
-                                    model.focus.options[
-                                        model.focus.selectedIndex
-                                    ]
-                                switch (model.focus.kind) {
-                                    case FocusKind.FINDER_INSERT:
-                                        return insertOperationFromFinder(
-                                            model,
-                                            name,
-                                            effects
-                                        )
-                                    case FocusKind.FINDER_CHANGE:
-                                        return changeOperationFromFinder(
-                                            model,
-                                            name,
-                                            model.focus.node,
-                                            generateUUID
-                                        )
-                                }
-                            } else {
-                                return {
-                                    model: clearFocus(model),
-                                    render: true,
-                                }
-                            }
-                        case "Escape":
-                            return { model: clearFocus(model), render: true }
-                        case "ArrowUp":
-                            return {
-                                model: {
-                                    ...model,
-                                    focus: {
-                                        ...model.focus,
-                                        selectedIndex: Math.max(
-                                            0,
-                                            model.focus.selectedIndex - 1
-                                        ),
-                                    },
-                                },
-                                render: true,
-                            }
-                        case "ArrowDown":
-                            return {
-                                model: {
-                                    ...model,
-                                    focus: {
-                                        ...model.focus,
-                                        selectedIndex: Math.min(
-                                            model.focus.selectedIndex + 1,
-                                            model.focus.options.length - 1,
-                                            9
-                                        ),
-                                    },
-                                },
-                                render: true,
-                            }
-                        default:
-                            if (event.ctrl) {
-                                switch (key) {
-                                    case "j":
-                                        return {
-                                            model: {
-                                                ...model,
-                                                focus: {
-                                                    ...model.focus,
-                                                    selectedIndex: Math.min(
-                                                        model.focus
-                                                            .selectedIndex + 1,
-                                                        model.focus.options
-                                                            .length - 1,
-                                                        9
-                                                    ),
-                                                },
-                                            },
-                                            render: true,
-                                        }
-                                    case "k":
-                                        return {
-                                            model: {
-                                                ...model,
-                                                focus: {
-                                                    ...model.focus,
-                                                    selectedIndex: Math.max(
-                                                        0,
-                                                        model.focus
-                                                            .selectedIndex - 1
-                                                    ),
-                                                },
-                                            },
-                                            render: true,
-                                        }
-                                    default:
-                                        return updateFinderSearch(
-                                            model,
-                                            model.focus,
-                                            (search) => search + key
-                                        )
-                                }
-                            } else {
-                                return updateFinderSearch(
-                                    model,
-                                    model.focus,
-                                    (search) => search + key
-                                )
-                            }
-                    }
-                case FocusKind.BODY_NUMBER: {
-                    switch (key) {
-                        case "Backspace":
-                            return updateNumberText(
-                                model,
-                                model.focus.body,
-                                (text) => {
-                                    const nextText = text.slice(0, -1)
-                                    return nextText === "" ? "0" : nextText
-                                }
-                            )
-                        case "1":
-                        case "2":
-                        case "3":
-                        case "4":
-                        case "5":
-                        case "6":
-                        case "7":
-                        case "8":
-                        case "9":
-                        case "0":
-                            return updateNumberText(
-                                model,
-                                model.focus.body,
-                                (text) => {
-                                    if (text === "0") {
-                                        return key
-                                    } else if (text === "-0") {
-                                        return `-${key}`
-                                    } else {
-                                        return text + key
-                                    }
-                                }
-                            )
-                        case ".":
-                            return updateNumberText(
-                                model,
-                                model.focus.body,
-                                (text) =>
-                                    text.includes(".") ? text : text + key
-                            )
-                        case "-":
-                        case "+":
-                            return updateNumberText(
-                                model,
-                                model.focus.body,
-                                (text) => {
-                                    if (text.length && text[0] === "-") {
-                                        return text.slice(1)
-                                    } else {
-                                        return "-" + text
-                                    }
-                                }
-                            )
-                        case "c":
-                            return updateNumberText(
-                                model,
-                                model.focus.body,
-                                () => "0"
-                            )
-                        case "Enter":
-                        case "Escape":
-                            return {
-                                model: clearFocus(model),
-                                render: true,
-                            }
-                        default:
-                            return maybeTriggerQuickSelect(
-                                model,
-                                model.focus,
-                                key
-                            )
-                    }
-                }
-                case FocusKind.BODY_TEXT: {
-                    const body = model.graph.bodys[model.focus.body]
-                    switch (key) {
-                        case "Enter":
-                        case "Escape":
-                            return {
-                                model: clearFocus(model),
-                                render: true,
-                            }
-                        case "Shift":
-                            return { model }
-                        case "sft":
-                            return {
-                                model: {
-                                    ...model,
-                                    focus: {
-                                        ...model.focus,
-                                        uppercase: !model.focus.uppercase,
-                                    },
-                                },
-                                render: true,
-                            }
-                        case "Backspace":
-                            return updateBody(model, body.uuid, (body) => {
-                                const textBody = body as TextBody
-                                return {
-                                    ...textBody,
-                                    value: textBody.value.slice(0, -1),
-                                }
-                            })
-                        default:
-                            return updateBody(model, body.uuid, (body) => {
-                                const textBody = body as TextBody
-                                return {
-                                    ...textBody,
-                                    value: textBody.value + key,
-                                }
-                            })
-                    }
-                }
-                case FocusKind.NODE:
-                    switch (key) {
-                        case "f":
-                            return {
-                                model: openFinderInsert(model),
-                                render: true,
-                            }
-                        case "c":
-                            return {
-                                model: openFinderChange(
-                                    model,
-                                    model.focus.node
-                                ),
-                                render: true,
-                            }
-                        case "d":
-                        case "Backspace":
-                        case "Delete":
-                            return {
-                                model: removeNodeFromGraph(
-                                    model,
-                                    model.focus.node
-                                ),
-                                render: true,
-                            }
-                        case "Escape":
-                            return { model: clearFocus(model), render: true }
-                        default:
-                            const result = maybeTriggerQuickSelect(
-                                model,
-                                model.focus,
-                                key
-                            )
-                            if (result.render) {
-                                return result
-                            } else {
-                                return maybeStartMoveNode(
-                                    result.model,
-                                    model.focus,
-                                    key,
-                                    currentTime
-                                )
-                            }
-                    }
-                case FocusKind.INPUT:
-                    switch (key) {
-                        case "f":
-                            return {
-                                model: openFinderInsert(model),
-                                render: true,
-                            }
-                        case "d":
-                        case "Backspace":
-                        case "Delete":
-                            return {
-                                model: clearFocus({
-                                    ...model,
-                                    graph: removeInputEdge(
-                                        model.graph,
-                                        model.focus.input
-                                    ),
-                                }),
-                                render: true,
-                            }
-                        case "Escape":
-                            return { model: clearFocus(model), render: true }
-                        default:
-                            return maybeTriggerQuickSelect(
-                                model,
-                                model.focus,
-                                key
-                            )
-                    }
-                case FocusKind.OUTPUT:
-                    switch (key) {
-                        case "f":
-                            return {
-                                model: openFinderInsert(model),
-                                render: true,
-                            }
-                        case "d":
-                        case "Backspace":
-                        case "Delete":
-                            return {
-                                model: clearFocus({
-                                    ...model,
-                                    graph: removeOutputEdges(
-                                        model.graph,
-                                        model.focus.output
-                                    ),
-                                }),
-                                render: true,
-                            }
-                        case "Escape":
-                            return { model: clearFocus(model), render: true }
-                        default:
-                            return maybeTriggerQuickSelect(
-                                model,
-                                model.focus,
-                                key
-                            )
-                    }
-                case FocusKind.NONE:
-                    switch (key) {
-                        case "f":
-                            return {
-                                model: openFinderInsert(model),
-                                render: true,
-                            }
-                        case "z":
-                            return {
-                                model: {
-                                    ...model,
-                                    camera: identity(),
-                                },
-                                render: true,
-                            }
-                        default:
-                            const result = maybeTriggerQuickSelect(
-                                model,
-                                model.focus,
-                                key
-                            )
-                            if (result.render) {
-                                return result
-                            } else {
-                                return maybeStartMoveCamera(
-                                    result.model,
-                                    event,
-                                    currentTime
-                                )
-                            }
-                    }
-            }
-    }
-}
-
-const keyUp = (model: Model, event: KeyUp): UpdateResult<Model, AppEvent> => {
-    switch (model.focus.kind) {
-        case FocusKind.NONE:
-            return maybeStopMoveCamera(model, event)
-        case FocusKind.NODE:
-            return maybeStopMoveNode(model, model.focus, event.key)
-        default:
-            return { model }
-    }
-}
-
-const clickedFinderOption = (
-    model: Model,
-    { option }: ClickedFinderOption,
-    effects: Effects
-): UpdateResult<Model, AppEvent> => {
-    const focus = model.focus as FocusFinderChange | FocusFinderInsert
-    switch (focus.kind) {
-        case FocusKind.FINDER_INSERT:
-            return insertOperationFromFinder(model, option, effects)
-        case FocusKind.FINDER_CHANGE:
-            return changeOperationFromFinder(
-                model,
-                option,
-                focus.node,
-                effects.generateUUID
-            )
-    }
-}
-
-export const focusBody = (model: Model, bodyUUID: UUID): Model => {
-    const body = model.graph.bodys[bodyUUID] as NumberBody | TextBody
-    switch (body.kind) {
-        case BodyKind.NUMBER:
-            return {
-                ...model,
-                focus: {
-                    kind: FocusKind.BODY_NUMBER,
-                    body: bodyUUID,
-                    quickSelect: { kind: QuickSelectKind.NONE },
-                },
-            }
-        case BodyKind.TEXT:
-            return {
-                ...model,
-                focus: {
-                    kind: FocusKind.BODY_TEXT,
-                    body: bodyUUID,
-                    quickSelect: { kind: QuickSelectKind.NONE },
-                    uppercase: false,
-                },
-            }
-    }
-}
-
-const clickedBody = (
-    model: Model,
-    { body }: ClickedBody
-): UpdateResult<Model, AppEvent> => ({
-    model: focusBody(clearFocus(model), body),
+export const finderClose = (model: Model): UpdateResult => ({
+    model: clearFocus(model),
     render: true,
 })
-
-const clickedBackground = (model: Model): UpdateResult<Model, AppEvent> => {
-    if (
-        [FocusKind.FINDER_INSERT, FocusKind.FINDER_CHANGE].includes(
-            model.focus.kind
-        )
-    ) {
-        return {
-            model: clearFocus(model),
-            render: true,
-        }
-    } else if (model.openFinderFirstClick) {
-        const { x, y } = model.pointers[0].position
-        return {
-            model: openFinderInsert({
-                ...model,
-                nodePlacementLocation: { x, y, show: false },
-            }),
-            render: true,
-        }
-    } else {
-        const focus: Focus =
-            model.focus.kind === FocusKind.NONE
-                ? model.focus
-                : {
-                      kind: FocusKind.NONE,
-                      pointerAction: { kind: PointerActionKind.PAN },
-                      quickSelect: { kind: QuickSelectKind.NONE },
-                  }
-        return {
-            model: {
-                ...model,
-                openFinderFirstClick: model.pointers.length == 1,
-                focus,
-            },
-            schedule: [
-                {
-                    after: { milliseconds: 300 },
-                    event: { kind: EventKind.OPEN_FINDER_TIMEOUT },
-                },
-            ],
-            render: true,
-        }
-    }
-}
-
-const changeNode = (
-    model: Model,
-    { node }: ChangeNode
-): UpdateResult<Model, AppEvent> => ({
-    model: openFinderChange(model, node),
-    render: true,
-})
-
-const deleteNode = (
-    model: Model,
-    { node }: DeleteNode
-): UpdateResult<Model, AppEvent> => ({
-    model: removeNodeFromGraph(model, node),
-    render: true,
-})
-
-const deleteInputEdge = (
-    model: Model,
-    { input }: DeleteInputEdge,
-    generateUUID: GenerateUUID
-): UpdateResult<Model, AppEvent> => ({
-    model: clearFocus({
-        ...model,
-        graph: removeInputEdge(model.graph, input),
-    }),
-    render: true,
-})
-
-const deleteOutputEdges = (
-    model: Model,
-    { output }: DeleteOutputEdges
-): UpdateResult<Model, AppEvent> => ({
-    model: clearFocus({
-        ...model,
-        graph: removeOutputEdges(model.graph, output),
-    }),
-    render: true,
-})
-
-const resetCamera = (model: Model): UpdateResult<Model, AppEvent> => ({
-    model: {
-        ...model,
-        camera: identity(),
-    },
-    render: true,
-})
-
-export const uploadTable = (
-    model: Model,
-    event: UploadTable,
-    generateUUID: GenerateUUID
-): UpdateResult<Model, AppEvent> => {
-    const nodeUUID = generateUUID()
-    const output: Output = {
-        uuid: generateUUID(),
-        node: nodeUUID,
-        name: "table",
-        edges: [],
-    }
-    const body: Body = {
-        kind: BodyKind.TABLE,
-        uuid: generateUUID(),
-        node: nodeUUID,
-        value: event.table,
-    }
-    const [x, y] = multiplyMatrixVector(model.camera, [
-        event.position.x,
-        event.position.y,
-        1,
-    ])
-    const node: NodeSource = {
-        kind: NodeKind.SOURCE,
-        uuid: nodeUUID,
-        name: event.table.name,
-        outputs: [output.uuid],
-        body: body.uuid,
-        position: { x, y },
-    }
-    return {
-        model: {
-            ...model,
-            graph: {
-                ...model.graph,
-                nodes: { ...model.graph.nodes, [node.uuid]: node },
-                bodys: { ...model.graph.bodys, [body.uuid]: body },
-                outputs: { ...model.graph.outputs, [output.uuid]: output },
-            },
-            nodeOrder: [...model.nodeOrder, node.uuid],
-        },
-        render: true,
-    }
-}
-
-export const uploadCsv = (
-    model: Model,
-    event: UploadCsv
-): UpdateResult<Model, AppEvent> => {
-    const node: Node = {
-        ...model.graph.nodes[event.node],
-        name: event.table.name,
-    }
-    const body: Body = {
-        kind: BodyKind.TABLE,
-        uuid: node.body,
-        node: node.uuid,
-        value: event.table,
-    }
-    return {
-        model: {
-            ...model,
-            graph: {
-                ...model.graph,
-                nodes: { ...model.graph.nodes, [node.uuid]: node },
-                bodys: { ...model.graph.bodys, [body.uuid]: body },
-            },
-        },
-        render: true,
-    }
-}
 
 export const update = (
     effects: Effects,
     model: Model,
     event: AppEvent
-): UpdateResult<Model, AppEvent> => {
+): UpdateResult => {
     switch (event.kind) {
+        case EventKind.POINTER_MOVE:
+            return pointerMove(model, event)
         case EventKind.POINTER_DOWN:
             return pointerDown(model, event)
         case EventKind.POINTER_UP:
             return pointerUp(model, event)
-        case EventKind.POINTER_MOVE:
-            return pointerMove(model, event)
         case EventKind.CLICKED_NODE:
             return clickedNode(model, event)
         case EventKind.WHEEL:
@@ -1474,13 +1154,11 @@ export const update = (
         case EventKind.CLICKED_OUTPUT:
             return clickedOutput(model, event, effects.generateUUID)
         case EventKind.OPEN_FINDER_TIMEOUT:
-            return openFinderTimeout(model, event)
-        case keydown.eventKind:
+            return openFinderTimeout(model)
+        case EventKind.KEYDOWN:
             return keyDown(model, event, effects)
         case EventKind.KEYUP:
             return keyUp(model, event)
-        case EventKind.CLICKED_FINDER_OPTION:
-            return clickedFinderOption(model, event, effects)
         case EventKind.CLICKED_BODY:
             return clickedBody(model, event)
         case EventKind.CLICKED_BACKGROUND:
@@ -1490,7 +1168,7 @@ export const update = (
         case EventKind.DELETE_NODE:
             return deleteNode(model, event)
         case EventKind.DELETE_INPUT_EDGE:
-            return deleteInputEdge(model, event, effects.generateUUID)
+            return deleteInputEdge(model, event)
         case EventKind.DELETE_OUTPUT_EDGES:
             return deleteOutputEdges(model, event)
         case EventKind.PAN_CAMERA:
@@ -1505,5 +1183,11 @@ export const update = (
             return uploadTable(model, event, effects.generateUUID)
         case EventKind.UPLOAD_CSV:
             return uploadCsv(model, event)
+        case EventKind.FINDER_INSERT:
+            return finderInsert(model, event, effects)
+        case EventKind.FINDER_CHANGE:
+            return finderChange(model, event, effects.generateUUID)
+        case EventKind.FINDER_CLOSE:
+            return finderClose(model)
     }
 }

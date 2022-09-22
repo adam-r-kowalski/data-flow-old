@@ -2,7 +2,7 @@ import { container, layout, geometry, UIKind } from "../../src/ui"
 import { reduce } from "../../src/ui/reduce"
 import { initCameraStack } from "../../src/ui/camera_stack"
 import { mockDocument, mockWindow } from "../../src/ui/mock"
-import { WebGL2Renderer, webGL2Renderer } from "../../src/ui/webgl2"
+import { webGL2Renderer } from "../../src/ui/webgl2"
 import * as layerGeometry from "../../src/ui/layer_geometry"
 import * as reducer from "../../src/ui/reducer"
 import { batchGeometry } from "../../src/ui/batch_geometry"
@@ -15,7 +15,7 @@ const mockRenderer = () =>
         height: 500,
         document: mockDocument(),
         window: mockWindow(),
-    }) as WebGL2Renderer
+    })
 
 test("container with width height and color", () => {
     const ui = container({

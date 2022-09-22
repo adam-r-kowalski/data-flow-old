@@ -12,9 +12,9 @@ import {
     geometry,
     Entry,
     traverse,
-    AppEvent,
 } from "."
 import { CameraStack, transformWorldSpace } from "./camera_stack"
+import { AppEvent } from "../event"
 
 export interface StackLayout {
     readonly size: Size

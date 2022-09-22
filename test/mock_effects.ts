@@ -1,5 +1,5 @@
 import { Table } from "../src/model/table"
-import { Effects } from "../src/ui/run"
+import { Effects } from "../src/run"
 
 export interface EffectModel {
     uuid: number
@@ -8,11 +8,12 @@ export interface EffectModel {
 
 export const defaultEffectModel = (): EffectModel => ({
     uuid: 0,
-    time: 0
+    time: 0,
 })
 
 export const makeEffects = (maybeModel?: EffectModel): Effects => {
-    const model: EffectModel = maybeModel === undefined ? defaultEffectModel() : maybeModel
+    const model: EffectModel =
+        maybeModel === undefined ? defaultEffectModel() : maybeModel
     return {
         generateUUID: () => {
             const uuid = model.uuid.toString()
@@ -25,11 +26,11 @@ export const makeEffects = (maybeModel?: EffectModel): Effects => {
             return time
         },
         promptUserForTable: async (): Promise<Table> => ({
-            'name': 'table.csv',
-            'columns': {
-                'a': [1, 2, 3],
-                'b': [4, 5, 6],
+            name: "table.csv",
+            columns: {
+                a: [1, 2, 3],
+                b: [4, 5, 6],
             },
-        })
+        }),
     }
 }

@@ -1,27 +1,30 @@
+import { EventKind } from "./event"
 import { container, row, text, UI } from "./ui"
-import * as keydown from "./keyboard/keydown"
 
-export type Key =
-    | string
-    | {
-          display: string
-          event: string
-      }
+const map = (key: string): string => {
+    switch (key) {
+        case "space":
+            return " "
+        case "del":
+            return "Backspace"
+        case "ret":
+            return "Enter"
+        default:
+            return key
+    }
+}
 
-export const virtualKey = (key: Key): UI => {
-    const { display, event } = (() =>
-        typeof key === "string" ? { display: key, event: key } : key)()
+export const virtualKey = (key: string): UI => {
     return container(
         {
             padding: 10,
             onClick: {
-                kind: keydown.eventKind,
-                key: event,
-                ctrl: false,
+                kind: EventKind.KEYDOWN,
+                key: map(key),
             },
         },
-        text({ size: 24 }, display)
+        text({ size: 24 }, key)
     )
 }
 
-export const view = (keys: Key[]) => row(keys.map(virtualKey))
+export const view = (keys: string[]) => row(keys.map(virtualKey))

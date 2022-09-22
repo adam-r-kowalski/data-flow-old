@@ -1,5 +1,5 @@
 import { Batch } from "./batch_geometry"
-import { Font, TextMeasurements, Size, AppEvent } from "."
+import { Font, TextMeasurements, Size } from "."
 import { Matrix3x3, projection } from "../linear_algebra/matrix3x3"
 import {
     Document,
@@ -13,6 +13,7 @@ import {
     Window,
 } from "./dom"
 import { ClickHandlers } from "./gather_on_click_handlers"
+import { AppEvent } from "../event"
 
 interface Attribute {
     location: number
@@ -33,24 +34,12 @@ interface Uniforms {
     cameras: UniformLocation
 }
 
-export enum ProgramKind {
-    DATA,
-    ERROR,
-}
-
 interface ProgramData {
-    kind: ProgramKind.DATA
     vertexShader: Shader
     fragmentShader: Shader
     program: Program
     attributes: Attributes
     uniforms: Uniforms
-}
-
-export interface ProgramError {
-    kind: ProgramKind.ERROR
-    vertexInfoLog: string | null
-    fragmentInfoLog: string | null
 }
 
 type DevicePixelRatio = number
@@ -132,7 +121,6 @@ const mapString = <T>(
 export class WebGL2Renderer {
     _size: Size
     _cameras: Matrix3x3[]
-    kind: ProgramKind.DATA = ProgramKind.DATA
 
     constructor(
         public window: Window,
@@ -438,7 +426,7 @@ const bindCameraIndex = (
     )
 }
 
-const createProgram = (gl: WebGL2Context): ProgramData | ProgramError => {
+const createProgram = (gl: WebGL2Context): ProgramData => {
     const attributes: Attributes = {
         vertices: {
             location: 0,
@@ -465,8 +453,7 @@ const createProgram = (gl: WebGL2Context): ProgramData | ProgramError => {
     gl.attachShader(program, fragmentShader)
     gl.linkProgram(program)
     if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-        return {
-            kind: ProgramKind.ERROR,
+        throw {
             vertexInfoLog: gl.getShaderInfoLog(vertexShader),
             fragmentInfoLog: gl.getShaderInfoLog(fragmentShader),
         }
@@ -484,7 +471,6 @@ const createProgram = (gl: WebGL2Context): ProgramData | ProgramError => {
         cameras: gl.getUniformLocation(program, "u_cameras")!,
     }
     return {
-        kind: ProgramKind.DATA,
         vertexShader,
         fragmentShader,
         program,
@@ -507,7 +493,7 @@ export const webGL2Renderer = ({
     document,
     window,
     dispatch,
-}: Parameters): WebGL2Renderer | ProgramError => {
+}: Parameters): WebGL2Renderer => {
     const canvas = document.createElement("canvas")
     canvas.style.touchAction = "none"
     canvas.style.userSelect = "none"
@@ -519,7 +505,6 @@ export const webGL2Renderer = ({
     gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true)
     gl.clearColor(0, 0, 0, 1)
     const program = createProgram(gl)
-    if (program.kind == ProgramKind.ERROR) return program
     const texture = gl.createTexture()!
     gl.bindTexture(gl.TEXTURE_2D, texture)
     gl.texImage2D(

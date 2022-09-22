@@ -12,10 +12,10 @@ import {
     WorldSpace,
     Entry,
     traverse,
-    AppEvent,
 } from "."
 import { CrossAxisAlignment, MainAxisAlignment } from "./alignment"
 import { CameraStack, transformWorldSpace } from "./camera_stack"
+import { AppEvent } from "../event"
 
 export interface RowLayout {
     readonly size: Size

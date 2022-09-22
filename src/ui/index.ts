@@ -59,6 +59,7 @@ import { Matrix3x3 } from "../linear_algebra/matrix3x3"
 import { Batch } from "./batch_geometry"
 import { ClickHandlers } from "./gather_on_click_handlers"
 import { Position } from "../model/graph"
+import { AppEvent } from "../event"
 
 export { center } from "./center"
 export { column } from "./column"
@@ -76,11 +77,6 @@ export enum UIKind {
     SCENE,
     STACK,
     TEXT,
-}
-
-export interface AppEvent {
-    kind: string
-    [others: string]: any
 }
 
 export type UI = Center | Column | Container | Row | Scene | Stack | Text

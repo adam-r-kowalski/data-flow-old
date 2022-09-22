@@ -1,7 +1,7 @@
-import { Color, column, container, text, UI, AppEvent } from "./ui"
+import { Color, column, container, text, UI } from "./ui"
 import { CrossAxisAlignment } from "./ui/alignment"
-import * as keydown from "./keyboard/keydown"
 import { fuzzyFind } from "./fuzzy_find"
+import { AppEvent, KeyDown } from "./event"
 
 export interface Model {
     readonly search: string
@@ -65,7 +65,7 @@ export const view = (properties: ViewProperties): UI => {
 
 interface UpdateProperties {
     model: Model
-    event: keydown.Event
+    event: KeyDown
     onClose: AppEvent
     onSelect: (option: string) => AppEvent
 }
@@ -119,23 +119,13 @@ export const update = (properties: UpdateProperties): UpdateResult => {
         }
         case "Escape":
             return { model, event: onClose }
-        case "ArrowUp": {
+        case "ArrowUp":
+        case "<c-k>":
             return decrementIndex(model)
-        }
         case "ArrowDown":
+        case "<c-j>":
             return incrementIndex(model)
         default:
-            if (event.ctrl) {
-                switch (event.key) {
-                    case "j":
-                        return incrementIndex(model)
-                    case "k":
-                        return decrementIndex(model)
-                    default:
-                        return addToSearch(model, event.key)
-                }
-            } else {
-                return addToSearch(model, event.key)
-            }
+            return addToSearch(model, event.key)
     }
 }

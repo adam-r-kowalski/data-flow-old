@@ -1,3 +1,4 @@
+import { AppEvent, EventKind } from "../src/event"
 import * as finder from "../src/finder"
 import { column, container, text } from "../src/ui"
 import { CrossAxisAlignment } from "../src/ui/alignment"
@@ -15,7 +16,10 @@ test("finder with no search shows all options", () => {
         selected: { red: 188, green: 240, blue: 192, alpha: 255 },
         unselected: { red: 255, green: 255, blue: 255, alpha: 255 },
     }
-    const onClick = (option: string) => ({ kind: "click", option })
+    const onClick = (option: string): AppEvent => ({
+        kind: EventKind.FINDER_INSERT,
+        option,
+    })
     const actual = finder.view({ model, theme, onClick })
     const expected = column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
         container({ height: 10 }),
@@ -32,7 +36,7 @@ test("finder with no search shows all options", () => {
                         width: 300,
                         padding: 4,
                         onClick: {
-                            kind: "click",
+                            kind: EventKind.FINDER_INSERT,
                             option: "foo",
                         },
                     },
@@ -43,7 +47,7 @@ test("finder with no search shows all options", () => {
                         width: 300,
                         padding: 4,
                         onClick: {
-                            kind: "click",
+                            kind: EventKind.FINDER_INSERT,
                             option: "bar",
                         },
                     },

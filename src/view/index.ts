@@ -32,6 +32,7 @@ import { identity } from "../linear_algebra/matrix3x3"
 import * as alphabeticVirtualKeyboard from "../alphabetic_virtual_keyboard"
 import * as numericVirtualKeyboard from "../numeric_virtual_keyboard"
 import * as finder from "../finder"
+import { EventKind } from "../event"
 
 export const spacer = (size: number) => container({ width: size, height: size })
 
@@ -67,7 +68,7 @@ export const inputUi = (
     container(
         {
             onClick: {
-                kind: "clicked_input",
+                kind: EventKind.CLICKED_INPUT,
                 input: uuid,
             },
         },
@@ -112,7 +113,7 @@ export const outputUi = (
     return container(
         {
             onClick: {
-                kind: "clicked_output",
+                kind: EventKind.CLICKED_OUTPUT,
                 output: uuid,
             },
         },
@@ -157,7 +158,7 @@ export const numberBody = (
                 : theme.background,
             padding: 5,
             onClick: {
-                kind: "clicked_body",
+                kind: EventKind.CLICKED_BODY,
                 body: body.uuid,
             },
         },
@@ -177,7 +178,7 @@ export const textBody = (theme: Theme, body: TextBody, focus: Focus): UI => {
                 : theme.background,
             padding: 5,
             onClick: {
-                kind: "clicked_body",
+                kind: EventKind.CLICKED_BODY,
                 body: body.uuid,
             },
         },
@@ -406,7 +407,7 @@ export const nodeUi = (
             x: node.position.x,
             y: node.position.y,
             onClick: {
-                kind: "clicked_node",
+                kind: EventKind.CLICKED_NODE,
                 node: node.uuid,
             },
         },
@@ -434,7 +435,7 @@ export const view = (model: Model): UI => {
     const stacked: UI[] = [
         container({
             color: model.theme.background,
-            onClick: { kind: "clicked_background" },
+            onClick: { kind: EventKind.CLICKED_BACKGROUND },
         }),
         scene({ camera: model.camera, children: nodes, connections }),
     ]
@@ -463,7 +464,7 @@ export const view = (model: Model): UI => {
                     model: focus.finder,
                     theme: model.theme.finder,
                     onClick: (option) => ({
-                        kind: "finder/insert",
+                        kind: EventKind.FINDER_INSERT,
                         option,
                     }),
                 }),
@@ -480,7 +481,7 @@ export const view = (model: Model): UI => {
                     model: focus.finder,
                     theme: model.theme.finder,
                     onClick: (option) => ({
-                        kind: "finder/change",
+                        kind: EventKind.FINDER_CHANGE,
                         node: focus.node,
                         option,
                     }),
@@ -519,7 +520,7 @@ export const view = (model: Model): UI => {
                             name: "Change Node",
                             shortcut: "c",
                             onClick: {
-                                kind: "change_node",
+                                kind: EventKind.CHANGE_NODE,
                                 node: focus.node,
                             },
                         },
@@ -527,7 +528,7 @@ export const view = (model: Model): UI => {
                             name: "Delete Node",
                             shortcut: "d",
                             onClick: {
-                                kind: "delete_node",
+                                kind: EventKind.DELETE_NODE,
                                 node: focus.node,
                             },
                         },
@@ -545,7 +546,7 @@ export const view = (model: Model): UI => {
                                 name: "Delete Edge",
                                 shortcut: "d",
                                 onClick: {
-                                    kind: "delete_input_edge",
+                                    kind: EventKind.DELETE_INPUT_EDGE,
                                     input: focus.input,
                                 },
                             },
@@ -564,7 +565,7 @@ export const view = (model: Model): UI => {
                                 name: "Delete Edge",
                                 shortcut: "d",
                                 onClick: {
-                                    kind: "delete_output_edges",
+                                    kind: EventKind.DELETE_OUTPUT_EDGES,
                                     output: focus.output,
                                 },
                             },
@@ -581,7 +582,7 @@ export const view = (model: Model): UI => {
                         {
                             name: "Reset Zoom",
                             shortcut: "z",
-                            onClick: { kind: "reset_camera" },
+                            onClick: { kind: EventKind.RESET_CAMERA },
                         },
                     ],
                     backgroundColor: model.theme.node,

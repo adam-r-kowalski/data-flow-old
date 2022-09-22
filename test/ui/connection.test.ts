@@ -2,7 +2,7 @@ import { container, scene, geometry, layout } from "../../src/ui"
 import { initCameraStack } from "../../src/ui/camera_stack"
 import { identity, translate } from "../../src/linear_algebra/matrix3x3"
 import { mockDocument, mockWindow } from "../../src/ui/mock"
-import { WebGL2Renderer, webGL2Renderer } from "../../src/ui/webgl2"
+import { webGL2Renderer } from "../../src/ui/webgl2"
 import { reduce } from "../../src/ui/reduce"
 import * as reducer from "../../src/ui/reducer"
 import { batchGeometry, cubicBezier } from "../../src/ui/batch_geometry"
@@ -18,7 +18,7 @@ const mockRenderer = () =>
         height: 500,
         document: mockDocument(),
         window: mockWindow(),
-    }) as WebGL2Renderer
+    })
 
 test("connection in scene", () => {
     const renderer = mockRenderer()

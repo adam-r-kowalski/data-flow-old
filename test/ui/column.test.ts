@@ -6,7 +6,7 @@ import * as layerGeometry from "../../src/ui/layer_geometry"
 import * as reducer from "../../src/ui/reducer"
 import { reduce } from "../../src/ui/reduce"
 import { mockDocument, mockWindow } from "../../src/ui/mock"
-import { WebGL2Renderer, webGL2Renderer } from "../../src/ui/webgl2"
+import { webGL2Renderer } from "../../src/ui/webgl2"
 
 const red = { red: 255, green: 0, blue: 0, alpha: 255 }
 const green = { red: 0, green: 255, blue: 0, alpha: 255 }
@@ -18,7 +18,7 @@ const mockRenderer = () =>
         height: 500,
         document: mockDocument(),
         window: mockWindow(),
-    }) as WebGL2Renderer
+    })
 
 test("column layout", () => {
     const renderer = mockRenderer()

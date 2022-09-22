@@ -41,6 +41,7 @@ import * as alphabeticVirtualKeyboard from "../../src/alphabetic_virtual_keyboar
 import * as numericVirtualKeyboard from "../../src/numeric_virtual_keyboard"
 import * as finder from "../../src/finder"
 import { CrossAxisAlignment } from "../../src/ui/alignment"
+import { EventKind } from "../../src/event"
 
 const addFunc = tensorFunc(tf.add)
 const subFunc = tensorFunc(tf.sub)
@@ -86,7 +87,7 @@ test("inputUi not focused", () => {
     const expected = container(
         {
             onClick: {
-                kind: "clicked_input",
+                kind: EventKind.CLICKED_INPUT,
                 input: "uuid",
             },
         },
@@ -120,7 +121,7 @@ test("inputUi focused", () => {
     const expected = container(
         {
             onClick: {
-                kind: "clicked_input",
+                kind: EventKind.CLICKED_INPUT,
                 input: "uuid",
             },
         },
@@ -190,7 +191,7 @@ test("outputUi not focused", () => {
     const expected = container(
         {
             onClick: {
-                kind: "clicked_output",
+                kind: EventKind.CLICKED_OUTPUT,
                 output: "uuid",
             },
         },
@@ -225,7 +226,7 @@ test("outputUi focused", () => {
     const expected = container(
         {
             onClick: {
-                kind: "clicked_output",
+                kind: EventKind.CLICKED_OUTPUT,
                 output: "uuid",
             },
         },
@@ -301,7 +302,7 @@ test("numberBody not focused", () => {
             color: theme.background,
             padding: 5,
             onClick: {
-                kind: "clicked_body",
+                kind: EventKind.CLICKED_BODY,
                 body: "body uuid",
             },
         },
@@ -328,7 +329,7 @@ test("bodyUi editing", () => {
             color: theme.focusInput,
             padding: 5,
             onClick: {
-                kind: "clicked_body",
+                kind: EventKind.CLICKED_BODY,
                 body: "body uuid",
             },
         },
@@ -562,7 +563,7 @@ test("nodeUi no body 1 outputs", () => {
             x: 0,
             y: 0,
             onClick: {
-                kind: "clicked_node",
+                kind: EventKind.CLICKED_NODE,
                 node: "uuid",
             },
         },
@@ -628,7 +629,7 @@ test("nodeUi 1 input, no body and 1 outputs", () => {
             x: 0,
             y: 0,
             onClick: {
-                kind: "clicked_node",
+                kind: EventKind.CLICKED_NODE,
                 node: "node uuid",
             },
         },
@@ -692,7 +693,7 @@ test("nodeUi 1 output, no body and no inputs", () => {
             x: 0,
             y: 0,
             onClick: {
-                kind: "clicked_node",
+                kind: EventKind.CLICKED_NODE,
                 node: "node uuid",
             },
         },
@@ -752,7 +753,7 @@ test("nodeUi no inputs 1 outputs but body defined", () => {
             x: 0,
             y: 0,
             onClick: {
-                kind: "clicked_node",
+                kind: EventKind.CLICKED_NODE,
                 node: "node uuid",
             },
         },
@@ -820,7 +821,7 @@ test("nodeUi 1 input and 1 output but no body", () => {
             x: 0,
             y: 0,
             onClick: {
-                kind: "clicked_node",
+                kind: EventKind.CLICKED_NODE,
                 node: "node uuid",
             },
         },
@@ -894,7 +895,7 @@ test("nodeUi 1 input body and output", () => {
             x: 0,
             y: 0,
             onClick: {
-                kind: "clicked_node",
+                kind: EventKind.CLICKED_NODE,
                 node: "node uuid",
             },
         },
@@ -970,7 +971,7 @@ test("nodeUi 1 input output body", () => {
             x: 0,
             y: 0,
             onClick: {
-                kind: "clicked_node",
+                kind: EventKind.CLICKED_NODE,
                 node: "node uuid",
             },
         },
@@ -1046,7 +1047,7 @@ test("nodeUi 1 input body and 1 output", () => {
             x: 0,
             y: 0,
             onClick: {
-                kind: "clicked_node",
+                kind: EventKind.CLICKED_NODE,
                 node: "node uuid",
             },
         },
@@ -1108,7 +1109,7 @@ test("view with no nodes or edges", () => {
     const expected = stack([
         container({
             color: model.theme.background,
-            onClick: { kind: "clicked_background" },
+            onClick: { kind: EventKind.CLICKED_BACKGROUND },
         }),
         scene({ camera: model.camera, children: [], connections: [] }),
         contextMenu({
@@ -1116,7 +1117,7 @@ test("view with no nodes or edges", () => {
                 {
                     name: "Reset Zoom",
                     shortcut: "z",
-                    onClick: { kind: "reset_camera" },
+                    onClick: { kind: EventKind.RESET_CAMERA },
                 },
             ],
             backgroundColor: model.theme.node,
@@ -1166,13 +1167,13 @@ test("view with no nodes or edges but finder shown", () => {
     const expected = stack([
         container({
             color: model.theme.background,
-            onClick: { kind: "clicked_background" },
+            onClick: { kind: EventKind.CLICKED_BACKGROUND },
         }),
         scene({ camera: model.camera, children: [], connections: [] }),
         finder.view({
             model: focus.finder,
             theme: model.theme.finder,
-            onClick: (option) => ({ kind: "finder/insert", option }),
+            onClick: (option) => ({ kind: EventKind.FINDER_INSERT, option }),
         }),
         alphabeticVirtualKeyboard.view({
             color: model.theme.node,
@@ -1223,13 +1224,13 @@ test("view with no nodes or edges but finder shown capitalized", () => {
     const expected = stack([
         container({
             color: model.theme.background,
-            onClick: { kind: "clicked_background" },
+            onClick: { kind: EventKind.CLICKED_BACKGROUND },
         }),
         scene({ camera: model.camera, children: [], connections: [] }),
         finder.view({
             model: focus.finder,
             theme: theme.finder,
-            onClick: (option) => ({ kind: "finder/insert", option }),
+            onClick: (option) => ({ kind: EventKind.FINDER_INSERT, option }),
         }),
         alphabeticVirtualKeyboard.view({
             color: model.theme.node,
@@ -1291,7 +1292,7 @@ test("view with positive number", () => {
     const expected = stack([
         container({
             color: model.theme.background,
-            onClick: { kind: "clicked_background" },
+            onClick: { kind: EventKind.CLICKED_BACKGROUND },
         }),
         scene({
             camera: model.camera,
@@ -1358,7 +1359,7 @@ test("view with negative number", () => {
     const expected = stack([
         container({
             color: model.theme.background,
-            onClick: { kind: "clicked_background" },
+            onClick: { kind: EventKind.CLICKED_BACKGROUND },
         }),
         scene({
             camera: model.camera,
@@ -1425,7 +1426,7 @@ test("view with text", () => {
     const expected = stack([
         container({
             color: model.theme.background,
-            onClick: { kind: "clicked_background" },
+            onClick: { kind: EventKind.CLICKED_BACKGROUND },
         }),
         scene({
             camera: model.camera,
@@ -1522,7 +1523,7 @@ test("view with three nodes and no edges", () => {
     const expected = stack([
         container({
             color: model.theme.background,
-            onClick: { kind: "clicked_background" },
+            onClick: { kind: EventKind.CLICKED_BACKGROUND },
         }),
         scene({
             camera: model.camera,
@@ -1538,7 +1539,7 @@ test("view with three nodes and no edges", () => {
                 {
                     name: "Reset Zoom",
                     shortcut: "z",
-                    onClick: { kind: "reset_camera" },
+                    onClick: { kind: EventKind.RESET_CAMERA },
                 },
             ],
             backgroundColor: model.theme.node,
@@ -1631,7 +1632,7 @@ test("view with three nodes and no edges", () => {
     const expected = stack([
         container({
             color: model.theme.background,
-            onClick: { kind: "clicked_background" },
+            onClick: { kind: EventKind.CLICKED_BACKGROUND },
         }),
         scene({
             camera: model.camera,
@@ -1648,7 +1649,7 @@ test("view with three nodes and no edges", () => {
                     name: "Change Node",
                     shortcut: "c",
                     onClick: {
-                        kind: "change_node",
+                        kind: EventKind.CHANGE_NODE,
                         node: "first",
                     },
                 },
@@ -1656,7 +1657,7 @@ test("view with three nodes and no edges", () => {
                     name: "Delete Node",
                     shortcut: "d",
                     onClick: {
-                        kind: "delete_node",
+                        kind: EventKind.DELETE_NODE,
                         node: "first",
                     },
                 },
@@ -1769,7 +1770,7 @@ test("view with three nodes and one edges", () => {
     const expected = stack([
         container({
             color: model.theme.background,
-            onClick: { kind: "clicked_background" },
+            onClick: { kind: EventKind.CLICKED_BACKGROUND },
         }),
         scene({
             camera: model.camera,
@@ -1791,7 +1792,7 @@ test("view with three nodes and one edges", () => {
                 {
                     name: "Reset Zoom",
                     shortcut: "z",
-                    onClick: { kind: "reset_camera" },
+                    onClick: { kind: EventKind.RESET_CAMERA },
                 },
             ],
             backgroundColor: model.theme.node,
@@ -1859,7 +1860,7 @@ test("view with body selected", () => {
     const expected = stack([
         container({
             color: model.theme.background,
-            onClick: { kind: "clicked_background" },
+            onClick: { kind: EventKind.CLICKED_BACKGROUND },
         }),
         scene({
             camera: model.camera,
@@ -1982,7 +1983,7 @@ test("view with input selected", () => {
     const expected = stack([
         container({
             color: model.theme.background,
-            onClick: { kind: "clicked_background" },
+            onClick: { kind: EventKind.CLICKED_BACKGROUND },
         }),
         scene({
             camera: model.camera,
@@ -2004,7 +2005,7 @@ test("view with input selected", () => {
                     name: "Delete Edge",
                     shortcut: "d",
                     onClick: {
-                        kind: "delete_input_edge",
+                        kind: EventKind.DELETE_INPUT_EDGE,
                         input: "x1",
                     },
                 },
@@ -2123,7 +2124,7 @@ test("view with output selected", () => {
     const expected = stack([
         container({
             color: model.theme.background,
-            onClick: { kind: "clicked_background" },
+            onClick: { kind: EventKind.CLICKED_BACKGROUND },
         }),
         scene({
             camera: model.camera,
@@ -2145,7 +2146,7 @@ test("view with output selected", () => {
                     name: "Delete Edge",
                     shortcut: "d",
                     onClick: {
-                        kind: "delete_output_edges",
+                        kind: EventKind.DELETE_OUTPUT_EDGES,
                         output: "out0",
                     },
                 },
@@ -2191,7 +2192,7 @@ test("view with node placement location shown", () => {
     const expected = stack([
         container({
             color: model.theme.background,
-            onClick: { kind: "clicked_background" },
+            onClick: { kind: EventKind.CLICKED_BACKGROUND },
         }),
         scene({ camera: model.camera, children: [], connections: [] }),
         scene({
@@ -2212,7 +2213,7 @@ test("view with node placement location shown", () => {
                 {
                     name: "Reset Zoom",
                     shortcut: "z",
-                    onClick: { kind: "reset_camera" },
+                    onClick: { kind: EventKind.RESET_CAMERA },
                 },
             ],
             backgroundColor: model.theme.node,
@@ -2239,7 +2240,7 @@ test("textBody not focused", () => {
             color: theme.background,
             padding: 5,
             onClick: {
-                kind: "clicked_body",
+                kind: EventKind.CLICKED_BODY,
                 body: "body uuid",
             },
         },
@@ -2266,7 +2267,7 @@ test("textBody focused", () => {
             color: theme.focusInput,
             padding: 5,
             onClick: {
-                kind: "clicked_body",
+                kind: EventKind.CLICKED_BODY,
                 body: "body uuid",
             },
         },
@@ -2296,7 +2297,7 @@ test("textBody quick select", () => {
             color: theme.background,
             padding: 5,
             onClick: {
-                kind: "clicked_body",
+                kind: EventKind.CLICKED_BODY,
                 body: "body uuid",
             },
         },
@@ -2411,7 +2412,7 @@ test("nodeUi with text body", () => {
             x: 0,
             y: 0,
             onClick: {
-                kind: "clicked_node",
+                kind: EventKind.CLICKED_NODE,
                 node: "node uuid",
             },
         },
@@ -2478,7 +2479,7 @@ test("nodeUi with table body", () => {
             x: 0,
             y: 0,
             onClick: {
-                kind: "clicked_node",
+                kind: EventKind.CLICKED_NODE,
                 node: "node uuid",
             },
         },
@@ -2540,7 +2541,7 @@ test("nodeUi with column body", () => {
             x: 0,
             y: 0,
             onClick: {
-                kind: "clicked_node",
+                kind: EventKind.CLICKED_NODE,
                 node: "node uuid",
             },
         },
@@ -2603,7 +2604,7 @@ test("nodeUi with tensor body", () => {
             x: 0,
             y: 0,
             onClick: {
-                kind: "clicked_node",
+                kind: EventKind.CLICKED_NODE,
                 node: "node uuid",
             },
         },
@@ -2665,7 +2666,7 @@ test("nodeUi with scatter body", () => {
             x: 0,
             y: 0,
             onClick: {
-                kind: "clicked_node",
+                kind: EventKind.CLICKED_NODE,
                 node: "node uuid",
             },
         },
@@ -2725,7 +2726,7 @@ test("nodeUi with error body", () => {
             x: 0,
             y: 0,
             onClick: {
-                kind: "clicked_node",
+                kind: EventKind.CLICKED_NODE,
                 node: "node uuid",
             },
         },

@@ -13,7 +13,6 @@ import {
     UI,
     UIKind,
     WorldSpace,
-    AppEvent,
 } from "."
 import { Matrix3x3 } from "../linear_algebra/matrix3x3"
 import {
@@ -22,6 +21,7 @@ import {
     pushCamera,
     transformWorldSpace,
 } from "./camera_stack"
+import { AppEvent } from "../event"
 
 export interface SceneLayout {
     readonly size: Size

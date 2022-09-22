@@ -2,8 +2,9 @@ import { identity, translate } from "../../src/linear_algebra/matrix3x3"
 import { mockDocument, mockWindow } from "../../src/ui/mock"
 import { pointerDown } from "../../src/ui/pointer_down"
 import { render } from "../../src/ui/render"
-import { WebGL2Renderer, webGL2Renderer } from "../../src/ui/webgl2"
-import { container, scene, AppEvent } from "../../src/ui"
+import { webGL2Renderer } from "../../src/ui/webgl2"
+import { container, scene } from "../../src/ui"
+import { AppEvent, EventKind } from "../../src/event"
 
 const red = { red: 255, green: 0, blue: 0, alpha: 255 }
 const green = { red: 0, green: 255, blue: 0, alpha: 255 }
@@ -20,10 +21,10 @@ const initialModel = (): Model => ({
 
 const update = (model: Model, event: AppEvent): Model => {
     switch (event.kind) {
-        case "a":
+        case EventKind.KEYDOWN:
             model.a++
             return model
-        case "b":
+        case EventKind.KEYUP:
             model.b++
             return model
         default:
@@ -38,7 +39,7 @@ const mockRenderer = (dispatch: (event: AppEvent) => void) =>
         document: mockDocument(),
         window: mockWindow(),
         dispatch,
-    }) as WebGL2Renderer
+    })
 
 test("click first container", () => {
     let model = initialModel()
@@ -55,7 +56,7 @@ test("click first container", () => {
                 color: red,
                 x: 100,
                 y: 200,
-                onClick: { kind: "a" },
+                onClick: { kind: EventKind.KEYDOWN, key: "a" },
             }),
             container({
                 width: 50,
@@ -63,7 +64,7 @@ test("click first container", () => {
                 color: green,
                 x: 300,
                 y: 250,
-                onClick: { kind: "b" },
+                onClick: { kind: EventKind.KEYUP, key: "a" },
             }),
         ],
     })
@@ -90,7 +91,7 @@ test("click second container", () => {
                 color: red,
                 x: 100,
                 y: 200,
-                onClick: { kind: "a" },
+                onClick: { kind: EventKind.KEYDOWN, key: "a" },
             }),
             container({
                 width: 50,
@@ -98,7 +99,7 @@ test("click second container", () => {
                 color: green,
                 x: 300,
                 y: 250,
-                onClick: { kind: "b" },
+                onClick: { kind: EventKind.KEYUP, key: "a" },
             }),
         ],
     })
@@ -125,7 +126,7 @@ test("click translated container", () => {
                 color: red,
                 x: 100,
                 y: 200,
-                onClick: { kind: "a" },
+                onClick: { kind: EventKind.KEYDOWN, key: "a" },
             }),
             container({
                 width: 50,
@@ -133,7 +134,7 @@ test("click translated container", () => {
                 color: green,
                 x: 300,
                 y: 250,
-                onClick: { kind: "b" },
+                onClick: { kind: EventKind.KEYUP, key: "a" },
             }),
         ],
     })

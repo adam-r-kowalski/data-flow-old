@@ -1,3 +1,4 @@
+import { EventKind } from "../../src/event"
 import { Focus, FocusKind } from "../../src/model/focus"
 import {
     Body,
@@ -61,7 +62,7 @@ test("inputUi with quick select", () => {
     const expected = container(
         {
             onClick: {
-                kind: "clicked_input",
+                kind: EventKind.CLICKED_INPUT,
                 input: "uuid",
             },
         },
@@ -102,7 +103,7 @@ test("outputUI with quick select", () => {
     const expected = container(
         {
             onClick: {
-                kind: "clicked_output",
+                kind: EventKind.CLICKED_OUTPUT,
                 output: "uuid",
             },
         },
@@ -166,7 +167,7 @@ test("nodeUi with quick select", () => {
             x: 0,
             y: 0,
             onClick: {
-                kind: "clicked_node",
+                kind: EventKind.CLICKED_NODE,
                 node: "uuid",
             },
         },
@@ -207,7 +208,7 @@ test("bodyUi quick select", () => {
             color: theme.background,
             padding: 5,
             onClick: {
-                kind: "clicked_body",
+                kind: EventKind.CLICKED_BODY,
                 body: "body uuid",
             },
         },

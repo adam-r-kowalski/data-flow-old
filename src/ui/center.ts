@@ -12,9 +12,9 @@ import {
     UIKind,
     WorldSpace,
     traverse,
-    AppEvent,
 } from "."
 import { CameraStack, transformWorldSpace } from "./camera_stack"
+import { AppEvent } from "../event"
 
 export interface CenterLayout {
     readonly size: Size

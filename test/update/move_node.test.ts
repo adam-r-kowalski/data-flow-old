@@ -1,12 +1,12 @@
 import * as tf from "@tensorflow/tfjs-core"
+import { EventKind } from "../../src/event"
 
 import { emptyModel } from "../../src/model/empty"
 import { OperationKind, Operations } from "../../src/model/graph"
 import { tensorFunc } from "../../src/model/operations"
-import { addNodeToGraph, EventKind, update } from "../../src/update"
+import { addNodeToGraph, update } from "../../src/update"
 import { changeNodePosition } from "../../src/update/graph"
 import { makeEffects } from "../mock_effects"
-import * as keydown from "../../src/keyboard/keydown"
 
 const model = emptyModel({ width: 500, height: 500 })
 
@@ -35,9 +35,8 @@ test("h when a node is focused moves node left", () => {
         node,
     })
     const { model: model3, dispatch } = update(effects, model2, {
-        kind: keydown.eventKind,
+        kind: EventKind.KEYDOWN,
         key: "h",
-        ctrl: false,
     })
     expect(dispatch).toEqual([{ kind: EventKind.MOVE_NODE }])
     expect(model3).toEqual({
@@ -70,7 +69,6 @@ test("h when a node is focused moves node left", () => {
     const { model: model5, dispatch: dispatch1 } = update(effects, model4, {
         kind: EventKind.KEYUP,
         key: "h",
-        ctrl: false,
     })
     expect(dispatch1).toBeUndefined()
     expect(model5).toEqual({
@@ -109,9 +107,8 @@ test("j when a node is focused moves node down", () => {
         node,
     })
     const { model: model3, dispatch } = update(effects, model2, {
-        kind: keydown.eventKind,
+        kind: EventKind.KEYDOWN,
         key: "j",
-        ctrl: false,
     })
     expect(dispatch).toEqual([{ kind: EventKind.MOVE_NODE }])
     expect(model3).toEqual({
@@ -141,7 +138,6 @@ test("j when a node is focused moves node down", () => {
     const { model: model5, dispatch: dispatch1 } = update(effects, model4, {
         kind: EventKind.KEYUP,
         key: "j",
-        ctrl: false,
     })
     expect(dispatch1).toBeUndefined()
     expect(model5).toEqual({
@@ -177,9 +173,8 @@ test("k when a node is focused moves node up", () => {
         node,
     })
     const { model: model3, dispatch } = update(effects, model2, {
-        kind: keydown.eventKind,
+        kind: EventKind.KEYDOWN,
         key: "k",
-        ctrl: false,
     })
     expect(dispatch).toEqual([{ kind: EventKind.MOVE_NODE }])
     expect(model3).toEqual({
@@ -212,7 +207,6 @@ test("k when a node is focused moves node up", () => {
     const { model: model5, dispatch: dispatch1 } = update(effects, model4, {
         kind: EventKind.KEYUP,
         key: "k",
-        ctrl: false,
     })
     expect(dispatch1).toBeUndefined()
     expect(model5).toEqual({
@@ -251,9 +245,8 @@ test("l when a node is focused moves node right", () => {
         node,
     })
     const { model: model3, dispatch } = update(effects, model2, {
-        kind: keydown.eventKind,
+        kind: EventKind.KEYDOWN,
         key: "l",
-        ctrl: false,
     })
     expect(dispatch).toEqual([{ kind: EventKind.MOVE_NODE }])
     expect(model3).toEqual({
@@ -283,7 +276,6 @@ test("l when a node is focused moves node right", () => {
     const { model: model5, dispatch: dispatch1 } = update(effects, model4, {
         kind: EventKind.KEYUP,
         key: "l",
-        ctrl: false,
     })
     expect(dispatch1).toBeUndefined()
     expect(model5).toEqual({
@@ -319,9 +311,8 @@ test("pressing a non hotkey when node focused does nothing", () => {
         node,
     })
     const { model: model3, dispatch: dispatch0 } = update(effects, model2, {
-        kind: keydown.eventKind,
+        kind: EventKind.KEYDOWN,
         key: "z",
-        ctrl: false,
     })
     expect(dispatch0).toBeUndefined()
     expect(model3).toEqual(model2)
@@ -333,7 +324,6 @@ test("pressing a non hotkey when node focused does nothing", () => {
     const { model: model5, dispatch: dispatch1 } = update(effects, model4, {
         kind: EventKind.KEYUP,
         key: "z",
-        ctrl: false,
     })
     expect(dispatch1).toBeUndefined()
     expect(model5).toEqual(model2)
@@ -362,15 +352,13 @@ test("pressing h then l when node focused does nothing", () => {
         node,
     })
     const { model: model3, dispatch: dispatch0 } = update(effects, model2, {
-        kind: keydown.eventKind,
+        kind: EventKind.KEYDOWN,
         key: "h",
-        ctrl: false,
     })
     expect(dispatch0).toEqual([{ kind: EventKind.MOVE_NODE }])
     const { model: model4, dispatch: dispatch1 } = update(effects, model3, {
-        kind: keydown.eventKind,
+        kind: EventKind.KEYDOWN,
         key: "l",
-        ctrl: false,
     })
     expect(dispatch1).toBeUndefined()
     const { model: model5, schedule } = update(effects, model4, {

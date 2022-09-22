@@ -3,7 +3,6 @@ import "@tensorflow/tfjs-node"
 
 import {
     addNodeToGraph,
-    EventKind,
     openFinderInsert,
     focusBody,
     update,
@@ -28,7 +27,7 @@ import { QuickSelectKind } from "../../src/model/quick_select"
 import { defaultEffectModel, EffectModel, makeEffects } from "../mock_effects"
 import { column, tensorFunc, TensorFunc } from "../../src/model/operations"
 import { Table } from "../../src/model/table"
-import * as keydown from "../../src/keyboard/keydown"
+import { EventKind } from "../../src/event"
 
 const model = emptyModel({ width: 500, height: 500 })
 const addFunc = tensorFunc(tf.add)

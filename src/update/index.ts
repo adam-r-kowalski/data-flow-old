@@ -207,7 +207,6 @@ const pointerMove = (model: Model, event: PointerMove): UpdateResult => {
                         )
                         return {
                             model: { ...model, pointers, camera },
-                            render: true,
                         }
                     case PointerActionKind.ZOOM:
                         const [p0, p1] = [pointers[0], pointers[1]]
@@ -247,7 +246,6 @@ const pointerMove = (model: Model, event: PointerMove): UpdateResult => {
                             )
                             return {
                                 model: { ...model, focus, pointers, camera },
-                                render: true,
                             }
                         } else {
                             return { model: { ...model, focus, pointers } }
@@ -270,7 +268,6 @@ const pointerMove = (model: Model, event: PointerMove): UpdateResult => {
                     )
                     return {
                         model: { ...model, pointers, graph },
-                        render: true,
                     }
                 } else {
                     return {
@@ -311,7 +308,6 @@ const clickedNode = (model: Model, event: ClickedNode): UpdateResult => {
             },
             nodeOrder,
         },
-        render: true,
     }
 }
 
@@ -327,7 +323,6 @@ const wheel = (model: Model, event: Wheel): UpdateResult => {
     )
     return {
         model: { ...model, camera },
-        render: true,
     }
 }
 
@@ -335,13 +330,13 @@ const clickedInput = (
     model: Model,
     event: ClickedInput,
     generateUUID: GenerateUUID
-): UpdateResult => selectInput(model, event.input, generateUUID)
+): UpdateResult => ({ model: selectInput(model, event.input, generateUUID) })
 
 const clickedOutput = (
     model: Model,
     event: ClickedOutput,
     generateUUID: GenerateUUID
-): UpdateResult => selectOutput(model, event.output, generateUUID)
+): UpdateResult => ({ model: selectOutput(model, event.output, generateUUID) })
 
 const openFinderTimeout = (model: Model): UpdateResult => ({
     model: {
@@ -391,7 +386,6 @@ export const updateNumberText = (
             ...model,
             graph: changeNumberText(model.graph, body, transform),
         },
-        render: true,
     }
 }
 
@@ -472,7 +466,6 @@ export const updateBody = (
             ...model,
             graph: evaluateNode(graph, node),
         },
-        render: true,
     }
 }
 
@@ -485,23 +478,31 @@ const keyDown = (
     const { key } = event
     switch (model.focus.quickSelect.kind) {
         case QuickSelectKind.INPUT:
-            return quickSelectInput(
-                model,
-                model.focus.quickSelect,
-                key,
-                generateUUID
-            )
+            return {
+                model: quickSelectInput(
+                    model,
+                    model.focus.quickSelect,
+                    key,
+                    generateUUID
+                ),
+            }
         case QuickSelectKind.OUTPUT:
-            return quickSelectOutput(
-                model,
-                model.focus.quickSelect,
-                key,
-                generateUUID
-            )
+            return {
+                model: quickSelectOutput(
+                    model,
+                    model.focus.quickSelect,
+                    key,
+                    generateUUID
+                ),
+            }
         case QuickSelectKind.NODE:
-            return quickSelectNode(model, model.focus.quickSelect, key)
+            return {
+                model: quickSelectNode(model, model.focus.quickSelect, key),
+            }
         case QuickSelectKind.BODY:
-            return quickSelectBody(model, model.focus.quickSelect, key)
+            return {
+                model: quickSelectBody(model, model.focus.quickSelect, key),
+            }
         case QuickSelectKind.NONE:
             const focus = model.focus
             switch (focus.kind) {
@@ -610,10 +611,15 @@ const keyDown = (
                         case "Escape":
                             return {
                                 model: clearFocus(model),
-                                render: true,
                             }
                         default:
-                            return maybeTriggerQuickSelect(model, focus, key)
+                            return {
+                                model: maybeTriggerQuickSelect(
+                                    model,
+                                    focus,
+                                    key
+                                ),
+                            }
                     }
                 }
                 case FocusKind.BODY_TEXT: {
@@ -623,7 +629,6 @@ const keyDown = (
                         case "Escape":
                             return {
                                 model: clearFocus(model),
-                                render: true,
                             }
                         case "Shift":
                             return { model }
@@ -636,7 +641,6 @@ const keyDown = (
                                         uppercase: !focus.uppercase,
                                     },
                                 },
-                                render: true,
                             }
                         case "Backspace":
                             return updateBody(model, body.uuid, (body) => {
@@ -661,45 +665,39 @@ const keyDown = (
                         case "f":
                             return {
                                 model: openFinderInsert(model),
-                                render: true,
                             }
                         case "c":
                             return {
                                 model: openFinderChange(model, focus.node),
-                                render: true,
                             }
                         case "d":
                         case "Backspace":
                         case "Delete":
                             return {
                                 model: removeNodeFromGraph(model, focus.node),
-                                render: true,
                             }
                         case "Escape":
-                            return { model: clearFocus(model), render: true }
+                            return { model: clearFocus(model) }
                         default:
-                            const result = maybeTriggerQuickSelect(
+                            const nextModel = maybeTriggerQuickSelect(
                                 model,
                                 focus,
                                 key
                             )
-                            if (result.render) {
-                                return result
-                            } else {
-                                return maybeStartMoveNode(
-                                    result.model,
-                                    focus,
-                                    key,
-                                    currentTime
-                                )
-                            }
+                            return model !== nextModel
+                                ? { model: nextModel }
+                                : maybeStartMoveNode(
+                                      nextModel,
+                                      focus,
+                                      key,
+                                      currentTime
+                                  )
                     }
                 case FocusKind.INPUT:
                     switch (key) {
                         case "f":
                             return {
                                 model: openFinderInsert(model),
-                                render: true,
                             }
                         case "d":
                         case "Backspace":
@@ -712,19 +710,23 @@ const keyDown = (
                                         focus.input
                                     ),
                                 }),
-                                render: true,
                             }
                         case "Escape":
-                            return { model: clearFocus(model), render: true }
+                            return { model: clearFocus(model) }
                         default:
-                            return maybeTriggerQuickSelect(model, focus, key)
+                            return {
+                                model: maybeTriggerQuickSelect(
+                                    model,
+                                    focus,
+                                    key
+                                ),
+                            }
                     }
                 case FocusKind.OUTPUT:
                     switch (key) {
                         case "f":
                             return {
                                 model: openFinderInsert(model),
-                                render: true,
                             }
                         case "d":
                         case "Backspace":
@@ -737,19 +739,23 @@ const keyDown = (
                                         focus.output
                                     ),
                                 }),
-                                render: true,
                             }
                         case "Escape":
-                            return { model: clearFocus(model), render: true }
+                            return { model: clearFocus(model) }
                         default:
-                            return maybeTriggerQuickSelect(model, focus, key)
+                            return {
+                                model: maybeTriggerQuickSelect(
+                                    model,
+                                    focus,
+                                    key
+                                ),
+                            }
                     }
                 case FocusKind.NONE:
                     switch (key) {
                         case "f":
                             return {
                                 model: openFinderInsert(model),
-                                render: true,
                             }
                         case "z":
                             return {
@@ -757,23 +763,20 @@ const keyDown = (
                                     ...model,
                                     camera: identity(),
                                 },
-                                render: true,
                             }
                         default:
-                            const result = maybeTriggerQuickSelect(
+                            const nextModel = maybeTriggerQuickSelect(
                                 model,
                                 focus,
                                 key
                             )
-                            if (result.render) {
-                                return result
-                            } else {
-                                return maybeStartMoveCamera(
-                                    result.model,
-                                    event,
-                                    currentTime
-                                )
-                            }
+                            return nextModel !== model
+                                ? { model: nextModel }
+                                : maybeStartMoveCamera(
+                                      nextModel,
+                                      event,
+                                      currentTime
+                                  )
                     }
             }
     }
@@ -817,7 +820,6 @@ export const focusBody = (model: Model, bodyUUID: UUID): Model => {
 
 const clickedBody = (model: Model, { body }: ClickedBody): UpdateResult => ({
     model: focusBody(clearFocus(model), body),
-    render: true,
 })
 
 const clickedBackground = (model: Model): UpdateResult => {
@@ -828,7 +830,6 @@ const clickedBackground = (model: Model): UpdateResult => {
     ) {
         return {
             model: clearFocus(model),
-            render: true,
         }
     } else if (model.openFinderFirstClick) {
         const { x, y } = model.pointers[0].position
@@ -837,7 +838,6 @@ const clickedBackground = (model: Model): UpdateResult => {
                 ...model,
                 nodePlacementLocation: { x, y, show: false },
             }),
-            render: true,
         }
     } else {
         const focus: Focus =
@@ -860,19 +860,16 @@ const clickedBackground = (model: Model): UpdateResult => {
                     event: { kind: EventKind.OPEN_FINDER_TIMEOUT },
                 },
             ],
-            render: true,
         }
     }
 }
 
 const changeNode = (model: Model, { node }: ChangeNode): UpdateResult => ({
     model: openFinderChange(model, node),
-    render: true,
 })
 
 const deleteNode = (model: Model, { node }: DeleteNode): UpdateResult => ({
     model: removeNodeFromGraph(model, node),
-    render: true,
 })
 
 const deleteInputEdge = (
@@ -883,7 +880,6 @@ const deleteInputEdge = (
         ...model,
         graph: removeInputEdge(model.graph, input),
     }),
-    render: true,
 })
 
 const deleteOutputEdges = (
@@ -894,7 +890,6 @@ const deleteOutputEdges = (
         ...model,
         graph: removeOutputEdges(model.graph, output),
     }),
-    render: true,
 })
 
 const resetCamera = (model: Model): UpdateResult => ({
@@ -902,7 +897,6 @@ const resetCamera = (model: Model): UpdateResult => ({
         ...model,
         camera: identity(),
     },
-    render: true,
 })
 
 export const uploadTable = (
@@ -947,7 +941,6 @@ export const uploadTable = (
             },
             nodeOrder: [...model.nodeOrder, node.uuid],
         },
-        render: true,
     }
 }
 
@@ -971,7 +964,6 @@ export const uploadCsv = (model: Model, event: UploadCsv): UpdateResult => {
                 bodys: { ...model.graph.bodys, [body.uuid]: body },
             },
         },
-        render: true,
     }
 }
 
@@ -994,7 +986,7 @@ export const finderInsert = (
     })
     return {
         model: clearFocus(nextModel),
-        render: true,
+
         promise,
     }
 }
@@ -1110,25 +1102,17 @@ export const finderChange = (
                     const graph2 = evaluateNode(graph1, event.node)
                     return {
                         model: clearFocus({ ...model, graph: graph2 }),
-                        render: true,
                     }
                 case NodeKind.SOURCE:
-                    return {
-                        model: clearFocus(model),
-                        render: true,
-                    }
+                    return { model: clearFocus(model) }
             }
         default:
-            return {
-                model: clearFocus(model),
-                render: true,
-            }
+            return { model: clearFocus(model) }
     }
 }
 
 export const finderClose = (model: Model): UpdateResult => ({
     model: clearFocus(model),
-    render: true,
 })
 
 export const update = (

@@ -189,7 +189,6 @@ export const moveNode = (
                         },
                         graph,
                     },
-                    render: true,
                     schedule: [
                         {
                             after: { milliseconds: 10 },

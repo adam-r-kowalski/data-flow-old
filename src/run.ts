@@ -28,7 +28,6 @@ interface Scheduled {
 
 export interface UpdateResult {
     model: Model
-    render?: boolean
     schedule?: Scheduled[]
     dispatch?: AppEvent[]
     promise?: Promise<AppEvent>
@@ -87,14 +86,14 @@ export const run = (properties: Properties): Dispatch => {
     const dispatch = async (event: AppEvent): Promise<void> => {
         const {
             model: newModel,
-            render,
             schedule,
             dispatch: dispatchEvents,
             promise,
             cursor,
         } = update(effects, model, event)
+        const modelChanged = model !== newModel
         model = newModel
-        if (render) scheduleRender()
+        if (modelChanged) scheduleRender()
         for (const { after, event } of schedule ?? []) {
             const { milliseconds } = after
             setTimeout(() => dispatch(event), milliseconds)

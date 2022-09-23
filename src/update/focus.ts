@@ -3,7 +3,6 @@ import { FocusKind } from "../model/focus"
 import { GenerateUUID, UUID } from "../model/graph"
 import { PointerActionKind } from "../model/pointer_action"
 import { QuickSelectKind } from "../model/quick_select"
-import { UpdateResult } from "../run"
 import { addEdge, removeInputEdge } from "./graph"
 
 export const clearFocus = (model: Model): Model => ({
@@ -19,12 +18,12 @@ export const selectInput = (
     model: Model,
     inputUUID: UUID,
     generateUUID: GenerateUUID
-): UpdateResult => {
+): Model => {
     if (model.focus.kind === FocusKind.OUTPUT) {
         const input = model.graph.inputs[inputUUID]
         const output = model.graph.outputs[model.focus.output]
         if (input.node === output.node) {
-            return { model }
+            return model
         } else {
             const graph0 =
                 input.edge !== undefined
@@ -36,22 +35,16 @@ export const selectInput = (
                 output: model.focus.output,
                 generateUUID,
             })
-            return {
-                model: clearFocus({ ...model, graph: graph1 }),
-                render: true,
-            }
+            return clearFocus({ ...model, graph: graph1 })
         }
     } else {
         return {
-            model: {
-                ...model,
-                focus: {
-                    kind: FocusKind.INPUT,
-                    input: inputUUID,
-                    quickSelect: { kind: QuickSelectKind.NONE },
-                },
+            ...model,
+            focus: {
+                kind: FocusKind.INPUT,
+                input: inputUUID,
+                quickSelect: { kind: QuickSelectKind.NONE },
             },
-            render: true,
         }
     }
 }
@@ -60,12 +53,12 @@ export const selectOutput = (
     model: Model,
     outputUUID: UUID,
     generateUUID: GenerateUUID
-): UpdateResult => {
+): Model => {
     if (model.focus.kind === FocusKind.INPUT) {
         const input = model.graph.inputs[model.focus.input]
         const output = model.graph.outputs[outputUUID]
         if (output.node === input.node) {
-            return { model }
+            return model
         } else {
             const graph0 =
                 input.edge !== undefined
@@ -77,22 +70,16 @@ export const selectOutput = (
                 output: outputUUID,
                 generateUUID,
             })
-            return {
-                model: clearFocus({ ...model, graph: graph1 }),
-                render: true,
-            }
+            return clearFocus({ ...model, graph: graph1 })
         }
     } else {
         return {
-            model: {
-                ...model,
-                focus: {
-                    kind: FocusKind.OUTPUT,
-                    output: outputUUID,
-                    quickSelect: { kind: QuickSelectKind.NONE },
-                },
+            ...model,
+            focus: {
+                kind: FocusKind.OUTPUT,
+                output: outputUUID,
+                quickSelect: { kind: QuickSelectKind.NONE },
             },
-            render: true,
         }
     }
 }

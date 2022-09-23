@@ -14,7 +14,7 @@ const model: Model = emptyModel({ width: 500, height: 500 })
 
 const view = (_: Model): UI => text("")
 
-test("if update does not return render true then view gets called once", () => {
+test("if update does not modify model then view gets called once", () => {
     let viewCallCount = 0
     const view = (_: Model) => {
         ++viewCallCount
@@ -38,14 +38,14 @@ test("if update does not return render true then view gets called once", () => {
     expect(viewCallCount).toEqual(1)
 })
 
-test("if update returns render true then view gets called again", () => {
+test("if update modifies model view gets called again", () => {
     let viewCallCount = 0
     const view = (_: Model) => {
         ++viewCallCount
         return text("")
     }
-    const update = (_: Effects, model: Model, _1: AppEvent) => {
-        return { model, render: true }
+    const update = (_: Effects, _1: Model, _2: AppEvent) => {
+        return { model: emptyModel({ width: 1, height: 1 }) }
     }
     const dispatch = run({
         model,

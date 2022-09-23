@@ -79,7 +79,7 @@ test("connecting all inputs for node evaluates operation", () => {
         kind: EventKind.CLICKED_INPUT,
         input: (model5.graph.nodes[add] as NodeTransform).inputs[1],
     })
-    const { model: model9, render } = update(effects, model8, {
+    const { model: model9 } = update(effects, model8, {
         kind: EventKind.CLICKED_OUTPUT,
         output: model3.graph.nodes[y].outputs[0],
     })
@@ -189,7 +189,6 @@ test("connecting all inputs for node evaluates operation", () => {
         operations,
     }
     expect(model9).toEqual(expectedModel)
-    expect(render).toEqual(true)
 })
 
 test("changing body retriggers evaluation", () => {

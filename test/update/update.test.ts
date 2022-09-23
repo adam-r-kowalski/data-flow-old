@@ -266,7 +266,7 @@ test("clicking node selects it and puts it on top of of the node order", () => {
         position: { x: 0, y: 0 },
         effects,
     })
-    const { model: model3, render } = update(effects, model2, {
+    const { model: model3 } = update(effects, model2, {
         kind: EventKind.CLICKED_NODE,
         node: node0,
     })
@@ -282,7 +282,6 @@ test("clicking node selects it and puts it on top of of the node order", () => {
         nodeOrder: [node1, node0],
     }
     expect(model3).toEqual(expectedModel)
-    expect(render).toEqual(true)
 })
 
 test("pointer move before pointer down changes node placement location", () => {
@@ -311,7 +310,7 @@ test("pointer move after pointer down pans camera", () => {
             position: { x: 0, y: 0 },
         },
     })
-    const { model: model2, render } = update(effects, model1, {
+    const { model: model2 } = update(effects, model1, {
         kind: EventKind.POINTER_MOVE,
         pointer: {
             id: 0,
@@ -334,7 +333,6 @@ test("pointer move after pointer down pans camera", () => {
         ],
     }
     expect(model2).toEqual(expectedModel)
-    expect(render).toEqual(true)
 })
 
 test("pointer move after clicking node pointer down drags node", () => {
@@ -379,7 +377,7 @@ test("pointer move after clicking node pointer down drags node", () => {
             position: { x: 0, y: 0 },
         },
     })
-    const { model: model5, render } = update(effects, model4, {
+    const { model: model5 } = update(effects, model4, {
         kind: EventKind.POINTER_MOVE,
         pointer: {
             id: 0,
@@ -408,7 +406,6 @@ test("pointer move after clicking node pointer down drags node", () => {
         },
     }
     expect(model5).toEqual(expectedModel)
-    expect(render).toEqual(true)
 })
 
 test("pointer move after clicking node, pointer down, then pointer up", () => {
@@ -504,7 +501,7 @@ test("clicking input selects it", () => {
         effects,
     })
     const input = (model1.graph.nodes[node0] as NodeTransform).inputs[0]
-    const { model: model2, render } = update(effects, model1, {
+    const { model: model2 } = update(effects, model1, {
         kind: EventKind.CLICKED_INPUT,
         input,
     })
@@ -517,7 +514,6 @@ test("clicking input selects it", () => {
         },
     }
     expect(model2).toEqual(expectedModel)
-    expect(render).toEqual(true)
 })
 
 test("clicking new input selects it and deselects old input", () => {
@@ -543,7 +539,7 @@ test("clicking new input selects it and deselects old input", () => {
         kind: EventKind.CLICKED_INPUT,
         input: input0,
     })
-    const { model: model3, render } = update(effects, model2, {
+    const { model: model3 } = update(effects, model2, {
         kind: EventKind.CLICKED_INPUT,
         input: input1,
     })
@@ -556,7 +552,6 @@ test("clicking new input selects it and deselects old input", () => {
         },
     }
     expect(model3).toEqual(expectedModel)
-    expect(render).toEqual(true)
 })
 
 test("clicking output after clicking input adds connection", () => {
@@ -598,7 +593,7 @@ test("clicking output after clicking input adds connection", () => {
     })
     const output = model3.graph.nodes[node1].outputs[0]
     const newEffectModel = { ...effectModel }
-    const { model: model4, render } = update(effects, model3, {
+    const { model: model4 } = update(effects, model3, {
         kind: EventKind.CLICKED_OUTPUT,
         output,
     })
@@ -612,7 +607,6 @@ test("clicking output after clicking input adds connection", () => {
         }).graph,
     }
     expect(model4).toEqual(expectedModel)
-    expect(render).toEqual(true)
 })
 
 test("clicking output selects it", () => {
@@ -634,7 +628,7 @@ test("clicking output selects it", () => {
         effects,
     })
     const output = model1.graph.nodes[node0].outputs[0]
-    const { model: model2, render } = update(effects, model1, {
+    const { model: model2 } = update(effects, model1, {
         kind: EventKind.CLICKED_OUTPUT,
         output,
     })
@@ -647,7 +641,6 @@ test("clicking output selects it", () => {
         },
     }
     expect(model2).toEqual(expectedModel)
-    expect(render).toEqual(true)
 })
 
 test("clicking new output selects it and deselects old output", () => {
@@ -673,7 +666,7 @@ test("clicking new output selects it and deselects old output", () => {
         kind: EventKind.CLICKED_OUTPUT,
         output: output0,
     })
-    const { model: model3, render } = update(effects, model2, {
+    const { model: model3 } = update(effects, model2, {
         kind: EventKind.CLICKED_OUTPUT,
         output: output1,
     })
@@ -686,7 +679,6 @@ test("clicking new output selects it and deselects old output", () => {
         },
     }
     expect(model3).toEqual(expectedModel)
-    expect(render).toEqual(true)
 })
 
 test("clicking input after clicking output adds connection", () => {
@@ -722,7 +714,7 @@ test("clicking input after clicking output adds connection", () => {
         effects,
     })
     const output = model2.graph.nodes[node1].outputs[0]
-    const { model: model3, render } = update(effects, model2, {
+    const { model: model3 } = update(effects, model2, {
         kind: EventKind.CLICKED_OUTPUT,
         output,
     })
@@ -742,7 +734,6 @@ test("clicking input after clicking output adds connection", () => {
         }).graph,
     }
     expect(model4).toEqual(expectedModel)
-    expect(render).toEqual(true)
 })
 
 test("double click opens finder", () => {
@@ -788,7 +779,7 @@ test("double click opens finder", () => {
             position: { x: 50, y: 50 },
         },
     })
-    const { model: model5, render } = update(effects, model4, {
+    const { model: model5 } = update(effects, model4, {
         kind: EventKind.CLICKED_BACKGROUND,
     })
     const expectedModel: Model = {
@@ -812,7 +803,6 @@ test("double click opens finder", () => {
         ],
     }
     expect(model5).toEqual(expectedModel)
-    expect(render).toEqual(true)
 })
 
 test("f key down when finder is not shown opens finder", () => {
@@ -833,7 +823,7 @@ test("f key down when finder is not shown opens finder", () => {
         },
     }
     const model0: Model = { ...model, operations }
-    const { model: model1, render } = update(makeEffects(), model0, {
+    const { model: model1 } = update(makeEffects(), model0, {
         kind: EventKind.KEYDOWN,
         key: "f",
     })
@@ -851,7 +841,6 @@ test("f key down when finder is not shown opens finder", () => {
         },
     }
     expect(model1).toEqual(expectedModel)
-    expect(render).toEqual(true)
 })
 
 test("clicking a finder option adds node to graph", () => {
@@ -872,7 +861,7 @@ test("clicking a finder option adds node to graph", () => {
         },
     }
     const model0 = openFinderInsert({ ...model, operations })
-    const { model: model1, render } = update(makeEffects(), model0, {
+    const { model: model1 } = update(makeEffects(), model0, {
         kind: EventKind.FINDER_INSERT,
         option: "Add",
     })
@@ -883,7 +872,6 @@ test("clicking a finder option adds node to graph", () => {
         effects: makeEffects(),
     })
     expect(model1).toEqual(expectedModel)
-    expect(render).toEqual(true)
 })
 
 test("pressing number on keyboard appends to number node", () => {
@@ -3036,11 +3024,10 @@ test("clicking background with finder open closes it", () => {
 
 test("pointer move after moving with keyboard stops showing node placement location", () => {
     const effects = makeEffects()
-    const { model: model1, render: render0 } = update(effects, model, {
+    const { model: model1 } = update(effects, model, {
         kind: EventKind.KEYDOWN,
         key: "h",
     })
-    expect(render0).toBeUndefined()
     expect(model1).toEqual({
         ...model,
         nodePlacementLocation: { x: 250, y: 250, show: true },
@@ -3050,20 +3037,18 @@ test("pointer move after moving with keyboard stops showing node placement locat
         id: 0,
         position: { x: 0, y: 0 },
     }
-    const { model: model2, render: render1 } = update(effects, model1, {
+    const { model: model2 } = update(effects, model1, {
         kind: EventKind.POINTER_MOVE,
         pointer,
     })
-    expect(render1).toEqual(true)
     expect(model2).toEqual({
         ...model1,
         nodePlacementLocation: { x: 0, y: 0, show: false },
     })
-    const { model: model3, render: render2 } = update(effects, model2, {
+    const { model: model3 } = update(effects, model2, {
         kind: EventKind.POINTER_MOVE,
         pointer,
     })
-    expect(render2).toBeUndefined()
     expect(model3).toEqual(model2)
 })
 
@@ -3740,7 +3725,7 @@ test("cllicking finder option with finder in change mode replaces node but prese
     const { model: model10 } = update(effects, model9, {
         kind: EventKind.FINDER_CHANGE,
         option: "Sub",
-        node: add
+        node: add,
     })
     const node = model7.graph.nodes[add] as NodeTransform
     const expectedModel: Model = {

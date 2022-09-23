@@ -245,7 +245,7 @@ export const panCamera = (
                     translate((x / length) * speed, (y / length) * speed)
                 ),
             },
-            render: true,
+
             schedule: [
                 {
                     after: { milliseconds: 10 },
@@ -285,7 +285,6 @@ export const zoomCamera = (
                 zoomCamera: { ...model.zoomCamera, now },
                 camera,
             },
-            render: true,
             schedule: [
                 {
                     after: { milliseconds: 10 },

@@ -1,4 +1,4 @@
-import "@tensorflow/tfjs-backend-cpu"
+import "@tensorflow/tfjs-node"
 import * as tf from "@tensorflow/tfjs-core"
 
 import { Model } from "../../src/model"
@@ -13,14 +13,9 @@ import {
 } from "../../src/model/graph"
 import { tensorFunc } from "../../src/model/operations"
 import { QuickSelectKind } from "../../src/model/quick_select"
-import {
-    addNodeToGraph,
-    EventKind,
-    update,
-    updateNumberText,
-} from "../../src/update"
+import { addNodeToGraph, update, updateNumberText } from "../../src/update"
 import { EffectModel, makeEffects } from "../mock_effects"
-import * as keydown from "../../src/keyboard/keydown"
+import { EventKind } from "../../src/event"
 
 const model = emptyModel({ width: 500, height: 500 })
 
@@ -84,7 +79,7 @@ test("connecting all inputs for node evaluates operation", () => {
         kind: EventKind.CLICKED_INPUT,
         input: (model5.graph.nodes[add] as NodeTransform).inputs[1],
     })
-    const { model: model9, render } = update(effects, model8, {
+    const { model: model9 } = update(effects, model8, {
         kind: EventKind.CLICKED_OUTPUT,
         output: model3.graph.nodes[y].outputs[0],
     })
@@ -194,7 +189,6 @@ test("connecting all inputs for node evaluates operation", () => {
         operations,
     }
     expect(model9).toEqual(expectedModel)
-    expect(render).toEqual(true)
 })
 
 test("changing body retriggers evaluation", () => {
@@ -264,9 +258,8 @@ test("changing body retriggers evaluation", () => {
         body: model3.graph.nodes[x].body,
     })
     const { model: model11 } = update(effects, model10, {
-        kind: keydown.eventKind,
+        kind: EventKind.KEYDOWN,
         key: "Backspace",
-        ctrl: false,
     })
     const expectedModel: Model = {
         ...model,
@@ -450,9 +443,8 @@ test("deleting input edge deletes body in associated input node and propagates o
         input: (model9.graph.nodes[add] as NodeTransform).inputs[1],
     })
     const { model: model11 } = update(effects, model10, {
-        kind: keydown.eventKind,
+        kind: EventKind.KEYDOWN,
         key: "d",
-        ctrl: false,
     })
     const expectedModel: Model = {
         ...model,
@@ -620,9 +612,8 @@ test("deleting output edge deletes body in associated input node and propagates 
         output: model9.graph.nodes[y].outputs[0],
     })
     const { model: model11 } = update(effects, model10, {
-        kind: keydown.eventKind,
+        kind: EventKind.KEYDOWN,
         key: "d",
-        ctrl: false,
     })
     const expectedModel: Model = {
         ...model,

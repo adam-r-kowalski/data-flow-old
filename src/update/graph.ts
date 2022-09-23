@@ -1,7 +1,23 @@
-import { EventKind, UploadCsv } from '.'
+import { EventKind, UploadCsv } from "../event"
 
-import { Body, BodyKind, Edge, GenerateUUID, Graph, Inputs, Node, NodeKind, NodeSource, NodeTransform, Operation, OperationKind, Outputs, Position, UUID } from "../model/graph"
-import { Effects } from '../ui/run'
+import {
+    Body,
+    BodyKind,
+    Edge,
+    GenerateUUID,
+    Graph,
+    Inputs,
+    Node,
+    NodeKind,
+    NodeSource,
+    NodeTransform,
+    Operation,
+    OperationKind,
+    Outputs,
+    Position,
+    UUID,
+} from "../model/graph"
+import { Effects } from "../run"
 
 interface AddNodeInputs {
     graph: Graph
@@ -16,7 +32,12 @@ interface AddNodeOutputs {
     event?: Promise<UploadCsv>
 }
 
-export const addNode = ({ graph, operation, position, effects }: AddNodeInputs): AddNodeOutputs => {
+export const addNode = ({
+    graph,
+    operation,
+    position,
+    effects,
+}: AddNodeInputs): AddNodeOutputs => {
     const { generateUUID, promptUserForTable } = effects
     const nodeUUID = generateUUID()
     const inputs = { ...graph.inputs }
@@ -31,7 +52,7 @@ export const addNode = ({ graph, operation, position, effects }: AddNodeInputs):
                     uuid,
                     node: nodeUUID,
                     name,
-                    edges: []
+                    edges: [],
                 }
                 outputUUIDs.push(uuid)
             }
@@ -40,7 +61,7 @@ export const addNode = ({ graph, operation, position, effects }: AddNodeInputs):
                 uuid: generateUUID(),
                 node: nodeUUID,
                 value: 0,
-                text: '0'
+                text: "0",
             }
             const node: NodeSource = {
                 kind: NodeKind.SOURCE,
@@ -54,12 +75,15 @@ export const addNode = ({ graph, operation, position, effects }: AddNodeInputs):
             return {
                 graph: {
                     ...graph,
-                    nodes: { ...graph.nodes, [node.uuid]: { ...node, body: node.body } },
+                    nodes: {
+                        ...graph.nodes,
+                        [node.uuid]: { ...node, body: node.body },
+                    },
                     inputs,
                     outputs,
-                    bodys
+                    bodys,
                 },
-                node: nodeUUID
+                node: nodeUUID,
             }
         }
         case OperationKind.TEXT: {
@@ -70,7 +94,7 @@ export const addNode = ({ graph, operation, position, effects }: AddNodeInputs):
                     uuid,
                     node: nodeUUID,
                     name,
-                    edges: []
+                    edges: [],
                 }
                 outputUUIDs.push(uuid)
             }
@@ -78,7 +102,7 @@ export const addNode = ({ graph, operation, position, effects }: AddNodeInputs):
                 kind: BodyKind.TEXT,
                 uuid: generateUUID(),
                 node: nodeUUID,
-                value: '',
+                value: "",
             }
             const node: NodeSource = {
                 kind: NodeKind.SOURCE,
@@ -92,12 +116,15 @@ export const addNode = ({ graph, operation, position, effects }: AddNodeInputs):
             return {
                 graph: {
                     ...graph,
-                    nodes: { ...graph.nodes, [node.uuid]: { ...node, body: node.body } },
+                    nodes: {
+                        ...graph.nodes,
+                        [node.uuid]: { ...node, body: node.body },
+                    },
                     inputs,
                     outputs,
-                    bodys
+                    bodys,
                 },
-                node: nodeUUID
+                node: nodeUUID,
             }
         }
         case OperationKind.TRANSFORM: {
@@ -107,7 +134,7 @@ export const addNode = ({ graph, operation, position, effects }: AddNodeInputs):
                 inputs[uuid] = {
                     uuid,
                     node: nodeUUID,
-                    name
+                    name,
                 }
                 inputUUIDs.push(uuid)
             }
@@ -118,7 +145,7 @@ export const addNode = ({ graph, operation, position, effects }: AddNodeInputs):
                     uuid,
                     node: nodeUUID,
                     name,
-                    edges: []
+                    edges: [],
                 }
                 outputUUIDs.push(uuid)
             }
@@ -135,18 +162,21 @@ export const addNode = ({ graph, operation, position, effects }: AddNodeInputs):
                 body: body.uuid,
                 outputs: outputUUIDs,
                 position,
-                func: operation.func
+                func: operation.func,
             }
             bodys[body.uuid] = body
             return {
                 graph: {
                     ...graph,
-                    nodes: { ...graph.nodes, [node.uuid]: { ...node, body: node.body } },
+                    nodes: {
+                        ...graph.nodes,
+                        [node.uuid]: { ...node, body: node.body },
+                    },
                     inputs,
                     outputs,
-                    bodys
+                    bodys,
                 },
-                node: nodeUUID
+                node: nodeUUID,
             }
         }
         case OperationKind.UPLOAD_CSV: {
@@ -157,7 +187,7 @@ export const addNode = ({ graph, operation, position, effects }: AddNodeInputs):
                     uuid,
                     node: nodeUUID,
                     name,
-                    edges: []
+                    edges: [],
                 }
                 outputUUIDs.push(uuid)
             }
@@ -175,25 +205,28 @@ export const addNode = ({ graph, operation, position, effects }: AddNodeInputs):
                 position,
             }
             bodys[body.uuid] = body
-            const event = promptUserForTable().then(table => {
+            const event = promptUserForTable().then((table) => {
                 return new Promise<UploadCsv>((resolve) => {
                     resolve({
                         kind: EventKind.UPLOAD_CSV,
                         table,
-                        node: nodeUUID
+                        node: nodeUUID,
                     })
                 })
             })
             return {
                 graph: {
                     ...graph,
-                    nodes: { ...graph.nodes, [node.uuid]: { ...node, body: node.body } },
+                    nodes: {
+                        ...graph.nodes,
+                        [node.uuid]: { ...node, body: node.body },
+                    },
                     inputs,
                     outputs,
-                    bodys
+                    bodys,
                 },
                 node: nodeUUID,
-                event
+                event,
             }
         }
     }
@@ -223,12 +256,12 @@ export const removeNode = (graph: Graph, node: UUID): Graph => {
         const input = inputs[edge.input]
         inputs[edge.input] = {
             ...input,
-            edge: undefined
+            edge: undefined,
         }
         const output = outputs[edge.output]
         outputs[edge.output] = {
             ...output,
-            edges: output.edges.filter(e => e !== uuid)
+            edges: output.edges.filter((e) => e !== uuid),
         }
         delete edges[uuid]
     }
@@ -243,7 +276,7 @@ export const removeNode = (graph: Graph, node: UUID): Graph => {
         edges,
         inputs,
         outputs,
-        bodys
+        bodys,
     }
 }
 
@@ -256,16 +289,16 @@ export const removeInputEdge = (graph: Graph, input: UUID): Graph => {
             ...graph.outputs,
             [edge.output]: {
                 ...output,
-                edges: output.edges.filter(e => e !== edge.uuid)
-            }
+                edges: output.edges.filter((e) => e !== edge.uuid),
+            },
         }
         const input = graph.inputs[edge.input]
         const inputs = {
             ...graph.inputs,
             [edge.input]: {
                 ...input,
-                edge: undefined
-            }
+                edge: undefined,
+            },
         }
         const edges = { ...graph.edges }
         delete edges[edgeUUID]
@@ -273,7 +306,7 @@ export const removeInputEdge = (graph: Graph, input: UUID): Graph => {
             ...graph,
             outputs,
             inputs,
-            edges
+            edges,
         }
         return evaluateNode(graph1, input.node)
     } else {
@@ -292,12 +325,12 @@ export const removeOutputEdges = (graph: Graph, output: UUID): Graph => {
         nodes.push(input.node)
         inputs[edge.input] = {
             ...input,
-            edge: undefined
+            edge: undefined,
         }
         const output = outputs[edge.output]
         outputs[edge.output] = {
             ...output,
-            edges: output.edges.filter(e => e !== uuid)
+            edges: output.edges.filter((e) => e !== uuid),
         }
         delete edges[uuid]
     }
@@ -305,20 +338,22 @@ export const removeOutputEdges = (graph: Graph, output: UUID): Graph => {
         ...graph,
         outputs,
         inputs,
-        edges
+        edges,
     }
     return nodes.reduce((graph, node) => evaluateNode(graph, node), graph1)
 }
 
 const evaluateNodeOutputs = (graph: Graph, node: Node): Graph =>
     node.outputs.reduce((graph1: Graph, output: UUID): Graph => {
-        return graph1.outputs[output].edges.reduce((graph2: Graph, edge: UUID): Graph => {
-            const input = graph2.edges[edge].input
-            const node = graph2.inputs[input].node
-            return evaluateNode(graph2, node)
-        }, graph1)
+        return graph1.outputs[output].edges.reduce(
+            (graph2: Graph, edge: UUID): Graph => {
+                const input = graph2.edges[edge].input
+                const node = graph2.inputs[input].node
+                return evaluateNode(graph2, node)
+            },
+            graph1
+        )
     }, graph)
-
 
 export const evaluateNode = (graph: Graph, nodeUUID: UUID): Graph => {
     const node = graph.nodes[nodeUUID]
@@ -327,15 +362,21 @@ export const evaluateNode = (graph: Graph, nodeUUID: UUID): Graph => {
             return evaluateNodeOutputs(graph, node)
         case NodeKind.TRANSFORM: {
             const values = node.inputs
-                .map(input => graph.inputs[input].edge)
-                .filter(edgeUUID => edgeUUID !== undefined)
-                .map(edgeUUID => {
+                .map((input) => graph.inputs[input].edge)
+                .filter((edgeUUID) => edgeUUID !== undefined)
+                .map((edgeUUID) => {
                     const edge = graph.edges[edgeUUID!]
                     const output = graph.outputs[edge.output]
                     return graph.nodes[output.node].body
                 })
-                .map(bodyUUID => graph.bodys[bodyUUID!])
-                .filter(body => !(body.kind === BodyKind.NO || body.kind === BodyKind.ERROR))
+                .map((bodyUUID) => graph.bodys[bodyUUID!])
+                .filter(
+                    (body) =>
+                        !(
+                            body.kind === BodyKind.NO ||
+                            body.kind === BodyKind.ERROR
+                        )
+                )
             const graph1: Graph = (() => {
                 if (values.length > 0 && values.length === node.inputs.length) {
                     const body = node.func(graph.bodys[node.body], ...values)
@@ -343,8 +384,8 @@ export const evaluateNode = (graph: Graph, nodeUUID: UUID): Graph => {
                         ...graph,
                         bodys: {
                             ...graph.bodys,
-                            [body.uuid]: body
-                        }
+                            [body.uuid]: body,
+                        },
                     }
                 } else if (graph.bodys[node.body].kind !== BodyKind.NO) {
                     const body: Body = {
@@ -356,8 +397,8 @@ export const evaluateNode = (graph: Graph, nodeUUID: UUID): Graph => {
                         ...graph,
                         bodys: {
                             ...graph.bodys,
-                            [body.uuid]: body
-                        }
+                            [body.uuid]: body,
+                        },
                     }
                 } else {
                     return graph
@@ -367,7 +408,6 @@ export const evaluateNode = (graph: Graph, nodeUUID: UUID): Graph => {
         }
     }
 }
-
 
 interface AddEdgeInputs {
     graph: Graph
@@ -381,7 +421,11 @@ interface AddEdgeOutputs {
     edge?: UUID
 }
 
-export const hasCycle = (graph: Graph, inputUUID: UUID, outputUUID: UUID): boolean => {
+export const hasCycle = (
+    graph: Graph,
+    inputUUID: UUID,
+    outputUUID: UUID
+): boolean => {
     const visited: Set<UUID> = new Set()
     visited.add(graph.outputs[outputUUID].node)
     const visitNode = (nodeUUID: UUID): boolean => {
@@ -405,29 +449,34 @@ export const hasCycle = (graph: Graph, inputUUID: UUID, outputUUID: UUID): boole
     return visitNode(graph.inputs[inputUUID].node)
 }
 
-export const addEdge = ({ graph, input, output, generateUUID }: AddEdgeInputs): AddEdgeOutputs => {
+export const addEdge = ({
+    graph,
+    input,
+    output,
+    generateUUID,
+}: AddEdgeInputs): AddEdgeOutputs => {
     if (hasCycle(graph, input, output)) {
         return { graph }
     }
     const edge: Edge = {
         uuid: generateUUID(),
         input,
-        output
+        output,
     }
     const inputs: Inputs = {
         ...graph.inputs,
         [input]: {
             ...graph.inputs[input],
-            edge: edge.uuid
-        }
+            edge: edge.uuid,
+        },
     }
     const currentOutput = graph.outputs[output]
     const outputs: Outputs = {
         ...graph.outputs,
         [output]: {
             ...currentOutput,
-            edges: [...currentOutput.edges, edge.uuid]
-        }
+            edges: [...currentOutput.edges, edge.uuid],
+        },
     }
     const graph1: Graph = {
         ...graph,
@@ -435,16 +484,20 @@ export const addEdge = ({ graph, input, output, generateUUID }: AddEdgeInputs): 
         outputs,
         edges: {
             ...graph.edges,
-            [edge.uuid]: edge
-        }
+            [edge.uuid]: edge,
+        },
     }
     return {
         graph: evaluateNode(graph1, graph1.inputs[input].node),
-        edge: edge.uuid
+        edge: edge.uuid,
     }
 }
 
-export const changeNodePosition = (graph: Graph, node: UUID, transform: (position: Position) => Position): Graph => {
+export const changeNodePosition = (
+    graph: Graph,
+    node: UUID,
+    transform: (position: Position) => Position
+): Graph => {
     const currentNode = graph.nodes[node]
     return {
         ...graph,
@@ -452,24 +505,28 @@ export const changeNodePosition = (graph: Graph, node: UUID, transform: (positio
             ...graph.nodes,
             [node]: {
                 ...currentNode,
-                position: transform(currentNode.position)
-            }
-        }
+                position: transform(currentNode.position),
+            },
+        },
     }
 }
 
 export const parseNumber = (text: string): number => {
     switch (text) {
-        case '':
-        case '-':
-        case '.':
+        case "":
+        case "-":
+        case ".":
             return 0
         default:
             return parseFloat(text)
     }
 }
 
-export const changeNumberText = (graph: Graph, body: UUID, transform: (text: string) => string): Graph => {
+export const changeNumberText = (
+    graph: Graph,
+    body: UUID,
+    transform: (text: string) => string
+): Graph => {
     const currentBody = graph.bodys[body]
     switch (currentBody.kind) {
         case BodyKind.NUMBER:
@@ -481,9 +538,9 @@ export const changeNumberText = (graph: Graph, body: UUID, transform: (text: str
                     [body]: {
                         ...currentBody,
                         value: parseNumber(text),
-                        text
-                    }
-                }
+                        text,
+                    },
+                },
             }
             const node = graph1.bodys[body].node
             return evaluateNode(graph1, node)

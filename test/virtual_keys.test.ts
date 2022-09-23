@@ -1,6 +1,6 @@
-import * as keydown from "../src/keyboard/keydown"
 import * as virtualKeys from "../src/virtual_keys"
 import { container, row, text } from "../src/ui"
+import { EventKind } from "../src/event"
 
 const { virtualKey } = virtualKeys
 
@@ -10,9 +10,8 @@ test("virtual key", () => {
         {
             padding: 10,
             onClick: {
-                kind: keydown.eventKind,
+                kind: EventKind.KEYDOWN,
                 key: "key",
-                ctrl: false,
             },
         },
         text({ size: 24 }, "key")
@@ -21,17 +20,16 @@ test("virtual key", () => {
 })
 
 test("remapped virtual key", () => {
-    const actual = virtualKey({ display: "key", event: "f" })
+    const actual = virtualKey("space")
     const expected = container(
         {
             padding: 10,
             onClick: {
-                kind: keydown.eventKind,
-                key: "f",
-                ctrl: false,
+                kind: EventKind.KEYDOWN,
+                key: " ",
             },
         },
-        text({ size: 24 }, "key")
+        text({ size: 24 }, "space")
     )
     expect(actual).toEqual(expected)
 })
@@ -43,9 +41,8 @@ test("virtual keys", () => {
             {
                 padding: 10,
                 onClick: {
-                    kind: keydown.eventKind,
+                    kind: EventKind.KEYDOWN,
                     key: "a",
-                    ctrl: false,
                 },
             },
             text({ size: 24 }, "a")
@@ -54,9 +51,8 @@ test("virtual keys", () => {
             {
                 padding: 10,
                 onClick: {
-                    kind: keydown.eventKind,
+                    kind: EventKind.KEYDOWN,
                     key: "b",
-                    ctrl: false,
                 },
             },
             text({ size: 24 }, "b")
@@ -65,9 +61,8 @@ test("virtual keys", () => {
             {
                 padding: 10,
                 onClick: {
-                    kind: keydown.eventKind,
+                    kind: EventKind.KEYDOWN,
                     key: "c",
-                    ctrl: false,
                 },
             },
             text({ size: 24 }, "c")

@@ -1,4 +1,4 @@
-import '@tensorflow/tfjs-backend-cpu'
+import "@tensorflow/tfjs-node"
 
 import { demoModel } from "../../src/model/demo"
 import { makeEffects } from "../mock_effects"

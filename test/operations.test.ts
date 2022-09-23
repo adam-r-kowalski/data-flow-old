@@ -1,5 +1,5 @@
 import * as tf from "@tensorflow/tfjs-core"
-import "@tensorflow/tfjs-backend-cpu"
+import "@tensorflow/tfjs-node"
 import { column, tensorFunc, operations } from "../src/model/operations"
 import {
     BodyKind,

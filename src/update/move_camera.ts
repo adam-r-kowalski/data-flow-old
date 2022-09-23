@@ -1,14 +1,13 @@
-import { AppEvent, EventKind, KeyUp } from "."
+import { AppEvent, EventKind, KeyDown, KeyUp } from "../event"
 import { multiplyMatrices, scale, translate } from "../linear_algebra/matrix3x3"
 import { Model, NodePlacementLocation } from "../model"
-import { CurrentTime, UpdateResult } from "../ui/run"
-import * as keydown from "../keyboard/keydown"
+import { CurrentTime, UpdateResult } from "../run"
 
 export const maybeStartMoveCamera = (
     model: Model,
-    { key, ctrl }: keydown.Event,
+    { key }: KeyDown,
     currentTime: CurrentTime
-): UpdateResult<Model, AppEvent> => {
+): UpdateResult => {
     interface Result {
         now: number
         dispatch?: AppEvent[]
@@ -55,72 +54,38 @@ export const maybeStartMoveCamera = (
         }
         case "j":
         case "ArrowDown": {
-            if (ctrl) {
-                const { now, dispatch } = zoomDispatch()
-                return {
-                    model: {
-                        ...model,
-                        zoomCamera: { ...model.zoomCamera, out: true, now },
-                        panCamera: {
-                            ...model.panCamera,
-                            up: false,
-                            down: false,
-                        },
-                        nodePlacementLocation,
+            const { now, dispatch, cursor } = panDispatch()
+            return {
+                model: {
+                    ...model,
+                    zoomCamera: {
+                        ...model.zoomCamera,
+                        in: false,
+                        out: false,
                     },
-                    dispatch,
-                }
-            } else {
-                const { now, dispatch, cursor } = panDispatch()
-                return {
-                    model: {
-                        ...model,
-                        zoomCamera: {
-                            ...model.zoomCamera,
-                            in: false,
-                            out: false,
-                        },
-                        panCamera: { ...model.panCamera, down: true, now },
-                        nodePlacementLocation,
-                    },
-                    dispatch,
-                    cursor,
-                }
+                    panCamera: { ...model.panCamera, down: true, now },
+                    nodePlacementLocation,
+                },
+                dispatch,
+                cursor,
             }
         }
         case "k":
         case "ArrowUp": {
-            if (ctrl) {
-                const { now, dispatch } = zoomDispatch()
-                return {
-                    model: {
-                        ...model,
-                        zoomCamera: { ...model.zoomCamera, in: true, now },
-                        panCamera: {
-                            ...model.panCamera,
-                            up: false,
-                            down: false,
-                        },
-                        nodePlacementLocation,
+            const { now, dispatch, cursor } = panDispatch()
+            return {
+                model: {
+                    ...model,
+                    zoomCamera: {
+                        ...model.zoomCamera,
+                        in: false,
+                        out: false,
                     },
-                    dispatch,
-                }
-            } else {
-                const { now, dispatch, cursor } = panDispatch()
-                return {
-                    model: {
-                        ...model,
-                        zoomCamera: {
-                            ...model.zoomCamera,
-                            in: false,
-                            out: false,
-                        },
-                        panCamera: { ...model.panCamera, up: true, now },
-                        nodePlacementLocation,
-                    },
-                    dispatch,
-                    cursor,
-                }
+                    panCamera: { ...model.panCamera, up: true, now },
+                    nodePlacementLocation,
+                },
+                dispatch,
+                cursor,
             }
         }
         case "l":
@@ -136,6 +101,40 @@ export const maybeStartMoveCamera = (
                 cursor,
             }
         }
+        case "<c-j>":
+        case "<c-ArrowDown>": {
+            const { now, dispatch } = zoomDispatch()
+            return {
+                model: {
+                    ...model,
+                    zoomCamera: { ...model.zoomCamera, out: true, now },
+                    panCamera: {
+                        ...model.panCamera,
+                        up: false,
+                        down: false,
+                    },
+                    nodePlacementLocation,
+                },
+                dispatch,
+            }
+        }
+        case "<c-k>":
+        case "<c-ArrowUp>": {
+            const { now, dispatch } = zoomDispatch()
+            return {
+                model: {
+                    ...model,
+                    zoomCamera: { ...model.zoomCamera, in: true, now },
+                    panCamera: {
+                        ...model.panCamera,
+                        up: false,
+                        down: false,
+                    },
+                    nodePlacementLocation,
+                },
+                dispatch,
+            }
+        }
         default:
             return { model }
     }
@@ -143,8 +142,8 @@ export const maybeStartMoveCamera = (
 
 export const maybeStopMoveCamera = (
     model: Model,
-    { key, ctrl }: KeyUp
-): UpdateResult<Model, AppEvent> => {
+    { key }: KeyUp
+): UpdateResult => {
     switch (key) {
         case "h":
         case "ArrowLeft":
@@ -156,57 +155,29 @@ export const maybeStopMoveCamera = (
             }
         case "j":
         case "ArrowDown":
-            if (ctrl) {
-                return {
-                    model: {
-                        ...model,
-                        zoomCamera: { ...model.zoomCamera, out: false },
-                        panCamera: {
-                            ...model.panCamera,
-                            up: false,
-                            down: false,
-                        },
+            return {
+                model: {
+                    ...model,
+                    zoomCamera: {
+                        ...model.zoomCamera,
+                        in: false,
+                        out: false,
                     },
-                }
-            } else {
-                return {
-                    model: {
-                        ...model,
-                        zoomCamera: {
-                            ...model.zoomCamera,
-                            in: false,
-                            out: false,
-                        },
-                        panCamera: { ...model.panCamera, down: false },
-                    },
-                }
+                    panCamera: { ...model.panCamera, down: false },
+                },
             }
         case "k":
         case "ArrowUp":
-            if (ctrl) {
-                return {
-                    model: {
-                        ...model,
-                        zoomCamera: { ...model.zoomCamera, in: false },
-                        panCamera: {
-                            ...model.panCamera,
-                            up: false,
-                            down: false,
-                        },
+            return {
+                model: {
+                    ...model,
+                    zoomCamera: {
+                        ...model.zoomCamera,
+                        in: false,
+                        out: false,
                     },
-                }
-            } else {
-                return {
-                    model: {
-                        ...model,
-                        zoomCamera: {
-                            ...model.zoomCamera,
-                            in: false,
-                            out: false,
-                        },
-                        panCamera: { ...model.panCamera, up: false },
-                    },
-                }
+                    panCamera: { ...model.panCamera, up: false },
+                },
             }
         case "l":
         case "ArrowRight":
@@ -216,6 +187,34 @@ export const maybeStopMoveCamera = (
                     panCamera: { ...model.panCamera, right: false },
                 },
             }
+        case "<c-j>":
+        case "<c-ArrowDown>": {
+            return {
+                model: {
+                    ...model,
+                    zoomCamera: { ...model.zoomCamera, out: false },
+                    panCamera: {
+                        ...model.panCamera,
+                        up: false,
+                        down: false,
+                    },
+                },
+            }
+        }
+        case "<c-k>":
+        case "<c-ArrowUp>": {
+            return {
+                model: {
+                    ...model,
+                    zoomCamera: { ...model.zoomCamera, in: false },
+                    panCamera: {
+                        ...model.panCamera,
+                        up: false,
+                        down: false,
+                    },
+                },
+            }
+        }
         default:
             return { model }
     }
@@ -224,7 +223,7 @@ export const maybeStopMoveCamera = (
 export const panCamera = (
     model: Model,
     currentTime: CurrentTime
-): UpdateResult<Model, AppEvent> => {
+): UpdateResult => {
     const { left, down, up, right } = model.panCamera
     const moving = left || down || up || right
     if (moving) {
@@ -246,7 +245,7 @@ export const panCamera = (
                     translate((x / length) * speed, (y / length) * speed)
                 ),
             },
-            render: true,
+
             schedule: [
                 {
                     after: { milliseconds: 10 },
@@ -262,7 +261,7 @@ export const panCamera = (
 export const zoomCamera = (
     model: Model,
     currentTime: CurrentTime
-): UpdateResult<Model, AppEvent> => {
+): UpdateResult => {
     const moving = model.zoomCamera.in || model.zoomCamera.out
     if (moving) {
         const now = currentTime()
@@ -286,7 +285,6 @@ export const zoomCamera = (
                 zoomCamera: { ...model.zoomCamera, now },
                 camera,
             },
-            render: true,
             schedule: [
                 {
                     after: { milliseconds: 10 },

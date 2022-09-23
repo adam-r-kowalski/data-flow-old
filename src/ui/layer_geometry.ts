@@ -8,7 +8,7 @@ export type Layers = Layer[]
 
 export const initial = (): Layers => []
 
-export const combine = <AppEvent>(layers: Layers, entry: Entry<AppEvent>): Layers => {
+export const combine = (layers: Layers, entry: Entry): Layers => {
     switch (entry.ui.kind) {
         case UIKind.CONTAINER:
         case UIKind.TEXT:

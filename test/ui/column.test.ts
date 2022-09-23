@@ -1,24 +1,24 @@
-import { container, column, layout, geometry } from '../../src/ui'
-import { CrossAxisAlignment, MainAxisAlignment } from '../../src/ui/alignment'
-import { Batch, batchGeometry } from '../../src/ui/batch_geometry'
-import { initCameraStack } from '../../src/ui/camera_stack'
-import * as layerGeometry from '../../src/ui/layer_geometry'
-import * as reducer from '../../src/ui/reducer'
-import { reduce } from '../../src/ui/reduce'
+import { container, column, layout, geometry } from "../../src/ui"
+import { CrossAxisAlignment, MainAxisAlignment } from "../../src/ui/alignment"
+import { Batch, batchGeometry } from "../../src/ui/batch_geometry"
+import { initCameraStack } from "../../src/ui/camera_stack"
+import * as layerGeometry from "../../src/ui/layer_geometry"
+import * as reducer from "../../src/ui/reducer"
+import { reduce } from "../../src/ui/reduce"
 import { mockDocument, mockWindow } from "../../src/ui/mock"
-import { WebGL2Renderer, webGL2Renderer } from "../../src/ui/webgl2"
+import { webGL2Renderer } from "../../src/ui/webgl2"
 
 const red = { red: 255, green: 0, blue: 0, alpha: 255 }
 const green = { red: 0, green: 255, blue: 0, alpha: 255 }
 const blue = { red: 0, green: 0, blue: 255, alpha: 255 }
 
-const mockRenderer = <T>() => webGL2Renderer<T>({
-    width: 500,
-    height: 500,
-    document: mockDocument(),
-    window: mockWindow()
-}) as WebGL2Renderer<T>
-
+const mockRenderer = () =>
+    webGL2Renderer({
+        width: 500,
+        height: 500,
+        document: mockDocument(),
+        window: mockWindow(),
+    })
 
 test("column layout", () => {
     const renderer = mockRenderer()
@@ -26,15 +26,20 @@ test("column layout", () => {
         container({
             width: 50,
             height: 50,
-            color: red
+            color: red,
         }),
         container({
             width: 50,
             height: 50,
-            color: green
-        })
+            color: green,
+        }),
     ])
-    const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
+    const constraints = {
+        minWidth: 0,
+        maxWidth: 100,
+        minHeight: 0,
+        maxHeight: 100,
+    }
     const uiLayout = layout(ui, constraints, renderer.measureText)
     const expectedLayout = {
         size: { width: 50, height: 100 },
@@ -42,7 +47,7 @@ test("column layout", () => {
         children: [
             { size: { width: 50, height: 50 } },
             { size: { width: 50, height: 50 } },
-        ]
+        ],
     }
     expect(uiLayout).toEqual(expectedLayout)
 })
@@ -53,15 +58,20 @@ test("column geometry", () => {
         container({
             width: 50,
             height: 50,
-            color: red
+            color: red,
         }),
         container({
             width: 50,
             height: 50,
-            color: green
-        })
+            color: green,
+        }),
     ])
-    const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
+    const constraints = {
+        minWidth: 0,
+        maxWidth: 100,
+        minHeight: 0,
+        maxHeight: 100,
+    }
     const uiLayout = layout(ui, constraints, renderer.measureText)
     const offsets = { x: 0, y: 0 }
     const uiGeometry = geometry(ui, uiLayout, offsets, initCameraStack())
@@ -69,50 +79,30 @@ test("column geometry", () => {
         worldSpace: { x0: 0, y0: 0, x1: 50, y1: 100 },
         children: [
             {
-                worldSpace: { x0: 0, y0: 0, x1: 50, y1: 50, },
-                vertices: [
-                    0, 0,
-                    0, 50,
-                    50, 0,
-                    50, 50,
-                ],
+                worldSpace: { x0: 0, y0: 0, x1: 50, y1: 50 },
+                vertices: [0, 0, 0, 50, 50, 0, 50, 50],
                 colors: [
-                    255, 0, 0, 255,
-                    255, 0, 0, 255,
-                    255, 0, 0, 255,
-                    255, 0, 0, 255,
+                    255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0,
+                    255,
                 ],
-                vertexIndices: [
-                    0, 1, 2,
-                    1, 2, 3
-                ],
+                vertexIndices: [0, 1, 2, 1, 2, 3],
                 cameraIndex: Array(4).fill(0),
                 textureIndex: 0,
-                textureCoordinates: Array(8).fill(0)
+                textureCoordinates: Array(8).fill(0),
             },
             {
                 worldSpace: { x0: 0, y0: 50, x1: 50, y1: 100 },
-                vertices: [
-                    0, 50,
-                    0, 100,
-                    50, 50,
-                    50, 100,
-                ],
+                vertices: [0, 50, 0, 100, 50, 50, 50, 100],
                 colors: [
-                    0, 255, 0, 255,
-                    0, 255, 0, 255,
-                    0, 255, 0, 255,
-                    0, 255, 0, 255,
+                    0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0,
+                    255,
                 ],
-                vertexIndices: [
-                    0, 1, 2,
-                    1, 2, 3
-                ],
+                vertexIndices: [0, 1, 2, 1, 2, 3],
                 cameraIndex: Array(4).fill(0),
                 textureIndex: 0,
-                textureCoordinates: Array(8).fill(0)
-            }
-        ]
+                textureCoordinates: Array(8).fill(0),
+            },
+        ],
     }
     expect(uiGeometry).toEqual(expectedGeometry)
 })
@@ -123,15 +113,20 @@ test("column layers", () => {
         container({
             width: 50,
             height: 50,
-            color: red
+            color: red,
         }),
         container({
             width: 50,
             height: 50,
-            color: green
-        })
+            color: green,
+        }),
     ])
-    const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
+    const constraints = {
+        minWidth: 0,
+        maxWidth: 100,
+        minHeight: 0,
+        maxHeight: 100,
+    }
     const uiLayout = layout(ui, constraints, renderer.measureText)
     const offsets = { x: 0, y: 0 }
     const uiGeometry = geometry(ui, uiLayout, offsets, initCameraStack())
@@ -142,50 +137,30 @@ test("column layers", () => {
             0: [
                 {
                     worldSpace: { x0: 0, y0: 0, x1: 50, y1: 50 },
-                    vertices: [
-                        0, 0,
-                        0, 50,
-                        50, 0,
-                        50, 50,
-                    ],
+                    vertices: [0, 0, 0, 50, 50, 0, 50, 50],
                     colors: [
-                        255, 0, 0, 255,
-                        255, 0, 0, 255,
-                        255, 0, 0, 255,
-                        255, 0, 0, 255,
+                        255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0,
+                        0, 255,
                     ],
-                    vertexIndices: [
-                        0, 1, 2,
-                        1, 2, 3
-                    ],
+                    vertexIndices: [0, 1, 2, 1, 2, 3],
                     cameraIndex: Array(4).fill(0),
                     textureIndex: 0,
                     textureCoordinates: Array(8).fill(0),
                 },
                 {
                     worldSpace: { x0: 0, y0: 50, x1: 50, y1: 100 },
-                    vertices: [
-                        0, 50,
-                        0, 100,
-                        50, 50,
-                        50, 100,
-                    ],
+                    vertices: [0, 50, 0, 100, 50, 50, 50, 100],
                     colors: [
-                        0, 255, 0, 255,
-                        0, 255, 0, 255,
-                        0, 255, 0, 255,
-                        0, 255, 0, 255,
+                        0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255,
+                        0, 255,
                     ],
-                    vertexIndices: [
-                        0, 1, 2,
-                        1, 2, 3
-                    ],
+                    vertexIndices: [0, 1, 2, 1, 2, 3],
                     cameraIndex: Array(4).fill(0),
                     textureIndex: 0,
                     textureCoordinates: Array(8).fill(0),
-                }
-            ]
-        }
+                },
+            ],
+        },
     ]
     expect(layers).toEqual(expectedLayers)
 })
@@ -196,72 +171,63 @@ test("column batch", () => {
         container({
             width: 50,
             height: 50,
-            color: red
+            color: red,
         }),
         container({
             width: 50,
             height: 50,
-            color: green
-        })
+            color: green,
+        }),
     ])
-    const constraints = { minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100 }
+    const constraints = {
+        minWidth: 0,
+        maxWidth: 100,
+        minHeight: 0,
+        maxHeight: 100,
+    }
     const uiLayout = layout(ui, constraints, renderer.measureText)
     const offsets = { x: 0, y: 0 }
     const uiGeometry = geometry(ui, uiLayout, offsets, initCameraStack())
-    const { layers, connections, idToWorldSpace } = reduce(ui, uiLayout, uiGeometry, reducer)
+    const { layers, connections, idToWorldSpace } = reduce(
+        ui,
+        uiLayout,
+        uiGeometry,
+        reducer
+    )
     const batches = batchGeometry(layers, connections, idToWorldSpace)
     const expectedBatches: Batch[] = [
         {
             triangles: {
                 vertices: [
-                    0, 0,
-                    0, 50,
-                    50, 0,
-                    50, 50,
+                    0, 0, 0, 50, 50, 0, 50, 50,
 
-                    0, 50,
-                    0, 100,
-                    50, 50,
-                    50, 100,
+                    0, 50, 0, 100, 50, 50, 50, 100,
                 ],
                 colors: [
-                    255, 0, 0, 255,
-                    255, 0, 0, 255,
-                    255, 0, 0, 255,
-                    255, 0, 0, 255,
+                    255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0,
+                    255,
 
-                    0, 255, 0, 255,
-                    0, 255, 0, 255,
-                    0, 255, 0, 255,
-                    0, 255, 0, 255,
+                    0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0,
+                    255,
                 ],
                 vertexIndices: [
-                    0, 1, 2,
-                    1, 2, 3,
+                    0, 1, 2, 1, 2, 3,
 
-                    4, 5, 6,
-                    5, 6, 7
+                    4, 5, 6, 5, 6, 7,
                 ],
                 textureIndex: 0,
                 textureCoordinates: [
-                    0, 0,
-                    0, 0,
-                    0, 0,
-                    0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0,
 
-                    0, 0,
-                    0, 0,
-                    0, 0,
-                    0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0,
                 ],
-                cameraIndex: Array(8).fill(0)
+                cameraIndex: Array(8).fill(0),
             },
             lines: {
                 vertices: [],
-                colors: []
-            }
-        }
-
+                colors: [],
+            },
+        },
     ]
     expect(batches).toEqual(expectedBatches)
 })
@@ -272,20 +238,25 @@ test("column cross axis alignment start layout", () => {
         container({
             width: 50,
             height: 50,
-            color: red
+            color: red,
         }),
         container({
             width: 100,
             height: 100,
-            color: green
+            color: green,
         }),
         container({
             width: 50,
             height: 50,
-            color: blue
-        })
+            color: blue,
+        }),
     ])
-    const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
+    const constraints = {
+        minWidth: 0,
+        maxWidth: 500,
+        minHeight: 0,
+        maxHeight: 500,
+    }
     const uiLayout = layout(ui, constraints, renderer.measureText)
     const expectedLayout = {
         size: { width: 100, height: 200 },
@@ -294,7 +265,7 @@ test("column cross axis alignment start layout", () => {
             { size: { width: 50, height: 50 } },
             { size: { width: 100, height: 100 } },
             { size: { width: 50, height: 50 } },
-        ]
+        ],
     }
     expect(uiLayout).toEqual(expectedLayout)
 })
@@ -305,20 +276,25 @@ test("column cross axis alignment start geometry", () => {
         container({
             width: 50,
             height: 50,
-            color: red
+            color: red,
         }),
         container({
             width: 100,
             height: 100,
-            color: green
+            color: green,
         }),
         container({
             width: 50,
             height: 50,
-            color: blue
-        })
+            color: blue,
+        }),
     ])
-    const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
+    const constraints = {
+        minWidth: 0,
+        maxWidth: 500,
+        minHeight: 0,
+        maxHeight: 500,
+    }
     const uiLayout = layout(ui, constraints, renderer.measureText)
     const offsets = { x: 0, y: 0 }
     const uiGeometry = geometry(ui, uiLayout, offsets, initCameraStack())
@@ -327,71 +303,41 @@ test("column cross axis alignment start geometry", () => {
         children: [
             {
                 worldSpace: { x0: 0, y0: 0, x1: 50, y1: 50 },
-                vertices: [
-                    0, 0,
-                    0, 50,
-                    50, 0,
-                    50, 50,
-                ],
+                vertices: [0, 0, 0, 50, 50, 0, 50, 50],
                 colors: [
-                    255, 0, 0, 255,
-                    255, 0, 0, 255,
-                    255, 0, 0, 255,
-                    255, 0, 0, 255,
+                    255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0,
+                    255,
                 ],
-                vertexIndices: [
-                    0, 1, 2,
-                    1, 2, 3
-                ],
+                vertexIndices: [0, 1, 2, 1, 2, 3],
                 cameraIndex: Array(4).fill(0),
                 textureIndex: 0,
-                textureCoordinates: Array(8).fill(0)
+                textureCoordinates: Array(8).fill(0),
             },
             {
                 worldSpace: { x0: 0, y0: 50, x1: 100, y1: 150 },
-                vertices: [
-                    0, 50,
-                    0, 150,
-                    100, 50,
-                    100, 150,
-                ],
+                vertices: [0, 50, 0, 150, 100, 50, 100, 150],
                 colors: [
-                    0, 255, 0, 255,
-                    0, 255, 0, 255,
-                    0, 255, 0, 255,
-                    0, 255, 0, 255,
+                    0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0,
+                    255,
                 ],
-                vertexIndices: [
-                    0, 1, 2,
-                    1, 2, 3
-                ],
+                vertexIndices: [0, 1, 2, 1, 2, 3],
                 cameraIndex: Array(4).fill(0),
                 textureIndex: 0,
-                textureCoordinates: Array(8).fill(0)
+                textureCoordinates: Array(8).fill(0),
             },
             {
                 worldSpace: { x0: 0, y0: 150, x1: 50, y1: 200 },
-                vertices: [
-                    0, 150,
-                    0, 200,
-                    50, 150,
-                    50, 200,
-                ],
+                vertices: [0, 150, 0, 200, 50, 150, 50, 200],
                 colors: [
-                    0, 0, 255, 255,
-                    0, 0, 255, 255,
-                    0, 0, 255, 255,
-                    0, 0, 255, 255,
+                    0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255,
+                    255,
                 ],
-                vertexIndices: [
-                    0, 1, 2,
-                    1, 2, 3
-                ],
+                vertexIndices: [0, 1, 2, 1, 2, 3],
                 cameraIndex: Array(4).fill(0),
                 textureIndex: 0,
-                textureCoordinates: Array(8).fill(0)
-            }
-        ]
+                textureCoordinates: Array(8).fill(0),
+            },
+        ],
     }
     expect(uiGeometry).toEqual(expectedGeometry)
 })
@@ -402,20 +348,25 @@ test("column cross axis alignment center layout", () => {
         container({
             width: 50,
             height: 50,
-            color: red
+            color: red,
         }),
         container({
             width: 100,
             height: 100,
-            color: green
+            color: green,
         }),
         container({
             width: 50,
             height: 50,
-            color: blue
-        })
+            color: blue,
+        }),
     ])
-    const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
+    const constraints = {
+        minWidth: 0,
+        maxWidth: 500,
+        minHeight: 0,
+        maxHeight: 500,
+    }
     const uiLayout = layout(ui, constraints, renderer.measureText)
     const expectedLayout = {
         size: { width: 100, height: 200 },
@@ -424,7 +375,7 @@ test("column cross axis alignment center layout", () => {
             { size: { width: 50, height: 50 } },
             { size: { width: 100, height: 100 } },
             { size: { width: 50, height: 50 } },
-        ]
+        ],
     }
     expect(uiLayout).toEqual(expectedLayout)
 })
@@ -435,20 +386,25 @@ test("column cross axis alignment center geometry", () => {
         container({
             width: 50,
             height: 50,
-            color: red
+            color: red,
         }),
         container({
             width: 100,
             height: 100,
-            color: green
+            color: green,
         }),
         container({
             width: 50,
             height: 50,
-            color: blue
-        })
+            color: blue,
+        }),
     ])
-    const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
+    const constraints = {
+        minWidth: 0,
+        maxWidth: 500,
+        minHeight: 0,
+        maxHeight: 500,
+    }
     const uiLayout = layout(ui, constraints, renderer.measureText)
     const offsets = { x: 0, y: 0 }
     const uiGeometry = geometry(ui, uiLayout, offsets, initCameraStack())
@@ -457,71 +413,41 @@ test("column cross axis alignment center geometry", () => {
         children: [
             {
                 worldSpace: { x0: 25, y0: 0, x1: 75, y1: 50 },
-                vertices: [
-                    25, 0,
-                    25, 50,
-                    75, 0,
-                    75, 50,
-                ],
+                vertices: [25, 0, 25, 50, 75, 0, 75, 50],
                 colors: [
-                    255, 0, 0, 255,
-                    255, 0, 0, 255,
-                    255, 0, 0, 255,
-                    255, 0, 0, 255,
+                    255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0,
+                    255,
                 ],
-                vertexIndices: [
-                    0, 1, 2,
-                    1, 2, 3
-                ],
+                vertexIndices: [0, 1, 2, 1, 2, 3],
                 cameraIndex: Array(4).fill(0),
                 textureIndex: 0,
                 textureCoordinates: Array(8).fill(0),
             },
             {
                 worldSpace: { x0: 0, y0: 50, x1: 100, y1: 150 },
-                vertices: [
-                    0, 50,
-                    0, 150,
-                    100, 50,
-                    100, 150,
-                ],
+                vertices: [0, 50, 0, 150, 100, 50, 100, 150],
                 colors: [
-                    0, 255, 0, 255,
-                    0, 255, 0, 255,
-                    0, 255, 0, 255,
-                    0, 255, 0, 255,
+                    0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0,
+                    255,
                 ],
-                vertexIndices: [
-                    0, 1, 2,
-                    1, 2, 3
-                ],
+                vertexIndices: [0, 1, 2, 1, 2, 3],
                 cameraIndex: Array(4).fill(0),
                 textureIndex: 0,
                 textureCoordinates: Array(8).fill(0),
             },
             {
                 worldSpace: { x0: 25, y0: 150, x1: 75, y1: 200 },
-                vertices: [
-                    25, 150,
-                    25, 200,
-                    75, 150,
-                    75, 200,
-                ],
+                vertices: [25, 150, 25, 200, 75, 150, 75, 200],
                 colors: [
-                    0, 0, 255, 255,
-                    0, 0, 255, 255,
-                    0, 0, 255, 255,
-                    0, 0, 255, 255,
+                    0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255,
+                    255,
                 ],
-                vertexIndices: [
-                    0, 1, 2,
-                    1, 2, 3
-                ],
+                vertexIndices: [0, 1, 2, 1, 2, 3],
                 cameraIndex: Array(4).fill(0),
                 textureIndex: 0,
                 textureCoordinates: Array(8).fill(0),
-            }
-        ]
+            },
+        ],
     }
     expect(uiGeometry).toEqual(expectedGeometry)
 })
@@ -532,20 +458,25 @@ test("column cross axis alignment end layout", () => {
         container({
             width: 50,
             height: 50,
-            color: red
+            color: red,
         }),
         container({
             width: 100,
             height: 100,
-            color: green
+            color: green,
         }),
         container({
             width: 50,
             height: 50,
-            color: blue
-        })
+            color: blue,
+        }),
     ])
-    const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
+    const constraints = {
+        minWidth: 0,
+        maxWidth: 500,
+        minHeight: 0,
+        maxHeight: 500,
+    }
     const uiLayout = layout(ui, constraints, renderer.measureText)
     const expectedLayout = {
         size: { width: 100, height: 200 },
@@ -554,7 +485,7 @@ test("column cross axis alignment end layout", () => {
             { size: { width: 50, height: 50 } },
             { size: { width: 100, height: 100 } },
             { size: { width: 50, height: 50 } },
-        ]
+        ],
     }
     expect(uiLayout).toEqual(expectedLayout)
 })
@@ -565,20 +496,25 @@ test("column cross axis alignment end geometry", () => {
         container({
             width: 50,
             height: 50,
-            color: red
+            color: red,
         }),
         container({
             width: 100,
             height: 100,
-            color: green
+            color: green,
         }),
         container({
             width: 50,
             height: 50,
-            color: blue
-        })
+            color: blue,
+        }),
     ])
-    const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
+    const constraints = {
+        minWidth: 0,
+        maxWidth: 500,
+        minHeight: 0,
+        maxHeight: 500,
+    }
     const uiLayout = layout(ui, constraints, renderer.measureText)
     const offsets = { x: 0, y: 0 }
     const uiGeometry = geometry(ui, uiLayout, offsets, initCameraStack())
@@ -587,71 +523,41 @@ test("column cross axis alignment end geometry", () => {
         children: [
             {
                 worldSpace: { x0: 50, y0: 0, x1: 100, y1: 50 },
-                vertices: [
-                    50, 0,
-                    50, 50,
-                    100, 0,
-                    100, 50,
-                ],
+                vertices: [50, 0, 50, 50, 100, 0, 100, 50],
                 colors: [
-                    255, 0, 0, 255,
-                    255, 0, 0, 255,
-                    255, 0, 0, 255,
-                    255, 0, 0, 255,
+                    255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0,
+                    255,
                 ],
-                vertexIndices: [
-                    0, 1, 2,
-                    1, 2, 3
-                ],
+                vertexIndices: [0, 1, 2, 1, 2, 3],
                 cameraIndex: Array(4).fill(0),
                 textureIndex: 0,
-                textureCoordinates: Array(8).fill(0)
+                textureCoordinates: Array(8).fill(0),
             },
             {
                 worldSpace: { x0: 0, y0: 50, x1: 100, y1: 150 },
-                vertices: [
-                    0, 50,
-                    0, 150,
-                    100, 50,
-                    100, 150,
-                ],
+                vertices: [0, 50, 0, 150, 100, 50, 100, 150],
                 colors: [
-                    0, 255, 0, 255,
-                    0, 255, 0, 255,
-                    0, 255, 0, 255,
-                    0, 255, 0, 255,
+                    0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0,
+                    255,
                 ],
-                vertexIndices: [
-                    0, 1, 2,
-                    1, 2, 3
-                ],
+                vertexIndices: [0, 1, 2, 1, 2, 3],
                 cameraIndex: Array(4).fill(0),
                 textureIndex: 0,
-                textureCoordinates: Array(8).fill(0)
+                textureCoordinates: Array(8).fill(0),
             },
             {
                 worldSpace: { x0: 50, y0: 150, x1: 100, y1: 200 },
-                vertices: [
-                    50, 150,
-                    50, 200,
-                    100, 150,
-                    100, 200,
-                ],
+                vertices: [50, 150, 50, 200, 100, 150, 100, 200],
                 colors: [
-                    0, 0, 255, 255,
-                    0, 0, 255, 255,
-                    0, 0, 255, 255,
-                    0, 0, 255, 255,
+                    0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255,
+                    255,
                 ],
-                vertexIndices: [
-                    0, 1, 2,
-                    1, 2, 3
-                ],
+                vertexIndices: [0, 1, 2, 1, 2, 3],
                 cameraIndex: Array(4).fill(0),
                 textureIndex: 0,
-                textureCoordinates: Array(8).fill(0)
-            }
-        ]
+                textureCoordinates: Array(8).fill(0),
+            },
+        ],
     }
     expect(uiGeometry).toEqual(expectedGeometry)
 })
@@ -662,20 +568,25 @@ test("column main axis alignment start layout", () => {
         container({
             width: 50,
             height: 50,
-            color: red
+            color: red,
         }),
         container({
             width: 100,
             height: 100,
-            color: green
+            color: green,
         }),
         container({
             width: 50,
             height: 50,
-            color: blue
-        })
+            color: blue,
+        }),
     ])
-    const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
+    const constraints = {
+        minWidth: 0,
+        maxWidth: 500,
+        minHeight: 0,
+        maxHeight: 500,
+    }
     const uiLayout = layout(ui, constraints, renderer.measureText)
     const expectedLayout = {
         size: { width: 100, height: 200 },
@@ -684,7 +595,7 @@ test("column main axis alignment start layout", () => {
             { size: { width: 50, height: 50 } },
             { size: { width: 100, height: 100 } },
             { size: { width: 50, height: 50 } },
-        ]
+        ],
     }
     expect(uiLayout).toEqual(expectedLayout)
 })
@@ -695,20 +606,25 @@ test("column main axis alignment start geometry", () => {
         container({
             width: 50,
             height: 50,
-            color: red
+            color: red,
         }),
         container({
             width: 100,
             height: 100,
-            color: green
+            color: green,
         }),
         container({
             width: 50,
             height: 50,
-            color: blue
-        })
+            color: blue,
+        }),
     ])
-    const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
+    const constraints = {
+        minWidth: 0,
+        maxWidth: 500,
+        minHeight: 0,
+        maxHeight: 500,
+    }
     const uiLayout = layout(ui, constraints, renderer.measureText)
     const offsets = { x: 0, y: 0 }
     const uiGeometry = geometry(ui, uiLayout, offsets, initCameraStack())
@@ -717,71 +633,41 @@ test("column main axis alignment start geometry", () => {
         children: [
             {
                 worldSpace: { x0: 0, y0: 0, x1: 50, y1: 50 },
-                vertices: [
-                    0, 0,
-                    0, 50,
-                    50, 0,
-                    50, 50,
-                ],
+                vertices: [0, 0, 0, 50, 50, 0, 50, 50],
                 colors: [
-                    255, 0, 0, 255,
-                    255, 0, 0, 255,
-                    255, 0, 0, 255,
-                    255, 0, 0, 255,
+                    255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0,
+                    255,
                 ],
-                vertexIndices: [
-                    0, 1, 2,
-                    1, 2, 3
-                ],
+                vertexIndices: [0, 1, 2, 1, 2, 3],
                 cameraIndex: Array(4).fill(0),
                 textureIndex: 0,
-                textureCoordinates: Array(8).fill(0)
+                textureCoordinates: Array(8).fill(0),
             },
             {
                 worldSpace: { x0: 0, y0: 50, x1: 100, y1: 150 },
-                vertices: [
-                    0, 50,
-                    0, 150,
-                    100, 50,
-                    100, 150,
-                ],
+                vertices: [0, 50, 0, 150, 100, 50, 100, 150],
                 colors: [
-                    0, 255, 0, 255,
-                    0, 255, 0, 255,
-                    0, 255, 0, 255,
-                    0, 255, 0, 255,
+                    0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0,
+                    255,
                 ],
-                vertexIndices: [
-                    0, 1, 2,
-                    1, 2, 3
-                ],
+                vertexIndices: [0, 1, 2, 1, 2, 3],
                 cameraIndex: Array(4).fill(0),
                 textureIndex: 0,
-                textureCoordinates: Array(8).fill(0)
+                textureCoordinates: Array(8).fill(0),
             },
             {
                 worldSpace: { x0: 0, y0: 150, x1: 50, y1: 200 },
-                vertices: [
-                    0, 150,
-                    0, 200,
-                    50, 150,
-                    50, 200,
-                ],
+                vertices: [0, 150, 0, 200, 50, 150, 50, 200],
                 colors: [
-                    0, 0, 255, 255,
-                    0, 0, 255, 255,
-                    0, 0, 255, 255,
-                    0, 0, 255, 255,
+                    0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255,
+                    255,
                 ],
-                vertexIndices: [
-                    0, 1, 2,
-                    1, 2, 3
-                ],
+                vertexIndices: [0, 1, 2, 1, 2, 3],
                 cameraIndex: Array(4).fill(0),
                 textureIndex: 0,
-                textureCoordinates: Array(8).fill(0)
-            }
-        ]
+                textureCoordinates: Array(8).fill(0),
+            },
+        ],
     }
     expect(uiGeometry).toEqual(expectedGeometry)
 })
@@ -792,20 +678,25 @@ test("column main axis alignment center layout", () => {
         container({
             width: 50,
             height: 50,
-            color: red
+            color: red,
         }),
         container({
             width: 100,
             height: 100,
-            color: green
+            color: green,
         }),
         container({
             width: 50,
             height: 50,
-            color: blue
-        })
+            color: blue,
+        }),
     ])
-    const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
+    const constraints = {
+        minWidth: 0,
+        maxWidth: 500,
+        minHeight: 0,
+        maxHeight: 500,
+    }
     const uiLayout = layout(ui, constraints, renderer.measureText)
     const expectedLayout = {
         size: { width: 100, height: 500 },
@@ -814,7 +705,7 @@ test("column main axis alignment center layout", () => {
             { size: { width: 50, height: 50 } },
             { size: { width: 100, height: 100 } },
             { size: { width: 50, height: 50 } },
-        ]
+        ],
     }
     expect(uiLayout).toEqual(expectedLayout)
 })
@@ -825,20 +716,25 @@ test("column main axis alignment center geometry", () => {
         container({
             width: 50,
             height: 50,
-            color: red
+            color: red,
         }),
         container({
             width: 100,
             height: 100,
-            color: green
+            color: green,
         }),
         container({
             width: 50,
             height: 50,
-            color: blue
-        })
+            color: blue,
+        }),
     ])
-    const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
+    const constraints = {
+        minWidth: 0,
+        maxWidth: 500,
+        minHeight: 0,
+        maxHeight: 500,
+    }
     const uiLayout = layout(ui, constraints, renderer.measureText)
     const offsets = { x: 0, y: 0 }
     const uiGeometry = geometry(ui, uiLayout, offsets, initCameraStack())
@@ -847,71 +743,41 @@ test("column main axis alignment center geometry", () => {
         children: [
             {
                 worldSpace: { x0: 0, y0: 150, x1: 50, y1: 200 },
-                vertices: [
-                    0, 150,
-                    0, 200,
-                    50, 150,
-                    50, 200,
-                ],
+                vertices: [0, 150, 0, 200, 50, 150, 50, 200],
                 colors: [
-                    255, 0, 0, 255,
-                    255, 0, 0, 255,
-                    255, 0, 0, 255,
-                    255, 0, 0, 255,
+                    255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0,
+                    255,
                 ],
-                vertexIndices: [
-                    0, 1, 2,
-                    1, 2, 3
-                ],
+                vertexIndices: [0, 1, 2, 1, 2, 3],
                 cameraIndex: Array(4).fill(0),
                 textureIndex: 0,
                 textureCoordinates: Array(8).fill(0),
             },
             {
                 worldSpace: { x0: 0, y0: 200, x1: 100, y1: 300 },
-                vertices: [
-                    0, 200,
-                    0, 300,
-                    100, 200,
-                    100, 300,
-                ],
+                vertices: [0, 200, 0, 300, 100, 200, 100, 300],
                 colors: [
-                    0, 255, 0, 255,
-                    0, 255, 0, 255,
-                    0, 255, 0, 255,
-                    0, 255, 0, 255,
+                    0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0,
+                    255,
                 ],
-                vertexIndices: [
-                    0, 1, 2,
-                    1, 2, 3
-                ],
+                vertexIndices: [0, 1, 2, 1, 2, 3],
                 cameraIndex: Array(4).fill(0),
                 textureIndex: 0,
                 textureCoordinates: Array(8).fill(0),
             },
             {
                 worldSpace: { x0: 0, y0: 300, x1: 50, y1: 350 },
-                vertices: [
-                    0, 300,
-                    0, 350,
-                    50, 300,
-                    50, 350,
-                ],
+                vertices: [0, 300, 0, 350, 50, 300, 50, 350],
                 colors: [
-                    0, 0, 255, 255,
-                    0, 0, 255, 255,
-                    0, 0, 255, 255,
-                    0, 0, 255, 255,
+                    0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255,
+                    255,
                 ],
-                vertexIndices: [
-                    0, 1, 2,
-                    1, 2, 3
-                ],
+                vertexIndices: [0, 1, 2, 1, 2, 3],
                 cameraIndex: Array(4).fill(0),
                 textureIndex: 0,
                 textureCoordinates: Array(8).fill(0),
-            }
-        ]
+            },
+        ],
     }
     expect(uiGeometry).toEqual(expectedGeometry)
 })
@@ -922,20 +788,25 @@ test("column main axis alignment end layout", () => {
         container({
             width: 50,
             height: 50,
-            color: red
+            color: red,
         }),
         container({
             width: 100,
             height: 100,
-            color: green
+            color: green,
         }),
         container({
             width: 50,
             height: 50,
-            color: blue
-        })
+            color: blue,
+        }),
     ])
-    const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
+    const constraints = {
+        minWidth: 0,
+        maxWidth: 500,
+        minHeight: 0,
+        maxHeight: 500,
+    }
     const uiLayout = layout(ui, constraints, renderer.measureText)
     const expectedLayout = {
         size: { width: 100, height: 500 },
@@ -944,7 +815,7 @@ test("column main axis alignment end layout", () => {
             { size: { width: 50, height: 50 } },
             { size: { width: 100, height: 100 } },
             { size: { width: 50, height: 50 } },
-        ]
+        ],
     }
     expect(uiLayout).toEqual(expectedLayout)
 })
@@ -955,20 +826,25 @@ test("column main axis alignment end geometry", () => {
         container({
             width: 50,
             height: 50,
-            color: red
+            color: red,
         }),
         container({
             width: 100,
             height: 100,
-            color: green
+            color: green,
         }),
         container({
             width: 50,
             height: 50,
-            color: blue
-        })
+            color: blue,
+        }),
     ])
-    const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
+    const constraints = {
+        minWidth: 0,
+        maxWidth: 500,
+        minHeight: 0,
+        maxHeight: 500,
+    }
     const uiLayout = layout(ui, constraints, renderer.measureText)
     const offsets = { x: 0, y: 0 }
     const uiGeometry = geometry(ui, uiLayout, offsets, initCameraStack())
@@ -977,71 +853,41 @@ test("column main axis alignment end geometry", () => {
         children: [
             {
                 worldSpace: { x0: 0, y0: 300, x1: 50, y1: 350 },
-                vertices: [
-                    0, 300,
-                    0, 350,
-                    50, 300,
-                    50, 350,
-                ],
+                vertices: [0, 300, 0, 350, 50, 300, 50, 350],
                 colors: [
-                    255, 0, 0, 255,
-                    255, 0, 0, 255,
-                    255, 0, 0, 255,
-                    255, 0, 0, 255,
+                    255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0,
+                    255,
                 ],
-                vertexIndices: [
-                    0, 1, 2,
-                    1, 2, 3
-                ],
+                vertexIndices: [0, 1, 2, 1, 2, 3],
                 cameraIndex: Array(4).fill(0),
                 textureIndex: 0,
-                textureCoordinates: Array(8).fill(0)
+                textureCoordinates: Array(8).fill(0),
             },
             {
                 worldSpace: { x0: 0, y0: 350, x1: 100, y1: 450 },
-                vertices: [
-                    0, 350,
-                    0, 450,
-                    100, 350,
-                    100, 450,
-                ],
+                vertices: [0, 350, 0, 450, 100, 350, 100, 450],
                 colors: [
-                    0, 255, 0, 255,
-                    0, 255, 0, 255,
-                    0, 255, 0, 255,
-                    0, 255, 0, 255,
+                    0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0,
+                    255,
                 ],
-                vertexIndices: [
-                    0, 1, 2,
-                    1, 2, 3
-                ],
+                vertexIndices: [0, 1, 2, 1, 2, 3],
                 cameraIndex: Array(4).fill(0),
                 textureIndex: 0,
-                textureCoordinates: Array(8).fill(0)
+                textureCoordinates: Array(8).fill(0),
             },
             {
                 worldSpace: { x0: 0, y0: 450, x1: 50, y1: 500 },
-                vertices: [
-                    0, 450,
-                    0, 500,
-                    50, 450,
-                    50, 500,
-                ],
+                vertices: [0, 450, 0, 500, 50, 450, 50, 500],
                 colors: [
-                    0, 0, 255, 255,
-                    0, 0, 255, 255,
-                    0, 0, 255, 255,
-                    0, 0, 255, 255,
+                    0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255,
+                    255,
                 ],
-                vertexIndices: [
-                    0, 1, 2,
-                    1, 2, 3
-                ],
+                vertexIndices: [0, 1, 2, 1, 2, 3],
                 cameraIndex: Array(4).fill(0),
                 textureIndex: 0,
-                textureCoordinates: Array(8).fill(0)
-            }
-        ]
+                textureCoordinates: Array(8).fill(0),
+            },
+        ],
     }
     expect(uiGeometry).toEqual(expectedGeometry)
 })
@@ -1052,20 +898,25 @@ test("column main axis alignment space between layout", () => {
         container({
             width: 50,
             height: 50,
-            color: red
+            color: red,
         }),
         container({
             width: 100,
             height: 100,
-            color: green
+            color: green,
         }),
         container({
             width: 50,
             height: 50,
-            color: blue
-        })
+            color: blue,
+        }),
     ])
-    const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
+    const constraints = {
+        minWidth: 0,
+        maxWidth: 500,
+        minHeight: 0,
+        maxHeight: 500,
+    }
     const uiLayout = layout(ui, constraints, renderer.measureText)
     const expectedLayout = {
         size: { width: 100, height: 500 },
@@ -1074,7 +925,7 @@ test("column main axis alignment space between layout", () => {
             { size: { width: 50, height: 50 } },
             { size: { width: 100, height: 100 } },
             { size: { width: 50, height: 50 } },
-        ]
+        ],
     }
     expect(uiLayout).toEqual(expectedLayout)
 })
@@ -1085,20 +936,25 @@ test("column main axis alignment space between geometry", () => {
         container({
             width: 50,
             height: 50,
-            color: red
+            color: red,
         }),
         container({
             width: 100,
             height: 100,
-            color: green
+            color: green,
         }),
         container({
             width: 50,
             height: 50,
-            color: blue
-        })
+            color: blue,
+        }),
     ])
-    const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
+    const constraints = {
+        minWidth: 0,
+        maxWidth: 500,
+        minHeight: 0,
+        maxHeight: 500,
+    }
     const uiLayout = layout(ui, constraints, renderer.measureText)
     const offsets = { x: 0, y: 0 }
     const uiGeometry = geometry(ui, uiLayout, offsets, initCameraStack())
@@ -1107,71 +963,41 @@ test("column main axis alignment space between geometry", () => {
         children: [
             {
                 worldSpace: { x0: 0, y0: 0, x1: 50, y1: 50 },
-                vertices: [
-                    0, 0,
-                    0, 50,
-                    50, 0,
-                    50, 50,
-                ],
+                vertices: [0, 0, 0, 50, 50, 0, 50, 50],
                 colors: [
-                    255, 0, 0, 255,
-                    255, 0, 0, 255,
-                    255, 0, 0, 255,
-                    255, 0, 0, 255,
+                    255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0,
+                    255,
                 ],
-                vertexIndices: [
-                    0, 1, 2,
-                    1, 2, 3
-                ],
+                vertexIndices: [0, 1, 2, 1, 2, 3],
                 cameraIndex: Array(4).fill(0),
                 textureIndex: 0,
-                textureCoordinates: Array(8).fill(0)
+                textureCoordinates: Array(8).fill(0),
             },
             {
                 worldSpace: { x0: 0, y0: 200, x1: 100, y1: 300 },
-                vertices: [
-                    0, 200,
-                    0, 300,
-                    100, 200,
-                    100, 300,
-                ],
+                vertices: [0, 200, 0, 300, 100, 200, 100, 300],
                 colors: [
-                    0, 255, 0, 255,
-                    0, 255, 0, 255,
-                    0, 255, 0, 255,
-                    0, 255, 0, 255,
+                    0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0,
+                    255,
                 ],
-                vertexIndices: [
-                    0, 1, 2,
-                    1, 2, 3
-                ],
+                vertexIndices: [0, 1, 2, 1, 2, 3],
                 cameraIndex: Array(4).fill(0),
                 textureIndex: 0,
-                textureCoordinates: Array(8).fill(0)
+                textureCoordinates: Array(8).fill(0),
             },
             {
                 worldSpace: { x0: 0, y0: 450, x1: 50, y1: 500 },
-                vertices: [
-                    0, 450,
-                    0, 500,
-                    50, 450,
-                    50, 500,
-                ],
+                vertices: [0, 450, 0, 500, 50, 450, 50, 500],
                 colors: [
-                    0, 0, 255, 255,
-                    0, 0, 255, 255,
-                    0, 0, 255, 255,
-                    0, 0, 255, 255,
+                    0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255,
+                    255,
                 ],
-                vertexIndices: [
-                    0, 1, 2,
-                    1, 2, 3
-                ],
+                vertexIndices: [0, 1, 2, 1, 2, 3],
                 cameraIndex: Array(4).fill(0),
                 textureIndex: 0,
-                textureCoordinates: Array(8).fill(0)
-            }
-        ]
+                textureCoordinates: Array(8).fill(0),
+            },
+        ],
     }
     expect(uiGeometry).toEqual(expectedGeometry)
 })
@@ -1182,20 +1008,25 @@ test("column main axis alignment space evenly layout", () => {
         container({
             width: 50,
             height: 50,
-            color: red
+            color: red,
         }),
         container({
             width: 100,
             height: 100,
-            color: green
+            color: green,
         }),
         container({
             width: 50,
             height: 50,
-            color: blue
-        })
+            color: blue,
+        }),
     ])
-    const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
+    const constraints = {
+        minWidth: 0,
+        maxWidth: 500,
+        minHeight: 0,
+        maxHeight: 500,
+    }
     const uiLayout = layout(ui, constraints, renderer.measureText)
     const expectedLayout = {
         size: { width: 100, height: 500 },
@@ -1204,7 +1035,7 @@ test("column main axis alignment space evenly layout", () => {
             { size: { width: 50, height: 50 } },
             { size: { width: 100, height: 100 } },
             { size: { width: 50, height: 50 } },
-        ]
+        ],
     }
     expect(uiLayout).toEqual(expectedLayout)
 })
@@ -1215,20 +1046,25 @@ test("column main axis alignment space evenly geometry", () => {
         container({
             width: 50,
             height: 50,
-            color: red
+            color: red,
         }),
         container({
             width: 100,
             height: 100,
-            color: green
+            color: green,
         }),
         container({
             width: 50,
             height: 50,
-            color: blue
-        })
+            color: blue,
+        }),
     ])
-    const constraints = { minWidth: 0, maxWidth: 500, minHeight: 0, maxHeight: 500 }
+    const constraints = {
+        minWidth: 0,
+        maxWidth: 500,
+        minHeight: 0,
+        maxHeight: 500,
+    }
     const uiLayout = layout(ui, constraints, renderer.measureText)
     const offsets = { x: 0, y: 0 }
     const uiGeometry = geometry(ui, uiLayout, offsets, initCameraStack())
@@ -1237,71 +1073,41 @@ test("column main axis alignment space evenly geometry", () => {
         children: [
             {
                 worldSpace: { x0: 0, y0: 75, x1: 50, y1: 125 },
-                vertices: [
-                    0, 75,
-                    0, 125,
-                    50, 75,
-                    50, 125,
-                ],
+                vertices: [0, 75, 0, 125, 50, 75, 50, 125],
                 colors: [
-                    255, 0, 0, 255,
-                    255, 0, 0, 255,
-                    255, 0, 0, 255,
-                    255, 0, 0, 255,
+                    255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0,
+                    255,
                 ],
-                vertexIndices: [
-                    0, 1, 2,
-                    1, 2, 3
-                ],
+                vertexIndices: [0, 1, 2, 1, 2, 3],
                 cameraIndex: Array(4).fill(0),
                 textureIndex: 0,
-                textureCoordinates: Array(8).fill(0)
+                textureCoordinates: Array(8).fill(0),
             },
             {
                 worldSpace: { x0: 0, y0: 200, x1: 100, y1: 300 },
-                vertices: [
-                    0, 200,
-                    0, 300,
-                    100, 200,
-                    100, 300,
-                ],
+                vertices: [0, 200, 0, 300, 100, 200, 100, 300],
                 colors: [
-                    0, 255, 0, 255,
-                    0, 255, 0, 255,
-                    0, 255, 0, 255,
-                    0, 255, 0, 255,
+                    0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0,
+                    255,
                 ],
-                vertexIndices: [
-                    0, 1, 2,
-                    1, 2, 3
-                ],
+                vertexIndices: [0, 1, 2, 1, 2, 3],
                 cameraIndex: Array(4).fill(0),
                 textureIndex: 0,
-                textureCoordinates: Array(8).fill(0)
+                textureCoordinates: Array(8).fill(0),
             },
             {
                 worldSpace: { x0: 0, y0: 375, x1: 50, y1: 425 },
-                vertices: [
-                    0, 375,
-                    0, 425,
-                    50, 375,
-                    50, 425,
-                ],
+                vertices: [0, 375, 0, 425, 50, 375, 50, 425],
                 colors: [
-                    0, 0, 255, 255,
-                    0, 0, 255, 255,
-                    0, 0, 255, 255,
-                    0, 0, 255, 255,
+                    0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255,
+                    255,
                 ],
-                vertexIndices: [
-                    0, 1, 2,
-                    1, 2, 3
-                ],
+                vertexIndices: [0, 1, 2, 1, 2, 3],
                 cameraIndex: Array(4).fill(0),
                 textureIndex: 0,
-                textureCoordinates: Array(8).fill(0)
-            }
-        ]
+                textureCoordinates: Array(8).fill(0),
+            },
+        ],
     }
     expect(uiGeometry).toEqual(expectedGeometry)
 })

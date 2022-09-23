@@ -509,7 +509,6 @@ const keyDown = (
                     const result = finder.update({
                         model: focus.finder,
                         event,
-                        onClose: { kind: EventKind.FINDER_CLOSE },
                         onSelect: (option) => ({
                             kind: EventKind.FINDER_INSERT,
                             option,
@@ -531,7 +530,6 @@ const keyDown = (
                     const result = finder.update({
                         model: focus.finder,
                         event,
-                        onClose: { kind: EventKind.FINDER_CLOSE },
                         onSelect: (option) => ({
                             kind: EventKind.FINDER_CHANGE,
                             option,

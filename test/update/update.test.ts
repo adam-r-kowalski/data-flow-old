@@ -19,7 +19,7 @@ import {
 import { addEdge, changeNodePosition } from "../../src/update/graph"
 import { translate } from "../../src/linear_algebra/matrix3x3"
 import { Model } from "../../src/model"
-import { FocusFinderInsert, FocusKind } from "../../src/model/focus"
+import { FocusKind } from "../../src/model/focus"
 import { PointerActionKind } from "../../src/model/pointer_action"
 import { Pointer } from "../../src/ui"
 import { emptyModel } from "../../src/model/empty"
@@ -105,9 +105,11 @@ test("double clicking background opens finder", () => {
         pointers: [pointer],
         focus: {
             kind: FocusKind.FINDER_INSERT,
-            search: "",
-            options: [],
-            selectedIndex: 0,
+            finder: {
+                search: "",
+                options: [],
+                selectedIndex: 0,
+            },
             quickSelect: { kind: QuickSelectKind.NONE },
             uppercase: false,
         },
@@ -793,9 +795,11 @@ test("double click opens finder", () => {
         ...model0,
         focus: {
             kind: FocusKind.FINDER_INSERT,
-            search: "",
-            options: ["Add", "Sub"],
-            selectedIndex: 0,
+            finder: {
+                search: "",
+                options: ["Add", "Sub"],
+                selectedIndex: 0,
+            },
             quickSelect: { kind: QuickSelectKind.NONE },
             uppercase: false,
         },
@@ -809,15 +813,6 @@ test("double click opens finder", () => {
     }
     expect(model5).toEqual(expectedModel)
     expect(render).toEqual(true)
-})
-
-test("key down when finder is not shown does nothing", () => {
-    const { model: model1 } = update(makeEffects(), model, {
-        kind: keydown.eventKind,
-        key: "a",
-        ctrl: false,
-    })
-    expect(model1).toEqual(model)
 })
 
 test("f key down when finder is not shown opens finder", () => {
@@ -839,17 +834,18 @@ test("f key down when finder is not shown opens finder", () => {
     }
     const model0: Model = { ...model, operations }
     const { model: model1, render } = update(makeEffects(), model0, {
-        kind: keydown.eventKind,
+        kind: EventKind.KEYDOWN,
         key: "f",
-        ctrl: false,
     })
     const expectedModel: Model = {
         ...model0,
         focus: {
             kind: FocusKind.FINDER_INSERT,
-            search: "",
-            options: ["Add", "Sub"],
-            selectedIndex: 0,
+            finder: {
+                search: "",
+                options: ["Add", "Sub"],
+                selectedIndex: 0,
+            },
             quickSelect: { kind: QuickSelectKind.NONE },
             uppercase: false,
         },
@@ -877,7 +873,7 @@ test("clicking a finder option adds node to graph", () => {
     }
     const model0 = openFinderInsert({ ...model, operations })
     const { model: model1, render } = update(makeEffects(), model0, {
-        kind: EventKind.CLICKED_FINDER_OPTION,
+        kind: EventKind.FINDER_INSERT,
         option: "Add",
     })
     const { model: expectedModel } = addNodeToGraph({
@@ -888,599 +884,6 @@ test("clicking a finder option adds node to graph", () => {
     })
     expect(model1).toEqual(expectedModel)
     expect(render).toEqual(true)
-})
-
-test("key down when finder is shown appends to search", () => {
-    const effects = makeEffects()
-    const operations: Operations = {
-        Add: {
-            kind: OperationKind.TRANSFORM,
-            name: "Add",
-            inputs: ["x", "y"],
-            outputs: ["out"],
-            func: addFunc,
-        },
-        Sub: {
-            kind: OperationKind.TRANSFORM,
-            name: "Sub",
-            inputs: ["x", "y"],
-            outputs: ["out"],
-            func: subFunc,
-        },
-    }
-    const model0 = openFinderInsert({ ...model, operations })
-    const { model: model1 } = update(effects, model0, {
-        kind: keydown.eventKind,
-        key: "a",
-        ctrl: false,
-    })
-    const { model: model2 } = update(effects, model1, {
-        kind: keydown.eventKind,
-        key: "d",
-        ctrl: false,
-    })
-    const { model: model3, render } = update(effects, model2, {
-        kind: keydown.eventKind,
-        key: "d",
-        ctrl: false,
-    })
-    const expectedModel: Model = {
-        ...model0,
-        focus: {
-            kind: FocusKind.FINDER_INSERT,
-            search: "add",
-            options: ["Add"],
-            selectedIndex: 0,
-            quickSelect: { kind: QuickSelectKind.NONE },
-            uppercase: false,
-        },
-    }
-    expect(model3).toEqual(expectedModel)
-    expect(render).toEqual(true)
-})
-
-test("arrow down when finder is shown adds to selected index", () => {
-    const effects = makeEffects()
-    const operations: Operations = {
-        Add: {
-            kind: OperationKind.TRANSFORM,
-            name: "Add",
-            inputs: ["x", "y"],
-            outputs: ["out"],
-            func: addFunc,
-        },
-        Sub: {
-            kind: OperationKind.TRANSFORM,
-            name: "Sub",
-            inputs: ["x", "y"],
-            outputs: ["out"],
-            func: subFunc,
-        },
-    }
-    const model0 = openFinderInsert({ ...model, operations })
-    const { model: model1, render } = update(effects, model0, {
-        kind: keydown.eventKind,
-        key: "ArrowDown",
-        ctrl: false,
-    })
-    const expectedModel: Model = {
-        ...model0,
-        focus: {
-            kind: FocusKind.FINDER_INSERT,
-            search: "",
-            options: ["Add", "Sub"],
-            selectedIndex: 1,
-            quickSelect: { kind: QuickSelectKind.NONE },
-            uppercase: false,
-        },
-    }
-    expect(model1).toEqual(expectedModel)
-    expect(render).toEqual(true)
-})
-
-test("ctrl j when finder is shown adds to selected index", () => {
-    const effects = makeEffects()
-    const operations: Operations = {
-        Add: {
-            kind: OperationKind.TRANSFORM,
-            name: "Add",
-            inputs: ["x", "y"],
-            outputs: ["out"],
-            func: addFunc,
-        },
-        Sub: {
-            kind: OperationKind.TRANSFORM,
-            name: "Sub",
-            inputs: ["x", "y"],
-            outputs: ["out"],
-            func: subFunc,
-        },
-    }
-    const model0 = openFinderInsert({ ...model, operations })
-    const { model: model1, render } = update(effects, model0, {
-        kind: keydown.eventKind,
-        key: "j",
-        ctrl: true,
-    })
-    const expectedModel: Model = {
-        ...model0,
-        focus: {
-            kind: FocusKind.FINDER_INSERT,
-            search: "",
-            options: ["Add", "Sub"],
-            selectedIndex: 1,
-            quickSelect: { kind: QuickSelectKind.NONE },
-            uppercase: false,
-        },
-    }
-    expect(model1).toEqual(expectedModel)
-    expect(render).toEqual(true)
-})
-
-test("arrow up when finder is shown subtracts from selected index", () => {
-    const effects = makeEffects()
-    const operations: Operations = {
-        Add: {
-            kind: OperationKind.TRANSFORM,
-            name: "Add",
-            inputs: ["x", "y"],
-            outputs: ["out"],
-            func: addFunc,
-        },
-        Sub: {
-            kind: OperationKind.TRANSFORM,
-            name: "Sub",
-            inputs: ["x", "y"],
-            outputs: ["out"],
-            func: subFunc,
-        },
-    }
-    const model0 = openFinderInsert({ ...model, operations })
-    const focus = model0.focus as FocusFinderInsert
-    const model1: Model = {
-        ...model0,
-        focus: {
-            ...focus,
-            selectedIndex: 1,
-        },
-    }
-    const { model: model2, render } = update(effects, model1, {
-        kind: keydown.eventKind,
-        key: "ArrowUp",
-        ctrl: false,
-    })
-    const expectedModel: Model = {
-        ...model0,
-        focus: {
-            kind: FocusKind.FINDER_INSERT,
-            search: "",
-            options: ["Add", "Sub"],
-            selectedIndex: 0,
-            quickSelect: { kind: QuickSelectKind.NONE },
-            uppercase: false,
-        },
-    }
-    expect(model2).toEqual(expectedModel)
-    expect(render).toEqual(true)
-})
-
-test("ctrl k when finder is shown subtracts from selected index", () => {
-    const effects = makeEffects()
-    const operations: Operations = {
-        Add: {
-            kind: OperationKind.TRANSFORM,
-            name: "Add",
-            inputs: ["x", "y"],
-            outputs: ["out"],
-            func: addFunc,
-        },
-        Sub: {
-            kind: OperationKind.TRANSFORM,
-            name: "Sub",
-            inputs: ["x", "y"],
-            outputs: ["out"],
-            func: subFunc,
-        },
-    }
-    const model0 = openFinderInsert({ ...model, operations })
-    const focus = model0.focus as FocusFinderInsert
-    const model1: Model = {
-        ...model0,
-        focus: {
-            ...focus,
-            selectedIndex: 1,
-        },
-    }
-    const { model: model2, render } = update(effects, model1, {
-        kind: keydown.eventKind,
-        key: "k",
-        ctrl: true,
-    })
-    const expectedModel: Model = {
-        ...model0,
-        focus: {
-            kind: FocusKind.FINDER_INSERT,
-            search: "",
-            options: ["Add", "Sub"],
-            selectedIndex: 0,
-            quickSelect: { kind: QuickSelectKind.NONE },
-            uppercase: false,
-        },
-    }
-    expect(model2).toEqual(expectedModel)
-    expect(render).toEqual(true)
-})
-
-test("ctrl + key thats not j or k adds to finder search", () => {
-    const effects = makeEffects()
-    const operations: Operations = {
-        Add: {
-            kind: OperationKind.TRANSFORM,
-            name: "Add",
-            inputs: ["x", "y"],
-            outputs: ["out"],
-            func: addFunc,
-        },
-        Sub: {
-            kind: OperationKind.TRANSFORM,
-            name: "Sub",
-            inputs: ["x", "y"],
-            outputs: ["out"],
-            func: subFunc,
-        },
-    }
-    const model0 = openFinderInsert({ ...model, operations })
-    let model1 = model0
-    for (const key of "qwertyuiopasdfghlzxcvbnm") {
-        const { model: nextModel } = update(effects, model1, {
-            kind: keydown.eventKind,
-            key: key,
-            ctrl: true,
-        })
-        model1 = nextModel
-    }
-    const expectedModel: Model = {
-        ...model0,
-        focus: {
-            kind: FocusKind.FINDER_INSERT,
-            search: "qwertyuiopasdfghlzxcvbnm",
-            options: [],
-            selectedIndex: 0,
-            quickSelect: { kind: QuickSelectKind.NONE },
-            uppercase: false,
-        },
-    }
-    expect(model1).toEqual(expectedModel)
-})
-
-test("backspace key down when finder is shown deletes from search", () => {
-    const effects = makeEffects()
-    const operations: Operations = {
-        Add: {
-            kind: OperationKind.TRANSFORM,
-            name: "Add",
-            inputs: ["x", "y"],
-            outputs: ["out"],
-            func: addFunc,
-        },
-        Sub: {
-            kind: OperationKind.TRANSFORM,
-            name: "Sub",
-            inputs: ["x", "y"],
-            outputs: ["out"],
-            func: subFunc,
-        },
-    }
-    const model0 = openFinderInsert({ ...model, operations })
-    const { model: model1 } = update(effects, model0, {
-        kind: keydown.eventKind,
-        key: "a",
-        ctrl: false,
-    })
-    const { model: model2 } = update(effects, model1, {
-        kind: keydown.eventKind,
-        key: "d",
-        ctrl: false,
-    })
-    const { model: model3 } = update(effects, model2, {
-        kind: keydown.eventKind,
-        key: "d",
-        ctrl: false,
-    })
-    const { model: model4, render } = update(effects, model3, {
-        kind: keydown.eventKind,
-        key: "Backspace",
-        ctrl: false,
-    })
-    const expectedModel: Model = {
-        ...model0,
-        focus: {
-            kind: FocusKind.FINDER_INSERT,
-            search: "ad",
-            options: ["Add"],
-            selectedIndex: 0,
-            quickSelect: { kind: QuickSelectKind.NONE },
-            uppercase: false,
-        },
-    }
-    expect(model4).toEqual(expectedModel)
-    expect(render).toEqual(true)
-})
-
-test("enter key down when finder is shown closes finder and adds node", () => {
-    const operations: Operations = {
-        Add: {
-            kind: OperationKind.TRANSFORM,
-            name: "Add",
-            inputs: ["x", "y"],
-            outputs: ["out"],
-            func: addFunc,
-        },
-        Sub: {
-            kind: OperationKind.TRANSFORM,
-            name: "Sub",
-            inputs: ["x", "y"],
-            outputs: ["out"],
-            func: subFunc,
-        },
-    }
-    const model0 = openFinderInsert({ ...model, operations })
-    const { model: model1, render } = update(makeEffects(), model0, {
-        kind: keydown.eventKind,
-        key: "Enter",
-        ctrl: false,
-    })
-    const { model: expectedModel } = addNodeToGraph({
-        model: { ...model, operations },
-        position: { x: 250, y: 250 },
-        operation: operations["Add"],
-        effects: makeEffects(),
-    })
-    expect(model1).toEqual(expectedModel)
-    expect(render).toEqual(true)
-})
-
-test("enter key down when finder is shown and finder has search closes finder and adds node", () => {
-    const effects = makeEffects()
-    const operations: Operations = {
-        Add: {
-            kind: OperationKind.TRANSFORM,
-            name: "Add",
-            inputs: ["x", "y"],
-            outputs: ["out"],
-            func: addFunc,
-        },
-        Sub: {
-            kind: OperationKind.TRANSFORM,
-            name: "Sub",
-            inputs: ["x", "y"],
-            outputs: ["out"],
-            func: subFunc,
-        },
-    }
-    const model0: Model = openFinderInsert({ ...model, operations })
-    let model1 = model0
-    for (const key of "add") {
-        const { model: model } = update(effects, model1, {
-            kind: keydown.eventKind,
-            key,
-            ctrl: false,
-        })
-        model1 = model
-    }
-    const { model: model2 } = update(effects, model1, {
-        kind: keydown.eventKind,
-        key: "Enter",
-        ctrl: false,
-    })
-    const { model: expectedModel } = addNodeToGraph({
-        model: { ...model, operations },
-        operation: operations["Add"],
-        position: { x: 250, y: 250 },
-        effects: makeEffects(),
-    })
-    expect(model2).toEqual(expectedModel)
-})
-
-test("enter key down when finder is shown and finder has search eliminates all options closes finder", () => {
-    const effects = makeEffects()
-    const operations: Operations = {
-        Add: {
-            kind: OperationKind.TRANSFORM,
-            name: "Add",
-            inputs: ["x", "y"],
-            outputs: ["out"],
-            func: addFunc,
-        },
-        Sub: {
-            kind: OperationKind.TRANSFORM,
-            name: "Sub",
-            inputs: ["x", "y"],
-            outputs: ["out"],
-            func: subFunc,
-        },
-    }
-    const model0: Model = openFinderInsert({ ...model, operations })
-    const { model: model1 } = update(effects, model0, {
-        kind: keydown.eventKind,
-        key: "x",
-        ctrl: false,
-    })
-    const { model: model2 } = update(effects, model1, {
-        kind: keydown.eventKind,
-        key: "Enter",
-        ctrl: false,
-    })
-    expect(model2).toEqual({ ...model, operations })
-})
-
-test("escape key down when finder is shown closes finder", () => {
-    const effects = makeEffects()
-    const operations: Operations = {
-        Add: {
-            kind: OperationKind.TRANSFORM,
-            name: "Add",
-            inputs: ["x", "y"],
-            outputs: ["out"],
-            func: addFunc,
-        },
-        Sub: {
-            kind: OperationKind.TRANSFORM,
-            name: "Sub",
-            inputs: ["x", "y"],
-            outputs: ["out"],
-            func: subFunc,
-        },
-    }
-    const model0: Model = openFinderInsert({ ...model, operations })
-    const { model: model1, render } = update(effects, model0, {
-        kind: keydown.eventKind,
-        key: "Escape",
-        ctrl: false,
-    })
-    const expectedModel = { ...model, operations }
-    expect(model1).toEqual(expectedModel)
-    expect(render).toEqual(true)
-})
-
-test("shift key down when finder is shown are ignored", () => {
-    const effects = makeEffects()
-    const operations: Operations = {
-        Add: {
-            kind: OperationKind.TRANSFORM,
-            name: "Add",
-            inputs: ["x", "y"],
-            outputs: ["out"],
-            func: addFunc,
-        },
-        Sub: {
-            kind: OperationKind.TRANSFORM,
-            name: "Sub",
-            inputs: ["x", "y"],
-            outputs: ["out"],
-            func: subFunc,
-        },
-    }
-    const model0: Model = openFinderInsert({ ...model, operations })
-    const { model: model1, render } = update(effects, model0, {
-        kind: keydown.eventKind,
-        key: "Shift",
-        ctrl: false,
-    })
-    expect(model1).toEqual(model0)
-    expect(render).toBeUndefined()
-})
-
-test("alt key down when finder is shown are ignored", () => {
-    const effects = makeEffects()
-    const operations: Operations = {
-        Add: {
-            kind: OperationKind.TRANSFORM,
-            name: "Add",
-            inputs: ["x", "y"],
-            outputs: ["out"],
-            func: addFunc,
-        },
-        Sub: {
-            kind: OperationKind.TRANSFORM,
-            name: "Sub",
-            inputs: ["x", "y"],
-            outputs: ["out"],
-            func: subFunc,
-        },
-    }
-    const model0: Model = openFinderInsert({ ...model, operations })
-    const { model: model1, render } = update(effects, model0, {
-        kind: keydown.eventKind,
-        key: "Alt",
-        ctrl: false,
-    })
-    expect(model1).toEqual(model0)
-    expect(render).toBeUndefined()
-})
-
-test("control key down when finder is shown are ignored", () => {
-    const effects = makeEffects()
-    const operations: Operations = {
-        Add: {
-            kind: OperationKind.TRANSFORM,
-            name: "Add",
-            inputs: ["x", "y"],
-            outputs: ["out"],
-            func: addFunc,
-        },
-        Sub: {
-            kind: OperationKind.TRANSFORM,
-            name: "Sub",
-            inputs: ["x", "y"],
-            outputs: ["out"],
-            func: subFunc,
-        },
-    }
-    const model0: Model = openFinderInsert({ ...model, operations })
-    const { model: model1, render } = update(effects, model0, {
-        kind: keydown.eventKind,
-        key: "Control",
-        ctrl: false,
-    })
-    expect(model1).toEqual(model0)
-    expect(render).toBeUndefined()
-})
-
-test("meta key down when finder is shown are ignored", () => {
-    const effects = makeEffects()
-    const operations: Operations = {
-        Add: {
-            kind: OperationKind.TRANSFORM,
-            name: "Add",
-            inputs: ["x", "y"],
-            outputs: ["out"],
-            func: addFunc,
-        },
-        Sub: {
-            kind: OperationKind.TRANSFORM,
-            name: "Sub",
-            inputs: ["x", "y"],
-            outputs: ["out"],
-            func: subFunc,
-        },
-    }
-    const model0: Model = openFinderInsert({ ...model, operations })
-    const { model: model1, render } = update(effects, model0, {
-        kind: keydown.eventKind,
-        key: "Meta",
-        ctrl: false,
-    })
-    expect(model1).toEqual(model0)
-    expect(render).toBeUndefined()
-})
-
-test("Tab key down when finder is shown are ignored", () => {
-    const effects = makeEffects()
-    const operations: Operations = {
-        Add: {
-            kind: OperationKind.TRANSFORM,
-            name: "Add",
-            inputs: ["x", "y"],
-            outputs: ["out"],
-            func: addFunc,
-        },
-        Sub: {
-            kind: OperationKind.TRANSFORM,
-            name: "Sub",
-            inputs: ["x", "y"],
-            outputs: ["out"],
-            func: subFunc,
-        },
-    }
-    const model0: Model = openFinderInsert({ ...model, operations })
-    const { model: model1, render } = update(effects, model0, {
-        kind: keydown.eventKind,
-        key: "Tab",
-        ctrl: false,
-    })
-    expect(model1).toEqual(model0)
-    expect(render).toBeUndefined()
 })
 
 test("pressing number on keyboard appends to number node", () => {
@@ -1503,9 +906,8 @@ test("pressing number on keyboard appends to number node", () => {
     let model2 = model1
     for (const key of "1234567890") {
         const { model: model } = update(effects, model2, {
-            kind: keydown.eventKind,
+            kind: EventKind.KEYDOWN,
             key,
-            ctrl: false,
         })
         model2 = model
     }
@@ -1557,9 +959,8 @@ test("pressing -3.14 on keyboard writes a float for the number", () => {
     let model2 = model1
     for (const key of "-3.14") {
         const { model: model } = update(effects, model2, {
-            kind: keydown.eventKind,
+            kind: EventKind.KEYDOWN,
             key,
-            ctrl: false,
         })
         model2 = model
     }
@@ -1611,9 +1012,8 @@ test("pressing -3.1.4 on keyboard ignores the second decimal", () => {
     let model2 = model1
     for (const key of "-3.1.4") {
         const { model: model } = update(effects, model2, {
-            kind: keydown.eventKind,
+            kind: EventKind.KEYDOWN,
             key,
-            ctrl: false,
         })
         model2 = model
     }
@@ -1665,16 +1065,14 @@ test("pressing backspace on keyboard deletes from number node", () => {
     let model2 = model1
     for (const key of "1234567890") {
         const { model: model } = update(effects, model2, {
-            kind: keydown.eventKind,
+            kind: EventKind.KEYDOWN,
             key,
-            ctrl: false,
         })
         model2 = model
     }
     const { model: model3 } = update(effects, model2, {
-        kind: keydown.eventKind,
+        kind: EventKind.KEYDOWN,
         key: "Backspace",
-        ctrl: false,
     })
     const body = makeEffects({
         ...effectModel,
@@ -1724,9 +1122,8 @@ test("pressing backspace when number node value is 0 has no effect", () => {
     let model2 = model1
     for (let i = 0; i < 3; ++i) {
         const { model: model } = update(effects, model1, {
-            kind: keydown.eventKind,
+            kind: EventKind.KEYDOWN,
             key: "Backspace",
-            ctrl: false,
         })
         model2 = model
     }
@@ -1778,16 +1175,14 @@ test("pressing enter on keyboard while editing number node exits virtual keyboar
     let model2 = model1
     for (const key of "1234567890") {
         const { model: model } = update(effects, model2, {
-            kind: keydown.eventKind,
+            kind: EventKind.KEYDOWN,
             key,
-            ctrl: false,
         })
         model2 = model
     }
     const { model: model3 } = update(effects, model2, {
-        kind: keydown.eventKind,
+        kind: EventKind.KEYDOWN,
         key: "Enter",
-        ctrl: false,
     })
     const body = makeEffects({
         ...effectModel,
@@ -1832,9 +1227,8 @@ test("pressing non number on keyboard while editing number node is ignored", () 
     let model2 = model1
     for (const key of "qwertyuiopasdfghjklzxvbnm") {
         const { model: model } = update(effects, model2, {
-            kind: keydown.eventKind,
+            kind: EventKind.KEYDOWN,
             key,
-            ctrl: false,
         })
         model2 = model
     }
@@ -1884,9 +1278,8 @@ test("pressing - on keyboard while editing number node makes the number negative
     ).model
     const model2 = focusBody(model1, model1.graph.nodes[node].body!)
     const { model: model3 } = update(effects, model2, {
-        kind: keydown.eventKind,
+        kind: EventKind.KEYDOWN,
         key: "-",
-        ctrl: false,
     })
     const body = makeEffects({
         ...effectModel,
@@ -1939,9 +1332,8 @@ test("pressing + on keyboard while editing number node makes the number negative
     ).model
     const model2 = focusBody(model1, model1.graph.nodes[node].body!)
     const { model: model3 } = update(effects, model2, {
-        kind: keydown.eventKind,
+        kind: EventKind.KEYDOWN,
         key: "+",
-        ctrl: false,
     })
     const body = makeEffects({
         ...effectModel,
@@ -1989,9 +1381,8 @@ test("pressing c on keyboard while editing number node makes the number 0", () =
     })
     const model1 = focusBody(model0, model0.graph.nodes[node].body!)
     const { model: model2 } = update(effects, model1, {
-        kind: keydown.eventKind,
+        kind: EventKind.KEYDOWN,
         key: "c",
-        ctrl: false,
     })
     const body = makeEffects({
         ...effectModel,
@@ -2153,9 +1544,8 @@ test("pressing Escape when a number node is selected deselects it", () => {
         body,
     })
     const { model: model2 } = update(effects, model1, {
-        kind: keydown.eventKind,
+        kind: EventKind.KEYDOWN,
         key: "Escape",
-        ctrl: false,
     })
     expect(model2).toEqual(model0)
 })
@@ -2397,9 +1787,8 @@ test("pressing d on keyboard with node selected deletes it", () => {
         node,
     })
     const { model: model3 } = update(effects, model2, {
-        kind: keydown.eventKind,
+        kind: EventKind.KEYDOWN,
         key: "d",
-        ctrl: false,
     })
     expect(model3).toEqual(model0)
 })
@@ -2481,9 +1870,8 @@ test("pressing escape when a node is selected deselects it", () => {
         node,
     })
     const { model: model3 } = update(effects, model2, {
-        kind: keydown.eventKind,
+        kind: EventKind.KEYDOWN,
         key: "Escape",
-        ctrl: false,
     })
     expect(model3).toEqual(model1)
 })
@@ -2567,9 +1955,8 @@ test("pressing escape when a input is selected deselects it", () => {
         input,
     })
     const { model: model3 } = update(effects, model2, {
-        kind: keydown.eventKind,
+        kind: EventKind.KEYDOWN,
         key: "Escape",
-        ctrl: false,
     })
     expect(model3).toEqual(model1)
 })
@@ -2653,9 +2040,8 @@ test("pressing escape when a output is selected deselects it", () => {
         output,
     })
     const { model: model3 } = update(effects, model2, {
-        kind: keydown.eventKind,
+        kind: EventKind.KEYDOWN,
         key: "Escape",
-        ctrl: false,
     })
     expect(model3).toEqual(model1)
 })
@@ -2779,9 +2165,8 @@ test("pressing d on keyboard with input selected delete edge attached", () => {
         input,
     })
     const { model: model6 } = update(effects, model5, {
-        kind: keydown.eventKind,
+        kind: EventKind.KEYDOWN,
         key: "d",
-        ctrl: false,
     })
     expect(model6).toEqual(model2)
 })
@@ -2896,9 +2281,8 @@ test("pressing d on keyboard with output selected delete edges attached", () => 
         output,
     })
     const { model: model8 } = update(effects, model7, {
-        kind: keydown.eventKind,
+        kind: EventKind.KEYDOWN,
         key: "d",
-        ctrl: false,
     })
     expect(model8).toEqual(model2)
 })
@@ -3448,17 +2832,18 @@ test("pressing f with node selected opens finder", () => {
         pointer: pointer0,
     })
     const { model: model5 } = update(effects, model4, {
-        kind: keydown.eventKind,
+        kind: EventKind.KEYDOWN,
         key: "f",
-        ctrl: false,
     })
     const expectedModel: Model = {
         ...model4,
         focus: {
             kind: FocusKind.FINDER_INSERT,
-            search: "",
-            options: ["Add"],
-            selectedIndex: 0,
+            finder: {
+                search: "",
+                options: ["Add"],
+                selectedIndex: 0,
+            },
             quickSelect: { kind: QuickSelectKind.NONE },
             uppercase: false,
         },
@@ -3503,17 +2888,18 @@ test("pressing f with input selected opens finder", () => {
         pointer: pointer0,
     })
     const { model: model5 } = update(effects, model4, {
-        kind: keydown.eventKind,
+        kind: EventKind.KEYDOWN,
         key: "f",
-        ctrl: false,
     })
     const expectedModel: Model = {
         ...model4,
         focus: {
             kind: FocusKind.FINDER_INSERT,
-            search: "",
-            options: ["Add"],
-            selectedIndex: 0,
+            finder: {
+                search: "",
+                options: ["Add"],
+                selectedIndex: 0,
+            },
             quickSelect: { kind: QuickSelectKind.NONE },
             uppercase: false,
         },
@@ -3558,17 +2944,18 @@ test("pressing f with output selected opens finder", () => {
         pointer: pointer0,
     })
     const { model: model5 } = update(effects, model4, {
-        kind: keydown.eventKind,
+        kind: EventKind.KEYDOWN,
         key: "f",
-        ctrl: false,
     })
     const expectedModel: Model = {
         ...model4,
         focus: {
             kind: FocusKind.FINDER_INSERT,
-            search: "",
-            options: ["Add"],
-            selectedIndex: 0,
+            finder: {
+                search: "",
+                options: ["Add"],
+                selectedIndex: 0,
+            },
             quickSelect: { kind: QuickSelectKind.NONE },
             uppercase: false,
         },
@@ -3613,14 +3000,12 @@ test("key up with input selected does nothing", () => {
         pointer: pointer0,
     })
     const { model: model5 } = update(effects, model4, {
-        kind: keydown.eventKind,
+        kind: EventKind.KEYDOWN,
         key: "z",
-        ctrl: false,
     })
     const { model: model6 } = update(effects, model5, {
         kind: EventKind.KEYUP,
         key: "z",
-        ctrl: false,
     })
     expect(model6).toEqual(model4)
 })
@@ -3628,9 +3013,8 @@ test("key up with input selected does nothing", () => {
 test("clicking background with finder open closes it", () => {
     const effects = makeEffects()
     const { model: model1 } = update(effects, model, {
-        kind: keydown.eventKind,
+        kind: EventKind.KEYDOWN,
         key: "f",
-        ctrl: false,
     })
     const pointer: Pointer = {
         id: 0,
@@ -3653,9 +3037,8 @@ test("clicking background with finder open closes it", () => {
 test("pointer move after moving with keyboard stops showing node placement location", () => {
     const effects = makeEffects()
     const { model: model1, render: render0 } = update(effects, model, {
-        kind: keydown.eventKind,
+        kind: EventKind.KEYDOWN,
         key: "h",
-        ctrl: false,
     })
     expect(render0).toBeUndefined()
     expect(model1).toEqual({
@@ -3748,9 +3131,8 @@ test("pressing any alphanumeric key while editing text node appends key to value
     let model3 = model2
     for (const key of "qwertyuiopasdfghjklzxcvbnm1234567890") {
         const { model: nextModel } = update(effects, model3, {
-            kind: keydown.eventKind,
+            kind: EventKind.KEYDOWN,
             key: key,
-            ctrl: false,
         })
         model3 = nextModel
     }
@@ -3799,16 +3181,14 @@ test("pressing backspace while editing text node removes letter from value", () 
     let model3 = model2
     for (const key of "qwerty") {
         const { model: nextModel } = update(effects, model3, {
-            kind: keydown.eventKind,
+            kind: EventKind.KEYDOWN,
             key: key,
-            ctrl: false,
         })
         model3 = nextModel
     }
     const { model: model4 } = update(effects, model3, {
-        kind: keydown.eventKind,
+        kind: EventKind.KEYDOWN,
         key: "Backspace",
-        ctrl: false,
     })
     const expectedModel: Model = {
         ...model0,
@@ -3855,16 +3235,14 @@ test("pressing enter while editing text node clears the focus", () => {
     let model3 = model2
     for (const key of "qwerty") {
         const { model: nextModel } = update(effects, model3, {
-            kind: keydown.eventKind,
+            kind: EventKind.KEYDOWN,
             key: key,
-            ctrl: false,
         })
         model3 = nextModel
     }
     const { model: model4 } = update(effects, model3, {
-        kind: keydown.eventKind,
+        kind: EventKind.KEYDOWN,
         key: "Enter",
-        ctrl: false,
     })
     const expectedModel: Model = {
         ...model0,
@@ -3905,16 +3283,14 @@ test("pressing escape while editing text node clears the focus", () => {
     let model3 = model2
     for (const key of "qwerty") {
         const { model: nextModel } = update(effects, model3, {
-            kind: keydown.eventKind,
+            kind: EventKind.KEYDOWN,
             key: key,
-            ctrl: false,
         })
         model3 = nextModel
     }
     const { model: model4 } = update(effects, model3, {
-        kind: keydown.eventKind,
+        kind: EventKind.KEYDOWN,
         key: "Escape",
-        ctrl: false,
     })
     const expectedModel: Model = {
         ...model0,
@@ -3955,16 +3331,14 @@ test("pressing shift while editing text node does nothing", () => {
     let model3 = model2
     for (const key of "qwerty") {
         const { model: nextModel } = update(effects, model3, {
-            kind: keydown.eventKind,
+            kind: EventKind.KEYDOWN,
             key: key,
-            ctrl: false,
         })
         model3 = nextModel
     }
     const { model: model4 } = update(effects, model3, {
-        kind: keydown.eventKind,
+        kind: EventKind.KEYDOWN,
         key: "Shift",
-        ctrl: false,
     })
     expect(model4).toEqual(model3)
 })
@@ -4088,18 +3462,19 @@ test("pressing c with node selected opens finder in change mode", () => {
         node: add,
     })
     const { model: model9 } = update(effects, model8, {
-        kind: keydown.eventKind,
+        kind: EventKind.KEYDOWN,
         key: "c",
-        ctrl: false,
     })
     const expectedModel: Model = {
         ...model7,
         focus: {
             kind: FocusKind.FINDER_CHANGE,
-            search: "",
-            options: ["Number", "Add", "Sub"],
+            finder: {
+                search: "",
+                options: ["Number", "Add", "Sub"],
+                selectedIndex: 0,
+            },
             node: add,
-            selectedIndex: 0,
             quickSelect: { kind: QuickSelectKind.NONE },
             uppercase: false,
         },
@@ -4179,10 +3554,12 @@ test("pressing change node context menu with node selected opens finder in chang
         ...model7,
         focus: {
             kind: FocusKind.FINDER_CHANGE,
-            search: "",
-            options: ["Number", "Add", "Sub"],
+            finder: {
+                search: "",
+                options: ["Number", "Add", "Sub"],
+                selectedIndex: 0,
+            },
             node: add,
-            selectedIndex: 0,
             quickSelect: { kind: QuickSelectKind.NONE },
             uppercase: false,
         },
@@ -4255,24 +3632,25 @@ test("pressing enter with finder in change mode replaces node but preserves inpu
         node: add,
     })
     const { model: model9 } = update(effects, model8, {
-        kind: keydown.eventKind,
+        kind: EventKind.KEYDOWN,
         key: "c",
-        ctrl: false,
     })
     let model10 = model9
     for (const key of "Sub") {
         const { model: nextModel } = update(effects, model10, {
-            kind: keydown.eventKind,
+            kind: EventKind.KEYDOWN,
             key: key,
-            ctrl: false,
         })
         model10 = nextModel
     }
-    const { model: model11 } = update(effects, model10, {
-        kind: keydown.eventKind,
+    const { model: model11, dispatch } = update(effects, model10, {
+        kind: EventKind.KEYDOWN,
         key: "Enter",
-        ctrl: false,
     })
+    expect(dispatch).toEqual([
+        { kind: EventKind.FINDER_CHANGE, option: "Sub", node: add },
+    ])
+    const { model: model12 } = update(effects, model11, dispatch![0])
     const node = model7.graph.nodes[add] as NodeTransform
     const expectedModel: Model = {
         ...model7,
@@ -4288,7 +3666,7 @@ test("pressing enter with finder in change mode replaces node but preserves inpu
             },
         },
     }
-    expect(model11).toEqual(expectedModel)
+    expect(model12).toEqual(expectedModel)
 })
 
 test("cllicking finder option with finder in change mode replaces node but preserves inputs and outputs", () => {
@@ -4356,13 +3734,13 @@ test("cllicking finder option with finder in change mode replaces node but prese
         node: add,
     })
     const { model: model9 } = update(effects, model8, {
-        kind: keydown.eventKind,
+        kind: EventKind.KEYDOWN,
         key: "c",
-        ctrl: false,
     })
     const { model: model10 } = update(effects, model9, {
-        kind: EventKind.CLICKED_FINDER_OPTION,
+        kind: EventKind.FINDER_CHANGE,
         option: "Sub",
+        node: add
     })
     const node = model7.graph.nodes[add] as NodeTransform
     const expectedModel: Model = {
@@ -4447,24 +3825,25 @@ test("change node with different input and output names", () => {
         node: add,
     })
     const { model: model9 } = update(effects, model8, {
-        kind: keydown.eventKind,
+        kind: EventKind.KEYDOWN,
         key: "c",
-        ctrl: false,
     })
     let model10 = model9
     for (const key of "Column") {
         const { model: nextModel } = update(effects, model10, {
-            kind: keydown.eventKind,
+            kind: EventKind.KEYDOWN,
             key: key,
-            ctrl: false,
         })
         model10 = nextModel
     }
-    const { model: model11 } = update(effects, model10, {
-        kind: keydown.eventKind,
+    const { model: model11, dispatch } = update(effects, model10, {
+        kind: EventKind.KEYDOWN,
         key: "Enter",
-        ctrl: false,
     })
+    expect(dispatch).toEqual([
+        { kind: EventKind.FINDER_CHANGE, option: "Column", node: add },
+    ])
+    const { model: model12 } = update(effects, model11, dispatch![0])
     const node = model7.graph.nodes[add] as NodeTransform
     const edges = Object.keys(model7.graph.edges)
     const expectedModel: Model = {
@@ -4512,7 +3891,7 @@ test("change node with different input and output names", () => {
             },
         },
     }
-    expect(model11).toEqual(expectedModel)
+    expect(model12).toEqual(expectedModel)
 })
 
 test("change node with more inputs then existing node", () => {
@@ -4580,24 +3959,25 @@ test("change node with more inputs then existing node", () => {
         node: add,
     })
     const { model: model9 } = update(effects, model8, {
-        kind: keydown.eventKind,
+        kind: EventKind.KEYDOWN,
         key: "c",
-        ctrl: false,
     })
     let model10 = model9
     for (const key of "Linspace") {
         const { model: nextModel } = update(effects, model10, {
-            kind: keydown.eventKind,
+            kind: EventKind.KEYDOWN,
             key: key,
-            ctrl: false,
         })
         model10 = nextModel
     }
-    const { model: model11 } = update(effects, model10, {
-        kind: keydown.eventKind,
+    const { model: model11, dispatch } = update(effects, model10, {
+        kind: EventKind.KEYDOWN,
         key: "Enter",
-        ctrl: false,
     })
+    expect(dispatch).toEqual([
+        { kind: EventKind.FINDER_CHANGE, option: "Linspace", node: add },
+    ])
+    const { model: model12 } = update(effects, model11, dispatch![0])
     const node = model7.graph.nodes[add] as NodeTransform
     const edges = Object.keys(model7.graph.edges)
     const expectedModel: Model = {
@@ -4642,7 +4022,7 @@ test("change node with more inputs then existing node", () => {
             },
         },
     }
-    expect(model11).toEqual(expectedModel)
+    expect(model12).toEqual(expectedModel)
 })
 
 test("change node with fewer inputs then existing node", () => {
@@ -4710,24 +4090,25 @@ test("change node with fewer inputs then existing node", () => {
         node: add,
     })
     const { model: model9 } = update(effects, model8, {
-        kind: keydown.eventKind,
+        kind: EventKind.KEYDOWN,
         key: "c",
-        ctrl: false,
     })
     let model10 = model9
     for (const key of "Sin") {
         const { model: nextModel } = update(effects, model10, {
-            kind: keydown.eventKind,
+            kind: EventKind.KEYDOWN,
             key: key,
-            ctrl: false,
         })
         model10 = nextModel
     }
-    const { model: model11 } = update(effects, model10, {
-        kind: keydown.eventKind,
+    const { model: model11, dispatch } = update(effects, model10, {
+        kind: EventKind.KEYDOWN,
         key: "Enter",
-        ctrl: false,
     })
+    expect(dispatch).toEqual([
+        { kind: EventKind.FINDER_CHANGE, option: "Sin", node: add },
+    ])
+    const { model: model12 } = update(effects, model11, dispatch![0])
     const node = model7.graph.nodes[add] as NodeTransform
     const edges = Object.keys(model7.graph.edges)
     const expectedModel: Model = {
@@ -4771,7 +4152,7 @@ test("change node with fewer inputs then existing node", () => {
             },
         },
     }
-    expect(model11).toEqual(expectedModel)
+    expect(model12).toEqual(expectedModel)
 })
 
 test("change from source node to a source node does nothing", () => {
@@ -4797,16 +4178,18 @@ test("change from source node to a source node does nothing", () => {
         node: number,
     })
     const { model: model3 } = update(effects, model2, {
-        kind: keydown.eventKind,
+        kind: EventKind.KEYDOWN,
         key: "c",
-        ctrl: false,
     })
-    const { model: model4 } = update(effects, model3, {
-        kind: keydown.eventKind,
+    const { model: model4, dispatch } = update(effects, model3, {
+        kind: EventKind.KEYDOWN,
         key: "Enter",
-        ctrl: false,
     })
-    expect(model4).toEqual(model1)
+    expect(dispatch).toEqual([
+        { kind: EventKind.FINDER_CHANGE, option: "Number", node: number },
+    ])
+    const { model: model5 } = update(effects, model4, dispatch![0])
+    expect(model5).toEqual(model1)
 })
 
 test("change from source node to a transform node does nothing", () => {
@@ -4839,25 +4222,30 @@ test("change from source node to a transform node does nothing", () => {
         node: number,
     })
     const { model: model3 } = update(effects, model2, {
-        kind: keydown.eventKind,
+        kind: EventKind.KEYDOWN,
         key: "c",
-        ctrl: false,
     })
     let model4 = model3
     for (const key of "Add") {
         const { model: nextModel } = update(effects, model4, {
-            kind: keydown.eventKind,
+            kind: EventKind.KEYDOWN,
             key: key,
-            ctrl: false,
         })
         model4 = nextModel
     }
-    const { model: model5 } = update(effects, model4, {
-        kind: keydown.eventKind,
+    const { model: model5, dispatch } = update(effects, model4, {
+        kind: EventKind.KEYDOWN,
         key: "Enter",
-        ctrl: false,
     })
-    expect(model5).toEqual(model1)
+    expect(dispatch).toEqual([
+        {
+            kind: EventKind.FINDER_CHANGE,
+            option: "Add",
+            node: number,
+        },
+    ])
+    const { model: model6 } = update(effects, model5, dispatch![0])
+    expect(model6).toEqual(model1)
 })
 
 test("deleting a node forces evaluation of outputs", () => {
@@ -4918,9 +4306,8 @@ test("deleting a node forces evaluation of outputs", () => {
         node: x,
     })
     const { model: model9 } = update(effects, model8, {
-        kind: keydown.eventKind,
+        kind: EventKind.KEYDOWN,
         key: "d",
-        ctrl: false,
     })
     const edge = model7.graph.outputs[model7.graph.nodes[y].outputs[0]].edges[0]
     const expectedModel: Model = {
@@ -5184,9 +4571,8 @@ test("pressing sft on virtual keyboard toggles upppercase", () => {
     const body = model0.graph.nodes[node].body
     const model1 = focusBody(model0, body)
     const { model: model2 } = update(effects, model1, {
-        kind: keydown.eventKind,
+        kind: EventKind.KEYDOWN,
         key: "sft",
-        ctrl: false,
     })
     const expectedModel: Model = {
         ...model1,

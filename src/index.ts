@@ -70,7 +70,7 @@ const dispatch = run({
     setTimeout,
     pointerDown: (dispatch, pointer) => {
         dispatch({
-            kind: "pointer_down",
+            kind: EventKind.POINTER_DOWN,
             pointer,
         })
     },
@@ -81,7 +81,7 @@ if (typeof PointerEvent.prototype.getCoalescedEvents === "function") {
     document.addEventListener("pointermove", (e) => {
         e.getCoalescedEvents().forEach((p) => {
             dispatch({
-                kind: "pointer_move",
+                kind: EventKind.POINTER_MOVE,
                 pointer: transformPointer(p),
             })
         })
@@ -89,7 +89,7 @@ if (typeof PointerEvent.prototype.getCoalescedEvents === "function") {
 } else {
     document.addEventListener("pointermove", (p) =>
         dispatch({
-            kind: "pointer_move",
+            kind: EventKind.POINTER_MOVE,
             pointer: transformPointer(p),
         })
     )
@@ -97,7 +97,7 @@ if (typeof PointerEvent.prototype.getCoalescedEvents === "function") {
 
 document.addEventListener("pointerup", (p) => {
     dispatch({
-        kind: "pointer_up",
+        kind: EventKind.POINTER_UP,
         pointer: transformPointer(p),
     })
 })
@@ -107,7 +107,7 @@ document.addEventListener(
     (e) => {
         e.preventDefault()
         dispatch({
-            kind: "wheel",
+            kind: EventKind.WHEEL,
             position: { x: e.clientX, y: e.clientY },
             deltaY: e.deltaY,
         })
@@ -141,7 +141,7 @@ document.addEventListener("keydown", (e) => {
 
 document.addEventListener("keyup", (e) => {
     dispatch({
-        kind: "keyup",
+        kind: EventKind.KEYUP,
         key: e.ctrlKey ? `<c-${e.key}>` : e.key,
     })
 })
@@ -184,7 +184,7 @@ document.addEventListener("drop", async (e) => {
                 }
             })
             dispatch({
-                kind: "upload_table",
+                kind: EventKind.UPLOAD_TABLE,
                 table: {
                     name: file.name,
                     columns,

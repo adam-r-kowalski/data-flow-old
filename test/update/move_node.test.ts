@@ -1,4 +1,4 @@
-import * as tf from "@tensorflow/tfjs-core"
+import * as tf from "@tensorflow/tfjs"
 import { EventKind } from "../../src/event"
 
 import { emptyModel } from "../../src/model/empty"

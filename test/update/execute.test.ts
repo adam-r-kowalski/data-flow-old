@@ -1,5 +1,4 @@
-import "@tensorflow/tfjs-node"
-import * as tf from "@tensorflow/tfjs-core"
+import * as tf from "@tensorflow/tfjs"
 
 import { Model } from "../../src/model"
 import { emptyModel } from "../../src/model/empty"

@@ -19,13 +19,13 @@
         "papaparse": "^5.3.2"
     },
     "scripts": {
-        "dev": "yarn vite",
-        "preview": "yarn vite preview --port 5173",
-        "build": "yarn vite build",
-        "prebuild": "yarn rimraf dist",
-        "push": "yarn gh-pages -d dist",
-        "prepush": "yarn build",
-        "test": "yarn jest",
-        "coverage": "yarn jest --coverage"
+        "dev": "vite",
+        "preview": "vite preview --port 5173",
+        "build": "vite build",
+        "prebuild": "rimraf dist",
+        "push": "gh-pages -d dist",
+        "prepush": "build",
+        "test": "jest",
+        "coverage": "jest --coverage"
     }
 }

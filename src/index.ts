@@ -1,4 +1,3 @@
-import "@tensorflow/tfjs-backend-cpu"
 import * as papa from "papaparse"
 
 import { update } from "./update"

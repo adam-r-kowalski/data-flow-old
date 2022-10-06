@@ -1,15 +1,15 @@
-# [Studio](https://adam-r-kowalski.github.io/studio/)
+# [Data Flow](https://adam-r-kowalski.github.io/data-flow/)
 
-Empowering creators everywhere.
+Visualize and interact your data.
 
-![GitHub CI](https://github.com/adam-r-kowalski/studio/actions/workflows/continuous_integration.yml/badge.svg)
+![GitHub CI](https://github.com/adam-r-kowalski/data-flow/actions/workflows/continuous_integration.yml/badge.svg)
 
-## Running studio from source
+## Running data flow from source
 
 ### Getting all prerequisites
 
 1. Download [node](https://nodejs.org/en/) and [yarn](https://yarnpkg.com/)
-2. Clone the repository `git clone git@github.com:adam-r-kowalski/studio.git`
+2. Clone the repository `git clone git@github.com:adam-r-kowalski/data-flow.git`
 3. Install the dependencies `yarn install`
 
 ### Running the tests

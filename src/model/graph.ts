@@ -1,5 +1,5 @@
-import * as tf from '@tensorflow/tfjs-core';
-import { Column, Table } from './table';
+import * as tf from "@tensorflow/tfjs"
+import { Column, Table } from "./table"
 
 export type UUID = string
 
@@ -119,7 +119,6 @@ export interface NodeSource {
     readonly position: Position
 }
 
-
 export interface NodeTransform {
     readonly kind: NodeKind.TRANSFORM
     readonly uuid: UUID
@@ -131,9 +130,7 @@ export interface NodeTransform {
     readonly func: Function
 }
 
-export type Node =
-    | NodeSource
-    | NodeTransform
+export type Node = NodeSource | NodeTransform
 
 export interface Edge {
     readonly uuid: UUID
@@ -156,7 +153,6 @@ export interface Graph {
 }
 
 export type Tensor = tf.TensorLike | tf.Tensor<tf.Rank>
-
 
 export enum OperationKind {
     NUMBER,

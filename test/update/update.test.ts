@@ -1,5 +1,4 @@
-import * as tf from "@tensorflow/tfjs-core"
-import "@tensorflow/tfjs-node"
+import * as tf from "@tensorflow/tfjs"
 
 import {
     addNodeToGraph,

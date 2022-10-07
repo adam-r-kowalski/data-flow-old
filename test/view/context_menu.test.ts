@@ -1,20 +1,20 @@
-import { EventKind } from "../../src/event"
 import { column, container, row, text } from "../../src/ui"
 import { MainAxisAlignment } from "../../src/ui/alignment"
 import { contextMenu } from "../../src/view/context_menu"
 
 test("context menu", () => {
+    const onClick = () => {}
     const actual = contextMenu({
         items: [
             {
                 name: "First",
                 shortcut: "a",
-                onClick: { kind: EventKind.RESET_CAMERA },
+                onClick,
             },
             {
                 name: "Second",
                 shortcut: "b",
-                onClick: { kind: EventKind.RESET_CAMERA },
+                onClick,
             },
         ],
         backgroundColor: { red: 255, green: 0, blue: 255, alpha: 255 },
@@ -30,14 +30,14 @@ test("context menu", () => {
                     container(
                         {
                             padding: 10,
-                            onClick: { kind: EventKind.RESET_CAMERA },
+                            onClick,
                         },
                         text({ size: 18 }, "(a) First")
                     ),
                     container(
                         {
                             padding: 10,
-                            onClick: { kind: EventKind.RESET_CAMERA },
+                            onClick,
                         },
                         text({ size: 18 }, "(b) Second")
                     ),

@@ -1,4 +1,3 @@
-import { EventKind } from "../../src/event"
 import { Focus, FocusKind } from "../../src/model/focus"
 import {
     Body,
@@ -23,6 +22,7 @@ import {
     outputUi,
     spacer,
 } from "../../src/view"
+import "../toEqualUI"
 
 const theme: Theme = {
     background: { red: 2, green: 22, blue: 39, alpha: 255 },
@@ -58,14 +58,10 @@ test("inputUi with quick select", () => {
             },
         },
     }
-    const actual = inputUi(theme, input, focus)
+    const actual = inputUi(theme, input, focus, () => {})
+    const onClick = actual.onClick!
     const expected = container(
-        {
-            onClick: {
-                kind: EventKind.CLICKED_INPUT,
-                input: "uuid",
-            },
-        },
+        { onClick },
         row({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             container(
                 {
@@ -99,14 +95,10 @@ test("outputUI with quick select", () => {
             },
         },
     }
-    const actual = outputUi(theme, output, focus)
+    const actual = outputUi(theme, output, focus, () => {})
+    const onClick = actual.onClick!
     const expected = container(
-        {
-            onClick: {
-                kind: EventKind.CLICKED_OUTPUT,
-                output: "uuid",
-            },
-        },
+        { onClick },
         row({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             text("name"),
             spacer(4),
@@ -159,17 +151,23 @@ test("nodeUi with quick select", () => {
             },
         },
     }
-    const actual = nodeUi(theme, node.uuid, graph, focus)
+    const actual = nodeUi(
+        theme,
+        node.uuid,
+        graph,
+        focus,
+        () => {},
+        () => {},
+        () => {},
+        () => {}
+    )
     const expected = container(
         {
             color: theme.node,
             padding: 4,
             x: 0,
             y: 0,
-            onClick: {
-                kind: EventKind.CLICKED_NODE,
-                node: "uuid",
-            },
+            onClick: () => {},
         },
         column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             text("a"),
@@ -178,12 +176,13 @@ test("nodeUi with quick select", () => {
                 outputsUi(
                     theme,
                     node.outputs.map((o) => graph.outputs[o]),
-                    focus
+                    focus,
+                    () => {}
                 ),
             ]),
         ])
     )
-    expect(actual).toEqual(expected)
+    expect(actual).toEqualUI(expected)
 })
 
 test("bodyUi quick select", () => {
@@ -202,15 +201,13 @@ test("bodyUi quick select", () => {
             hotkeys: { "body uuid": "a" },
         },
     }
-    const actual = numberBody(theme, body, focus)
+    const actual = numberBody(theme, body, focus, () => {})
+    const onClick = actual.onClick!
     const expected = container(
         {
             color: theme.background,
             padding: 5,
-            onClick: {
-                kind: EventKind.CLICKED_BODY,
-                body: "body uuid",
-            },
+            onClick,
         },
         text("a")
     )

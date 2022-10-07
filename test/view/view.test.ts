@@ -1,66 +1,11 @@
-//import * as tf from "@tensorflow/tfjs"
-
-import {
-    /*
-    Body,
-    BodyKind,
-    emptyGraph,
-    Graph,
-    */
-    Input,
-    /*
-    Node,
-    NodeKind,
-    Output,
-    */
-} from "../../src/model/graph"
-//import { identity } from "../../src/linear_algebra/matrix3x3"
-//import { Model } from "../../src/model"
+import { Input } from "../../src/model/graph"
 import { Theme } from "../../src/model/theme"
-import {
-    Focus,
-    /* FocusFinderInsert ,*/ FocusKind,
-} from "../../src/model/focus"
+import { Focus, FocusKind } from "../../src/model/focus"
 import { PointerActionKind } from "../../src/model/pointer_action"
-import {
-    /*column,*/ container,
-    row,
-    /*scene, stack,*/ text,
-} from "../../src/ui"
-import {
-    //    inputsUi,
-    inputUi,
-    intersperse,
-    /*
-        nodeUi,
-        outputsUi,
-        outputUi,
-        */
-    spacer,
-    /*    tensorBody,
-    scatterBody,
-    view,
-    numberBody,
-    textBody,
-    tableBody,
-    columnBody,
-    formatCell,
-    */
-} from "../../src/view"
-//import { contextMenu } from "../../src/view/context_menu"
+import { container, row, text } from "../../src/ui"
+import { inputUi, intersperse, spacer } from "../../src/view"
 import { QuickSelectKind } from "../../src/model/quick_select"
-//import { normalize } from "../../src/normalize"
-//import { tensorFunc } from "../../src/model/operations"
-/*
-import * as alphabeticVirtualKeyboard from "../../src/alphabetic_virtual_keyboard"
-import * as numericVirtualKeyboard from "../../src/numeric_virtual_keyboard"
-import * as finder from "../../src/finder"
-*/
 import { CrossAxisAlignment } from "../../src/ui/alignment"
-//import { EventKind } from "../../src/event"
-
-//const addFunc = tensorFunc(tf.add)
-//const subFunc = tensorFunc(tf.sub)
 
 test("spacer", () => {
     expect(spacer(10)).toEqual(container({ width: 10, height: 10 }))

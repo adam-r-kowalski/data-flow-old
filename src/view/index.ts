@@ -34,7 +34,8 @@ import * as numericVirtualKeyboard from "../numeric_virtual_keyboard"
 import * as finder from "../finder"
 import { EventKind } from "../event"
 
-export const spacer = (size: number) => container({ width: size, height: size })
+export const spacer = (size: number): UI =>
+    container({ width: size, height: size })
 
 export const intersperse = <T>(array: T[], seperator: T): T[] => {
     const result = [array[0]]
@@ -354,7 +355,7 @@ export const nodeUi = (
     onClickBody: (uuid: UUID) => void,
     onClickOutput: (uuid: UUID) => void,
     onClickNode: (uuid: UUID) => void
-): UI => {
+) => {
     const node = graph.nodes[nodeUUID]
     const rowEntries: UI[] = []
     if (node.kind === NodeKind.TRANSFORM) {

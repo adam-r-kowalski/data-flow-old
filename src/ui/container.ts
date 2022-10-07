@@ -13,9 +13,9 @@ import {
     geometry,
     Entry,
     traverse,
+    OnClick,
 } from "."
 import { CameraStack, transformWorldSpace, activeCamera } from "./camera_stack"
-import { AppEvent } from "../event"
 
 export interface ContainerLayout {
     readonly size: Size
@@ -42,7 +42,7 @@ export interface Padding {
 
 export interface Container {
     readonly id?: string
-    readonly onClick?: AppEvent
+    readonly onClick?: OnClick
     readonly kind: UIKind.CONTAINER
     readonly padding: Padding
     readonly width?: number
@@ -60,7 +60,7 @@ interface Properties {
     readonly x?: number
     readonly y?: number
     readonly color?: Color
-    readonly onClick?: AppEvent
+    readonly onClick?: OnClick
     readonly id?: string
 }
 

@@ -13,7 +13,6 @@ import {
     Window,
 } from "./dom"
 import { ClickHandlers } from "./gather_on_click_handlers"
-import { AppEvent } from "../event"
 
 interface Attribute {
     location: number
@@ -130,8 +129,7 @@ export class WebGL2Renderer {
         public program: ProgramData,
         public textures: Texture[],
         public textMeasurementsCache: Map<string, TextMeasurements>,
-        public clickHandlers: ClickHandlers,
-        public dispatch: (event: AppEvent) => void
+        public clickHandlers: ClickHandlers
     ) {
         this._size = { width: 0, height: 0 }
         this._cameras = []
@@ -484,7 +482,6 @@ interface Parameters {
     height: number
     document: Document
     window: Window
-    dispatch?: (event: AppEvent) => void
 }
 
 export const webGL2Renderer = ({
@@ -492,7 +489,6 @@ export const webGL2Renderer = ({
     height,
     document,
     window,
-    dispatch,
 }: Parameters): WebGL2Renderer => {
     const canvas = document.createElement("canvas")
     canvas.style.touchAction = "none"
@@ -526,8 +522,7 @@ export const webGL2Renderer = ({
         program,
         [texture],
         new Map(),
-        [],
-        dispatch ?? (() => {})
+        []
     )
     renderer.size = { width, height }
     return renderer

@@ -13,7 +13,7 @@ export const pointerDown = <R extends Renderer>(
     for (let i = renderer.clickHandlers.length; i > 0; --i) {
         for (const { onClick, worldSpace } of renderer.clickHandlers[i - 1]) {
             if (inWorldSpace(worldSpace, pointer)) {
-                renderer.dispatch(onClick)
+                onClick()
                 return renderer
             }
         }

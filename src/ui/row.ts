@@ -12,10 +12,10 @@ import {
     WorldSpace,
     Entry,
     traverse,
+    OnClick,
 } from "."
 import { CrossAxisAlignment, MainAxisAlignment } from "./alignment"
 import { CameraStack, transformWorldSpace } from "./camera_stack"
-import { AppEvent } from "../event"
 
 export interface RowLayout {
     readonly size: Size
@@ -30,7 +30,7 @@ export interface RowGeometry {
 
 export interface Row {
     readonly id?: string
-    readonly onClick?: AppEvent
+    readonly onClick?: OnClick
     readonly kind: UIKind.ROW
     readonly mainAxisAlignment: MainAxisAlignment
     readonly crossAxisAlignment: CrossAxisAlignment

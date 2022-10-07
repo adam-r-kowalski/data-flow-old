@@ -1,8 +1,7 @@
-import { Entry, WorldSpace } from "."
-import { AppEvent } from "../event"
+import { Entry, WorldSpace, OnClick } from "."
 
 export interface ClickHandler {
-    onClick: AppEvent
+    onClick: OnClick
     worldSpace: WorldSpace
 }
 

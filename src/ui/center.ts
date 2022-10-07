@@ -12,9 +12,9 @@ import {
     UIKind,
     WorldSpace,
     traverse,
+    OnClick,
 } from "."
 import { CameraStack, transformWorldSpace } from "./camera_stack"
-import { AppEvent } from "../event"
 
 export interface CenterLayout {
     readonly size: Size
@@ -28,7 +28,7 @@ export interface CenterGeometry {
 
 export interface Center {
     readonly id?: string
-    readonly onClick?: AppEvent
+    readonly onClick?: OnClick
     readonly kind: UIKind.CENTER
     readonly child: UI
 }

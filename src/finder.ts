@@ -1,7 +1,7 @@
 import { Color, column, container, text, UI } from "./ui"
 import { CrossAxisAlignment } from "./ui/alignment"
 import { fuzzyFind } from "./fuzzy_find"
-import { AppEvent, EventKind, KeyDown } from "./event"
+import { KeyDown } from "./event"
 
 export interface Model {
     readonly search: string
@@ -27,7 +27,7 @@ export interface Theme {
 interface ViewProperties {
     model: Model
     theme: Theme
-    onClick: (option: string) => AppEvent
+    onClick: (option: string) => void
 }
 
 export const view = (properties: ViewProperties): UI => {
@@ -53,7 +53,7 @@ export const view = (properties: ViewProperties): UI => {
                         {
                             width: 300,
                             padding: 4,
-                            onClick: onClick(option),
+                            onClick: () => onClick(option),
                         },
                         text({ size: 18, color }, option)
                     )
@@ -63,23 +63,24 @@ export const view = (properties: ViewProperties): UI => {
     ])
 }
 
-interface UpdateProperties {
+interface UpdateProperties<AppEvent> {
     model: Model
     event: KeyDown
     onSelect: (option: string) => AppEvent
+    onClose: AppEvent
 }
 
-interface UpdateResult {
+interface UpdateResult<AppEvent> {
     model: Model
     event?: AppEvent
 }
 
-const decrementIndex = (model: Model): UpdateResult => {
+const decrementIndex = <AppEvent>(model: Model): UpdateResult<AppEvent> => {
     const selectedIndex = Math.max(0, model.selectedIndex - 1)
     return { model: { ...model, selectedIndex } }
 }
 
-const incrementIndex = (model: Model): UpdateResult => {
+const incrementIndex = <AppEvent>(model: Model): UpdateResult<AppEvent> => {
     const options = shownOptions(model)
     const selectedIndex = Math.min(
         model.selectedIndex + 1,
@@ -89,13 +90,18 @@ const incrementIndex = (model: Model): UpdateResult => {
     return { model: { ...model, selectedIndex } }
 }
 
-const addToSearch = (model: Model, key: string): UpdateResult => {
+const addToSearch = <AppEvent>(
+    model: Model,
+    key: string
+): UpdateResult<AppEvent> => {
     const search = model.search + key
     return { model: { ...model, search } }
 }
 
-export const update = (properties: UpdateProperties): UpdateResult => {
-    const { model, event, onSelect } = properties
+export const update = <AppEvent>(
+    properties: UpdateProperties<AppEvent>
+): UpdateResult<AppEvent> => {
+    const { model, event, onSelect, onClose } = properties
     switch (event.key) {
         case "Backspace": {
             const search = model.search.slice(0, -1)
@@ -114,10 +120,10 @@ export const update = (properties: UpdateProperties): UpdateResult => {
                       model,
                       event: onSelect(options[model.selectedIndex]),
                   }
-                : { model, event: { kind: EventKind.FINDER_CLOSE } }
+                : { model, event: onClose }
         }
         case "Escape":
-            return { model, event: { kind: EventKind.FINDER_CLOSE } }
+            return { model, event: onClose }
         case "ArrowUp":
         case "<c-k>":
             return decrementIndex(model)

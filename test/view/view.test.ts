@@ -1,30 +1,43 @@
-import * as tf from "@tensorflow/tfjs"
+//import * as tf from "@tensorflow/tfjs"
 
 import {
+    /*
     Body,
     BodyKind,
     emptyGraph,
     Graph,
+    */
     Input,
+    /*
     Node,
     NodeKind,
     Output,
+    */
 } from "../../src/model/graph"
-import { identity } from "../../src/linear_algebra/matrix3x3"
-import { Model } from "../../src/model"
+//import { identity } from "../../src/linear_algebra/matrix3x3"
+//import { Model } from "../../src/model"
 import { Theme } from "../../src/model/theme"
-import { Focus, FocusFinderInsert, FocusKind } from "../../src/model/focus"
-import { PointerActionKind } from "../../src/model/pointer_action"
-import { column, container, row, scene, stack, text } from "../../src/ui"
 import {
-    inputsUi,
+    Focus,
+    /* FocusFinderInsert ,*/ FocusKind,
+} from "../../src/model/focus"
+import { PointerActionKind } from "../../src/model/pointer_action"
+import {
+    /*column,*/ container,
+    row,
+    /*scene, stack,*/ text,
+} from "../../src/ui"
+import {
+    //    inputsUi,
     inputUi,
     intersperse,
-    nodeUi,
-    outputsUi,
-    outputUi,
+    /*
+        nodeUi,
+        outputsUi,
+        outputUi,
+        */
     spacer,
-    tensorBody,
+    /*    tensorBody,
     scatterBody,
     view,
     numberBody,
@@ -32,19 +45,22 @@ import {
     tableBody,
     columnBody,
     formatCell,
+    */
 } from "../../src/view"
-import { contextMenu } from "../../src/view/context_menu"
+//import { contextMenu } from "../../src/view/context_menu"
 import { QuickSelectKind } from "../../src/model/quick_select"
-import { normalize } from "../../src/normalize"
-import { tensorFunc } from "../../src/model/operations"
+//import { normalize } from "../../src/normalize"
+//import { tensorFunc } from "../../src/model/operations"
+/*
 import * as alphabeticVirtualKeyboard from "../../src/alphabetic_virtual_keyboard"
 import * as numericVirtualKeyboard from "../../src/numeric_virtual_keyboard"
 import * as finder from "../../src/finder"
+*/
 import { CrossAxisAlignment } from "../../src/ui/alignment"
-import { EventKind } from "../../src/event"
+//import { EventKind } from "../../src/event"
 
-const addFunc = tensorFunc(tf.add)
-const subFunc = tensorFunc(tf.sub)
+//const addFunc = tensorFunc(tf.add)
+//const subFunc = tensorFunc(tf.sub)
 
 test("spacer", () => {
     expect(spacer(10)).toEqual(container({ width: 10, height: 10 }))
@@ -83,14 +99,10 @@ test("inputUi not focused", () => {
         pointerAction: { kind: PointerActionKind.NONE },
         quickSelect: { kind: QuickSelectKind.NONE },
     }
-    const actual = inputUi(theme, input, focus)
+    const actual = inputUi(theme, input, focus, () => {})
+    const onClick = actual.onClick!
     const expected = container(
-        {
-            onClick: {
-                kind: EventKind.CLICKED_INPUT,
-                input: "uuid",
-            },
-        },
+        { onClick },
         row({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             container(
                 {
@@ -113,18 +125,19 @@ test("inputUi focused", () => {
         node: "node",
         name: "name",
     }
-    const actual = inputUi(theme, input, {
-        kind: FocusKind.INPUT,
-        input: "uuid",
-        quickSelect: { kind: QuickSelectKind.NONE },
-    })
-    const expected = container(
+    const actual = inputUi(
+        theme,
+        input,
         {
-            onClick: {
-                kind: EventKind.CLICKED_INPUT,
-                input: "uuid",
-            },
+            kind: FocusKind.INPUT,
+            input: "uuid",
+            quickSelect: { kind: QuickSelectKind.NONE },
         },
+        () => {}
+    )
+    const onClick = actual.onClick!
+    const expected = container(
+        { onClick },
         row({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             container(
                 {
@@ -141,6 +154,7 @@ test("inputUi focused", () => {
     expect(actual).toEqual(expected)
 })
 
+/*
 test("inputsUi", () => {
     const inputs: Input[] = [
         {
@@ -2751,3 +2765,4 @@ test("format cell", () => {
     expect(formatCell(3.12)).toEqual("3.12")
     expect(formatCell(3.124)).toEqual("3.12")
 })
+*/

@@ -1,4 +1,3 @@
-import { EventKind } from "./event"
 import { container, row, text, UI } from "./ui"
 
 const map = (key: string): string => {
@@ -14,17 +13,15 @@ const map = (key: string): string => {
     }
 }
 
-export const virtualKey = (key: string): UI => {
+export const virtualKey = (key: string, onClick: (key: string) => void): UI => {
     return container(
         {
             padding: 10,
-            onClick: {
-                kind: EventKind.KEYDOWN,
-                key: map(key),
-            },
+            onClick: () => onClick(map(key)),
         },
         text({ size: 24 }, key)
     )
 }
 
-export const view = (keys: string[]) => row(keys.map(virtualKey))
+export const view = (keys: string[], onClick: (key: string) => void) =>
+    row(keys.map((key) => virtualKey(key, onClick)))

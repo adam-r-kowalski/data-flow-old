@@ -9,9 +9,9 @@ import {
     TextMeasurements,
     UIKind,
     WorldSpace,
+    OnClick,
 } from "."
 import { activeCamera, CameraStack, transformWorldSpace } from "./camera_stack"
-import { AppEvent } from "../event"
 
 export interface TextLayout {
     readonly measurements: TextMeasurements
@@ -30,7 +30,7 @@ export interface TextGeometry {
 
 export interface Text {
     readonly id?: string
-    readonly onClick?: AppEvent
+    readonly onClick?: OnClick
     readonly kind: UIKind.TEXT
     readonly font: Font
     readonly color: Color

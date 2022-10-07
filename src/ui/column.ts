@@ -12,10 +12,10 @@ import {
     UI,
     UIKind,
     WorldSpace,
+    OnClick,
 } from "."
 import { MainAxisAlignment, CrossAxisAlignment } from "./alignment"
 import { CameraStack, transformWorldSpace } from "./camera_stack"
-import { AppEvent } from "../event"
 
 export interface ColumnLayout {
     readonly size: Size
@@ -30,7 +30,7 @@ export interface ColumnGeometry {
 
 export interface Column {
     readonly id?: string
-    readonly onClick?: AppEvent
+    readonly onClick?: OnClick
     readonly kind: UIKind.COLUMN
     readonly mainAxisAlignment: MainAxisAlignment
     readonly crossAxisAlignment: CrossAxisAlignment

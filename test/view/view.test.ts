@@ -9,7 +9,7 @@ import { CrossAxisAlignment } from "../../src/ui/alignment"
 import "../toEqualUI"
 
 test("spacer", () => {
-    expect(spacer(10)).toEqual(container({ width: 10, height: 10 }))
+    expect(spacer(10)).toEqualUI(container({ width: 10, height: 10 }))
 })
 
 test("intersperse", () => {
@@ -45,8 +45,8 @@ test("inputUi not focused", () => {
         pointerAction: { kind: PointerActionKind.NONE },
         quickSelect: { kind: QuickSelectKind.NONE },
     }
-    const actual = inputUi(theme, input, focus, () => {})
-    const onClick = actual.onClick!
+    const onClick = () => {}
+    const actual = inputUi(theme, input, focus, onClick)
     const expected = container(
         { onClick },
         row({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
@@ -62,7 +62,7 @@ test("inputUi not focused", () => {
             text("name"),
         ])
     )
-    expect(actual).toEqual(expected)
+    expect(actual).toEqualUI(expected)
 })
 
 test("inputUi focused", () => {
@@ -71,6 +71,7 @@ test("inputUi focused", () => {
         node: "node",
         name: "name",
     }
+    const onClick = () => {}
     const actual = inputUi(
         theme,
         input,
@@ -79,9 +80,8 @@ test("inputUi focused", () => {
             input: "uuid",
             quickSelect: { kind: QuickSelectKind.NONE },
         },
-        () => {}
+        onClick
     )
-    const onClick = actual.onClick!
     const expected = container(
         { onClick },
         row({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
@@ -97,7 +97,7 @@ test("inputUi focused", () => {
             text("name"),
         ])
     )
-    expect(actual).toEqual(expected)
+    expect(actual).toEqualUI(expected)
 })
 
 /*

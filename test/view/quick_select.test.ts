@@ -58,8 +58,8 @@ test("inputUi with quick select", () => {
             },
         },
     }
-    const actual = inputUi(theme, input, focus, () => {})
-    const onClick = actual.onClick!
+    const onClick = () => {}
+    const actual = inputUi(theme, input, focus, onClick)
     const expected = container(
         { onClick },
         row({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
@@ -75,7 +75,7 @@ test("inputUi with quick select", () => {
             text("name"),
         ])
     )
-    expect(actual).toEqual(expected)
+    expect(actual).toEqualUI(expected)
 })
 
 test("outputUI with quick select", () => {
@@ -112,7 +112,7 @@ test("outputUI with quick select", () => {
             ),
         ])
     )
-    expect(actual).toEqual(expected)
+    expect(actual).toEqualUI(expected)
 })
 
 test("nodeUi with quick select", () => {
@@ -211,5 +211,5 @@ test("bodyUi quick select", () => {
         },
         text("a")
     )
-    expect(actual).toEqual(expected)
+    expect(actual).toEqualUI(expected)
 })

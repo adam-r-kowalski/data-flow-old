@@ -1,6 +1,7 @@
 import { column, container, row, text } from "../../src/ui"
 import { MainAxisAlignment } from "../../src/ui/alignment"
 import { contextMenu } from "../../src/view/context_menu"
+import "../toEqualUI"
 
 test("context menu", () => {
     const onClick = () => {}
@@ -45,5 +46,5 @@ test("context menu", () => {
             ),
         ]),
     ])
-    expect(actual).toEqual(expected)
+    expect(actual).toEqualUI(expected)
 })

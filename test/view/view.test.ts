@@ -6,6 +6,7 @@ import { container, row, text } from "../../src/ui"
 import { inputUi, intersperse, spacer } from "../../src/view"
 import { QuickSelectKind } from "../../src/model/quick_select"
 import { CrossAxisAlignment } from "../../src/ui/alignment"
+import "../toEqualUI"
 
 test("spacer", () => {
     expect(spacer(10)).toEqual(container({ width: 10, height: 10 }))

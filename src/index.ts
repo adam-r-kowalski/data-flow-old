@@ -3,58 +3,14 @@ import * as papa from "papaparse"
 import { update } from "./update"
 import { run, transformPointer } from "./run"
 import { view } from "./view"
+import { Model } from "./model"
 import { demoModel } from "./model/demo"
 import { Document } from "./ui/dom"
-import { Columns, Table, Value } from "./model/table"
-import { EventKind } from "./event"
-
-const generateUUID = () => crypto.randomUUID()
-const currentTime = () => performance.now()
+import { Columns, Value } from "./model/table"
+import { EventKind, AppEvent } from "./event"
+import { effects } from "./effects"
 
 type Row = { [name: string]: Value }
-
-const promptUserForTable = (): Promise<Table> =>
-    new Promise<File>((resolve) => {
-        const element = document.createElement("input")
-        element.type = "file"
-        element.accept = ".csv"
-        element.addEventListener("change", (event) => {
-            const file = (event.target! as HTMLInputElement).files![0]
-            resolve(file)
-        })
-        element.click()
-    }).then(
-        (file) =>
-            new Promise<Table>((resolve) => {
-                papa.parse(file, {
-                    worker: true,
-                    header: true,
-                    dynamicTyping: true,
-                    complete: async (results) => {
-                        const columns: Columns = {}
-                        for (const name of results.meta.fields!) {
-                            columns[name] = []
-                        }
-                        const errorRows = results.errors.map((e) => e.row)
-                        results.data.forEach((row, i) => {
-                            if (!errorRows.includes(i)) {
-                                for (const [name, value] of Object.entries(
-                                    row as Row
-                                )) {
-                                    columns[name].push(value ?? undefined)
-                                }
-                            }
-                        })
-                        resolve({
-                            name: file.name,
-                            columns,
-                        })
-                    },
-                })
-            })
-    )
-
-const effects = { currentTime, generateUUID, promptUserForTable }
 
 const dispatch = run({
     model: demoModel(
@@ -62,7 +18,7 @@ const dispatch = run({
         effects
     ),
     view,
-    update,
+    update: (model: Model, event: AppEvent) => update(effects, model, event),
     window,
     document: document as Document,
     requestAnimationFrame,
@@ -73,7 +29,6 @@ const dispatch = run({
             pointer,
         })
     },
-    effects,
 })
 
 if (typeof PointerEvent.prototype.getCoalescedEvents === "function") {

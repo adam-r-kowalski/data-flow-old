@@ -1,10 +1,13 @@
+import { CurrentTime } from "../effects"
 import { AppEvent, EventKind } from "../event"
 import { inverse, multiplyMatrixVector } from "../linear_algebra/matrix3x3"
 import { length } from "../linear_algebra/vector3"
 import { Model, NodePlacementLocation } from "../model"
 import { FocusKind, FocusNode } from "../model/focus"
-import { CurrentTime, UpdateResult } from "../run"
+import * as run from "../run"
 import { changeNodePosition } from "./graph"
+
+type UpdateResult = run.UpdateResult<Model, AppEvent>
 
 export const maybeStartMoveNode = (
     model: Model,

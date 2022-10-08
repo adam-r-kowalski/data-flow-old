@@ -13,6 +13,7 @@ import {
     UI,
     UIKind,
     WorldSpace,
+    OnClick,
 } from "."
 import { Matrix3x3 } from "../linear_algebra/matrix3x3"
 import {
@@ -21,7 +22,6 @@ import {
     pushCamera,
     transformWorldSpace,
 } from "./camera_stack"
-import { AppEvent } from "../event"
 
 export interface SceneLayout {
     readonly size: Size
@@ -35,7 +35,7 @@ export interface SceneGeometry {
 
 export interface Scene {
     readonly id?: string
-    readonly onClick?: AppEvent
+    readonly onClick?: OnClick
     readonly kind: UIKind.SCENE
     readonly camera: Matrix3x3
     readonly children: UI[]
@@ -44,7 +44,7 @@ export interface Scene {
 
 export interface Properties {
     readonly id?: string
-    readonly onClick?: AppEvent
+    readonly onClick?: OnClick
     readonly camera: Matrix3x3
     readonly children: UI[]
     readonly connections?: Connection[]

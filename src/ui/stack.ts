@@ -12,9 +12,9 @@ import {
     geometry,
     Entry,
     traverse,
+    OnClick,
 } from "."
 import { CameraStack, transformWorldSpace } from "./camera_stack"
-import { AppEvent } from "../event"
 
 export interface StackLayout {
     readonly size: Size
@@ -28,7 +28,7 @@ export interface StackGeometry {
 
 export interface Stack {
     readonly id?: string
-    readonly onClick?: AppEvent
+    readonly onClick?: OnClick
     kind: UIKind.STACK
     children: UI[]
 }

@@ -59,7 +59,6 @@ import { Matrix3x3 } from "../linear_algebra/matrix3x3"
 import { Batch } from "./batch_geometry"
 import { ClickHandlers } from "./gather_on_click_handlers"
 import { Position } from "../model/graph"
-import { AppEvent } from "../event"
 
 export { center } from "./center"
 export { column } from "./column"
@@ -291,10 +290,11 @@ export interface Renderer {
     clear: () => void
     draw: (batch: Batch) => void
     measureText: MeasureText
-    dispatch: (event: AppEvent) => void
 }
 
 export interface Pointer {
     id: number
     position: Position
 }
+
+export type OnClick = () => void

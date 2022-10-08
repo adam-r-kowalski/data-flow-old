@@ -4,7 +4,6 @@ import {
     Body,
     BodyKind,
     Edge,
-    GenerateUUID,
     Graph,
     Inputs,
     Node,
@@ -17,7 +16,7 @@ import {
     Position,
     UUID,
 } from "../model/graph"
-import { Effects } from "../run"
+import { Effects, GenerateUUID } from "../effects"
 
 interface AddNodeInputs {
     graph: Graph

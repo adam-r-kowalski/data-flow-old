@@ -3,60 +3,52 @@ import { render } from "./ui/render"
 import { webGL2Renderer } from "./ui/webgl2"
 import { Pointer, UI } from "./ui"
 import { Document, Window, PointerEvent } from "./ui/dom"
-import { GenerateUUID } from "./model/graph"
-import { Table } from "./model/table"
-import { Model } from "./model"
-import { AppEvent } from "./event"
 
 export const transformPointer = (p: PointerEvent): Pointer => ({
     id: p.pointerId,
     position: { x: p.clientX, y: p.clientY },
 })
 
-export type Dispatch = (event: AppEvent) => Promise<void>
+export type Dispatch<AppEvent> = (event: AppEvent) => Promise<void>
 
-type View = (model: Model) => UI
+type View<Model, AppEvent> = (model: Model, dispatch: Dispatch<AppEvent>) => UI
 
 interface Milliseconds {
     milliseconds: number
 }
 
-interface Scheduled {
+interface Scheduled<AppEvent> {
     after: Milliseconds
     event: AppEvent
 }
 
-export interface UpdateResult {
+export interface UpdateResult<Model, AppEvent> {
     model: Model
-    schedule?: Scheduled[]
+    schedule?: Scheduled<AppEvent>[]
     dispatch?: AppEvent[]
     promise?: Promise<AppEvent>
     cursor?: boolean
 }
 
-export type CurrentTime = () => number
+type Update<Model, AppEvent> = (
+    model: Model,
+    event: AppEvent
+) => UpdateResult<Model, AppEvent>
 
-export interface Effects {
-    currentTime: CurrentTime
-    generateUUID: GenerateUUID
-    promptUserForTable: () => Promise<Table>
-}
-
-type Update = (effects: Effects, model: Model, event: AppEvent) => UpdateResult
-
-interface Properties {
+interface Properties<Model, AppEvent> {
     model: Model
-    view: View
-    update: Update
+    view: View<Model, AppEvent>
+    update: Update<Model, AppEvent>
     window: Window
     document: Document
     requestAnimationFrame: (callback: () => void) => void
     setTimeout: (callback: () => void, milliseconds: number) => void
-    pointerDown: (dispatch: Dispatch, pointer: Pointer) => void
-    effects: Effects
+    pointerDown: (dispatch: Dispatch<AppEvent>, pointer: Pointer) => void
 }
 
-export const run = (properties: Properties): Dispatch => {
+export const run = <Model, AppEvent>(
+    properties: Properties<Model, AppEvent>
+): Dispatch<AppEvent> => {
     let {
         model,
         view,
@@ -65,7 +57,6 @@ export const run = (properties: Properties): Dispatch => {
         document,
         requestAnimationFrame,
         setTimeout,
-        effects,
     } = properties
     let renderer = webGL2Renderer({
         width: window.innerWidth,
@@ -78,7 +69,7 @@ export const run = (properties: Properties): Dispatch => {
         if (!renderQueued) {
             renderQueued = true
             requestAnimationFrame(() => {
-                renderer = render(renderer, view(model))
+                renderer = render(renderer, view(model, dispatch))
                 renderQueued = false
             })
         }
@@ -90,7 +81,7 @@ export const run = (properties: Properties): Dispatch => {
             dispatch: dispatchEvents,
             promise,
             cursor,
-        } = update(effects, model, event)
+        } = update(model, event)
         const modelChanged = model !== newModel
         model = newModel
         if (modelChanged) scheduleRender()
@@ -104,7 +95,6 @@ export const run = (properties: Properties): Dispatch => {
         }
         if (promise !== undefined) await promise.then(dispatch)
     }
-    renderer.dispatch = dispatch
     document.body.appendChild(renderer.canvas)
     document.addEventListener("pointerdown", (p) => {
         const transformed = transformPointer(p)

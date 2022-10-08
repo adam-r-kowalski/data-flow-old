@@ -1,11 +1,10 @@
-import { row, column, container, Color, text } from "../ui"
+import { row, column, container, Color, text, OnClick } from "../ui"
 import { MainAxisAlignment } from "../ui/alignment"
-import { AppEvent } from "../event"
 
 export interface ContextMenuItem {
     name: string
     shortcut: string
-    onClick: AppEvent
+    onClick: OnClick
 }
 
 interface Properties {

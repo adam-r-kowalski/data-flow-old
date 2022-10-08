@@ -4,7 +4,6 @@ import { pointerDown } from "../../src/ui/pointer_down"
 import { render } from "../../src/ui/render"
 import { webGL2Renderer } from "../../src/ui/webgl2"
 import { container, scene } from "../../src/ui"
-import { AppEvent, EventKind } from "../../src/event"
 
 const red = { red: 255, green: 0, blue: 0, alpha: 255 }
 const green = { red: 0, green: 255, blue: 0, alpha: 255 }
@@ -14,39 +13,36 @@ interface Model {
     b: number
 }
 
-const initialModel = (): Model => ({
+const initialModel: Model = {
     a: 0,
     b: 0,
-})
+}
+
+enum AppEvent {
+    A,
+    B,
+}
 
 const update = (model: Model, event: AppEvent): Model => {
-    switch (event.kind) {
-        case EventKind.KEYDOWN:
-            model.a++
-            return model
-        case EventKind.KEYUP:
-            model.b++
-            return model
-        default:
-            return model
+    switch (event) {
+        case AppEvent.A:
+            return { a: model.a + 1, b: model.b }
+        case AppEvent.B:
+            return { a: model.a, b: model.b + 1 }
     }
 }
 
-const mockRenderer = (dispatch: (event: AppEvent) => void) =>
-    webGL2Renderer({
-        width: 500,
-        height: 500,
-        document: mockDocument(),
-        window: mockWindow(),
-        dispatch,
-    })
+const mockRenderer = webGL2Renderer({
+    width: 500,
+    height: 500,
+    document: mockDocument(),
+    window: mockWindow(),
+})
 
 test("click first container", () => {
-    let model = initialModel()
-    const dispatch = (event: AppEvent) => {
-        model = update(model, event)
-    }
-    let renderer = mockRenderer(dispatch)
+    let model = initialModel
+    let renderer = mockRenderer
+    const dispatch = (event: AppEvent) => (model = update(model, event))
     const ui = scene({
         camera: identity(),
         children: [
@@ -56,7 +52,7 @@ test("click first container", () => {
                 color: red,
                 x: 100,
                 y: 200,
-                onClick: { kind: EventKind.KEYDOWN, key: "a" },
+                onClick: () => dispatch(AppEvent.A),
             }),
             container({
                 width: 50,
@@ -64,7 +60,7 @@ test("click first container", () => {
                 color: green,
                 x: 300,
                 y: 250,
-                onClick: { kind: EventKind.KEYUP, key: "a" },
+                onClick: () => dispatch(AppEvent.B),
             }),
         ],
     })
@@ -77,11 +73,9 @@ test("click first container", () => {
 })
 
 test("click second container", () => {
-    let model = initialModel()
-    const dispatch = (event: AppEvent) => {
-        model = update(model, event)
-    }
-    let renderer = mockRenderer(dispatch)
+    let model = initialModel
+    let renderer = mockRenderer
+    const dispatch = (event: AppEvent) => (model = update(model, event))
     const ui = scene({
         camera: identity(),
         children: [
@@ -91,7 +85,7 @@ test("click second container", () => {
                 color: red,
                 x: 100,
                 y: 200,
-                onClick: { kind: EventKind.KEYDOWN, key: "a" },
+                onClick: () => dispatch(AppEvent.A),
             }),
             container({
                 width: 50,
@@ -99,7 +93,7 @@ test("click second container", () => {
                 color: green,
                 x: 300,
                 y: 250,
-                onClick: { kind: EventKind.KEYUP, key: "a" },
+                onClick: () => dispatch(AppEvent.B),
             }),
         ],
     })
@@ -112,11 +106,9 @@ test("click second container", () => {
 })
 
 test("click translated container", () => {
-    let model = initialModel()
-    const dispatch = (event: AppEvent) => {
-        model = update(model, event)
-    }
-    let renderer = mockRenderer(dispatch)
+    let model = initialModel
+    const dispatch = (event: AppEvent) => (model = update(model, event))
+    let renderer = mockRenderer
     const ui = scene({
         camera: translate(100, 0),
         children: [
@@ -126,7 +118,7 @@ test("click translated container", () => {
                 color: red,
                 x: 100,
                 y: 200,
-                onClick: { kind: EventKind.KEYDOWN, key: "a" },
+                onClick: () => dispatch(AppEvent.A),
             }),
             container({
                 width: 50,
@@ -134,7 +126,7 @@ test("click translated container", () => {
                 color: green,
                 x: 300,
                 y: 250,
-                onClick: { kind: EventKind.KEYUP, key: "a" },
+                onClick: () => dispatch(AppEvent.B),
             }),
         ],
     })
@@ -147,11 +139,7 @@ test("click translated container", () => {
 })
 
 test("renderer starts with identity camera", () => {
-    let model = 0
-    const dispatch = (_: AppEvent) => {
-        return { model }
-    }
-    const renderer = mockRenderer(dispatch)
+    const renderer = mockRenderer
     const view = container({ width: 50, height: 50, color: red })
     render(renderer, view)
     expect(renderer.cameras).toEqual([identity()])

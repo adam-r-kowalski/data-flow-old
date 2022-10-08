@@ -2,6 +2,8 @@ import { UI, UIKind } from "../src/ui"
 import { Container } from "../src/ui/container"
 import { Column } from "../src/ui/column"
 import { Row } from "../src/ui/row"
+import { Stack } from "../src/ui/stack"
+import { Scene } from "../src/ui/scene"
 import { CrossAxisAlignment, MainAxisAlignment } from "../src/ui/alignment"
 
 const isEqualPrimitive = <T extends number | string>(
@@ -89,7 +91,7 @@ const isEqualContainer = (
     }
 }
 
-const isEqualWithChildren = <T extends Column | Row>(
+const isEqualWithChildren = <T extends Column | Row | Stack | Scene>(
     path: string,
     received: T,
     expected: T
@@ -99,28 +101,28 @@ const isEqualWithChildren = <T extends Column | Row>(
             case "children":
                 continue
             case "mainAxisAlignment": {
-                if (value !== expected[key]) {
+                if (value !== (expected as any)[key]) {
                     return {
                         pass: false,
                         message: () =>
                             `${path}.${key} | ${
                                 MainAxisAlignment[value]
                             } does not equal ${
-                                MainAxisAlignment[expected[key]]
+                                MainAxisAlignment[(expected as any)[key]]
                             }`,
                     }
                 }
                 continue
             }
             case "crossAxisAlignment": {
-                if (value !== expected[key]) {
+                if (value !== (expected as any)[key]) {
                     return {
                         pass: false,
                         message: () =>
                             `${path}.${key} | ${
                                 CrossAxisAlignment[value]
                             } does not equal ${
-                                CrossAxisAlignment[expected[key]]
+                                CrossAxisAlignment[(expected as any)[key]]
                             }`,
                     }
                 }
@@ -180,6 +182,10 @@ const isEqualUI = (
             return isEqualWithChildren(path, received, expected as Column)
         case UIKind.ROW:
             return isEqualWithChildren(path, received, expected as Row)
+        case UIKind.STACK:
+            return isEqualWithChildren(path, received, expected as Stack)
+        case UIKind.SCENE:
+            return isEqualWithChildren(path, received, expected as Scene)
         case UIKind.TEXT:
             return isEqual(path, received, expected)
         default:

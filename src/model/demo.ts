@@ -3,7 +3,7 @@ import { addEdge, addNode, changeNumberText } from "../update/graph"
 import { Model, Window } from "."
 import { emptyModel } from "./empty"
 import { operations } from "./operations"
-import { Effects } from "../run"
+import { Effects } from "../effects"
 
 export const demoModel = (window: Window, effects: Effects): Model => {
     const model: Model = {

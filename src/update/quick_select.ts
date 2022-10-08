@@ -1,3 +1,4 @@
+import { GenerateUUID } from "../effects"
 import { Model } from "../model"
 import {
     Focus,
@@ -5,13 +6,7 @@ import {
     FocusFinderInsert,
     FocusKind,
 } from "../model/focus"
-import {
-    BodyKind,
-    GenerateUUID,
-    NumberBody,
-    TextBody,
-    UUID,
-} from "../model/graph"
+import { BodyKind, NumberBody, TextBody, UUID } from "../model/graph"
 import {
     QuickSelectInput,
     QuickSelectOutput,

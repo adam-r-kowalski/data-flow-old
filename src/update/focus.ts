@@ -1,6 +1,7 @@
+import { GenerateUUID } from "../effects"
 import { Model } from "../model"
 import { FocusKind } from "../model/focus"
-import { GenerateUUID, UUID } from "../model/graph"
+import { UUID } from "../model/graph"
 import { PointerActionKind } from "../model/pointer_action"
 import { QuickSelectKind } from "../model/quick_select"
 import { addEdge, removeInputEdge } from "./graph"

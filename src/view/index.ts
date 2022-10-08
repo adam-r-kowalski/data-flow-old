@@ -32,6 +32,8 @@ import { identity } from "../linear_algebra/matrix3x3"
 import * as alphabeticVirtualKeyboard from "../alphabetic_virtual_keyboard"
 import * as numericVirtualKeyboard from "../numeric_virtual_keyboard"
 import * as finder from "../finder"
+import { Dispatch } from "../run"
+import { AppEvent, EventKind } from "../event"
 
 export const spacer = (size: number): UI =>
     container({ width: size, height: size })
@@ -432,22 +434,44 @@ export const nodeUi = (
 
 const identityCamera = identity()
 
-export const view = (
-    model: Model,
-    onClickInput: (uuid: UUID) => void,
-    onClickBody: (uuid: UUID) => void,
-    onClickOutput: (uuid: UUID) => void,
-    onClickNode: (uuid: UUID) => void,
-    onClickBackground: () => void,
-    onChangeNode: (uuid: UUID) => void,
-    onDeleteNode: (uuid: UUID) => void,
-    onDeleteInputEdge: (uuid: UUID) => void,
-    onDeleteOutputEdges: (uuid: UUID) => void,
-    onResetCamera: () => void,
-    onKeyDown: (key: string) => void,
-    onFinderInsert: (option: string) => void,
-    onFinderChange: (option: string) => void
-): UI => {
+export const view = (model: Model, dispatch: Dispatch<AppEvent>): UI => {
+    const onClickInput = (input: UUID) =>
+        dispatch({
+            kind: EventKind.CLICKED_INPUT,
+            input,
+        })
+    const onClickBody = (body: UUID) =>
+        dispatch({
+            kind: EventKind.CLICKED_BODY,
+            body,
+        })
+    const onClickOutput = (output: UUID) =>
+        dispatch({
+            kind: EventKind.CLICKED_OUTPUT,
+            output,
+        })
+    const onClickNode = (node: UUID) =>
+        dispatch({
+            kind: EventKind.CLICKED_NODE,
+            node,
+        })
+    const onClickBackground = () =>
+        dispatch({ kind: EventKind.CLICKED_BACKGROUND })
+    const onFinderInsert = (option: string) =>
+        dispatch({ kind: EventKind.FINDER_INSERT, option })
+    const onFinderChange = (option: string, node: UUID) =>
+        dispatch({ kind: EventKind.FINDER_CHANGE, option, node })
+    const onKeyDown = (key: string) =>
+        dispatch({ kind: EventKind.KEYDOWN, key })
+    const onChangeNode = (node: UUID) =>
+        dispatch({ kind: EventKind.CHANGE_NODE, node })
+    const onDeleteNode = (node: UUID) =>
+        dispatch({ kind: EventKind.CHANGE_NODE, node })
+    const onDeleteInputEdge = (input: UUID) =>
+        dispatch({ kind: EventKind.DELETE_INPUT_EDGE, input })
+    const onDeleteOutputEdges = (output: UUID) =>
+        dispatch({ kind: EventKind.DELETE_OUTPUT_EDGES, output })
+    const onResetCamera = () => dispatch({ kind: EventKind.RESET_CAMERA })
     const nodes = model.nodeOrder.map((node) =>
         nodeUi(
             model.theme,
@@ -513,7 +537,7 @@ export const view = (
                 finder.view({
                     model: focus.finder,
                     theme: model.theme.finder,
-                    onClick: onFinderChange,
+                    onClick: (option) => onFinderChange(option, focus.node),
                 }),
                 alphabeticVirtualKeyboard.view({
                     color: model.theme.node,

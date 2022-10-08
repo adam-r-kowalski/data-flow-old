@@ -6,7 +6,7 @@ import {
     translate,
 } from "../linear_algebra/matrix3x3"
 import { length } from "../linear_algebra/vector3"
-import { Effects, UpdateResult } from "../run"
+import * as run from "../run"
 import { Model, NodePlacementLocation } from "../model"
 import { Focus, FocusKind } from "../model/focus"
 import { PointerAction, PointerActionKind } from "../model/pointer_action"
@@ -14,7 +14,6 @@ import {
     Body,
     BodyKind,
     Bodys,
-    GenerateUUID,
     Graph,
     Inputs,
     Node,
@@ -78,6 +77,9 @@ import {
     Wheel,
 } from "../event"
 import * as finder from "../finder"
+import { Effects, GenerateUUID } from "../effects"
+
+type UpdateResult = run.UpdateResult<Model, AppEvent>
 
 const pointerDown = (model: Model, event: PointerDown): UpdateResult => {
     const pointers = [...model.pointers, event.pointer]
@@ -507,13 +509,14 @@ const keyDown = (
             const focus = model.focus
             switch (focus.kind) {
                 case FocusKind.FINDER_INSERT: {
-                    const result = finder.update({
+                    const result = finder.update<AppEvent>({
                         model: focus.finder,
                         event,
                         onSelect: (option) => ({
                             kind: EventKind.FINDER_INSERT,
                             option,
                         }),
+                        onClose: { kind: EventKind.FINDER_CLOSE },
                     })
                     const dispatch = result.event ? [result.event] : undefined
                     return {
@@ -528,7 +531,7 @@ const keyDown = (
                     }
                 }
                 case FocusKind.FINDER_CHANGE: {
-                    const result = finder.update({
+                    const result = finder.update<AppEvent>({
                         model: focus.finder,
                         event,
                         onSelect: (option) => ({
@@ -536,6 +539,7 @@ const keyDown = (
                             option,
                             node: focus.node,
                         }),
+                        onClose: { kind: EventKind.FINDER_CLOSE },
                     })
                     const dispatch = result.event ? [result.event] : undefined
                     return {

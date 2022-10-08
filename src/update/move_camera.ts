@@ -1,7 +1,10 @@
+import { CurrentTime } from "../effects"
 import { AppEvent, EventKind, KeyDown, KeyUp } from "../event"
 import { multiplyMatrices, scale, translate } from "../linear_algebra/matrix3x3"
 import { Model, NodePlacementLocation } from "../model"
-import { CurrentTime, UpdateResult } from "../run"
+import * as run from "../run"
+
+type UpdateResult = run.UpdateResult<Model, AppEvent>
 
 export const maybeStartMoveCamera = (
     model: Model,

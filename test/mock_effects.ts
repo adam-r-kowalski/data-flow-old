@@ -1,5 +1,5 @@
 import { Table } from "../src/model/table"
-import { Effects } from "../src/run"
+import { Effects } from "../src/effects"
 
 export interface EffectModel {
     uuid: number

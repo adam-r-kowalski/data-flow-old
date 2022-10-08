@@ -3,8 +3,6 @@ import { Column, Table } from "./table"
 
 export type UUID = string
 
-export type GenerateUUID = () => UUID
-
 export interface Input {
     readonly uuid: UUID
     readonly node: UUID

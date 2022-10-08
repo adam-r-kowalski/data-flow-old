@@ -1195,39 +1195,12 @@ test("view with no nodes or edges", () => {
         zoomCamera: { in: false, out: false, now: 0 },
         theme,
     }
-    const onClickInput = () => {}
-    const onClickBody = () => {}
-    const onClickOutput = () => {}
-    const onClickNode = () => {}
-    const onClickBackground = () => {}
-    const onChangeNode = () => {}
-    const onDeleteNode = () => {}
-    const onDeleteInputEdge = () => {}
-    const onDeleteOutputEdges = () => {}
-    const onResetCamera = () => {}
-    const onKeyDown = () => {}
-    const onFinderInsert = () => {}
-    const onFinderChange = () => {}
-    const actual = view(
-        model,
-        onClickInput,
-        onClickBody,
-        onClickOutput,
-        onClickNode,
-        onClickBackground,
-        onChangeNode,
-        onDeleteNode,
-        onDeleteInputEdge,
-        onDeleteOutputEdges,
-        onResetCamera,
-        onKeyDown,
-        onFinderInsert,
-        onFinderChange
-    )
+    const dispatch = async () => {}
+    const actual = view(model, dispatch)
     const expected = stack([
         container({
             color: model.theme.background,
-            onClick: onClickBackground,
+            onClick: () => {},
         }),
         scene({ camera: model.camera, children: [], connections: [] }),
         contextMenu({
@@ -1235,7 +1208,7 @@ test("view with no nodes or edges", () => {
                 {
                     name: "Reset Zoom",
                     shortcut: "z",
-                    onClick: onResetCamera,
+                    onClick: () => {},
                 },
             ],
             backgroundColor: model.theme.node,
@@ -1281,50 +1254,23 @@ test("view with no nodes or edges but finder shown", () => {
         zoomCamera: { in: false, out: false, now: 0 },
         theme,
     }
-    const onClickInput = () => {}
-    const onClickBody = () => {}
-    const onClickOutput = () => {}
-    const onClickNode = () => {}
-    const onClickBackground = () => {}
-    const onChangeNode = () => {}
-    const onDeleteNode = () => {}
-    const onDeleteInputEdge = () => {}
-    const onDeleteOutputEdges = () => {}
-    const onResetCamera = () => {}
-    const onKeyDown = () => {}
-    const onFinderInsert = () => {}
-    const onFinderChange = () => {}
-    const actual = view(
-        model,
-        onClickInput,
-        onClickBody,
-        onClickOutput,
-        onClickNode,
-        onClickBackground,
-        onChangeNode,
-        onDeleteNode,
-        onDeleteInputEdge,
-        onDeleteOutputEdges,
-        onResetCamera,
-        onKeyDown,
-        onFinderInsert,
-        onFinderChange
-    )
+    const dispatch = async () => {}
+    const actual = view(model, dispatch)
     const expected = stack([
         container({
             color: model.theme.background,
-            onClick: onClickBackground,
+            onClick: () => {},
         }),
         scene({ camera: model.camera, children: [], connections: [] }),
         finder.view({
             model: focus.finder,
             theme: model.theme.finder,
-            onClick: onFinderInsert,
+            onClick: () => {},
         }),
         alphabeticVirtualKeyboard.view({
             color: model.theme.node,
             uppercase: false,
-            onClick: onKeyDown,
+            onClick: () => {},
         }),
     ])
     expect(actual).toEqualData(expected)
@@ -1367,50 +1313,23 @@ test("view with no nodes or edges but finder shown capitalized", () => {
         zoomCamera: { in: false, out: false, now: 0 },
         theme,
     }
-    const onClickInput = () => {}
-    const onClickBody = () => {}
-    const onClickOutput = () => {}
-    const onClickNode = () => {}
-    const onClickBackground = () => {}
-    const onChangeNode = () => {}
-    const onDeleteNode = () => {}
-    const onDeleteInputEdge = () => {}
-    const onDeleteOutputEdges = () => {}
-    const onResetCamera = () => {}
-    const onKeyDown = () => {}
-    const onFinderInsert = () => {}
-    const onFinderChange = () => {}
-    const actual = view(
-        model,
-        onClickInput,
-        onClickBody,
-        onClickOutput,
-        onClickNode,
-        onClickBackground,
-        onChangeNode,
-        onDeleteNode,
-        onDeleteInputEdge,
-        onDeleteOutputEdges,
-        onResetCamera,
-        onKeyDown,
-        onFinderInsert,
-        onFinderChange
-    )
+    const dispatch = async () => {}
+    const actual = view(model, dispatch)
     const expected = stack([
         container({
             color: model.theme.background,
-            onClick: onClickBackground,
+            onClick: () => {},
         }),
         scene({ camera: model.camera, children: [], connections: [] }),
         finder.view({
             model: focus.finder,
             theme: theme.finder,
-            onClick: onFinderInsert,
+            onClick: () => {},
         }),
         alphabeticVirtualKeyboard.view({
             color: model.theme.node,
             uppercase: true,
-            onClick: onKeyDown,
+            onClick: () => {},
         }),
     ])
     expect(actual).toEqualData(expected)
@@ -1464,39 +1383,12 @@ test("view with positive number", () => {
         zoomCamera: { in: false, out: false, now: 0 },
         theme,
     }
-    const onClickInput = () => {}
-    const onClickBody = () => {}
-    const onClickOutput = () => {}
-    const onClickNode = () => {}
-    const onClickBackground = () => {}
-    const onChangeNode = () => {}
-    const onDeleteNode = () => {}
-    const onDeleteInputEdge = () => {}
-    const onDeleteOutputEdges = () => {}
-    const onResetCamera = () => {}
-    const onKeyDown = () => {}
-    const onFinderInsert = () => {}
-    const onFinderChange = () => {}
-    const actual = view(
-        model,
-        onClickInput,
-        onClickBody,
-        onClickOutput,
-        onClickNode,
-        onClickBackground,
-        onChangeNode,
-        onDeleteNode,
-        onDeleteInputEdge,
-        onDeleteOutputEdges,
-        onResetCamera,
-        onKeyDown,
-        onFinderInsert,
-        onFinderChange
-    )
+    const dispatch = async () => {}
+    const actual = view(model, dispatch)
     const expected = stack([
         container({
             color: model.theme.background,
-            onClick: onClickBackground,
+            onClick: () => {},
         }),
         scene({
             camera: model.camera,
@@ -1506,10 +1398,10 @@ test("view with positive number", () => {
                     "number",
                     model.graph,
                     model.focus,
-                    onClickInput,
-                    onClickBody,
-                    onClickOutput,
-                    onClickNode
+                    () => {},
+                    () => {},
+                    () => {},
+                    () => {}
                 ),
             ],
             connections: [],
@@ -1517,7 +1409,7 @@ test("view with positive number", () => {
         numericVirtualKeyboard.view({
             color: model.theme.node,
             positive: true,
-            onClick: onKeyDown,
+            onClick: () => {},
         }),
     ])
     expect(actual).toEqualData(expected)
@@ -1571,39 +1463,12 @@ test("view with negative number", () => {
         zoomCamera: { in: false, out: false, now: 0 },
         theme,
     }
-    const onClickInput = () => {}
-    const onClickBody = () => {}
-    const onClickOutput = () => {}
-    const onClickNode = () => {}
-    const onClickBackground = () => {}
-    const onChangeNode = () => {}
-    const onDeleteNode = () => {}
-    const onDeleteInputEdge = () => {}
-    const onDeleteOutputEdges = () => {}
-    const onResetCamera = () => {}
-    const onKeyDown = () => {}
-    const onFinderInsert = () => {}
-    const onFinderChange = () => {}
-    const actual = view(
-        model,
-        onClickInput,
-        onClickBody,
-        onClickOutput,
-        onClickNode,
-        onClickBackground,
-        onChangeNode,
-        onDeleteNode,
-        onDeleteInputEdge,
-        onDeleteOutputEdges,
-        onResetCamera,
-        onKeyDown,
-        onFinderInsert,
-        onFinderChange
-    )
+    const dispatch = async () => {}
+    const actual = view(model, dispatch)
     const expected = stack([
         container({
             color: model.theme.background,
-            onClick: onClickBackground,
+            onClick: () => {},
         }),
         scene({
             camera: model.camera,
@@ -1613,10 +1478,10 @@ test("view with negative number", () => {
                     "number",
                     model.graph,
                     model.focus,
-                    onClickInput,
-                    onClickBody,
-                    onClickOutput,
-                    onClickNode
+                    () => {},
+                    () => {},
+                    () => {},
+                    () => {}
                 ),
             ],
             connections: [],
@@ -1624,7 +1489,7 @@ test("view with negative number", () => {
         numericVirtualKeyboard.view({
             color: model.theme.node,
             positive: false,
-            onClick: onKeyDown,
+            onClick: () => {},
         }),
     ])
     expect(actual).toEqualData(expected)
@@ -1678,39 +1543,12 @@ test("view with text", () => {
         zoomCamera: { in: false, out: false, now: 0 },
         theme,
     }
-    const onClickInput = () => {}
-    const onClickBody = () => {}
-    const onClickOutput = () => {}
-    const onClickNode = () => {}
-    const onClickBackground = () => {}
-    const onChangeNode = () => {}
-    const onDeleteNode = () => {}
-    const onDeleteInputEdge = () => {}
-    const onDeleteOutputEdges = () => {}
-    const onResetCamera = () => {}
-    const onKeyDown = () => {}
-    const onFinderInsert = () => {}
-    const onFinderChange = () => {}
-    const actual = view(
-        model,
-        onClickInput,
-        onClickBody,
-        onClickOutput,
-        onClickNode,
-        onClickBackground,
-        onChangeNode,
-        onDeleteNode,
-        onDeleteInputEdge,
-        onDeleteOutputEdges,
-        onResetCamera,
-        onKeyDown,
-        onFinderInsert,
-        onFinderChange
-    )
+    const dispatch = async () => {}
+    const actual = view(model, dispatch)
     const expected = stack([
         container({
             color: model.theme.background,
-            onClick: onClickBackground,
+            onClick: () => {},
         }),
         scene({
             camera: model.camera,
@@ -1720,10 +1558,10 @@ test("view with text", () => {
                     "text",
                     model.graph,
                     model.focus,
-                    onClickInput,
-                    onClickBody,
-                    onClickOutput,
-                    onClickNode
+                    () => {},
+                    () => {},
+                    () => {},
+                    () => {}
                 ),
             ],
             connections: [],
@@ -1731,7 +1569,7 @@ test("view with text", () => {
         alphabeticVirtualKeyboard.view({
             color: model.theme.node,
             uppercase: false,
-            onClick: onKeyDown,
+            onClick: () => {},
         }),
     ])
     expect(actual).toEqualData(expected)
@@ -1815,39 +1653,12 @@ test("view with three nodes and no edges", () => {
         zoomCamera: { in: false, out: false, now: 0 },
         theme,
     }
-    const onClickInput = () => {}
-    const onClickBody = () => {}
-    const onClickOutput = () => {}
-    const onClickNode = () => {}
-    const onClickBackground = () => {}
-    const onChangeNode = () => {}
-    const onDeleteNode = () => {}
-    const onDeleteInputEdge = () => {}
-    const onDeleteOutputEdges = () => {}
-    const onResetCamera = () => {}
-    const onKeyDown = () => {}
-    const onFinderInsert = () => {}
-    const onFinderChange = () => {}
-    const actual = view(
-        model,
-        onClickInput,
-        onClickBody,
-        onClickOutput,
-        onClickNode,
-        onClickBackground,
-        onChangeNode,
-        onDeleteNode,
-        onDeleteInputEdge,
-        onDeleteOutputEdges,
-        onResetCamera,
-        onKeyDown,
-        onFinderInsert,
-        onFinderChange
-    )
+    const dispatch = async () => {}
+    const actual = view(model, dispatch)
     const expected = stack([
         container({
             color: model.theme.background,
-            onClick: onClickBackground,
+            onClick: () => {},
         }),
         scene({
             camera: model.camera,
@@ -1857,30 +1668,30 @@ test("view with three nodes and no edges", () => {
                     "first",
                     model.graph,
                     model.focus,
-                    onClickInput,
-                    onClickBody,
-                    onClickOutput,
-                    onClickNode
+                    () => {},
+                    () => {},
+                    () => {},
+                    () => {}
                 ),
                 nodeUi(
                     model.theme,
                     "second",
                     model.graph,
                     model.focus,
-                    onClickInput,
-                    onClickBody,
-                    onClickOutput,
-                    onClickNode
+                    () => {},
+                    () => {},
+                    () => {},
+                    () => {}
                 ),
                 nodeUi(
                     model.theme,
                     "third",
                     model.graph,
                     model.focus,
-                    onClickInput,
-                    onClickBody,
-                    onClickOutput,
-                    onClickNode
+                    () => {},
+                    () => {},
+                    () => {},
+                    () => {}
                 ),
             ],
             connections: [],
@@ -1890,7 +1701,7 @@ test("view with three nodes and no edges", () => {
                 {
                     name: "Reset Zoom",
                     shortcut: "z",
-                    onClick: onResetCamera,
+                    onClick: () => {},
                 },
             ],
             backgroundColor: model.theme.node,
@@ -1979,39 +1790,12 @@ test("view with three nodes and no edges", () => {
         zoomCamera: { in: false, out: false, now: 0 },
         theme,
     }
-    const onClickInput = () => {}
-    const onClickBody = () => {}
-    const onClickOutput = () => {}
-    const onClickNode = () => {}
-    const onClickBackground = () => {}
-    const onChangeNode = () => {}
-    const onDeleteNode = () => {}
-    const onDeleteInputEdge = () => {}
-    const onDeleteOutputEdges = () => {}
-    const onResetCamera = () => {}
-    const onKeyDown = () => {}
-    const onFinderInsert = () => {}
-    const onFinderChange = () => {}
-    const actual = view(
-        model,
-        onClickInput,
-        onClickBody,
-        onClickOutput,
-        onClickNode,
-        onClickBackground,
-        onChangeNode,
-        onDeleteNode,
-        onDeleteInputEdge,
-        onDeleteOutputEdges,
-        onResetCamera,
-        onKeyDown,
-        onFinderInsert,
-        onFinderChange
-    )
+    const dispatch = async () => {}
+    const actual = view(model, dispatch)
     const expected = stack([
         container({
             color: model.theme.background,
-            onClick: onClickBackground,
+            onClick: () => {},
         }),
         scene({
             camera: model.camera,
@@ -2021,30 +1805,30 @@ test("view with three nodes and no edges", () => {
                     "first",
                     model.graph,
                     model.focus,
-                    onClickInput,
-                    onClickBody,
-                    onClickOutput,
-                    onClickNode
+                    () => {},
+                    () => {},
+                    () => {},
+                    () => {}
                 ),
                 nodeUi(
                     model.theme,
                     "second",
                     model.graph,
                     model.focus,
-                    onClickInput,
-                    onClickBody,
-                    onClickOutput,
-                    onClickNode
+                    () => {},
+                    () => {},
+                    () => {},
+                    () => {}
                 ),
                 nodeUi(
                     model.theme,
                     "third",
                     model.graph,
                     model.focus,
-                    onClickInput,
-                    onClickBody,
-                    onClickOutput,
-                    onClickNode
+                    () => {},
+                    () => {},
+                    () => {},
+                    () => {}
                 ),
             ],
             connections: [],
@@ -2054,12 +1838,12 @@ test("view with three nodes and no edges", () => {
                 {
                     name: "Change Node",
                     shortcut: "c",
-                    onClick: onChangeNode,
+                    onClick: () => {},
                 },
                 {
                     name: "Delete Node",
                     shortcut: "d",
-                    onClick: onDeleteNode,
+                    onClick: () => {},
                 },
             ],
             backgroundColor: model.theme.node,
@@ -2166,39 +1950,12 @@ test("view with three nodes and one edges", () => {
         zoomCamera: { in: false, out: false, now: 0 },
         theme,
     }
-    const onClickInput = () => {}
-    const onClickBody = () => {}
-    const onClickOutput = () => {}
-    const onClickNode = () => {}
-    const onClickBackground = () => {}
-    const onChangeNode = () => {}
-    const onDeleteNode = () => {}
-    const onDeleteInputEdge = () => {}
-    const onDeleteOutputEdges = () => {}
-    const onResetCamera = () => {}
-    const onKeyDown = () => {}
-    const onFinderInsert = () => {}
-    const onFinderChange = () => {}
-    const actual = view(
-        model,
-        onClickInput,
-        onClickBody,
-        onClickOutput,
-        onClickNode,
-        onClickBackground,
-        onChangeNode,
-        onDeleteNode,
-        onDeleteInputEdge,
-        onDeleteOutputEdges,
-        onResetCamera,
-        onKeyDown,
-        onFinderInsert,
-        onFinderChange
-    )
+    const dispatch = async () => {}
+    const actual = view(model, dispatch)
     const expected = stack([
         container({
             color: model.theme.background,
-            onClick: onClickBackground,
+            onClick: () => {},
         }),
         scene({
             camera: model.camera,
@@ -2208,30 +1965,30 @@ test("view with three nodes and one edges", () => {
                     "first",
                     model.graph,
                     model.focus,
-                    onClickInput,
-                    onClickBody,
-                    onClickOutput,
-                    onClickNode
+                    () => {},
+                    () => {},
+                    () => {},
+                    () => {}
                 ),
                 nodeUi(
                     model.theme,
                     "second",
                     model.graph,
                     model.focus,
-                    onClickInput,
-                    onClickBody,
-                    onClickOutput,
-                    onClickNode
+                    () => {},
+                    () => {},
+                    () => {},
+                    () => {}
                 ),
                 nodeUi(
                     model.theme,
                     "third",
                     model.graph,
                     model.focus,
-                    onClickInput,
-                    onClickBody,
-                    onClickOutput,
-                    onClickNode
+                    () => {},
+                    () => {},
+                    () => {},
+                    () => {}
                 ),
             ],
             connections: [
@@ -2247,7 +2004,7 @@ test("view with three nodes and one edges", () => {
                 {
                     name: "Reset Zoom",
                     shortcut: "z",
-                    onClick: onResetCamera,
+                    onClick: () => {},
                 },
             ],
             backgroundColor: model.theme.node,
@@ -2311,39 +2068,12 @@ test("view with body selected", () => {
         zoomCamera: { in: false, out: false, now: 0 },
         theme,
     }
-    const onClickInput = () => {}
-    const onClickBody = () => {}
-    const onClickOutput = () => {}
-    const onClickNode = () => {}
-    const onClickBackground = () => {}
-    const onChangeNode = () => {}
-    const onDeleteNode = () => {}
-    const onDeleteInputEdge = () => {}
-    const onDeleteOutputEdges = () => {}
-    const onResetCamera = () => {}
-    const onKeyDown = () => {}
-    const onFinderInsert = () => {}
-    const onFinderChange = () => {}
-    const actual = view(
-        model,
-        onClickInput,
-        onClickBody,
-        onClickOutput,
-        onClickNode,
-        onClickBackground,
-        onChangeNode,
-        onDeleteNode,
-        onDeleteInputEdge,
-        onDeleteOutputEdges,
-        onResetCamera,
-        onKeyDown,
-        onFinderInsert,
-        onFinderChange
-    )
+    const dispatch = async () => {}
+    const actual = view(model, dispatch)
     const expected = stack([
         container({
             color: model.theme.background,
-            onClick: onClickBackground,
+            onClick: () => {},
         }),
         scene({
             camera: model.camera,
@@ -2353,10 +2083,10 @@ test("view with body selected", () => {
                     "number",
                     model.graph,
                     model.focus,
-                    onClickInput,
-                    onClickBody,
-                    onClickOutput,
-                    onClickNode
+                    () => {},
+                    () => {},
+                    () => {},
+                    () => {}
                 ),
             ],
             connections: [],
@@ -2364,7 +2094,7 @@ test("view with body selected", () => {
         numericVirtualKeyboard.view({
             color: model.theme.node,
             positive: true,
-            onClick: onKeyDown,
+            onClick: () => {},
         }),
     ])
     expect(actual).toEqualData(expected)
@@ -2474,39 +2204,12 @@ test("view with input selected", () => {
         zoomCamera: { in: false, out: false, now: 0 },
         theme,
     }
-    const onClickInput = () => {}
-    const onClickBody = () => {}
-    const onClickOutput = () => {}
-    const onClickNode = () => {}
-    const onClickBackground = () => {}
-    const onChangeNode = () => {}
-    const onDeleteNode = () => {}
-    const onDeleteInputEdge = () => {}
-    const onDeleteOutputEdges = () => {}
-    const onResetCamera = () => {}
-    const onKeyDown = () => {}
-    const onFinderInsert = () => {}
-    const onFinderChange = () => {}
-    const actual = view(
-        model,
-        onClickInput,
-        onClickBody,
-        onClickOutput,
-        onClickNode,
-        onClickBackground,
-        onChangeNode,
-        onDeleteNode,
-        onDeleteInputEdge,
-        onDeleteOutputEdges,
-        onResetCamera,
-        onKeyDown,
-        onFinderInsert,
-        onFinderChange
-    )
+    const dispatch = async () => {}
+    const actual = view(model, dispatch)
     const expected = stack([
         container({
             color: model.theme.background,
-            onClick: onClickBackground,
+            onClick: () => {},
         }),
         scene({
             camera: model.camera,
@@ -2516,20 +2219,20 @@ test("view with input selected", () => {
                     "add",
                     model.graph,
                     model.focus,
-                    onClickInput,
-                    onClickBody,
-                    onClickOutput,
-                    onClickNode
+                    () => {},
+                    () => {},
+                    () => {},
+                    () => {}
                 ),
                 nodeUi(
                     model.theme,
                     "sub",
                     model.graph,
                     model.focus,
-                    onClickInput,
-                    onClickBody,
-                    onClickOutput,
-                    onClickNode
+                    () => {},
+                    () => {},
+                    () => {},
+                    () => {}
                 ),
             ],
             connections: [
@@ -2545,7 +2248,7 @@ test("view with input selected", () => {
                 {
                     name: "Delete Edge",
                     shortcut: "d",
-                    onClick: onDeleteInputEdge,
+                    onClick: () => {},
                 },
             ],
             backgroundColor: theme.node,
@@ -2658,39 +2361,12 @@ test("view with output selected", () => {
         zoomCamera: { in: false, out: false, now: 0 },
         theme,
     }
-    const onClickInput = () => {}
-    const onClickBody = () => {}
-    const onClickOutput = () => {}
-    const onClickNode = () => {}
-    const onClickBackground = () => {}
-    const onChangeNode = () => {}
-    const onDeleteNode = () => {}
-    const onDeleteInputEdge = () => {}
-    const onDeleteOutputEdges = () => {}
-    const onResetCamera = () => {}
-    const onKeyDown = () => {}
-    const onFinderInsert = () => {}
-    const onFinderChange = () => {}
-    const actual = view(
-        model,
-        onClickInput,
-        onClickBody,
-        onClickOutput,
-        onClickNode,
-        onClickBackground,
-        onChangeNode,
-        onDeleteNode,
-        onDeleteInputEdge,
-        onDeleteOutputEdges,
-        onResetCamera,
-        onKeyDown,
-        onFinderInsert,
-        onFinderChange
-    )
+    const dispatch = async () => {}
+    const actual = view(model, dispatch)
     const expected = stack([
         container({
             color: model.theme.background,
-            onClick: onClickBackground,
+            onClick: () => {},
         }),
         scene({
             camera: model.camera,
@@ -2700,20 +2376,20 @@ test("view with output selected", () => {
                     "add",
                     model.graph,
                     model.focus,
-                    onClickInput,
-                    onClickBody,
-                    onClickOutput,
-                    onClickNode
+                    () => {},
+                    () => {},
+                    () => {},
+                    () => {}
                 ),
                 nodeUi(
                     model.theme,
                     "sub",
                     model.graph,
                     model.focus,
-                    onClickInput,
-                    onClickBody,
-                    onClickOutput,
-                    onClickNode
+                    () => {},
+                    () => {},
+                    () => {},
+                    () => {}
                 ),
             ],
             connections: [
@@ -2729,7 +2405,7 @@ test("view with output selected", () => {
                 {
                     name: "Delete Edge",
                     shortcut: "d",
-                    onClick: onDeleteOutputEdges,
+                    onClick: () => {},
                 },
             ],
             backgroundColor: theme.node,
@@ -2769,39 +2445,12 @@ test("view with node placement location shown", () => {
         zoomCamera: { in: false, out: false, now: 0 },
         theme,
     }
-    const onClickInput = () => {}
-    const onClickBody = () => {}
-    const onClickOutput = () => {}
-    const onClickNode = () => {}
-    const onClickBackground = () => {}
-    const onChangeNode = () => {}
-    const onDeleteNode = () => {}
-    const onDeleteInputEdge = () => {}
-    const onDeleteOutputEdges = () => {}
-    const onResetCamera = () => {}
-    const onKeyDown = () => {}
-    const onFinderInsert = () => {}
-    const onFinderChange = () => {}
-    const actual = view(
-        model,
-        onClickInput,
-        onClickBody,
-        onClickOutput,
-        onClickNode,
-        onClickBackground,
-        onChangeNode,
-        onDeleteNode,
-        onDeleteInputEdge,
-        onDeleteOutputEdges,
-        onResetCamera,
-        onKeyDown,
-        onFinderInsert,
-        onFinderChange
-    )
+    const dispatch = async () => {}
+    const actual = view(model, dispatch)
     const expected = stack([
         container({
             color: model.theme.background,
-            onClick: onClickBackground,
+            onClick: () => {},
         }),
         scene({ camera: model.camera, children: [], connections: [] }),
         scene({
@@ -2822,7 +2471,7 @@ test("view with node placement location shown", () => {
                 {
                     name: "Reset Zoom",
                     shortcut: "z",
-                    onClick: onResetCamera,
+                    onClick: () => {},
                 },
             ],
             backgroundColor: model.theme.node,

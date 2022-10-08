@@ -15,6 +15,8 @@ import { Focus, FocusFinderInsert, FocusKind } from "../../src/model/focus"
 import { PointerActionKind } from "../../src/model/pointer_action"
 import { column, container, row, text, stack, scene } from "../../src/ui"
 import {
+    columnBody,
+    formatCell,
     inputsUi,
     inputUi,
     intersperse,
@@ -24,7 +26,9 @@ import {
     outputUi,
     scatterBody,
     spacer,
+    tableBody,
     tensorBody,
+    textBody,
     view,
 } from "../../src/view"
 import { QuickSelectKind } from "../../src/model/quick_select"
@@ -2827,7 +2831,6 @@ test("view with node placement location shown", () => {
     expect(actual).toEqualData(expected)
 })
 
-/*
 test("textBody not focused", () => {
     const body: Body = {
         kind: BodyKind.TEXT,
@@ -2840,15 +2843,13 @@ test("textBody not focused", () => {
         pointerAction: { kind: PointerActionKind.NONE },
         quickSelect: { kind: QuickSelectKind.NONE },
     }
-    const actual = textBody(theme, body, focus)
+    const onClick = () => {}
+    const actual = textBody(theme, body, focus, onClick)
     const expected = container(
         {
             color: theme.background,
             padding: 5,
-            onClick: {
-                kind: EventKind.CLICKED_BODY,
-                body: "body uuid",
-            },
+            onClick,
         },
         text(body.value.toString())
     )
@@ -2867,15 +2868,13 @@ test("textBody focused", () => {
         body: "body uuid",
         quickSelect: { kind: QuickSelectKind.NONE },
     }
-    const actual = textBody(theme, body, focus)
+    const onClick = () => {}
+    const actual = textBody(theme, body, focus, onClick)
     const expected = container(
         {
             color: theme.focusInput,
             padding: 5,
-            onClick: {
-                kind: EventKind.CLICKED_BODY,
-                body: "body uuid",
-            },
+            onClick,
         },
         text(body.value.toString())
     )
@@ -2897,15 +2896,13 @@ test("textBody quick select", () => {
             hotkeys: { "body uuid": "a" },
         },
     }
-    const actual = textBody(theme, body, focus)
+    const onClick = () => {}
+    const actual = textBody(theme, body, focus, onClick)
     const expected = container(
         {
             color: theme.background,
             padding: 5,
-            onClick: {
-                kind: EventKind.CLICKED_BODY,
-                body: "body uuid",
-            },
+            onClick,
         },
         text("a")
     )
@@ -3010,28 +3007,39 @@ test("nodeUi with text body", () => {
         pointerAction: { kind: PointerActionKind.NONE },
         quickSelect: { kind: QuickSelectKind.NONE },
     }
-    const actual = nodeUi(theme, node.uuid, graph, focus)
+    const onClickInput = () => {}
+    const onClickBody = () => {}
+    const onClickOutput = () => {}
+    const onClickNode = () => {}
+    const actual = nodeUi(
+        theme,
+        node.uuid,
+        graph,
+        focus,
+        onClickInput,
+        onClickBody,
+        onClickOutput,
+        onClickNode
+    )
     const expected = container(
         {
             color: theme.node,
             padding: 4,
             x: 0,
             y: 0,
-            onClick: {
-                kind: EventKind.CLICKED_NODE,
-                node: "node uuid",
-            },
+            onClick: onClickNode,
         },
         column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             text("node"),
             spacer(4),
             row([
-                textBody(theme, body, focus),
+                textBody(theme, body, focus, onClickBody),
                 spacer(15),
                 outputsUi(
                     theme,
                     node.outputs.map((o) => graph.outputs[o]),
-                    focus
+                    focus,
+                    onClickOutput
                 ),
             ]),
         ])
@@ -3077,17 +3085,27 @@ test("nodeUi with table body", () => {
         pointerAction: { kind: PointerActionKind.NONE },
         quickSelect: { kind: QuickSelectKind.NONE },
     }
-    const actual = nodeUi(theme, node.uuid, graph, focus)
+    const onClickInput = () => {}
+    const onClickBody = () => {}
+    const onClickOutput = () => {}
+    const onClickNode = () => {}
+    const actual = nodeUi(
+        theme,
+        node.uuid,
+        graph,
+        focus,
+        onClickInput,
+        onClickBody,
+        onClickOutput,
+        onClickNode
+    )
     const expected = container(
         {
             color: theme.node,
             padding: 4,
             x: 0,
             y: 0,
-            onClick: {
-                kind: EventKind.CLICKED_NODE,
-                node: "node uuid",
-            },
+            onClick: onClickNode,
         },
         column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             text("node"),
@@ -3098,7 +3116,8 @@ test("nodeUi with table body", () => {
                 outputsUi(
                     theme,
                     node.outputs.map((o) => graph.outputs[o]),
-                    focus
+                    focus,
+                    onClickOutput
                 ),
             ]),
         ])
@@ -3139,17 +3158,27 @@ test("nodeUi with column body", () => {
         pointerAction: { kind: PointerActionKind.NONE },
         quickSelect: { kind: QuickSelectKind.NONE },
     }
-    const actual = nodeUi(theme, node.uuid, graph, focus)
+    const onClickInput = () => {}
+    const onClickBody = () => {}
+    const onClickOutput = () => {}
+    const onClickNode = () => {}
+    const actual = nodeUi(
+        theme,
+        node.uuid,
+        graph,
+        focus,
+        onClickInput,
+        onClickBody,
+        onClickOutput,
+        onClickNode
+    )
     const expected = container(
         {
             color: theme.node,
             padding: 4,
             x: 0,
             y: 0,
-            onClick: {
-                kind: EventKind.CLICKED_NODE,
-                node: "node uuid",
-            },
+            onClick: onClickNode,
         },
         column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             text("node"),
@@ -3160,7 +3189,8 @@ test("nodeUi with column body", () => {
                 outputsUi(
                     theme,
                     node.outputs.map((o) => graph.outputs[o]),
-                    focus
+                    focus,
+                    onClickOutput
                 ),
             ]),
         ])
@@ -3202,17 +3232,27 @@ test("nodeUi with tensor body", () => {
         pointerAction: { kind: PointerActionKind.NONE },
         quickSelect: { kind: QuickSelectKind.NONE },
     }
-    const actual = nodeUi(theme, node.uuid, graph, focus)
+    const onClickInput = () => {}
+    const onClickBody = () => {}
+    const onClickOutput = () => {}
+    const onClickNode = () => {}
+    const actual = nodeUi(
+        theme,
+        node.uuid,
+        graph,
+        focus,
+        onClickInput,
+        onClickBody,
+        onClickOutput,
+        onClickNode
+    )
     const expected = container(
         {
             color: theme.node,
             padding: 4,
             x: 0,
             y: 0,
-            onClick: {
-                kind: EventKind.CLICKED_NODE,
-                node: "node uuid",
-            },
+            onClick: onClickNode,
         },
         column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             text("node"),
@@ -3223,7 +3263,8 @@ test("nodeUi with tensor body", () => {
                 outputsUi(
                     theme,
                     node.outputs.map((o) => graph.outputs[o]),
-                    focus
+                    focus,
+                    onClickOutput
                 ),
             ]),
         ])
@@ -3264,17 +3305,27 @@ test("nodeUi with scatter body", () => {
         pointerAction: { kind: PointerActionKind.NONE },
         quickSelect: { kind: QuickSelectKind.NONE },
     }
-    const actual = nodeUi(theme, node.uuid, graph, focus)
+    const onClickInput = () => {}
+    const onClickBody = () => {}
+    const onClickOutput = () => {}
+    const onClickNode = () => {}
+    const actual = nodeUi(
+        theme,
+        node.uuid,
+        graph,
+        focus,
+        onClickInput,
+        onClickBody,
+        onClickOutput,
+        onClickNode
+    )
     const expected = container(
         {
             color: theme.node,
             padding: 4,
             x: 0,
             y: 0,
-            onClick: {
-                kind: EventKind.CLICKED_NODE,
-                node: "node uuid",
-            },
+            onClick: onClickNode,
         },
         column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             text("node"),
@@ -3285,7 +3336,8 @@ test("nodeUi with scatter body", () => {
                 outputsUi(
                     theme,
                     node.outputs.map((o) => graph.outputs[o]),
-                    focus
+                    focus,
+                    onClickOutput
                 ),
             ]),
         ])
@@ -3324,17 +3376,27 @@ test("nodeUi with error body", () => {
         pointerAction: { kind: PointerActionKind.NONE },
         quickSelect: { kind: QuickSelectKind.NONE },
     }
-    const actual = nodeUi(theme, node.uuid, graph, focus)
+    const onClickInput = () => {}
+    const onClickBody = () => {}
+    const onClickOutput = () => {}
+    const onClickNode = () => {}
+    const actual = nodeUi(
+        theme,
+        node.uuid,
+        graph,
+        focus,
+        onClickInput,
+        onClickBody,
+        onClickOutput,
+        onClickNode
+    )
     const expected = container(
         {
             color: theme.error,
             padding: 4,
             x: 0,
             y: 0,
-            onClick: {
-                kind: EventKind.CLICKED_NODE,
-                node: "node uuid",
-            },
+            onClick: onClickNode,
         },
         column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             text("node"),
@@ -3343,7 +3405,8 @@ test("nodeUi with error body", () => {
                 outputsUi(
                     theme,
                     node.outputs.map((o) => graph.outputs[o]),
-                    focus
+                    focus,
+                    onClickOutput
                 ),
             ]),
         ])
@@ -3357,4 +3420,3 @@ test("format cell", () => {
     expect(formatCell(3.12)).toEqual("3.12")
     expect(formatCell(3.124)).toEqual("3.12")
 })
-*/

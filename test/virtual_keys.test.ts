@@ -1,72 +1,60 @@
 import * as virtualKeys from "../src/virtual_keys"
 import { container, row, text } from "../src/ui"
-import { EventKind } from "../src/event"
+import "./toEqualData"
 
 const { virtualKey } = virtualKeys
 
 test("virtual key", () => {
-    const actual = virtualKey("key")
+    const onClick = () => {}
+    const actual = virtualKey("key", onClick)
     const expected = container(
         {
             padding: 10,
-            onClick: {
-                kind: EventKind.KEYDOWN,
-                key: "key",
-            },
+            onClick,
         },
         text({ size: 24 }, "key")
     )
-    expect(actual).toEqual(expected)
+    expect(actual).toEqualData(expected)
 })
 
 test("remapped virtual key", () => {
-    const actual = virtualKey("space")
+    const onClick = () => {}
+    const actual = virtualKey("space", onClick)
     const expected = container(
         {
             padding: 10,
-            onClick: {
-                kind: EventKind.KEYDOWN,
-                key: " ",
-            },
+            onClick,
         },
         text({ size: 24 }, "space")
     )
-    expect(actual).toEqual(expected)
+    expect(actual).toEqualData(expected)
 })
 
 test("virtual keys", () => {
-    const actual = virtualKeys.view(["a", "b", "c"])
+    const onClick = () => {}
+    const actual = virtualKeys.view(["a", "b", "c"], onClick)
     const expected = row([
         container(
             {
                 padding: 10,
-                onClick: {
-                    kind: EventKind.KEYDOWN,
-                    key: "a",
-                },
+                onClick,
             },
             text({ size: 24 }, "a")
         ),
         container(
             {
                 padding: 10,
-                onClick: {
-                    kind: EventKind.KEYDOWN,
-                    key: "b",
-                },
+                onClick,
             },
             text({ size: 24 }, "b")
         ),
         container(
             {
                 padding: 10,
-                onClick: {
-                    kind: EventKind.KEYDOWN,
-                    key: "c",
-                },
+                onClick,
             },
             text({ size: 24 }, "c")
         ),
     ])
-    expect(actual).toEqual(expected)
+    expect(actual).toEqualData(expected)
 })

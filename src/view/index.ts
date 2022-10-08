@@ -32,7 +32,6 @@ import { identity } from "../linear_algebra/matrix3x3"
 import * as alphabeticVirtualKeyboard from "../alphabetic_virtual_keyboard"
 import * as numericVirtualKeyboard from "../numeric_virtual_keyboard"
 import * as finder from "../finder"
-import { EventKind } from "../event"
 
 export const spacer = (size: number): UI =>
     container({ width: size, height: size })
@@ -445,7 +444,9 @@ export const view = (
     onDeleteInputEdge: (uuid: UUID) => void,
     onDeleteOutputEdges: (uuid: UUID) => void,
     onResetCamera: () => void,
-    onKeyDown: (key: string) => void
+    onKeyDown: (key: string) => void,
+    onFinderInsert: (option: string) => void,
+    onFinderChange: (option: string) => void
 ): UI => {
     const nodes = model.nodeOrder.map((node) =>
         nodeUi(
@@ -497,10 +498,7 @@ export const view = (
                 finder.view({
                     model: focus.finder,
                     theme: model.theme.finder,
-                    onClick: (option) => ({
-                        kind: EventKind.FINDER_INSERT,
-                        option,
-                    }),
+                    onClick: onFinderInsert,
                 }),
                 alphabeticVirtualKeyboard.view({
                     color: model.theme.node,
@@ -515,11 +513,7 @@ export const view = (
                 finder.view({
                     model: focus.finder,
                     theme: model.theme.finder,
-                    onClick: (option) => ({
-                        kind: EventKind.FINDER_CHANGE,
-                        node: focus.node,
-                        option,
-                    }),
+                    onClick: onFinderChange,
                 }),
                 alphabeticVirtualKeyboard.view({
                     color: model.theme.node,

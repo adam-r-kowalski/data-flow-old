@@ -22,7 +22,7 @@ import {
     outputUi,
     spacer,
 } from "../../src/view"
-import "../toEqualUI"
+import "../toEqualData"
 
 const theme: Theme = {
     background: { red: 2, green: 22, blue: 39, alpha: 255 },
@@ -75,7 +75,7 @@ test("inputUi with quick select", () => {
             text("name"),
         ])
     )
-    expect(actual).toEqualUI(expected)
+    expect(actual).toEqualData(expected)
 })
 
 test("outputUI with quick select", () => {
@@ -112,7 +112,7 @@ test("outputUI with quick select", () => {
             ),
         ])
     )
-    expect(actual).toEqualUI(expected)
+    expect(actual).toEqualData(expected)
 })
 
 test("nodeUi with quick select", () => {
@@ -182,7 +182,7 @@ test("nodeUi with quick select", () => {
             ]),
         ])
     )
-    expect(actual).toEqualUI(expected)
+    expect(actual).toEqualData(expected)
 })
 
 test("bodyUi quick select", () => {
@@ -211,5 +211,5 @@ test("bodyUi quick select", () => {
         },
         text("a")
     )
-    expect(actual).toEqualUI(expected)
+    expect(actual).toEqualData(expected)
 })

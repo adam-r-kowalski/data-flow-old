@@ -10,7 +10,7 @@ export const maybeStartMoveNode = (
     focus: FocusNode,
     key: string,
     currentTime: CurrentTime,
-    moveNode: () => {}
+    moveNode: () => void
 ): Model => {
     const { left, down, up, right } = focus.move
     const notMoving = !(left || down || up || right)
@@ -130,7 +130,7 @@ export const maybeStopMoveNode = (
 export const moveNode = (
     model: Model,
     currentTime: CurrentTime,
-    moveNodeAfter: (ms: number) => {}
+    moveNodeAfter: (ms: number) => void
 ): Model => {
     switch (model.focus.kind) {
         case FocusKind.NODE:

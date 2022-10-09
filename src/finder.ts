@@ -63,67 +63,59 @@ export const view = (properties: ViewProperties): UI => {
     ])
 }
 
-interface UpdateProperties<AppEvent> {
+interface UpdateProperties {
     model: Model
     event: KeyDown
-    onSelect: (option: string) => AppEvent
-    onClose: AppEvent
+    onSelect: (option: string) => void
+    onClose: () => void
 }
 
-interface UpdateResult<AppEvent> {
-    model: Model
-    event?: AppEvent
-}
-
-const decrementIndex = <AppEvent>(model: Model): UpdateResult<AppEvent> => {
+const decrementIndex = (model: Model): Model => {
     const selectedIndex = Math.max(0, model.selectedIndex - 1)
-    return { model: { ...model, selectedIndex } }
+    return { ...model, selectedIndex }
 }
 
-const incrementIndex = <AppEvent>(model: Model): UpdateResult<AppEvent> => {
+const incrementIndex = (model: Model): Model => {
     const options = shownOptions(model)
     const selectedIndex = Math.min(
         model.selectedIndex + 1,
         options.length - 1,
         9
     )
-    return { model: { ...model, selectedIndex } }
+    return { ...model, selectedIndex }
 }
 
-const addToSearch = <AppEvent>(
-    model: Model,
-    key: string
-): UpdateResult<AppEvent> => {
+const addToSearch = (model: Model, key: string): Model => {
     const search = model.search + key
-    return { model: { ...model, search } }
+    return { ...model, search }
 }
 
-export const update = <AppEvent>(
-    properties: UpdateProperties<AppEvent>
-): UpdateResult<AppEvent> => {
+export const update = (properties: UpdateProperties): Model => {
     const { model, event, onSelect, onClose } = properties
     switch (event.key) {
         case "Backspace": {
             const search = model.search.slice(0, -1)
-            return { model: { ...model, search } }
+            return { ...model, search }
         }
         case "Shift":
         case "Alt":
         case "Control":
         case "Meta":
         case "Tab":
-            return { model }
+            return model
         case "Enter": {
             const options = shownOptions(model)
-            return options.length > 0
-                ? {
-                      model,
-                      event: onSelect(options[model.selectedIndex]),
-                  }
-                : { model, event: onClose }
+            if (options.length > 0) {
+                onSelect(options[model.selectedIndex])
+                return model
+            } else {
+                onClose()
+                return model
+            }
         }
         case "Escape":
-            return { model, event: onClose }
+            onClose()
+            return model
         case "ArrowUp":
         case "<c-k>":
             return decrementIndex(model)

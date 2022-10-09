@@ -7,8 +7,8 @@ export const maybeStartMoveCamera = (
     model: Model,
     { key }: KeyDown,
     currentTime: CurrentTime,
-    panCamera: () => {},
-    zoomCamera: () => {}
+    panCamera: () => void,
+    zoomCamera: () => void
 ): Model => {
     const pan = () => {
         const { left, down, up, right } = model.panCamera
@@ -207,7 +207,7 @@ export const panCamera = (
 export const zoomCamera = (
     model: Model,
     currentTime: CurrentTime,
-    zoomAfter: (ms: number) => {}
+    zoomAfter: (ms: number) => void
 ): Model => {
     const moving = model.zoomCamera.in || model.zoomCamera.out
     if (moving) {

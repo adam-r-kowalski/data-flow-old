@@ -78,6 +78,7 @@ import {
 import * as finder from "../finder"
 import { Effects, GenerateUUID } from "../effects"
 import { Dispatch } from "../run"
+import { Table } from "../model/table"
 
 const pointerDown = (model: Model, event: PointerDown): Model => {
     const pointers = [...model.pointers, event.pointer]
@@ -378,12 +379,7 @@ interface AddNodeInputs {
     operation: Operation
     position: Position
     effects: Effects
-}
-
-interface AddNodeOutputs {
-    model: Model
-    node: UUID
-    event?: Promise<UploadCsv>
+    onTableUploaded: (table: Table, node: UUID) => void
 }
 
 export const addNodeToGraph = ({
@@ -391,21 +387,19 @@ export const addNodeToGraph = ({
     operation,
     position,
     effects,
-}: AddNodeInputs): AddNodeOutputs => {
-    const { graph, node, event } = addNode({
+    onTableUploaded,
+}: AddNodeInputs): Model => {
+    const { graph, node } = addNode({
         graph: model.graph,
         operation,
         position,
         effects,
+        onTableUploaded,
     })
     return {
-        model: {
-            ...model,
-            graph,
-            nodeOrder: [...model.nodeOrder, node],
-        },
-        node,
-        event,
+        ...model,
+        graph,
+        nodeOrder: [...model.nodeOrder, node],
     }
 }
 
@@ -887,7 +881,8 @@ export const uploadCsv = (model: Model, event: UploadCsv): Model => {
 export const finderInsert = (
     model: Model,
     event: FinderInsert,
-    effects: Effects
+    effects: Effects,
+    onTableUploaded: (table: Table, node: UUID) => void
 ): Model => {
     const operation = model.operations[event.option]
     const [x, y, _] = multiplyMatrixVector(model.camera, [
@@ -895,16 +890,15 @@ export const finderInsert = (
         model.nodePlacementLocation.y,
         1,
     ])
-    const { model: nextModel, event: promise } = addNodeToGraph({
-        model,
-        operation,
-        position: { x, y },
-        effects,
-    })
-    return {
-        model: clearFocus(nextModel),
-        promise,
-    }
+    return clearFocus(
+        addNodeToGraph({
+            model,
+            operation,
+            position: { x, y },
+            effects,
+            onTableUploaded,
+        })
+    )
 }
 
 export const finderChange = (
@@ -1048,6 +1042,9 @@ export const update = (
             ms
         )
     }
+    const onTableUploaded = (table: Table, node: UUID) => {
+        dispatch({ kind: EventKind.UPLOAD_CSV, table, node })
+    }
     switch (event.kind) {
         case EventKind.POINTER_MOVE:
             return pointerMove(model, event, () => effects.showCursor(true))
@@ -1106,7 +1103,7 @@ export const update = (
         case EventKind.UPLOAD_CSV:
             return uploadCsv(model, event)
         case EventKind.FINDER_INSERT:
-            return finderInsert(model, event, effects)
+            return finderInsert(model, event, effects, onTableUploaded)
         case EventKind.FINDER_CHANGE:
             return finderChange(model, event, effects.generateUUID)
         case EventKind.FINDER_CLOSE:

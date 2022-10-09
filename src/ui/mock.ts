@@ -1,28 +1,24 @@
-import { Body, Canvas, PointerEvent, CanvasStyle, TexImage2D } from "./dom"
+import {
+    Body,
+    Canvas,
+    PointerEvent,
+    CanvasStyle,
+    TexImage2D,
+    AddEventListener,
+    Message,
+} from "./dom"
 
-export class MockBuffer {
+export class MockBuffer {}
 
-}
+export class MockProgram {}
 
-export class MockProgram {
+export class MockShader {}
 
-}
+export class MockTexture {}
 
-export class MockShader {
+export class MockVertexArrayObject {}
 
-}
-
-export class MockTexture {
-
-}
-
-export class MockVertexArrayObject {
-
-}
-
-export class MockUniformLocation {
-
-}
+export class MockUniformLocation {}
 
 export class MockWebGL2Context {
     BLEND = 0
@@ -48,44 +44,67 @@ export class MockWebGL2Context {
     LINES = 0
     STATIC_DRAW = 0
 
-    constructor(public canvas: MockCanvas, public simulate_failure: boolean) { }
+    constructor(public canvas: MockCanvas, public simulate_failure: boolean) {}
 
-    enable = (cap: number): void => { }
-    blendFunc = (sfactor: number, dfactor: number): void => { }
-    depthMask = (flag: boolean): void => { }
-    activeTexture = (texture: number): void => { }
-    pixelStorei = (pname: number, param: number | boolean): void => { }
-    clearColor = (red: number, green: number, blue: number, alpha: number): void => { }
+    enable = (cap: number): void => {}
+    blendFunc = (sfactor: number, dfactor: number): void => {}
+    depthMask = (flag: boolean): void => {}
+    activeTexture = (texture: number): void => {}
+    pixelStorei = (pname: number, param: number | boolean): void => {}
+    clearColor = (
+        red: number,
+        green: number,
+        blue: number,
+        alpha: number
+    ): void => {}
     createBuffer = (): MockBuffer | null => new MockBuffer()
     createProgram = (): MockProgram | null => new MockProgram()
     createShader = (type: number): MockShader | null => new MockShader()
-    shaderSource = (shader: MockShader, source: string): void => { }
-    compileShader = (shader: MockShader): void => { }
+    shaderSource = (shader: MockShader, source: string): void => {}
+    compileShader = (shader: MockShader): void => {}
     createTexture = (): MockTexture | null => new MockTexture()
-    bindTexture = (target: number, texture: MockTexture | null): void => { }
-    bindBuffer = (target: number, buffer: MockBuffer | null): void => { }
-    bufferData = (target: number, srcData: BufferSource | null, usage: number): void => { }
-    attachShader = (program: MockProgram, shader: MockShader): void => { }
-    linkProgram = (program: MockProgram): void => { }
-    getProgramParameter = (program: MockProgram, pname: number): any => !this.simulate_failure
+    bindTexture = (target: number, texture: MockTexture | null): void => {}
+    bindBuffer = (target: number, buffer: MockBuffer | null): void => {}
+    bufferData = (
+        target: number,
+        srcData: BufferSource | null,
+        usage: number
+    ): void => {}
+    attachShader = (program: MockProgram, shader: MockShader): void => {}
+    linkProgram = (program: MockProgram): void => {}
+    getProgramParameter = (program: MockProgram, pname: number): any =>
+        !this.simulate_failure
     getShaderInfoLog = (shader: MockShader): string | null => null
-    useProgram = (program: MockProgram): void => { }
-    createVertexArray = (): MockVertexArrayObject | null => new MockVertexArrayObject()
-    bindVertexArray = (array: MockVertexArrayObject | null): void => { }
-    getUniformLocation = (program: MockProgram, name: string): MockUniformLocation | null => new MockUniformLocation()
-    generateMipmap = (target: number): void => { }
-    texParameteri = (target: number, pname: number, param: number): void => { }
-    clear = (mask: number): void => { }
+    useProgram = (program: MockProgram): void => {}
+    createVertexArray = (): MockVertexArrayObject | null =>
+        new MockVertexArrayObject()
+    bindVertexArray = (array: MockVertexArrayObject | null): void => {}
+    getUniformLocation = (
+        program: MockProgram,
+        name: string
+    ): MockUniformLocation | null => new MockUniformLocation()
+    generateMipmap = (target: number): void => {}
+    texParameteri = (target: number, pname: number, param: number): void => {}
+    clear = (mask: number): void => {}
     uniformMatrix3fv = (
         location: MockUniformLocation | null,
         transpose: boolean,
         data: Iterable<number>
-    ): void => { }
-    viewport = (x: number, y: number, width: number, height: number): void => { }
-    drawElements = (mode: number, count: number, type: number, offset: number): void => { }
-    drawArrays = (mode: number, first: number, count: number): void => { }
-    bindAttribLocation = (program: MockProgram, index: number, name: string): void => { }
-    enableVertexAttribArray = (index: number): void => { }
+    ): void => {}
+    viewport = (x: number, y: number, width: number, height: number): void => {}
+    drawElements = (
+        mode: number,
+        count: number,
+        type: number,
+        offset: number
+    ): void => {}
+    drawArrays = (mode: number, first: number, count: number): void => {}
+    bindAttribLocation = (
+        program: MockProgram,
+        index: number,
+        name: string
+    ): void => {}
+    enableVertexAttribArray = (index: number): void => {}
     vertexAttribPointer = (
         index: number,
         size: number,
@@ -93,37 +112,44 @@ export class MockWebGL2Context {
         normalized: boolean,
         stride: number,
         offset: number
-    ): void => { }
+    ): void => {}
     vertexAttribIPointer = (
         index: number,
         size: number,
         type: number,
         stride: number,
         offset: number
-    ): void => { }
-    texImage2D: TexImage2D = (...args: any[]): void => { }
+    ): void => {}
+    texImage2D: TexImage2D = (...args: any[]): void => {}
 }
 
 export class MockTextMetrics {
-    constructor(public width: number) { }
+    constructor(public width: number) {}
 }
 
 export class MockCanvasContext {
-    font: string = 'monospace 24px'
-    textAlign: 'left' = 'left'
-    textBaseline: 'top' = 'top'
-    fillStyle: 'white' = 'white'
+    font: string = "monospace 24px"
+    textAlign: "left" = "left"
+    textBaseline: "top" = "top"
+    fillStyle: "white" = "white"
 
-    constructor(public canvas: MockCanvas) { }
+    constructor(public canvas: MockCanvas) {}
 
-    scale = (x: number, y: number): void => { }
-    clearRect = (x: number, y: number, w: number, h: number): void => { }
-    measureText = (text: string): MockTextMetrics => new MockTextMetrics(24 * text.length)
-    fillText = (text: string, x: number, y: number): void => { }
+    scale = (x: number, y: number): void => {}
+    clearRect = (x: number, y: number, w: number, h: number): void => {}
+    measureText = (text: string): MockTextMetrics =>
+        new MockTextMetrics(24 * text.length)
+    fillText = (text: string, x: number, y: number): void => {}
 }
 
 export class MockCanvas {
-    style: CanvasStyle = { width: '0px', height: '0px', touchAction: 'none', display: 'block', userSelect: 'none' }
+    style: CanvasStyle = {
+        width: "0px",
+        height: "0px",
+        touchAction: "none",
+        display: "block",
+        userSelect: "none",
+    }
     width: number = 0
     height: number = 0
 
@@ -131,12 +157,14 @@ export class MockCanvas {
         this.getContext = this.getContext.bind(this)
     }
 
-    getContext(contextId: 'webgl2'): MockWebGL2Context
-    getContext(contextId: '2d'): MockCanvasContext
-    getContext(contextId: 'webgl2' | '2d') {
+    getContext(contextId: "webgl2"): MockWebGL2Context
+    getContext(contextId: "2d"): MockCanvasContext
+    getContext(contextId: "webgl2" | "2d") {
         switch (contextId) {
-            case 'webgl2': return new MockWebGL2Context(this, this.simulate_failure)
-            case '2d': return new MockCanvasContext(this)
+            case "webgl2":
+                return new MockWebGL2Context(this, this.simulate_failure)
+            case "2d":
+                return new MockCanvasContext(this)
         }
     }
 }
@@ -144,38 +172,61 @@ export class MockCanvas {
 export const mockDocument = (simulate_failure: boolean = false) => {
     const callbacks: ((p: PointerEvent) => void)[] = []
     const body: Body = {
-        appendChild: (canvas: Canvas) => { },
+        appendChild: (canvas: Canvas) => {},
         style: {
-            cursor: 'auto',
-        }
+            cursor: "auto",
+        },
     }
     return {
-        createElement: (tagName: 'canvas') => new MockCanvas(simulate_failure),
-        addEventListener: (event: "pointerdown", callback: (p: PointerEvent) => void) => {
+        createElement: (tagName: "canvas") => new MockCanvas(simulate_failure),
+        addEventListener: (
+            event: "pointerdown",
+            callback: (p: PointerEvent) => void
+        ) => {
             callbacks.push(callback)
         },
         body,
-        fireEvent: (_: 'pointerdown', p: PointerEvent) => {
+        fireEvent: (_: "pointerdown", p: PointerEvent) => {
             for (const callback of callbacks) {
                 callback(p)
             }
-        }
+        },
     }
 }
 
-export const mockWindow = () => {
-    const callbacks: (() => void)[] = []
+export const mockWindow = <AppEvent>() => {
+    type ResizeCallback = () => void
+    const resizeCallbacks: ResizeCallback[] = []
+    type MessageCallback = (message: Message<AppEvent>) => void
+    const messageCallbacks: MessageCallback[] = []
+    const events: AppEvent[] = []
+    const addEventListener: AddEventListener<AppEvent> = (event, callback) => {
+        switch (event) {
+            case "resize":
+                resizeCallbacks.push(callback as ResizeCallback)
+                break
+            case "message":
+                messageCallbacks.push(callback as MessageCallback)
+                break
+        }
+    }
     return {
         devicePixelRatio: 1,
         innerWidth: 500,
         innerHeight: 500,
-        addEventListener: (event: "resize", callback: () => void) => {
-            callbacks.push(callback)
-        },
+        addEventListener,
         fireEvent: (_: "resize") => {
-            for (const callback of callbacks) {
+            for (const callback of resizeCallbacks) {
                 callback()
             }
-        }
+        },
+        postMessage: (event: AppEvent) => {
+            events.push(event)
+            const message = { data: event }
+            for (const callback of messageCallbacks) {
+                callback(message)
+            }
+        },
+        events,
     }
 }

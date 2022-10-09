@@ -4,6 +4,7 @@ import { EventKind } from "../../src/event"
 import { emptyModel } from "../../src/model/empty"
 import { OperationKind, Operations } from "../../src/model/graph"
 import { tensorFunc } from "../../src/model/operations"
+import { mockDocument } from "../../src/ui/mock"
 import { addNodeToGraph, update } from "../../src/update"
 import { changeNodePosition } from "../../src/update/graph"
 import { makeEffects } from "../mock_effects"
@@ -13,7 +14,7 @@ const model = emptyModel({ width: 500, height: 500 })
 const addFunc = tensorFunc(tf.add)
 
 test("h when a node is focused moves node left", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -85,7 +86,7 @@ test("h when a node is focused moves node left", () => {
 })
 
 test("j when a node is focused moves node down", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -151,7 +152,7 @@ test("j when a node is focused moves node down", () => {
 })
 
 test("k when a node is focused moves node up", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -223,7 +224,7 @@ test("k when a node is focused moves node up", () => {
 })
 
 test("l when a node is focused moves node right", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -289,7 +290,7 @@ test("l when a node is focused moves node right", () => {
 })
 
 test("pressing a non hotkey when node focused does nothing", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -330,7 +331,7 @@ test("pressing a non hotkey when node focused does nothing", () => {
 })
 
 test("pressing h then l when node focused does nothing", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -380,7 +381,7 @@ test("pressing h then l when node focused does nothing", () => {
 })
 
 test("move node when nothing focused does nothing", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,

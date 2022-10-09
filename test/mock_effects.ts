@@ -1,5 +1,6 @@
 import { Table } from "../src/model/table"
-import { Effects } from "../src/effects"
+import { Effects, showCursor } from "../src/effects"
+import { Document } from "../src/ui/dom"
 
 export interface EffectModel {
     uuid: number
@@ -11,7 +12,10 @@ export const defaultEffectModel = (): EffectModel => ({
     time: 0,
 })
 
-export const makeEffects = (maybeModel?: EffectModel): Effects => {
+export const makeEffects = (
+    document: Document,
+    maybeModel?: EffectModel
+): Effects => {
     const model: EffectModel =
         maybeModel === undefined ? defaultEffectModel() : maybeModel
     return {
@@ -32,5 +36,6 @@ export const makeEffects = (maybeModel?: EffectModel): Effects => {
                 b: [4, 5, 6],
             },
         }),
+        showCursor: (show: boolean) => showCursor(document, show),
     }
 }

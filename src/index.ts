@@ -8,9 +8,12 @@ import { demoModel } from "./model/demo"
 import { Document } from "./ui/dom"
 import { Columns, Value } from "./model/table"
 import { EventKind, AppEvent } from "./event"
-import { effects } from "./effects"
+import { makeEffects } from "./effects"
 
 type Row = { [name: string]: Value }
+
+const doc = document as Document
+const effects = makeEffects(doc)
 
 const dispatch = run({
     model: demoModel(
@@ -20,7 +23,7 @@ const dispatch = run({
     view,
     update: (model: Model, event: AppEvent) => update(effects, model, event),
     window,
-    document: document as Document,
+    document: doc,
     requestAnimationFrame,
     setTimeout,
     pointerDown: (dispatch, pointer) => {

@@ -6,7 +6,6 @@ import {
     translate,
 } from "../linear_algebra/matrix3x3"
 import { length } from "../linear_algebra/vector3"
-import * as run from "../run"
 import { Model, NodePlacementLocation } from "../model"
 import { Focus, FocusKind } from "../model/focus"
 import { PointerAction, PointerActionKind } from "../model/pointer_action"
@@ -79,12 +78,10 @@ import {
 import * as finder from "../finder"
 import { Effects, GenerateUUID } from "../effects"
 
-type UpdateResult = run.UpdateResult<Model, AppEvent>
-
-const pointerDown = (model: Model, event: PointerDown): UpdateResult => {
+const pointerDown = (model: Model, event: PointerDown): Model => {
     const pointers = [...model.pointers, event.pointer]
     if (model.focus.kind !== FocusKind.NONE) {
-        return { model: { ...model, pointers } }
+        return { ...model, pointers }
     } else if (pointers.length > 1) {
         const pointerAction: PointerAction =
             pointers.length === 2
@@ -95,73 +92,65 @@ const pointerDown = (model: Model, event: PointerDown): UpdateResult => {
                   }
                 : { kind: PointerActionKind.NONE }
         return {
-            model: {
-                ...model,
-                openFinderFirstClick: false,
-                focus: {
-                    kind: FocusKind.NONE,
-                    pointerAction,
-                    quickSelect: { kind: QuickSelectKind.NONE },
-                },
-                pointers,
+            ...model,
+            openFinderFirstClick: false,
+            focus: {
+                kind: FocusKind.NONE,
+                pointerAction,
+                quickSelect: { kind: QuickSelectKind.NONE },
             },
+            pointers,
         }
     } else {
         return {
-            model: {
-                ...model,
-                focus: {
-                    kind: FocusKind.NONE,
-                    pointerAction: { kind: PointerActionKind.PAN },
-                    quickSelect: { kind: QuickSelectKind.NONE },
-                },
-                pointers,
+            ...model,
+            focus: {
+                kind: FocusKind.NONE,
+                pointerAction: { kind: PointerActionKind.PAN },
+                quickSelect: { kind: QuickSelectKind.NONE },
             },
+            pointers,
         }
     }
 }
 
-const pointerUp = (model: Model, event: PointerUp): UpdateResult => {
+const pointerUp = (model: Model, event: PointerUp): Model => {
     const pointers = model.pointers.filter((p) => p.id !== event.pointer.id)
     switch (model.focus.kind) {
         case FocusKind.NONE:
             switch (pointers.length) {
                 case 1:
                     return {
-                        model: {
-                            ...model,
-                            pointers,
-                            focus: {
-                                kind: FocusKind.NONE,
-                                pointerAction: { kind: PointerActionKind.PAN },
-                                quickSelect: { kind: QuickSelectKind.NONE },
-                            },
+                        ...model,
+                        pointers,
+                        focus: {
+                            kind: FocusKind.NONE,
+                            pointerAction: { kind: PointerActionKind.PAN },
+                            quickSelect: { kind: QuickSelectKind.NONE },
                         },
                     }
                 case 0:
                     return {
-                        model: {
-                            ...model,
-                            pointers,
-                            focus: {
-                                kind: FocusKind.NONE,
-                                pointerAction: { kind: PointerActionKind.NONE },
-                                quickSelect: { kind: QuickSelectKind.NONE },
-                            },
+                        ...model,
+                        pointers,
+                        focus: {
+                            kind: FocusKind.NONE,
+                            pointerAction: { kind: PointerActionKind.NONE },
+                            quickSelect: { kind: QuickSelectKind.NONE },
                         },
                     }
                 default:
-                    return { model: { ...model, pointers } }
+                    return { ...model, pointers }
             }
         case FocusKind.NODE:
             if (pointers.length === 0) {
                 const focus: Focus = { ...model.focus, drag: false }
-                return { model: { ...model, pointers, focus } }
+                return { ...model, pointers, focus }
             } else {
-                return { model: { ...model, pointers } }
+                return { ...model, pointers }
             }
         default:
-            return { model: { ...model, pointers } }
+            return { ...model, pointers }
     }
 }
 
@@ -171,122 +160,122 @@ export const changeNth = <T>(xs: Readonly<T[]>, i: number, x: T): T[] => [
     ...xs.slice(i + 1),
 ]
 
-const pointerMove = (model: Model, event: PointerMove): UpdateResult => {
-    const result = (() => {
-        const index = model.pointers.findIndex((p) => p.id === event.pointer.id)
-        const pointer = model.pointers[index]
-        const pointers =
-            index === -1
-                ? model.pointers
-                : changeNth(model.pointers, index, event.pointer)
-        const nodePlacementLocation: NodePlacementLocation = {
-            x: event.pointer.position.x,
-            y: event.pointer.position.y,
-            show: false,
-        }
-        switch (model.focus.kind) {
-            case FocusKind.NONE:
-                const previousPointerAction = model.focus.pointerAction
-                switch (previousPointerAction.kind) {
-                    case PointerActionKind.NONE:
-                        const render = model.nodePlacementLocation.show
-                            ? true
-                            : undefined
-                        return {
-                            model: {
-                                ...model,
-                                nodePlacementLocation,
-                                pointers,
-                            },
-                            render,
-                        }
-                    case PointerActionKind.PAN:
-                        const dx = event.pointer.position.x - pointer.position.x
-                        const dy = event.pointer.position.y - pointer.position.y
-                        const camera = multiplyMatrices(
-                            model.camera,
-                            translate(-dx, -dy)
-                        )
-                        return {
-                            model: { ...model, pointers, camera },
-                        }
-                    case PointerActionKind.ZOOM:
-                        const [p0, p1] = [pointers[0], pointers[1]]
-                        const { x: x1, y: y1 } = p0.position
-                        const { x: x2, y: y2 } = p1.position
-                        const x = (p0.position.x + p1.position.x) / 2
-                        const y = (p0.position.y + p1.position.y) / 2
-                        const pointerAction: PointerAction = {
-                            kind: PointerActionKind.ZOOM,
-                            pointerDistance: Math.sqrt(
-                                Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)
-                            ),
-                            pointerCenter: { x, y },
-                        }
-                        const focus: Focus = {
-                            kind: FocusKind.NONE,
-                            pointerAction,
-                            quickSelect: { kind: QuickSelectKind.NONE },
-                        }
-                        if (previousPointerAction.pointerDistance > 0) {
-                            const move = translate(x, y)
-                            const zoom = Math.pow(
-                                2,
-                                (previousPointerAction.pointerDistance -
-                                    pointerAction.pointerDistance) *
-                                    0.01
-                            )
-                            const moveBack = translate(-x, -y)
-                            const dx = x - previousPointerAction.pointerCenter.x
-                            const dy = y - previousPointerAction.pointerCenter.y
-                            const camera = multiplyMatrices(
-                                model.camera,
-                                move,
-                                scale(zoom, zoom),
-                                moveBack,
-                                translate(-dx, -dy)
-                            )
-                            return {
-                                model: { ...model, focus, pointers, camera },
-                            }
-                        } else {
-                            return { model: { ...model, focus, pointers } }
-                        }
-                }
-            case FocusKind.NODE:
-                if (model.focus.drag) {
+const pointerMove = (
+    model: Model,
+    event: PointerMove,
+    showCursor: () => {}
+): Model => {
+    showCursor()
+    const index = model.pointers.findIndex((p) => p.id === event.pointer.id)
+    const pointer = model.pointers[index]
+    const pointers =
+        index === -1
+            ? model.pointers
+            : changeNth(model.pointers, index, event.pointer)
+    const nodePlacementLocation: NodePlacementLocation = {
+        x: event.pointer.position.x,
+        y: event.pointer.position.y,
+        show: false,
+    }
+    switch (model.focus.kind) {
+        case FocusKind.NONE:
+            const previousPointerAction = model.focus.pointerAction
+            switch (previousPointerAction.kind) {
+                case PointerActionKind.NONE:
+                    return {
+                        ...model,
+                        nodePlacementLocation,
+                        pointers,
+                    }
+                case PointerActionKind.PAN:
                     const dx = event.pointer.position.x - pointer.position.x
                     const dy = event.pointer.position.y - pointer.position.y
-                    const scaling = length(
-                        multiplyMatrixVector(model.camera, [0, 1, 0])
-                    )
-                    const graph = changeNodePosition(
-                        model.graph,
-                        model.focus.node,
-                        (p) => ({
-                            x: p.x + dx * scaling,
-                            y: p.y + dy * scaling,
-                        })
+                    const camera = multiplyMatrices(
+                        model.camera,
+                        translate(-dx, -dy)
                     )
                     return {
-                        model: { ...model, pointers, graph },
+                        ...model,
+                        pointers,
+                        camera,
                     }
-                } else {
-                    return {
-                        model: { ...model, pointers, nodePlacementLocation },
+                case PointerActionKind.ZOOM:
+                    const [p0, p1] = [pointers[0], pointers[1]]
+                    const { x: x1, y: y1 } = p0.position
+                    const { x: x2, y: y2 } = p1.position
+                    const x = (p0.position.x + p1.position.x) / 2
+                    const y = (p0.position.y + p1.position.y) / 2
+                    const pointerAction: PointerAction = {
+                        kind: PointerActionKind.ZOOM,
+                        pointerDistance: Math.sqrt(
+                            Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)
+                        ),
+                        pointerCenter: { x, y },
                     }
+                    const focus: Focus = {
+                        kind: FocusKind.NONE,
+                        pointerAction,
+                        quickSelect: { kind: QuickSelectKind.NONE },
+                    }
+                    if (previousPointerAction.pointerDistance > 0) {
+                        const move = translate(x, y)
+                        const zoom = Math.pow(
+                            2,
+                            (previousPointerAction.pointerDistance -
+                                pointerAction.pointerDistance) *
+                                0.01
+                        )
+                        const moveBack = translate(-x, -y)
+                        const dx = x - previousPointerAction.pointerCenter.x
+                        const dy = y - previousPointerAction.pointerCenter.y
+                        const camera = multiplyMatrices(
+                            model.camera,
+                            move,
+                            scale(zoom, zoom),
+                            moveBack,
+                            translate(-dx, -dy)
+                        )
+                        return { ...model, focus, pointers, camera }
+                    } else {
+                        return { ...model, focus, pointers }
+                    }
+            }
+        case FocusKind.NODE:
+            if (model.focus.drag) {
+                const dx = event.pointer.position.x - pointer.position.x
+                const dy = event.pointer.position.y - pointer.position.y
+                const scaling = length(
+                    multiplyMatrixVector(model.camera, [0, 1, 0])
+                )
+                const graph = changeNodePosition(
+                    model.graph,
+                    model.focus.node,
+                    (p) => ({
+                        x: p.x + dx * scaling,
+                        y: p.y + dy * scaling,
+                    })
+                )
+                return {
+                    ...model,
+                    pointers,
+                    graph,
                 }
-            case FocusKind.BODY_NUMBER:
-            case FocusKind.BODY_TEXT:
-            case FocusKind.INPUT:
-            case FocusKind.OUTPUT:
-                return { model: { ...model, pointers, nodePlacementLocation } }
-            case FocusKind.FINDER_INSERT:
-            case FocusKind.FINDER_CHANGE:
-                return { model: { ...model, pointers } }
-        }
-    })()
-    return { ...result, cursor: true }
+            } else {
+                return {
+                    ...model,
+                    pointers,
+                    nodePlacementLocation,
+                }
+            }
+        case FocusKind.BODY_NUMBER:
+        case FocusKind.BODY_TEXT:
+        case FocusKind.INPUT:
+        case FocusKind.OUTPUT:
+            return { ...model, pointers, nodePlacementLocation }
+        case FocusKind.FINDER_INSERT:
+        case FocusKind.FINDER_CHANGE:
+            return { ...model, pointers }
+    }
 }
 
 const clickedNode = (model: Model, event: ClickedNode): UpdateResult => {

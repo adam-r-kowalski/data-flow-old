@@ -1,34 +1,22 @@
 export interface CanvasStyle {
-    touchAction: 'none'
+    touchAction: "none"
     width: string
     height: string
-    display: 'block'
-    userSelect: 'none'
+    display: "block"
+    userSelect: "none"
 }
 
-export interface Buffer {
+export interface Buffer {}
 
-}
+export interface Program {}
 
-export interface Program {
+export interface Texture {}
 
-}
+export interface Shader {}
 
-export interface Texture {
+export interface VertexArrayObject {}
 
-}
-
-export interface Shader {
-
-}
-
-export interface VertexArrayObject {
-
-}
-
-export interface UniformLocation {
-
-}
+export interface UniformLocation {}
 
 export type TexImage2D = {
     (
@@ -81,7 +69,12 @@ export interface WebGL2Context {
     depthMask: (flag: boolean) => void
     activeTexture: (texture: number) => void
     pixelStorei: (pname: number, param: number | boolean) => void
-    clearColor: (red: number, green: number, blue: number, alpha: number) => void
+    clearColor: (
+        red: number,
+        green: number,
+        blue: number,
+        alpha: number
+    ) => void
     createBuffer: () => Buffer | null
     createProgram: () => Program | null
     createShader: (type: number) => Shader | null
@@ -90,7 +83,11 @@ export interface WebGL2Context {
     createTexture: () => Texture | null
     bindTexture: (target: number, texture: Texture | null) => void
     bindBuffer: (target: number, buffer: Buffer | null) => void
-    bufferData: (target: number, srcData: BufferSource | null, usage: number) => void
+    bufferData: (
+        target: number,
+        srcData: BufferSource | null,
+        usage: number
+    ) => void
     attachShader: (program: Program, shader: Shader) => void
     linkProgram: (program: Program) => void
     getProgramParameter: (program: Program, pname: number) => any
@@ -98,7 +95,10 @@ export interface WebGL2Context {
     useProgram: (program: Program) => void
     createVertexArray: () => VertexArrayObject | null
     bindVertexArray: (array: VertexArrayObject | null) => void
-    getUniformLocation: (program: Program, name: string) => UniformLocation | null
+    getUniformLocation: (
+        program: Program,
+        name: string
+    ) => UniformLocation | null
     generateMipmap: (target: number) => void
     texParameteri: (target: number, pname: number, param: number) => void
     clear: (mask: number) => void
@@ -108,7 +108,12 @@ export interface WebGL2Context {
         data: Iterable<number>
     ) => void
     viewport: (x: number, y: number, width: number, height: number) => void
-    drawElements: (mode: number, count: number, type: number, offset: number) => void
+    drawElements: (
+        mode: number,
+        count: number,
+        type: number,
+        offset: number
+    ) => void
     drawArrays: (mode: number, first: number, count: number) => void
     bindAttribLocation: (program: Program, index: number, name: string) => void
     enableVertexAttribArray: (index: number) => void
@@ -136,10 +141,10 @@ export interface TextMetrics {
 
 export interface CanvasContext {
     scale: (x: number, y: number) => void
-    textAlign: 'left'
-    textBaseline: 'top'
+    textAlign: "left"
+    textBaseline: "top"
     font: string
-    fillStyle: 'white'
+    fillStyle: "white"
     canvas: Canvas
     clearRect: (x: number, y: number, w: number, h: number) => void
     measureText: (text: string) => TextMetrics
@@ -147,8 +152,8 @@ export interface CanvasContext {
 }
 
 export type GetContext = {
-    (contextId: 'webgl2'): WebGL2Context | null
-    (contextId: '2d'): CanvasContext | null
+    (contextId: "webgl2"): WebGL2Context | null
+    (contextId: "2d"): CanvasContext | null
 }
 
 export interface Canvas {
@@ -159,7 +164,7 @@ export interface Canvas {
 }
 
 export interface BodyStyle {
-    cursor: 'auto' | 'none'
+    cursor: "auto" | "none"
 }
 
 export interface Body {
@@ -174,14 +179,27 @@ export interface PointerEvent {
 }
 
 export interface Document {
-    createElement: (tagName: 'canvas') => Canvas
-    addEventListener: (event: "pointerdown", callback: (p: PointerEvent) => void) => void
+    createElement: (tagName: "canvas") => Canvas
+    addEventListener: (
+        event: "pointerdown",
+        callback: (p: PointerEvent) => void
+    ) => void
     body: Body
 }
 
-export interface Window {
+export interface Message<AppEvent> {
+    data: AppEvent
+}
+
+export type AddEventListener<AppEvent> = {
+    (event: "resize", callback: () => void): void
+    (event: "message", callback: (message: Message<AppEvent>) => void): void
+}
+
+export interface Window<AppEvent> {
     devicePixelRatio: number
     innerWidth: number
     innerHeight: number
-    addEventListener: (event: "resize", callback: () => void) => void
+    addEventListener: AddEventListener<AppEvent>
+    postMessage: (event: AppEvent) => void
 }

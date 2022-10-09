@@ -47,12 +47,7 @@ export const maybeStartMoveCamera = (
         case "ArrowDown": {
             return {
                 ...model,
-                zoomCamera: {
-                    ...model.zoomCamera,
-                    in: false,
-                    out: false,
-                },
-                panCamera: { ...model.panCamera, down: true, now: zoom() },
+                panCamera: { ...model.panCamera, down: true, now: pan() },
                 nodePlacementLocation,
             }
         }
@@ -60,11 +55,6 @@ export const maybeStartMoveCamera = (
         case "ArrowUp": {
             return {
                 ...model,
-                zoomCamera: {
-                    ...model.zoomCamera,
-                    in: false,
-                    out: false,
-                },
                 panCamera: { ...model.panCamera, up: true, now: pan() },
                 nodePlacementLocation,
             }

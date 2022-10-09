@@ -69,5 +69,5 @@ export const makeEffects = (document: Document): Effects => ({
     generateUUID,
     promptUserForTable,
     showCursor: (show: boolean) => showCursor(document, show),
-    setTimeout,
+    setTimeout: (callback: () => void, ms: number) => setTimeout(callback, ms),
 })

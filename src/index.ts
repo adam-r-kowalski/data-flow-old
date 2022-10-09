@@ -20,7 +20,7 @@ const dispatch = run({
         effects
     ),
     view,
-    update: update.bind(null, effects),
+    update: (model, event, dispatch) => update(effects, model, event, dispatch),
     window,
     document: doc,
     requestAnimationFrame,

@@ -453,8 +453,8 @@ interface KeyDownProps {
     onFinderChange: (option: string, node: UUID) => void
     onFinderClose: () => void
     moveNode: () => void
-    panCamera: () => void
-    zoomCamera: () => void
+    onPanCamera: () => void
+    onZoomCamera: () => void
 }
 
 const keyDown = (props: KeyDownProps): Model => {
@@ -466,8 +466,8 @@ const keyDown = (props: KeyDownProps): Model => {
         onFinderChange,
         onFinderClose,
         moveNode,
-        panCamera,
-        zoomCamera,
+        onPanCamera,
+        onZoomCamera,
     } = props
     const { generateUUID, currentTime } = effects
     const { key } = event
@@ -591,6 +591,7 @@ const keyDown = (props: KeyDownProps): Model => {
                     switch (key) {
                         case "Enter":
                         case "Escape":
+                        case "<c-Control>":
                             return clearFocus(model)
                         case "Shift":
                             return model
@@ -707,8 +708,8 @@ const keyDown = (props: KeyDownProps): Model => {
                                       nextModel,
                                       event,
                                       currentTime,
-                                      panCamera,
-                                      zoomCamera
+                                      onPanCamera,
+                                      onZoomCamera
                                   )
                     }
             }
@@ -1027,6 +1028,14 @@ export const update = (
     event: AppEvent,
     dispatch: Dispatch<AppEvent>
 ): Model => {
+    const onPanCamera = () => {
+        effects.showCursor(false)
+        dispatch({ kind: EventKind.PAN_CAMERA })
+    }
+    const onZoomCamera = () => {
+        effects.showCursor(false)
+        dispatch({ kind: EventKind.ZOOM_CAMERA })
+    }
     const panAfter = (ms: number) => {
         effects.setTimeout(() => dispatch({ kind: EventKind.PAN_CAMERA }), ms)
     }
@@ -1073,8 +1082,8 @@ export const update = (
                     dispatch({ kind: EventKind.FINDER_CHANGE, option, node }),
                 onFinderClose: () => dispatch({ kind: EventKind.FINDER_CLOSE }),
                 moveNode: () => dispatch({ kind: EventKind.MOVE_NODE }),
-                panCamera: () => dispatch({ kind: EventKind.PAN_CAMERA }),
-                zoomCamera: () => dispatch({ kind: EventKind.ZOOM_CAMERA }),
+                onPanCamera,
+                onZoomCamera,
             })
         case EventKind.KEYUP:
             return keyUp(model, event)

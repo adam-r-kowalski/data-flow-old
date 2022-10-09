@@ -99,7 +99,7 @@ export const update = (properties: UpdateProperties): Model => {
         }
         case "Shift":
         case "Alt":
-        case "Control":
+        case "<c-Control>":
         case "Meta":
         case "Tab":
             return model

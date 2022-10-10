@@ -1,5 +1,10 @@
 import { NodeTransform } from "./graph"
-import { addEdge, addNode, changeNumberText } from "../update/graph"
+import {
+    addEdge,
+    addNode,
+    changeNumberText,
+    OnTableUploaded,
+} from "../update/graph"
 import { Model, Window } from "."
 import { emptyModel } from "./empty"
 import { operations } from "./operations"
@@ -72,6 +77,7 @@ export const demoModel = (
         operation: model.operations["square"],
         position: { x: 450, y: 350 },
         effects,
+        onTableUploaded,
     })
     const { graph: graph11 } = addEdge({
         graph: graph10,
@@ -84,6 +90,7 @@ export const demoModel = (
         operation: model.operations["scatter"],
         position: { x: 700, y: 20 },
         effects,
+        onTableUploaded,
     })
     const { graph: graph13 } = addEdge({
         graph: graph12,
@@ -102,6 +109,7 @@ export const demoModel = (
         operation: model.operations["stack"],
         position: { x: 750, y: 400 },
         effects,
+        onTableUploaded,
     })
     const { graph: graph16 } = addEdge({
         graph: graph15,

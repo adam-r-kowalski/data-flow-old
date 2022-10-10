@@ -57,12 +57,9 @@ test("arrow up decrements selected index", () => {
         options: ["Add", "Sub"],
         selectedIndex: 1,
     }
-    const onSelect = (option: string) => ({
-        kind: EventKind.FINDER_INSERT,
-        option,
-    })
-    const onClose = { kind: EventKind.FINDER_CLOSE }
-    const result = finder.update({
+    const onSelect = () => {}
+    const onClose = () => {}
+    const model1 = finder.update({
         model,
         event: {
             kind: EventKind.KEYDOWN,
@@ -76,22 +73,18 @@ test("arrow up decrements selected index", () => {
         options: ["Add", "Sub"],
         selectedIndex: 0,
     }
-    expect(result.model).toEqual(expectedModel)
-    expect(result.event).toBeUndefined()
+    expect(model1).toEqual(expectedModel)
 })
 
 test("ctrl k decrements selected index", () => {
-    const onSelect = (option: string) => ({
-        kind: EventKind.FINDER_INSERT,
-        option,
-    })
-    const onClose = { kind: EventKind.FINDER_CLOSE }
+    const onSelect = () => {}
+    const onClose = () => {}
     const model: finder.Model = {
         search: "",
         options: ["Add", "Sub"],
         selectedIndex: 1,
     }
-    const result = finder.update({
+    const model1 = finder.update({
         model,
         event: {
             kind: EventKind.KEYDOWN,
@@ -105,22 +98,18 @@ test("ctrl k decrements selected index", () => {
         options: ["Add", "Sub"],
         selectedIndex: 0,
     }
-    expect(result.model).toEqual(expectedModel)
-    expect(result.event).toBeUndefined()
+    expect(model1).toEqual(expectedModel)
 })
 
 test("arrow down increments from selected index", () => {
-    const onSelect = (option: string) => ({
-        kind: EventKind.FINDER_INSERT,
-        option,
-    })
-    const onClose = { kind: EventKind.FINDER_CLOSE }
+    const onSelect = () => {}
+    const onClose = () => {}
     const model: finder.Model = {
         search: "",
         options: ["Add", "Sub"],
         selectedIndex: 0,
     }
-    const result = finder.update({
+    const model1 = finder.update({
         model,
         event: {
             kind: EventKind.KEYDOWN,
@@ -134,22 +123,18 @@ test("arrow down increments from selected index", () => {
         options: ["Add", "Sub"],
         selectedIndex: 1,
     }
-    expect(result.model).toEqual(expectedModel)
-    expect(result.event).toBeUndefined()
+    expect(model1).toEqual(expectedModel)
 })
 
 test("ctrl k increments from selected index", () => {
-    const onSelect = (option: string) => ({
-        kind: EventKind.FINDER_INSERT,
-        option,
-    })
-    const onClose = { kind: EventKind.FINDER_CLOSE }
+    const onSelect = () => {}
+    const onClose = () => {}
     const model: finder.Model = {
         search: "",
         options: ["Add", "Sub"],
         selectedIndex: 0,
     }
-    const result = finder.update({
+    const model1 = finder.update({
         model,
         event: {
             kind: EventKind.KEYDOWN,
@@ -163,23 +148,19 @@ test("ctrl k increments from selected index", () => {
         options: ["Add", "Sub"],
         selectedIndex: 1,
     }
-    expect(result.model).toEqual(expectedModel)
-    expect(result.event).toBeUndefined()
+    expect(model1).toEqual(expectedModel)
 })
 
 test("not hot key down appends to search", () => {
-    const onSelect = (option: string) => ({
-        kind: EventKind.FINDER_INSERT,
-        option,
-    })
-    const onClose = { kind: EventKind.FINDER_CLOSE }
+    const onSelect = () => {}
+    const onClose = () => {}
     let model: finder.Model = {
         search: "",
         options: ["Add", "Sub"],
         selectedIndex: 0,
     }
     for (const key of "add") {
-        const result = finder.update({
+        model = finder.update({
             model,
             event: {
                 kind: EventKind.KEYDOWN,
@@ -188,7 +169,6 @@ test("not hot key down appends to search", () => {
             onSelect,
             onClose,
         })
-        model = result.model
     }
     const expectedModel: finder.Model = {
         search: "add",
@@ -199,18 +179,15 @@ test("not hot key down appends to search", () => {
 })
 
 test("backspace key deletes from search", () => {
-    const onSelect = (option: string) => ({
-        kind: EventKind.FINDER_INSERT,
-        option,
-    })
-    const onClose = { kind: EventKind.FINDER_CLOSE }
+    const onSelect = () => {}
+    const onClose = () => {}
     let model: finder.Model = {
         search: "",
         options: ["Add", "Sub"],
         selectedIndex: 0,
     }
     for (const key of "add") {
-        const result = finder.update({
+        model = finder.update({
             model,
             event: {
                 kind: EventKind.KEYDOWN,
@@ -219,9 +196,8 @@ test("backspace key deletes from search", () => {
             onSelect,
             onClose,
         })
-        model = result.model
     }
-    const result = finder.update({
+    model = finder.update({
         model,
         event: {
             kind: EventKind.KEYDOWN,
@@ -230,7 +206,6 @@ test("backspace key deletes from search", () => {
         onSelect,
         onClose,
     })
-    model = result.model
     const expectedModel: finder.Model = {
         search: "ad",
         options: ["Add", "Sub"],
@@ -240,17 +215,20 @@ test("backspace key deletes from search", () => {
 })
 
 test("enter key down inserts selected operation", () => {
-    const onSelect = (option: string) => ({
-        kind: EventKind.FINDER_INSERT,
-        option,
-    })
-    const onClose = { kind: EventKind.FINDER_CLOSE }
+    const selected: string[] = []
+    const onSelect = (option: string) => {
+        selected.push(option)
+    }
+    let closed = 0
+    const onClose = () => {
+        closed += 1
+    }
     let model: finder.Model = {
         search: "",
         options: ["Add", "Sub"],
         selectedIndex: 0,
     }
-    const result = finder.update({
+    const model1 = finder.update({
         model,
         event: {
             kind: EventKind.KEYDOWN,
@@ -259,25 +237,26 @@ test("enter key down inserts selected operation", () => {
         onSelect,
         onClose,
     })
-    expect(result.model).toEqual(model)
-    expect(result.event).toEqual({
-        kind: EventKind.FINDER_INSERT,
-        option: "Add",
-    })
+    expect(model1).toEqual(model)
+    expect(selected).toEqual(["Add"])
+    expect(closed).toEqual(0)
 })
 
 test("enter key down with search inserts selected operation", () => {
-    const onSelect = (option: string) => ({
-        kind: EventKind.FINDER_INSERT,
-        option,
-    })
-    const onClose = { kind: EventKind.FINDER_CLOSE }
+    const selected: string[] = []
+    const onSelect = (option: string) => {
+        selected.push(option)
+    }
+    let closed = 0
+    const onClose = () => {
+        closed += 1
+    }
     let model: finder.Model = {
         search: "s",
         options: ["Add", "Sub"],
         selectedIndex: 0,
     }
-    const result = finder.update({
+    const model1 = finder.update({
         model,
         event: {
             kind: EventKind.KEYDOWN,
@@ -286,25 +265,26 @@ test("enter key down with search inserts selected operation", () => {
         onSelect,
         onClose,
     })
-    expect(result.model).toEqual(model)
-    expect(result.event).toEqual({
-        kind: EventKind.FINDER_INSERT,
-        option: "Sub",
-    })
+    expect(model1).toEqual(model)
+    expect(selected).toEqual(["Sub"])
+    expect(closed).toEqual(0)
 })
 
 test("enter key down with invalid search closes finder", () => {
-    const onSelect = (option: string) => ({
-        kind: EventKind.FINDER_INSERT,
-        option,
-    })
-    const onClose = { kind: EventKind.FINDER_CLOSE }
+    const selected: string[] = []
+    const onSelect = (option: string) => {
+        selected.push(option)
+    }
+    let closed = 0
+    const onClose = () => {
+        closed += 1
+    }
     let model: finder.Model = {
         search: "z",
         options: ["Add", "Sub"],
         selectedIndex: 0,
     }
-    const result = finder.update({
+    const model1 = finder.update({
         model,
         event: {
             kind: EventKind.KEYDOWN,
@@ -313,24 +293,26 @@ test("enter key down with invalid search closes finder", () => {
         onSelect,
         onClose,
     })
-    expect(result.model).toEqual(model)
-    expect(result.event).toEqual({
-        kind: EventKind.FINDER_CLOSE,
-    })
+    expect(model1).toEqual(model)
+    expect(selected).toEqual([])
+    expect(closed).toEqual(1)
 })
 
 test("escape key down closes finder", () => {
-    const onSelect = (option: string) => ({
-        kind: EventKind.FINDER_INSERT,
-        option,
-    })
-    const onClose = { kind: EventKind.FINDER_CLOSE }
+    const selected: string[] = []
+    const onSelect = (option: string) => {
+        selected.push(option)
+    }
+    let closed = 0
+    const onClose = () => {
+        closed += 1
+    }
     let model: finder.Model = {
         search: "",
         options: ["Add", "Sub"],
         selectedIndex: 0,
     }
-    const result = finder.update({
+    const model1 = finder.update({
         model,
         event: {
             kind: EventKind.KEYDOWN,
@@ -339,8 +321,7 @@ test("escape key down closes finder", () => {
         onSelect,
         onClose,
     })
-    expect(result.model).toEqual(model)
-    expect(result.event).toEqual({
-        kind: EventKind.FINDER_CLOSE,
-    })
+    expect(model1).toEqual(model)
+    expect(selected).toEqual([])
+    expect(closed).toEqual(1)
 })

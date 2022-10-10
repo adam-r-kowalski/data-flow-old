@@ -1,16 +1,14 @@
-import { Effects } from "../../src/effects"
-import { AppEvent, EventKind } from "../../src/event"
+import { EventKind } from "../../src/event"
 import { identity, translate } from "../../src/linear_algebra/matrix3x3"
 import { Model } from "../../src/model"
 import { emptyModel } from "../../src/model/empty"
 import { FocusKind } from "../../src/model/focus"
 import { PointerActionKind } from "../../src/model/pointer_action"
 import { QuickSelectKind } from "../../src/model/quick_select"
-import { Dispatch } from "../../src/run"
 import { Pointer } from "../../src/ui"
 import { mockDocument } from "../../src/ui/mock"
 import { update } from "../../src/update"
-import { makeEffects } from "../mock_effects"
+import { makeEffects, makeTracked, resetTracked } from "../mock_effects"
 
 const model: Model = emptyModel({ width: 500, height: 500 })
 
@@ -41,41 +39,6 @@ test("pointer down starts panning camera", () => {
     }
     expect(model1).toEqual(expectedModel)
 })
-
-interface Tracked {
-    events: AppEvent[]
-    times: number[]
-    effects: Effects
-    dispatch: Dispatch<AppEvent>
-}
-
-const makeTracked = (): Tracked => {
-    const events: AppEvent[] = []
-    const times: number[] = []
-    const dispatch = (event: AppEvent) => events.push(event)
-    const effects = makeEffects(mockDocument())
-    effects.setTimeout = (cb, ms) => {
-        times.push(ms)
-        cb()
-    }
-    return { events, times, effects, dispatch }
-}
-
-const resetTracked = ({ effects }: Tracked): Tracked => {
-    const events: AppEvent[] = []
-    const times: number[] = []
-    const dispatch = (event: AppEvent) => events.push(event)
-    effects.setTimeout = (cb, ms) => {
-        times.push(ms)
-        cb()
-    }
-    return {
-        events,
-        times,
-        effects,
-        dispatch,
-    }
-}
 
 test("h when nothing focused pans camera left", () => {
     let tracked = makeTracked()

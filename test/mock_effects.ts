@@ -1,6 +1,9 @@
 import { Table } from "../src/model/table"
 import { Effects, showCursor } from "../src/effects"
 import { Document } from "../src/ui/dom"
+import { AppEvent } from "../src/event"
+import { Dispatch } from "../src/run"
+import { mockDocument } from "../src/ui/mock"
 
 export interface EffectModel {
     uuid: number
@@ -40,5 +43,40 @@ export const makeEffects = (
         setTimeout: (callback: () => void, ms: number) => {
             callback()
         },
+    }
+}
+
+interface Tracked {
+    events: AppEvent[]
+    times: number[]
+    effects: Effects
+    dispatch: Dispatch<AppEvent>
+}
+
+export const makeTracked = (): Tracked => {
+    const events: AppEvent[] = []
+    const times: number[] = []
+    const dispatch = (event: AppEvent) => events.push(event)
+    const effects = makeEffects(mockDocument())
+    effects.setTimeout = (cb, ms) => {
+        times.push(ms)
+        cb()
+    }
+    return { events, times, effects, dispatch }
+}
+
+export const resetTracked = ({ effects }: Tracked): Tracked => {
+    const events: AppEvent[] = []
+    const times: number[] = []
+    const dispatch = (event: AppEvent) => events.push(event)
+    effects.setTimeout = (cb, ms) => {
+        times.push(ms)
+        cb()
+    }
+    return {
+        events,
+        times,
+        effects,
+        dispatch,
     }
 }

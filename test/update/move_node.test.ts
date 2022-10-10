@@ -7,14 +7,14 @@ import { tensorFunc } from "../../src/model/operations"
 import { mockDocument } from "../../src/ui/mock"
 import { addNodeToGraph, update } from "../../src/update"
 import { changeNodePosition } from "../../src/update/graph"
-import { makeEffects } from "../mock_effects"
+import { makeEffects, makeTracked, resetTracked } from "../mock_effects"
 
 const model = emptyModel({ width: 500, height: 500 })
 
 const addFunc = tensorFunc(tf.add)
 
 test("h when a node is focused moves node left", () => {
-    const effects = makeEffects(mockDocument())
+    let tracked = makeTracked()
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -24,22 +24,38 @@ test("h when a node is focused moves node left", () => {
             func: addFunc,
         },
     }
+    const onTableUploaded = () => {}
     const model0 = { ...model, operations }
     const { model: model1, node } = addNodeToGraph({
         model: model0,
         operation: operations["Add"],
         position: { x: 0, y: 0 },
-        effects,
+        effects: tracked.effects,
+        onTableUploaded,
     })
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.CLICKED_NODE,
-        node,
-    })
-    const { model: model3, dispatch } = update(effects, model2, {
-        kind: EventKind.KEYDOWN,
-        key: "h",
-    })
-    expect(dispatch).toEqual([{ kind: EventKind.MOVE_NODE }])
+    const model2 = update(
+        tracked.effects,
+        model1,
+        {
+            kind: EventKind.CLICKED_NODE,
+            node,
+        },
+        tracked.dispatch
+    )
+    expect(tracked.events).toEqual([])
+    expect(tracked.times).toEqual([])
+    const model3 = update(
+        tracked.effects,
+        model2,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "h",
+        },
+        tracked.dispatch
+    )
+    expect(tracked.events).toEqual([{ kind: EventKind.MOVE_NODE }])
+    expect(tracked.times).toEqual([])
+    tracked = resetTracked(tracked)
     expect(model3).toEqual({
         ...model2,
         focus: {
@@ -47,15 +63,16 @@ test("h when a node is focused moves node left", () => {
             move: { left: true, up: false, down: false, right: false, now: 0 },
         },
     })
-    const { model: model4, schedule } = update(effects, model3, {
-        kind: EventKind.MOVE_NODE,
-    })
-    expect(schedule).toEqual([
+    const model4 = update(
+        tracked.effects,
+        model3,
         {
-            after: { milliseconds: 10 },
-            event: { kind: EventKind.MOVE_NODE },
+            kind: EventKind.MOVE_NODE,
         },
-    ])
+        tracked.dispatch
+    )
+    expect(tracked.events).toEqual([{ kind: EventKind.MOVE_NODE }])
+    expect(tracked.times).toEqual([10])
     expect(model4).toEqual({
         ...model2,
         focus: {
@@ -67,11 +84,18 @@ test("h when a node is focused moves node left", () => {
             y: 0,
         })),
     })
-    const { model: model5, dispatch: dispatch1 } = update(effects, model4, {
-        kind: EventKind.KEYUP,
-        key: "h",
-    })
-    expect(dispatch1).toBeUndefined()
+    tracked = resetTracked(tracked)
+    const model5 = update(
+        tracked.effects,
+        model4,
+        {
+            kind: EventKind.KEYUP,
+            key: "h",
+        },
+        tracked.dispatch
+    )
+    expect(tracked.events).toEqual([])
+    expect(tracked.times).toEqual([])
     expect(model5).toEqual({
         ...model2,
         focus: {
@@ -86,7 +110,7 @@ test("h when a node is focused moves node left", () => {
 })
 
 test("j when a node is focused moves node down", () => {
-    const effects = makeEffects(mockDocument())
+    let tracked = makeTracked()
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -96,22 +120,37 @@ test("j when a node is focused moves node down", () => {
             func: addFunc,
         },
     }
+    const onTableUploaded = () => {}
     const model0 = { ...model, operations }
     const { model: model1, node } = addNodeToGraph({
         model: model0,
         operation: operations["Add"],
         position: { x: 0, y: 0 },
-        effects,
+        effects: tracked.effects,
+        onTableUploaded,
     })
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.CLICKED_NODE,
-        node,
-    })
-    const { model: model3, dispatch } = update(effects, model2, {
-        kind: EventKind.KEYDOWN,
-        key: "j",
-    })
-    expect(dispatch).toEqual([{ kind: EventKind.MOVE_NODE }])
+    const model2 = update(
+        tracked.effects,
+        model1,
+        {
+            kind: EventKind.CLICKED_NODE,
+            node,
+        },
+        tracked.dispatch
+    )
+    expect(tracked.events).toEqual([])
+    expect(tracked.times).toEqual([])
+    const model3 = update(
+        tracked.effects,
+        model2,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "j",
+        },
+        tracked.dispatch
+    )
+    expect(tracked.events).toEqual([{ kind: EventKind.MOVE_NODE }])
+    expect(tracked.times).toEqual([])
     expect(model3).toEqual({
         ...model2,
         focus: {
@@ -119,15 +158,17 @@ test("j when a node is focused moves node down", () => {
             move: { left: false, up: false, down: true, right: false, now: 0 },
         },
     })
-    const { model: model4, schedule } = update(effects, model3, {
-        kind: EventKind.MOVE_NODE,
-    })
-    expect(schedule).toEqual([
+    tracked = resetTracked(tracked)
+    const model4 = update(
+        tracked.effects,
+        model3,
         {
-            after: { milliseconds: 10 },
-            event: { kind: EventKind.MOVE_NODE },
+            kind: EventKind.MOVE_NODE,
         },
-    ])
+        tracked.dispatch
+    )
+    expect(tracked.events).toEqual([{ kind: EventKind.MOVE_NODE }])
+    expect(tracked.times).toEqual([10])
     expect(model4).toEqual({
         ...model2,
         focus: {
@@ -136,11 +177,18 @@ test("j when a node is focused moves node down", () => {
         },
         graph: changeNodePosition(model2.graph, node, () => ({ x: 0, y: 0.5 })),
     })
-    const { model: model5, dispatch: dispatch1 } = update(effects, model4, {
-        kind: EventKind.KEYUP,
-        key: "j",
-    })
-    expect(dispatch1).toBeUndefined()
+    tracked = resetTracked(tracked)
+    const model5 = update(
+        tracked.effects,
+        model4,
+        {
+            kind: EventKind.KEYUP,
+            key: "j",
+        },
+        tracked.dispatch
+    )
+    expect(tracked.events).toEqual([])
+    expect(tracked.times).toEqual([])
     expect(model5).toEqual({
         ...model2,
         focus: {
@@ -152,7 +200,7 @@ test("j when a node is focused moves node down", () => {
 })
 
 test("k when a node is focused moves node up", () => {
-    const effects = makeEffects(mockDocument())
+    let tracked = makeTracked()
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -162,22 +210,37 @@ test("k when a node is focused moves node up", () => {
             func: addFunc,
         },
     }
+    const onTableUploaded = () => {}
     const model0 = { ...model, operations }
     const { model: model1, node } = addNodeToGraph({
         model: model0,
         operation: operations["Add"],
         position: { x: 0, y: 0 },
-        effects,
+        effects: tracked.effects,
+        onTableUploaded,
     })
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.CLICKED_NODE,
-        node,
-    })
-    const { model: model3, dispatch } = update(effects, model2, {
-        kind: EventKind.KEYDOWN,
-        key: "k",
-    })
-    expect(dispatch).toEqual([{ kind: EventKind.MOVE_NODE }])
+    const model2 = update(
+        tracked.effects,
+        model1,
+        {
+            kind: EventKind.CLICKED_NODE,
+            node,
+        },
+        tracked.dispatch
+    )
+    expect(tracked.events).toEqual([])
+    expect(tracked.times).toEqual([])
+    const model3 = update(
+        tracked.effects,
+        model2,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "k",
+        },
+        tracked.dispatch
+    )
+    expect(tracked.events).toEqual([{ kind: EventKind.MOVE_NODE }])
+    expect(tracked.times).toEqual([])
     expect(model3).toEqual({
         ...model2,
         focus: {
@@ -185,15 +248,17 @@ test("k when a node is focused moves node up", () => {
             move: { left: false, up: true, down: false, right: false, now: 0 },
         },
     })
-    const { model: model4, schedule } = update(effects, model3, {
-        kind: EventKind.MOVE_NODE,
-    })
-    expect(schedule).toEqual([
+    tracked = resetTracked(tracked)
+    const model4 = update(
+        tracked.effects,
+        model3,
         {
-            after: { milliseconds: 10 },
-            event: { kind: EventKind.MOVE_NODE },
+            kind: EventKind.MOVE_NODE,
         },
-    ])
+        tracked.dispatch
+    )
+    expect(tracked.events).toEqual([{ kind: EventKind.MOVE_NODE }])
+    expect(tracked.times).toEqual([10])
     expect(model4).toEqual({
         ...model2,
         focus: {
@@ -205,11 +270,18 @@ test("k when a node is focused moves node up", () => {
             y: -0.5,
         })),
     })
-    const { model: model5, dispatch: dispatch1 } = update(effects, model4, {
-        kind: EventKind.KEYUP,
-        key: "k",
-    })
-    expect(dispatch1).toBeUndefined()
+    tracked = resetTracked(tracked)
+    const model5 = update(
+        tracked.effects,
+        model4,
+        {
+            kind: EventKind.KEYUP,
+            key: "k",
+        },
+        tracked.dispatch
+    )
+    expect(tracked.events).toEqual([])
+    expect(tracked.times).toEqual([])
     expect(model5).toEqual({
         ...model2,
         focus: {
@@ -224,7 +296,7 @@ test("k when a node is focused moves node up", () => {
 })
 
 test("l when a node is focused moves node right", () => {
-    const effects = makeEffects(mockDocument())
+    let tracked = makeTracked()
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -234,22 +306,38 @@ test("l when a node is focused moves node right", () => {
             func: addFunc,
         },
     }
+    const onTableUploaded = () => {}
     const model0 = { ...model, operations }
     const { model: model1, node } = addNodeToGraph({
         model: model0,
         operation: operations["Add"],
         position: { x: 0, y: 0 },
-        effects,
+        effects: tracked.effects,
+        onTableUploaded,
     })
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.CLICKED_NODE,
-        node,
-    })
-    const { model: model3, dispatch } = update(effects, model2, {
-        kind: EventKind.KEYDOWN,
-        key: "l",
-    })
-    expect(dispatch).toEqual([{ kind: EventKind.MOVE_NODE }])
+    const model2 = update(
+        tracked.effects,
+        model1,
+        {
+            kind: EventKind.CLICKED_NODE,
+            node,
+        },
+        tracked.dispatch
+    )
+    expect(tracked.events).toEqual([])
+    expect(tracked.times).toEqual([])
+    const model3 = update(
+        tracked.effects,
+        model2,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "l",
+        },
+        tracked.dispatch
+    )
+    expect(tracked.events).toEqual([{ kind: EventKind.MOVE_NODE }])
+    expect(tracked.times).toEqual([])
+    tracked = resetTracked(tracked)
     expect(model3).toEqual({
         ...model2,
         focus: {
@@ -257,15 +345,17 @@ test("l when a node is focused moves node right", () => {
             move: { left: false, up: false, down: false, right: true, now: 0 },
         },
     })
-    const { model: model4, schedule } = update(effects, model3, {
-        kind: EventKind.MOVE_NODE,
-    })
-    expect(schedule).toEqual([
+    const model4 = update(
+        tracked.effects,
+        model3,
         {
-            after: { milliseconds: 10 },
-            event: { kind: EventKind.MOVE_NODE },
+            kind: EventKind.MOVE_NODE,
         },
-    ])
+        tracked.dispatch
+    )
+    expect(tracked.events).toEqual([{ kind: EventKind.MOVE_NODE }])
+    expect(tracked.times).toEqual([10])
+    tracked = resetTracked(tracked)
     expect(model4).toEqual({
         ...model2,
         focus: {
@@ -274,11 +364,17 @@ test("l when a node is focused moves node right", () => {
         },
         graph: changeNodePosition(model2.graph, node, () => ({ x: 0.5, y: 0 })),
     })
-    const { model: model5, dispatch: dispatch1 } = update(effects, model4, {
-        kind: EventKind.KEYUP,
-        key: "l",
-    })
-    expect(dispatch1).toBeUndefined()
+    const model5 = update(
+        tracked.effects,
+        model4,
+        {
+            kind: EventKind.KEYUP,
+            key: "l",
+        },
+        tracked.dispatch
+    )
+    expect(tracked.events).toEqual([])
+    expect(tracked.times).toEqual([])
     expect(model5).toEqual({
         ...model2,
         focus: {
@@ -290,7 +386,7 @@ test("l when a node is focused moves node right", () => {
 })
 
 test("pressing a non hotkey when node focused does nothing", () => {
-    const effects = makeEffects(mockDocument())
+    let effects = makeEffects(mockDocument())
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -300,38 +396,58 @@ test("pressing a non hotkey when node focused does nothing", () => {
             func: addFunc,
         },
     }
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const model0 = { ...model, operations }
     const { model: model1, node } = addNodeToGraph({
         model: model0,
         operation: operations["Add"],
         position: { x: 0, y: 0 },
+        effects: effects,
+        onTableUploaded,
+    })
+    const model2 = update(
         effects,
-    })
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.CLICKED_NODE,
-        node,
-    })
-    const { model: model3, dispatch: dispatch0 } = update(effects, model2, {
-        kind: EventKind.KEYDOWN,
-        key: "z",
-    })
-    expect(dispatch0).toBeUndefined()
+        model1,
+        {
+            kind: EventKind.CLICKED_NODE,
+            node,
+        },
+        dispatch
+    )
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "z",
+        },
+        dispatch
+    )
     expect(model3).toEqual(model2)
-    const { model: model4, schedule: schedule0 } = update(effects, model3, {
-        kind: EventKind.MOVE_NODE,
-    })
-    expect(schedule0).toBeUndefined()
+    const model4 = update(
+        effects,
+        model3,
+        {
+            kind: EventKind.MOVE_NODE,
+        },
+        dispatch
+    )
     expect(model4).toEqual(model2)
-    const { model: model5, dispatch: dispatch1 } = update(effects, model4, {
-        kind: EventKind.KEYUP,
-        key: "z",
-    })
-    expect(dispatch1).toBeUndefined()
+    const model5 = update(
+        effects,
+        model4,
+        {
+            kind: EventKind.KEYUP,
+            key: "z",
+        },
+        dispatch
+    )
     expect(model5).toEqual(model2)
 })
 
 test("pressing h then l when node focused does nothing", () => {
-    const effects = makeEffects(mockDocument())
+    let tracked = makeTracked()
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -341,36 +457,59 @@ test("pressing h then l when node focused does nothing", () => {
             func: addFunc,
         },
     }
+    const onTableUploaded = () => {}
     const model0 = { ...model, operations }
     const { model: model1, node } = addNodeToGraph({
         model: model0,
         operation: operations["Add"],
         position: { x: 0, y: 0 },
-        effects,
+        effects: tracked.effects,
+        onTableUploaded,
     })
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.CLICKED_NODE,
-        node,
-    })
-    const { model: model3, dispatch: dispatch0 } = update(effects, model2, {
-        kind: EventKind.KEYDOWN,
-        key: "h",
-    })
-    expect(dispatch0).toEqual([{ kind: EventKind.MOVE_NODE }])
-    const { model: model4, dispatch: dispatch1 } = update(effects, model3, {
-        kind: EventKind.KEYDOWN,
-        key: "l",
-    })
-    expect(dispatch1).toBeUndefined()
-    const { model: model5, schedule } = update(effects, model4, {
-        kind: EventKind.MOVE_NODE,
-    })
-    expect(schedule).toEqual([
+    const model2 = update(
+        tracked.effects,
+        model1,
         {
-            after: { milliseconds: 10 },
-            event: { kind: EventKind.MOVE_NODE },
+            kind: EventKind.CLICKED_NODE,
+            node,
         },
-    ])
+        tracked.dispatch
+    )
+    expect(tracked.events).toEqual([])
+    expect(tracked.times).toEqual([])
+    const model3 = update(
+        tracked.effects,
+        model2,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "h",
+        },
+        tracked.dispatch
+    )
+    expect(tracked.events).toEqual([{ kind: EventKind.MOVE_NODE }])
+    expect(tracked.times).toEqual([])
+    tracked = resetTracked(tracked)
+    const model4 = update(
+        tracked.effects,
+        model3,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "l",
+        },
+        tracked.dispatch
+    )
+    expect(tracked.events).toEqual([])
+    expect(tracked.times).toEqual([])
+    const model5 = update(
+        tracked.effects,
+        model4,
+        {
+            kind: EventKind.MOVE_NODE,
+        },
+        tracked.dispatch
+    )
+    expect(tracked.events).toEqual([{ kind: EventKind.MOVE_NODE }])
+    expect(tracked.times).toEqual([10])
     expect(model5).toEqual({
         ...model2,
         focus: {
@@ -391,16 +530,23 @@ test("move node when nothing focused does nothing", () => {
             func: addFunc,
         },
     }
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const model0 = { ...model, operations }
     const { model: model1 } = addNodeToGraph({
         model: model0,
         operation: operations["Add"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
-    const { model: model2, schedule } = update(effects, model1, {
-        kind: EventKind.MOVE_NODE,
-    })
-    expect(schedule).toBeUndefined()
+    const model2 = update(
+        effects,
+        model1,
+        {
+            kind: EventKind.MOVE_NODE,
+        },
+        dispatch
+    )
     expect(model2).toEqual(model1)
 })

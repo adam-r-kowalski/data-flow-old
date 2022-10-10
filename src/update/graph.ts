@@ -17,12 +17,14 @@ import {
 import { Effects, GenerateUUID } from "../effects"
 import { Table } from "../model/table"
 
+export type OnTableUploaded = (table: Table, node: UUID) => void
+
 interface AddNodeInputs {
     graph: Graph
     operation: Operation
     position: Position
     effects: Effects
-    onTableUploaded: (table: Table, node: UUID) => void
+    onTableUploaded: OnTableUploaded
 }
 
 interface AddNodeOutputs {

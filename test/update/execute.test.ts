@@ -15,6 +15,7 @@ import { QuickSelectKind } from "../../src/model/quick_select"
 import { addNodeToGraph, update, updateNumberText } from "../../src/update"
 import { EffectModel, makeEffects } from "../mock_effects"
 import { EventKind } from "../../src/event"
+import { mockDocument } from "../../src/ui/mock"
 
 const model = emptyModel({ width: 500, height: 500 })
 
@@ -22,7 +23,9 @@ const addFunc = tensorFunc(tf.add)
 
 test("connecting all inputs for node evaluates operation", () => {
     const effectModel: EffectModel = { uuid: 0, time: 0 }
-    const effects = makeEffects(effectModel)
+    const effects = makeEffects(mockDocument(), effectModel)
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const operations: Operations = {
         Number: {
             kind: OperationKind.NUMBER,
@@ -43,45 +46,68 @@ test("connecting all inputs for node evaluates operation", () => {
         operation: operations["Number"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const model2 = updateNumberText(
         model1,
         model1.graph.nodes[x].body,
         () => "5"
-    ).model
+    )
     const { model: model3, node: y } = addNodeToGraph({
         model: model2,
         operation: operations["Number"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const model4 = updateNumberText(
         model3,
         model3.graph.nodes[y].body,
         () => "5"
-    ).model
+    )
     const { model: model5, node: add } = addNodeToGraph({
         model: model4,
         operation: operations["Add"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
-    const { model: model6 } = update(effects, model5, {
-        kind: EventKind.CLICKED_INPUT,
-        input: (model5.graph.nodes[add] as NodeTransform).inputs[0],
-    })
-    const { model: model7 } = update(effects, model6, {
-        kind: EventKind.CLICKED_OUTPUT,
-        output: model5.graph.nodes[x].outputs[0],
-    })
-    const { model: model8 } = update(effects, model7, {
-        kind: EventKind.CLICKED_INPUT,
-        input: (model5.graph.nodes[add] as NodeTransform).inputs[1],
-    })
-    const { model: model9 } = update(effects, model8, {
-        kind: EventKind.CLICKED_OUTPUT,
-        output: model3.graph.nodes[y].outputs[0],
-    })
+    const model6 = update(
+        effects,
+        model5,
+        {
+            kind: EventKind.CLICKED_INPUT,
+            input: (model5.graph.nodes[add] as NodeTransform).inputs[0],
+        },
+        dispatch
+    )
+    const model7 = update(
+        effects,
+        model6,
+        {
+            kind: EventKind.CLICKED_OUTPUT,
+            output: model5.graph.nodes[x].outputs[0],
+        },
+        dispatch
+    )
+    const model8 = update(
+        effects,
+        model7,
+        {
+            kind: EventKind.CLICKED_INPUT,
+            input: (model5.graph.nodes[add] as NodeTransform).inputs[1],
+        },
+        dispatch
+    )
+    const model9 = update(
+        effects,
+        model8,
+        {
+            kind: EventKind.CLICKED_OUTPUT,
+            output: model3.graph.nodes[y].outputs[0],
+        },
+        dispatch
+    )
     const expectedModel: Model = {
         ...model,
         graph: {
@@ -192,7 +218,7 @@ test("connecting all inputs for node evaluates operation", () => {
 
 test("changing body retriggers evaluation", () => {
     const effectModel: EffectModel = { uuid: 0, time: 0 }
-    const effects = makeEffects(effectModel)
+    const effects = makeEffects(mockDocument(), effectModel)
     const operations: Operations = {
         Number: {
             kind: OperationKind.NUMBER,
@@ -207,59 +233,94 @@ test("changing body retriggers evaluation", () => {
             func: addFunc,
         },
     }
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const model0: Model = { ...model, operations }
     const { model: model1, node: x } = addNodeToGraph({
         model: model0,
         operation: operations["Number"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const model2 = updateNumberText(
         model1,
         model1.graph.nodes[x].body,
         () => "5"
-    ).model
+    )
     const { model: model3, node: y } = addNodeToGraph({
         model: model2,
         operation: operations["Number"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const model4 = updateNumberText(
         model3,
         model3.graph.nodes[y].body,
         () => "5"
-    ).model
+    )
     const { model: model5, node: add } = addNodeToGraph({
         model: model4,
         operation: operations["Add"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
-    const { model: model6 } = update(effects, model5, {
-        kind: EventKind.CLICKED_INPUT,
-        input: (model5.graph.nodes[add] as NodeTransform).inputs[0],
-    })
-    const { model: model7 } = update(effects, model6, {
-        kind: EventKind.CLICKED_OUTPUT,
-        output: model5.graph.nodes[x].outputs[0],
-    })
-    const { model: model8 } = update(effects, model7, {
-        kind: EventKind.CLICKED_INPUT,
-        input: (model5.graph.nodes[add] as NodeTransform).inputs[1],
-    })
-    const { model: model9 } = update(effects, model8, {
-        kind: EventKind.CLICKED_OUTPUT,
-        output: model3.graph.nodes[y].outputs[0],
-    })
-    const { model: model10 } = update(effects, model9, {
-        kind: EventKind.CLICKED_BODY,
-        body: model3.graph.nodes[x].body,
-    })
-    const { model: model11 } = update(effects, model10, {
-        kind: EventKind.KEYDOWN,
-        key: "Backspace",
-    })
+    const model6 = update(
+        effects,
+        model5,
+        {
+            kind: EventKind.CLICKED_INPUT,
+            input: (model5.graph.nodes[add] as NodeTransform).inputs[0],
+        },
+        dispatch
+    )
+    const model7 = update(
+        effects,
+        model6,
+        {
+            kind: EventKind.CLICKED_OUTPUT,
+            output: model5.graph.nodes[x].outputs[0],
+        },
+        dispatch
+    )
+    const model8 = update(
+        effects,
+        model7,
+        {
+            kind: EventKind.CLICKED_INPUT,
+            input: (model5.graph.nodes[add] as NodeTransform).inputs[1],
+        },
+        dispatch
+    )
+    const model9 = update(
+        effects,
+        model8,
+        {
+            kind: EventKind.CLICKED_OUTPUT,
+            output: model3.graph.nodes[y].outputs[0],
+        },
+        dispatch
+    )
+    const model10 = update(
+        effects,
+        model9,
+        {
+            kind: EventKind.CLICKED_BODY,
+            body: model3.graph.nodes[x].body,
+        },
+        dispatch
+    )
+    const model11 = update(
+        effects,
+        model10,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "Backspace",
+        },
+        dispatch
+    )
     const expectedModel: Model = {
         ...model,
         graph: {
@@ -377,7 +438,7 @@ test("changing body retriggers evaluation", () => {
 
 test("deleting input edge deletes body in associated input node and propagates out", () => {
     const effectModel: EffectModel = { uuid: 0, time: 0 }
-    const effects = makeEffects(effectModel)
+    const effects = makeEffects(mockDocument(), effectModel)
     const operations: Operations = {
         Number: {
             kind: OperationKind.NUMBER,
@@ -392,59 +453,94 @@ test("deleting input edge deletes body in associated input node and propagates o
             func: addFunc,
         },
     }
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const model0: Model = { ...model, operations }
     const { model: model1, node: x } = addNodeToGraph({
         model: model0,
         operation: operations["Number"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const model2 = updateNumberText(
         model1,
         model1.graph.nodes[x].body,
         () => "5"
-    ).model
+    )
     const { model: model3, node: y } = addNodeToGraph({
         model: model2,
         operation: operations["Number"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const model4 = updateNumberText(
         model3,
         model3.graph.nodes[y].body,
         () => "5"
-    ).model
+    )
     const { model: model5, node: add } = addNodeToGraph({
         model: model4,
         operation: operations["Add"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
-    const { model: model6 } = update(effects, model5, {
-        kind: EventKind.CLICKED_INPUT,
-        input: (model5.graph.nodes[add] as NodeTransform).inputs[0],
-    })
-    const { model: model7 } = update(effects, model6, {
-        kind: EventKind.CLICKED_OUTPUT,
-        output: model6.graph.nodes[x].outputs[0],
-    })
-    const { model: model8 } = update(effects, model7, {
-        kind: EventKind.CLICKED_INPUT,
-        input: (model7.graph.nodes[add] as NodeTransform).inputs[1],
-    })
-    const { model: model9 } = update(effects, model8, {
-        kind: EventKind.CLICKED_OUTPUT,
-        output: model8.graph.nodes[y].outputs[0],
-    })
-    const { model: model10 } = update(effects, model9, {
-        kind: EventKind.CLICKED_INPUT,
-        input: (model9.graph.nodes[add] as NodeTransform).inputs[1],
-    })
-    const { model: model11 } = update(effects, model10, {
-        kind: EventKind.KEYDOWN,
-        key: "d",
-    })
+    const model6 = update(
+        effects,
+        model5,
+        {
+            kind: EventKind.CLICKED_INPUT,
+            input: (model5.graph.nodes[add] as NodeTransform).inputs[0],
+        },
+        dispatch
+    )
+    const model7 = update(
+        effects,
+        model6,
+        {
+            kind: EventKind.CLICKED_OUTPUT,
+            output: model6.graph.nodes[x].outputs[0],
+        },
+        dispatch
+    )
+    const model8 = update(
+        effects,
+        model7,
+        {
+            kind: EventKind.CLICKED_INPUT,
+            input: (model7.graph.nodes[add] as NodeTransform).inputs[1],
+        },
+        dispatch
+    )
+    const model9 = update(
+        effects,
+        model8,
+        {
+            kind: EventKind.CLICKED_OUTPUT,
+            output: model8.graph.nodes[y].outputs[0],
+        },
+        dispatch
+    )
+    const model10 = update(
+        effects,
+        model9,
+        {
+            kind: EventKind.CLICKED_INPUT,
+            input: (model9.graph.nodes[add] as NodeTransform).inputs[1],
+        },
+        dispatch
+    )
+    const model11 = update(
+        effects,
+        model10,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "d",
+        },
+        dispatch
+    )
     const expectedModel: Model = {
         ...model,
         graph: {
@@ -546,7 +642,7 @@ test("deleting input edge deletes body in associated input node and propagates o
 
 test("deleting output edge deletes body in associated input node and propagates out", () => {
     const effectModel: EffectModel = { uuid: 0, time: 0 }
-    const effects = makeEffects(effectModel)
+    const effects = makeEffects(mockDocument(), effectModel)
     const operations: Operations = {
         Number: {
             kind: OperationKind.NUMBER,
@@ -561,59 +657,94 @@ test("deleting output edge deletes body in associated input node and propagates 
             func: addFunc,
         },
     }
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const model0: Model = { ...model, operations }
     const { model: model1, node: x } = addNodeToGraph({
         model: model0,
         operation: operations["Number"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const model2 = updateNumberText(
         model1,
         model1.graph.nodes[x].body,
         () => "5"
-    ).model
+    )
     const { model: model3, node: y } = addNodeToGraph({
         model: model2,
         operation: operations["Number"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const model4 = updateNumberText(
         model3,
         model3.graph.nodes[y].body,
         () => "5"
-    ).model
+    )
     const { model: model5, node: add } = addNodeToGraph({
         model: model4,
         operation: operations["Add"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
-    const { model: model6 } = update(effects, model5, {
-        kind: EventKind.CLICKED_INPUT,
-        input: (model5.graph.nodes[add] as NodeTransform).inputs[0],
-    })
-    const { model: model7 } = update(effects, model6, {
-        kind: EventKind.CLICKED_OUTPUT,
-        output: model6.graph.nodes[x].outputs[0],
-    })
-    const { model: model8 } = update(effects, model7, {
-        kind: EventKind.CLICKED_INPUT,
-        input: (model7.graph.nodes[add] as NodeTransform).inputs[1],
-    })
-    const { model: model9 } = update(effects, model8, {
-        kind: EventKind.CLICKED_OUTPUT,
-        output: model8.graph.nodes[y].outputs[0],
-    })
-    const { model: model10 } = update(effects, model9, {
-        kind: EventKind.CLICKED_OUTPUT,
-        output: model9.graph.nodes[y].outputs[0],
-    })
-    const { model: model11 } = update(effects, model10, {
-        kind: EventKind.KEYDOWN,
-        key: "d",
-    })
+    const model6 = update(
+        effects,
+        model5,
+        {
+            kind: EventKind.CLICKED_INPUT,
+            input: (model5.graph.nodes[add] as NodeTransform).inputs[0],
+        },
+        dispatch
+    )
+    const model7 = update(
+        effects,
+        model6,
+        {
+            kind: EventKind.CLICKED_OUTPUT,
+            output: model6.graph.nodes[x].outputs[0],
+        },
+        dispatch
+    )
+    const model8 = update(
+        effects,
+        model7,
+        {
+            kind: EventKind.CLICKED_INPUT,
+            input: (model7.graph.nodes[add] as NodeTransform).inputs[1],
+        },
+        dispatch
+    )
+    const model9 = update(
+        effects,
+        model8,
+        {
+            kind: EventKind.CLICKED_OUTPUT,
+            output: model8.graph.nodes[y].outputs[0],
+        },
+        dispatch
+    )
+    const model10 = update(
+        effects,
+        model9,
+        {
+            kind: EventKind.CLICKED_OUTPUT,
+            output: model9.graph.nodes[y].outputs[0],
+        },
+        dispatch
+    )
+    const model11 = update(
+        effects,
+        model10,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "d",
+        },
+        dispatch
+    )
     const expectedModel: Model = {
         ...model,
         graph: {

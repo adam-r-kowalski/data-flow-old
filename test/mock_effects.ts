@@ -37,5 +37,8 @@ export const makeEffects = (
             },
         }),
         showCursor: (show: boolean) => showCursor(document, show),
+        setTimeout: (callback: () => void, ms: number) => {
+            callback()
+        },
     }
 }

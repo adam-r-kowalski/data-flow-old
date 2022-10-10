@@ -5,7 +5,11 @@ import { emptyModel } from "./empty"
 import { operations } from "./operations"
 import { Effects } from "../effects"
 
-export const demoModel = (window: Window, effects: Effects): Model => {
+export const demoModel = (
+    window: Window,
+    effects: Effects,
+    onTableUploaded: OnTableUploaded
+): Model => {
     const model: Model = {
         ...emptyModel(window),
         operations,
@@ -15,6 +19,7 @@ export const demoModel = (window: Window, effects: Effects): Model => {
         operation: model.operations["number"],
         position: { x: 25, y: 20 },
         effects,
+        onTableUploaded,
     })
     const graph1 = changeNumberText(
         graph0,
@@ -26,6 +31,7 @@ export const demoModel = (window: Window, effects: Effects): Model => {
         operation: model.operations["number"],
         position: { x: 25, y: 90 },
         effects,
+        onTableUploaded,
     })
     const graph3 = changeNumberText(graph2, graph2.nodes[stop].body!, () => "9")
     const { graph: graph4, node: num } = addNode({
@@ -33,6 +39,7 @@ export const demoModel = (window: Window, effects: Effects): Model => {
         operation: model.operations["number"],
         position: { x: 25, y: 160 },
         effects,
+        onTableUploaded,
     })
     const graph5 = changeNumberText(graph4, graph4.nodes[num].body!, () => "10")
     const { graph: graph6, node: linspace } = addNode({
@@ -40,6 +47,7 @@ export const demoModel = (window: Window, effects: Effects): Model => {
         operation: model.operations["linspace"],
         position: { x: 175, y: 20 },
         effects,
+        onTableUploaded,
     })
     const { graph: graph7 } = addEdge({
         graph: graph6,

@@ -36,6 +36,7 @@ import {
     removeNode,
     removeOutputEdges,
     evaluateNode,
+    OnTableUploaded,
 } from "./graph"
 import {
     maybeTriggerQuickSelect,
@@ -379,7 +380,12 @@ interface AddNodeInputs {
     operation: Operation
     position: Position
     effects: Effects
-    onTableUploaded: (table: Table, node: UUID) => void
+    onTableUploaded: OnTableUploaded
+}
+
+interface AddNodeOutputs {
+    model: Model
+    node: UUID
 }
 
 export const addNodeToGraph = ({
@@ -388,7 +394,7 @@ export const addNodeToGraph = ({
     position,
     effects,
     onTableUploaded,
-}: AddNodeInputs): Model => {
+}: AddNodeInputs): AddNodeOutputs => {
     const { graph, node } = addNode({
         graph: model.graph,
         operation,
@@ -397,9 +403,12 @@ export const addNodeToGraph = ({
         onTableUploaded,
     })
     return {
-        ...model,
-        graph,
-        nodeOrder: [...model.nodeOrder, node],
+        model: {
+            ...model,
+            graph,
+            nodeOrder: [...model.nodeOrder, node],
+        },
+        node,
     }
 }
 
@@ -898,7 +907,7 @@ export const finderInsert = (
             position: { x, y },
             effects,
             onTableUploaded,
-        })
+        }).model
     )
 }
 

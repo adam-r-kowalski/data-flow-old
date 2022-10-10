@@ -1,42 +1,19 @@
-import * as tf from "@tensorflow/tfjs"
-
-import {
-    addNodeToGraph,
-    openFinderInsert,
-    focusBody,
-    update,
-    updateBody,
-    updateNumberText,
-} from "../../src/update"
-import {
-    BodyKind,
-    NodeKind,
-    NodeTransform,
-    OperationKind,
-    Operations,
-} from "../../src/model/graph"
-import { addEdge, changeNodePosition } from "../../src/update/graph"
-import { translate } from "../../src/linear_algebra/matrix3x3"
+import { update } from "../../src/update"
 import { Model } from "../../src/model"
 import { FocusKind } from "../../src/model/focus"
 import { PointerActionKind } from "../../src/model/pointer_action"
 import { Pointer } from "../../src/ui"
 import { emptyModel } from "../../src/model/empty"
 import { QuickSelectKind } from "../../src/model/quick_select"
-import { defaultEffectModel, EffectModel, makeEffects } from "../mock_effects"
-import { column, tensorFunc, TensorFunc } from "../../src/model/operations"
-import { Table } from "../../src/model/table"
+import { makeEffects, makeTracked, resetTracked } from "../mock_effects"
 import { EventKind } from "../../src/event"
+import { mockDocument } from "../../src/ui/mock"
 
 const model = emptyModel({ width: 500, height: 500 })
-const addFunc = tensorFunc(tf.add)
-const subFunc = tensorFunc(tf.sub)
-const divFunc = tensorFunc(tf.sub)
-const sinFunc = tensorFunc(tf.sin)
-const linspaceFunc = tensorFunc(tf.linspace as TensorFunc)
 
 test("two pointers down on background starts zooming", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
+    const dispatch = () => {}
     const pointer0: Pointer = {
         id: 0,
         position: { x: 0, y: 0 },
@@ -45,20 +22,40 @@ test("two pointers down on background starts zooming", () => {
         id: 1,
         position: { x: 0, y: 0 },
     }
-    const { model: model1 } = update(effects, model, {
-        kind: EventKind.POINTER_DOWN,
-        pointer: pointer0,
-    })
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.CLICKED_BACKGROUND,
-    })
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.POINTER_DOWN,
-        pointer: pointer1,
-    })
-    const { model: model4 } = update(effects, model3, {
-        kind: EventKind.CLICKED_BACKGROUND,
-    })
+    const model1 = update(
+        effects,
+        model,
+        {
+            kind: EventKind.POINTER_DOWN,
+            pointer: pointer0,
+        },
+        dispatch
+    )
+    const model2 = update(
+        effects,
+        model1,
+        {
+            kind: EventKind.CLICKED_BACKGROUND,
+        },
+        dispatch
+    )
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.POINTER_DOWN,
+            pointer: pointer1,
+        },
+        dispatch
+    )
+    const model4 = update(
+        effects,
+        model3,
+        {
+            kind: EventKind.CLICKED_BACKGROUND,
+        },
+        dispatch
+    )
     const expectedModel: Model = {
         ...model,
         pointers: [pointer0, pointer1],
@@ -76,29 +73,69 @@ test("two pointers down on background starts zooming", () => {
 })
 
 test("double clicking background opens finder", () => {
-    const effects = makeEffects()
+    let tracked = makeTracked()
     const pointer: Pointer = {
         id: 0,
         position: { x: 0, y: 0 },
     }
-    const { model: model1 } = update(effects, model, {
-        kind: EventKind.POINTER_DOWN,
-        pointer,
-    })
-    const { model: model2, schedule } = update(effects, model1, {
-        kind: EventKind.CLICKED_BACKGROUND,
-    })
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.POINTER_UP,
-        pointer,
-    })
-    const { model: model4 } = update(effects, model3, {
-        kind: EventKind.POINTER_DOWN,
-        pointer,
-    })
-    const { model: model5 } = update(effects, model4, {
-        kind: EventKind.CLICKED_BACKGROUND,
-    })
+    const model1 = update(
+        tracked.effects,
+        model,
+        {
+            kind: EventKind.POINTER_DOWN,
+            pointer,
+        },
+        tracked.dispatch
+    )
+    expect(tracked.events).toEqual([])
+    expect(tracked.times).toEqual([])
+    tracked = resetTracked(tracked)
+    const model2 = update(
+        tracked.effects,
+        model1,
+        {
+            kind: EventKind.CLICKED_BACKGROUND,
+        },
+        tracked.dispatch
+    )
+    expect(tracked.events).toEqual([{ kind: EventKind.OPEN_FINDER_TIMEOUT }])
+    expect(tracked.times).toEqual([300])
+    tracked = resetTracked(tracked)
+    const model3 = update(
+        tracked.effects,
+        model2,
+        {
+            kind: EventKind.POINTER_UP,
+            pointer,
+        },
+        tracked.dispatch
+    )
+    expect(tracked.events).toEqual([])
+    expect(tracked.times).toEqual([])
+    tracked = resetTracked(tracked)
+    const model4 = update(
+        tracked.effects,
+        model3,
+        {
+            kind: EventKind.POINTER_DOWN,
+            pointer,
+        },
+        tracked.dispatch
+    )
+    expect(tracked.events).toEqual([])
+    expect(tracked.times).toEqual([])
+    tracked = resetTracked(tracked)
+    const model5 = update(
+        tracked.effects,
+        model4,
+        {
+            kind: EventKind.CLICKED_BACKGROUND,
+        },
+        tracked.dispatch
+    )
+    expect(tracked.events).toEqual([])
+    expect(tracked.times).toEqual([])
+    tracked = resetTracked(tracked)
     const expectedModel: Model = {
         ...model,
         pointers: [pointer],
@@ -115,45 +152,65 @@ test("double clicking background opens finder", () => {
         nodePlacementLocation: { x: 0, y: 0, show: false },
     }
     expect(model5).toEqual(expectedModel)
-    expect(schedule).toEqual([
-        {
-            after: { milliseconds: 300 },
-            event: { kind: EventKind.OPEN_FINDER_TIMEOUT },
-        },
-    ])
 })
 
 test("clicking background then waiting too long cancels opens finder", () => {
-    const effects = makeEffects()
+    let tracked = makeTracked()
     const pointer: Pointer = {
         id: 0,
         position: { x: 0, y: 0 },
     }
-    const { model: model1 } = update(effects, model, {
-        kind: EventKind.POINTER_DOWN,
-        pointer,
-    })
-    const { model: model2, schedule } = update(effects, model1, {
-        kind: EventKind.CLICKED_BACKGROUND,
-    })
-    expect(schedule).toEqual([
+    const model1 = update(
+        tracked.effects,
+        model,
         {
-            after: { milliseconds: 300 },
-            event: { kind: EventKind.OPEN_FINDER_TIMEOUT },
+            kind: EventKind.POINTER_DOWN,
+            pointer,
         },
-    ])
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.POINTER_UP,
-        pointer,
-    })
-    const { model: model4 } = update(effects, model3, {
-        kind: EventKind.OPEN_FINDER_TIMEOUT,
-    })
+        tracked.dispatch
+    )
+    expect(tracked.events).toEqual([])
+    expect(tracked.times).toEqual([])
+    tracked = resetTracked(tracked)
+    const model2 = update(
+        tracked.effects,
+        model1,
+        {
+            kind: EventKind.CLICKED_BACKGROUND,
+        },
+        tracked.dispatch
+    )
+    expect(tracked.events).toEqual([{ kind: EventKind.OPEN_FINDER_TIMEOUT }])
+    expect(tracked.times).toEqual([300])
+    tracked = resetTracked(tracked)
+    const model3 = update(
+        tracked.effects,
+        model2,
+        {
+            kind: EventKind.POINTER_UP,
+            pointer,
+        },
+        tracked.dispatch
+    )
+    expect(tracked.events).toEqual([])
+    expect(tracked.times).toEqual([])
+    tracked = resetTracked(tracked)
+    const model4 = update(
+        tracked.effects,
+        model3,
+        {
+            kind: EventKind.OPEN_FINDER_TIMEOUT,
+        },
+        tracked.dispatch
+    )
+    expect(tracked.events).toEqual([])
+    expect(tracked.times).toEqual([])
     expect(model4).toEqual(model)
 })
 
+/*
 test("clicking background triggers finder open timeout", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const pointer: Pointer = {
         id: 0,
         position: { x: 0, y: 0 },
@@ -183,7 +240,7 @@ test("clicking background triggers finder open timeout", () => {
 })
 
 test("two pointers down then up puts you in pan mode", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const pointer0: Pointer = {
         id: 0,
         position: { x: 0, y: 0 },
@@ -217,7 +274,7 @@ test("two pointers down then up puts you in pan mode", () => {
 })
 
 test("pointer down when finder open tracks pointer", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const model0 = openFinderInsert(model)
     const pointer = {
         id: 0,
@@ -235,7 +292,7 @@ test("pointer down when finder open tracks pointer", () => {
 })
 
 test("clicking node selects it and puts it on top of of the node order", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -284,7 +341,7 @@ test("clicking node selects it and puts it on top of of the node order", () => {
 })
 
 test("pointer move before pointer down changes node placement location", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const pointer: Pointer = {
         id: 0,
         position: { x: 0, y: 0 },
@@ -301,7 +358,7 @@ test("pointer move before pointer down changes node placement location", () => {
 })
 
 test("pointer move after pointer down pans camera", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const { model: model1 } = update(effects, model, {
         kind: EventKind.POINTER_DOWN,
         pointer: {
@@ -335,7 +392,7 @@ test("pointer move after pointer down pans camera", () => {
 })
 
 test("pointer move after clicking node pointer down drags node", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -408,7 +465,7 @@ test("pointer move after clicking node pointer down drags node", () => {
 })
 
 test("pointer move after clicking node, pointer down, then pointer up", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -465,7 +522,7 @@ test("pointer move after clicking node, pointer down, then pointer up", () => {
 })
 
 test("mouse wheel zooms in camera relative to mouse position", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const { model: model1 } = update(effects, model, {
         kind: EventKind.WHEEL,
         deltaY: 10,
@@ -482,7 +539,7 @@ test("mouse wheel zooms in camera relative to mouse position", () => {
 })
 
 test("clicking input selects it", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -516,7 +573,7 @@ test("clicking input selects it", () => {
 })
 
 test("clicking new input selects it and deselects old input", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -609,7 +666,7 @@ test("clicking output after clicking input adds connection", () => {
 })
 
 test("clicking output selects it", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -643,7 +700,7 @@ test("clicking output selects it", () => {
 })
 
 test("clicking new output selects it and deselects old output", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -736,7 +793,7 @@ test("clicking input after clicking output adds connection", () => {
 })
 
 test("double click opens finder", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -822,7 +879,7 @@ test("f key down when finder is not shown opens finder", () => {
         },
     }
     const model0: Model = { ...model, operations }
-    const { model: model1 } = update(makeEffects(), model0, {
+    const { model: model1 } = update(makeEffects(mockDocument()), model0, {
         kind: EventKind.KEYDOWN,
         key: "f",
     })
@@ -860,7 +917,7 @@ test("clicking a finder option adds node to graph", () => {
         },
     }
     const model0 = openFinderInsert({ ...model, operations })
-    const { model: model1 } = update(makeEffects(), model0, {
+    const { model: model1 } = update(makeEffects(mockDocument()), model0, {
         kind: EventKind.FINDER_INSERT,
         option: "Add",
     })
@@ -868,7 +925,7 @@ test("clicking a finder option adds node to graph", () => {
         model: { ...model, operations },
         position: { x: 250, y: 250 },
         operation: operations["Add"],
-        effects: makeEffects(),
+        effects: makeEffects(mockDocument()),
     })
     expect(model1).toEqual(expectedModel)
 })
@@ -1400,7 +1457,7 @@ test("pressing c on keyboard while editing number node makes the number 0", () =
 })
 
 test("clicking a number node opens the numeric keyboard", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Number: {
             kind: OperationKind.NUMBER,
@@ -1424,7 +1481,7 @@ test("clicking a number node opens the numeric keyboard", () => {
 })
 
 test("clicking a number node when another number node is selected switches selections", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Number: {
             kind: OperationKind.NUMBER,
@@ -1459,7 +1516,7 @@ test("clicking a number node when another number node is selected switches selec
 })
 
 test("clicking background when a number node is selected deselects it", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Number: {
             kind: OperationKind.NUMBER,
@@ -1511,7 +1568,7 @@ test("clicking background when a number node is selected deselects it", () => {
 })
 
 test("pressing Escape when a number node is selected deselects it", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Number: {
             kind: OperationKind.NUMBER,
@@ -1538,7 +1595,7 @@ test("pressing Escape when a number node is selected deselects it", () => {
 })
 
 test("clicking input when a number node is selected deselects it and selects input", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Number: {
             kind: OperationKind.NUMBER,
@@ -1587,7 +1644,7 @@ test("clicking input when a number node is selected deselects it and selects inp
 })
 
 test("clicking output when a number node is selected deselects it and selects output", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Number: {
             kind: OperationKind.NUMBER,
@@ -1623,7 +1680,7 @@ test("clicking output when a number node is selected deselects it and selects ou
 })
 
 test("clicking node when a number node is selected deselects it and selects node", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Number: {
             kind: OperationKind.NUMBER,
@@ -1660,7 +1717,7 @@ test("clicking node when a number node is selected deselects it and selects node
 })
 
 test("zooming", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const pointer0: Pointer = {
         id: 0,
         position: { x: 0, y: 0 },
@@ -1752,7 +1809,7 @@ test("zooming", () => {
 })
 
 test("pressing d on keyboard with node selected deletes it", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -1781,7 +1838,7 @@ test("pressing d on keyboard with node selected deletes it", () => {
 })
 
 test("clicking background when a node is selected deselects it", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -1835,7 +1892,7 @@ test("clicking background when a node is selected deselects it", () => {
 })
 
 test("pressing escape when a node is selected deselects it", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -1864,7 +1921,7 @@ test("pressing escape when a node is selected deselects it", () => {
 })
 
 test("clicking background when a input is selected deselects it", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -1919,7 +1976,7 @@ test("clicking background when a input is selected deselects it", () => {
 })
 
 test("pressing escape when a input is selected deselects it", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -1949,7 +2006,7 @@ test("pressing escape when a input is selected deselects it", () => {
 })
 
 test("clicking background when a output is selected deselects it", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -2004,7 +2061,7 @@ test("clicking background when a output is selected deselects it", () => {
 })
 
 test("pressing escape when a output is selected deselects it", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -2034,7 +2091,7 @@ test("pressing escape when a output is selected deselects it", () => {
 })
 
 test("delete node", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -2059,7 +2116,7 @@ test("delete node", () => {
 })
 
 test("delete input edge", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -2107,7 +2164,7 @@ test("delete input edge", () => {
 })
 
 test("pressing d on keyboard with input selected delete edge attached", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -2159,7 +2216,7 @@ test("pressing d on keyboard with input selected delete edge attached", () => {
 })
 
 test("delete output edges", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -2215,7 +2272,7 @@ test("delete output edges", () => {
 })
 
 test("pressing d on keyboard with output selected delete edges attached", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -2275,7 +2332,7 @@ test("pressing d on keyboard with output selected delete edges attached", () => 
 })
 
 test("connecting output of same node where input is selected is not allowed", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -2306,7 +2363,7 @@ test("connecting output of same node where input is selected is not allowed", ()
 })
 
 test("connecting input of same node where output is selected is not allowed", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -2495,7 +2552,7 @@ test("connecting input to output if input already has edge replaces it", () => {
 })
 
 test("three pointers down then one up doesn't change state", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const pointer0: Pointer = {
         id: 0,
         position: { x: 0, y: 0 },
@@ -2532,7 +2589,7 @@ test("three pointers down then one up doesn't change state", () => {
 })
 
 test("three pointers down on node then one up keeps state dragging", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const model0: Model = {
         ...model,
         operations: {
@@ -2594,7 +2651,7 @@ test("three pointers down on node then one up keeps state dragging", () => {
 })
 
 test("pointer move when input selected updates node placement location", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const model0: Model = {
         ...model,
         operations: {
@@ -2642,7 +2699,7 @@ test("pointer move when input selected updates node placement location", () => {
 })
 
 test("pointer move when output selected updates node placement location", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const model0: Model = {
         ...model,
         operations: {
@@ -2690,7 +2747,7 @@ test("pointer move when output selected updates node placement location", () => 
 })
 
 test("pointer move when body selected updates node placement location", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const model0: Model = {
         ...model,
         operations: {
@@ -2736,7 +2793,7 @@ test("pointer move when body selected updates node placement location", () => {
 })
 
 test("pointer move when finder open only updates pointer state", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const pointer0: Pointer = {
         id: 0,
         position: { x: 0, y: 0 },
@@ -2783,7 +2840,7 @@ test("pointer move when finder open only updates pointer state", () => {
 })
 
 test("pressing f with node selected opens finder", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const model0: Model = {
         ...model,
         operations: {
@@ -2839,7 +2896,7 @@ test("pressing f with node selected opens finder", () => {
 })
 
 test("pressing f with input selected opens finder", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const model0: Model = {
         ...model,
         operations: {
@@ -2895,7 +2952,7 @@ test("pressing f with input selected opens finder", () => {
 })
 
 test("pressing f with output selected opens finder", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const model0: Model = {
         ...model,
         operations: {
@@ -2951,7 +3008,7 @@ test("pressing f with output selected opens finder", () => {
 })
 
 test("key up with input selected does nothing", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const model0: Model = {
         ...model,
         operations: {
@@ -2998,7 +3055,7 @@ test("key up with input selected does nothing", () => {
 })
 
 test("clicking background with finder open closes it", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const { model: model1 } = update(effects, model, {
         kind: EventKind.KEYDOWN,
         key: "f",
@@ -3022,7 +3079,7 @@ test("clicking background with finder open closes it", () => {
 })
 
 test("pointer move after moving with keyboard stops showing node placement location", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const { model: model1 } = update(effects, model, {
         kind: EventKind.KEYDOWN,
         key: "h",
@@ -3052,7 +3109,7 @@ test("pointer move after moving with keyboard stops showing node placement locat
 })
 
 test("update body", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const model0: Model = {
         ...model,
         operations: {
@@ -3335,12 +3392,12 @@ test("upload table", () => {
             b: [4, 5, 6],
         },
     }
-    const { model: model1 } = update(makeEffects(), model, {
+    const { model: model1 } = update(makeEffects(mockDocument()), model, {
         kind: EventKind.UPLOAD_TABLE,
         table,
         position: { x: 0, y: 0 },
     })
-    const generateUUID = makeEffects().generateUUID
+    const generateUUID = makeEffects(mockDocument()).generateUUID
     const node = generateUUID()
     const output = generateUUID()
     const body = generateUUID()
@@ -3382,7 +3439,7 @@ test("upload table", () => {
 })
 
 test("pressing c with node selected opens finder in change mode", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const model0: Model = {
         ...model,
         operations: {
@@ -3467,7 +3524,7 @@ test("pressing c with node selected opens finder in change mode", () => {
 })
 
 test("pressing change node context menu with node selected opens finder in change mode", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const model0: Model = {
         ...model,
         operations: {
@@ -3552,7 +3609,7 @@ test("pressing change node context menu with node selected opens finder in chang
 })
 
 test("pressing enter with finder in change mode replaces node but preserves inputs and outputs", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const model0: Model = {
         ...model,
         operations: {
@@ -3654,7 +3711,7 @@ test("pressing enter with finder in change mode replaces node but preserves inpu
 })
 
 test("cllicking finder option with finder in change mode replaces node but preserves inputs and outputs", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const model0: Model = {
         ...model,
         operations: {
@@ -3745,7 +3802,7 @@ test("cllicking finder option with finder in change mode replaces node but prese
 })
 
 test("change node with different input and output names", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const model0: Model = {
         ...model,
         operations: {
@@ -3879,7 +3936,7 @@ test("change node with different input and output names", () => {
 })
 
 test("change node with more inputs then existing node", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const model0: Model = {
         ...model,
         operations: {
@@ -4010,7 +4067,7 @@ test("change node with more inputs then existing node", () => {
 })
 
 test("change node with fewer inputs then existing node", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const model0: Model = {
         ...model,
         operations: {
@@ -4140,7 +4197,7 @@ test("change node with fewer inputs then existing node", () => {
 })
 
 test("change from source node to a source node does nothing", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const model0: Model = {
         ...model,
         operations: {
@@ -4177,7 +4234,7 @@ test("change from source node to a source node does nothing", () => {
 })
 
 test("change from source node to a transform node does nothing", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const model0: Model = {
         ...model,
         operations: {
@@ -4233,7 +4290,7 @@ test("change from source node to a transform node does nothing", () => {
 })
 
 test("deleting a node forces evaluation of outputs", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const model0: Model = {
         ...model,
         operations: {
@@ -4356,7 +4413,7 @@ test("deleting a node forces evaluation of outputs", () => {
 })
 
 test("prevent cycles from forming", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const model0: Model = {
         ...model,
         operations: {
@@ -4409,7 +4466,7 @@ test("prevent cycles from forming", () => {
 })
 
 test("upload csv using node prompts user for a table", async () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const model0: Model = {
         ...model,
         operations: {
@@ -4479,7 +4536,7 @@ test("upload csv using node prompts user for a table", async () => {
 })
 
 test("upload csv event replaces node body with a table", async () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const model0: Model = {
         ...model,
         operations: {
@@ -4569,3 +4626,4 @@ test("pressing sft on virtual keyboard toggles upppercase", () => {
     }
     expect(model2).toEqual(expectedModel)
 })
+*/

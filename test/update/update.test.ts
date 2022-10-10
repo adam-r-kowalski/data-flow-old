@@ -2,41 +2,55 @@ import * as tf from "@tensorflow/tfjs"
 
 import {
     addNodeToGraph,
-    openFinderInsert,
     focusBody,
+    openFinderInsert,
     update,
     updateBody,
     updateNumberText,
 } from "../../src/update"
-import {
-    BodyKind,
-    NodeKind,
-    NodeTransform,
-    OperationKind,
-    Operations,
-} from "../../src/model/graph"
-import { addEdge, changeNodePosition } from "../../src/update/graph"
-import { translate } from "../../src/linear_algebra/matrix3x3"
 import { Model } from "../../src/model"
 import { FocusKind } from "../../src/model/focus"
 import { PointerActionKind } from "../../src/model/pointer_action"
 import { Pointer } from "../../src/ui"
 import { emptyModel } from "../../src/model/empty"
 import { QuickSelectKind } from "../../src/model/quick_select"
-import { defaultEffectModel, EffectModel, makeEffects } from "../mock_effects"
-import { column, tensorFunc, TensorFunc } from "../../src/model/operations"
+import {
+    defaultEffectModel,
+    EffectModel,
+    makeEffects,
+    makeTracked,
+    resetTracked,
+} from "../mock_effects"
+import { AppEvent, EventKind } from "../../src/event"
+import { mockDocument } from "../../src/ui/mock"
+import {
+    BodyKind,
+    NodeKind,
+    NodeTransform,
+    OperationKind,
+    Operations,
+    UUID,
+} from "../../src/model/graph"
+import { column, TensorFunc, tensorFunc } from "../../src/model/operations"
+import { translate } from "../../src/linear_algebra/matrix3x3"
+import {
+    addEdge,
+    changeNodePosition,
+    OnTableUploaded,
+} from "../../src/update/graph"
 import { Table } from "../../src/model/table"
-import { EventKind } from "../../src/event"
 
-const model = emptyModel({ width: 500, height: 500 })
 const addFunc = tensorFunc(tf.add)
 const subFunc = tensorFunc(tf.sub)
-const divFunc = tensorFunc(tf.sub)
+const divFunc = tensorFunc(tf.div)
 const sinFunc = tensorFunc(tf.sin)
 const linspaceFunc = tensorFunc(tf.linspace as TensorFunc)
 
+const model = emptyModel({ width: 500, height: 500 })
+
 test("two pointers down on background starts zooming", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
+    const dispatch = () => {}
     const pointer0: Pointer = {
         id: 0,
         position: { x: 0, y: 0 },
@@ -45,20 +59,40 @@ test("two pointers down on background starts zooming", () => {
         id: 1,
         position: { x: 0, y: 0 },
     }
-    const { model: model1 } = update(effects, model, {
-        kind: EventKind.POINTER_DOWN,
-        pointer: pointer0,
-    })
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.CLICKED_BACKGROUND,
-    })
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.POINTER_DOWN,
-        pointer: pointer1,
-    })
-    const { model: model4 } = update(effects, model3, {
-        kind: EventKind.CLICKED_BACKGROUND,
-    })
+    const model1 = update(
+        effects,
+        model,
+        {
+            kind: EventKind.POINTER_DOWN,
+            pointer: pointer0,
+        },
+        dispatch
+    )
+    const model2 = update(
+        effects,
+        model1,
+        {
+            kind: EventKind.CLICKED_BACKGROUND,
+        },
+        dispatch
+    )
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.POINTER_DOWN,
+            pointer: pointer1,
+        },
+        dispatch
+    )
+    const model4 = update(
+        effects,
+        model3,
+        {
+            kind: EventKind.CLICKED_BACKGROUND,
+        },
+        dispatch
+    )
     const expectedModel: Model = {
         ...model,
         pointers: [pointer0, pointer1],
@@ -76,29 +110,69 @@ test("two pointers down on background starts zooming", () => {
 })
 
 test("double clicking background opens finder", () => {
-    const effects = makeEffects()
+    let tracked = makeTracked()
     const pointer: Pointer = {
         id: 0,
         position: { x: 0, y: 0 },
     }
-    const { model: model1 } = update(effects, model, {
-        kind: EventKind.POINTER_DOWN,
-        pointer,
-    })
-    const { model: model2, schedule } = update(effects, model1, {
-        kind: EventKind.CLICKED_BACKGROUND,
-    })
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.POINTER_UP,
-        pointer,
-    })
-    const { model: model4 } = update(effects, model3, {
-        kind: EventKind.POINTER_DOWN,
-        pointer,
-    })
-    const { model: model5 } = update(effects, model4, {
-        kind: EventKind.CLICKED_BACKGROUND,
-    })
+    const model1 = update(
+        tracked.effects,
+        model,
+        {
+            kind: EventKind.POINTER_DOWN,
+            pointer,
+        },
+        tracked.dispatch
+    )
+    expect(tracked.events).toEqual([])
+    expect(tracked.times).toEqual([])
+    tracked = resetTracked(tracked)
+    const model2 = update(
+        tracked.effects,
+        model1,
+        {
+            kind: EventKind.CLICKED_BACKGROUND,
+        },
+        tracked.dispatch
+    )
+    expect(tracked.events).toEqual([{ kind: EventKind.OPEN_FINDER_TIMEOUT }])
+    expect(tracked.times).toEqual([300])
+    tracked = resetTracked(tracked)
+    const model3 = update(
+        tracked.effects,
+        model2,
+        {
+            kind: EventKind.POINTER_UP,
+            pointer,
+        },
+        tracked.dispatch
+    )
+    expect(tracked.events).toEqual([])
+    expect(tracked.times).toEqual([])
+    tracked = resetTracked(tracked)
+    const model4 = update(
+        tracked.effects,
+        model3,
+        {
+            kind: EventKind.POINTER_DOWN,
+            pointer,
+        },
+        tracked.dispatch
+    )
+    expect(tracked.events).toEqual([])
+    expect(tracked.times).toEqual([])
+    tracked = resetTracked(tracked)
+    const model5 = update(
+        tracked.effects,
+        model4,
+        {
+            kind: EventKind.CLICKED_BACKGROUND,
+        },
+        tracked.dispatch
+    )
+    expect(tracked.events).toEqual([])
+    expect(tracked.times).toEqual([])
+    tracked = resetTracked(tracked)
     const expectedModel: Model = {
         ...model,
         pointers: [pointer],
@@ -115,75 +189,113 @@ test("double clicking background opens finder", () => {
         nodePlacementLocation: { x: 0, y: 0, show: false },
     }
     expect(model5).toEqual(expectedModel)
-    expect(schedule).toEqual([
-        {
-            after: { milliseconds: 300 },
-            event: { kind: EventKind.OPEN_FINDER_TIMEOUT },
-        },
-    ])
 })
 
 test("clicking background then waiting too long cancels opens finder", () => {
-    const effects = makeEffects()
+    let tracked = makeTracked()
     const pointer: Pointer = {
         id: 0,
         position: { x: 0, y: 0 },
     }
-    const { model: model1 } = update(effects, model, {
-        kind: EventKind.POINTER_DOWN,
-        pointer,
-    })
-    const { model: model2, schedule } = update(effects, model1, {
-        kind: EventKind.CLICKED_BACKGROUND,
-    })
-    expect(schedule).toEqual([
+    const model1 = update(
+        tracked.effects,
+        model,
         {
-            after: { milliseconds: 300 },
-            event: { kind: EventKind.OPEN_FINDER_TIMEOUT },
+            kind: EventKind.POINTER_DOWN,
+            pointer,
         },
-    ])
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.POINTER_UP,
-        pointer,
-    })
-    const { model: model4 } = update(effects, model3, {
-        kind: EventKind.OPEN_FINDER_TIMEOUT,
-    })
+        tracked.dispatch
+    )
+    expect(tracked.events).toEqual([])
+    expect(tracked.times).toEqual([])
+    tracked = resetTracked(tracked)
+    const model2 = update(
+        tracked.effects,
+        model1,
+        {
+            kind: EventKind.CLICKED_BACKGROUND,
+        },
+        tracked.dispatch
+    )
+    expect(tracked.events).toEqual([{ kind: EventKind.OPEN_FINDER_TIMEOUT }])
+    expect(tracked.times).toEqual([300])
+    tracked = resetTracked(tracked)
+    const model3 = update(
+        tracked.effects,
+        model2,
+        {
+            kind: EventKind.POINTER_UP,
+            pointer,
+        },
+        tracked.dispatch
+    )
+    expect(tracked.events).toEqual([])
+    expect(tracked.times).toEqual([])
+    tracked = resetTracked(tracked)
+    const model4 = update(
+        tracked.effects,
+        model3,
+        {
+            kind: EventKind.OPEN_FINDER_TIMEOUT,
+        },
+        tracked.dispatch
+    )
+    expect(tracked.events).toEqual([])
+    expect(tracked.times).toEqual([])
     expect(model4).toEqual(model)
 })
 
 test("clicking background triggers finder open timeout", () => {
-    const effects = makeEffects()
+    let tracked = makeTracked()
     const pointer: Pointer = {
         id: 0,
         position: { x: 0, y: 0 },
     }
-    const { model: model1 } = update(effects, model, {
-        kind: EventKind.POINTER_DOWN,
-        pointer,
-    })
-    const { model: model2, schedule } = update(effects, model1, {
-        kind: EventKind.CLICKED_BACKGROUND,
-    })
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.POINTER_UP,
-        pointer,
-    })
+    const model1 = update(
+        tracked.effects,
+        model,
+        {
+            kind: EventKind.POINTER_DOWN,
+            pointer,
+        },
+        tracked.dispatch
+    )
+    expect(tracked.events).toEqual([])
+    expect(tracked.times).toEqual([])
+    tracked = resetTracked(tracked)
+    const model2 = update(
+        tracked.effects,
+        model1,
+        {
+            kind: EventKind.CLICKED_BACKGROUND,
+        },
+        tracked.dispatch
+    )
+    expect(tracked.events).toEqual([{ kind: EventKind.OPEN_FINDER_TIMEOUT }])
+    expect(tracked.times).toEqual([300])
+    tracked = resetTracked(tracked)
+    const model3 = update(
+        tracked.effects,
+        model2,
+        {
+            kind: EventKind.POINTER_UP,
+            pointer,
+        },
+        tracked.dispatch
+    )
+    expect(tracked.events).toEqual([])
+    expect(tracked.times).toEqual([])
+    tracked = resetTracked(tracked)
     const expectedModel: Model = {
         ...model,
         openFinderFirstClick: true,
     }
     expect(model3).toEqual(expectedModel)
-    expect(schedule).toEqual([
-        {
-            after: { milliseconds: 300 },
-            event: { kind: EventKind.OPEN_FINDER_TIMEOUT },
-        },
-    ])
 })
 
 test("two pointers down then up puts you in pan mode", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
+    const dispatch = () => {}
     const pointer0: Pointer = {
         id: 0,
         position: { x: 0, y: 0 },
@@ -192,18 +304,33 @@ test("two pointers down then up puts you in pan mode", () => {
         id: 1,
         position: { x: 0, y: 0 },
     }
-    const { model: model1 } = update(effects, model, {
-        kind: EventKind.POINTER_DOWN,
-        pointer: pointer0,
-    })
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.POINTER_DOWN,
-        pointer: pointer1,
-    })
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.POINTER_UP,
-        pointer: pointer0,
-    })
+    const model1 = update(
+        effects,
+        model,
+        {
+            kind: EventKind.POINTER_DOWN,
+            pointer: pointer0,
+        },
+        dispatch
+    )
+    const model2 = update(
+        effects,
+        model1,
+        {
+            kind: EventKind.POINTER_DOWN,
+            pointer: pointer1,
+        },
+        dispatch
+    )
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.POINTER_UP,
+            pointer: pointer0,
+        },
+        dispatch
+    )
     const expectedModel: Model = {
         ...model,
         focus: {
@@ -217,16 +344,22 @@ test("two pointers down then up puts you in pan mode", () => {
 })
 
 test("pointer down when finder open tracks pointer", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
+    const dispatch = () => {}
     const model0 = openFinderInsert(model)
     const pointer = {
         id: 0,
         position: { x: 0, y: 0 },
     }
-    const { model: model1 } = update(effects, model0, {
-        kind: EventKind.POINTER_DOWN,
-        pointer,
-    })
+    const model1 = update(
+        effects,
+        model0,
+        {
+            kind: EventKind.POINTER_DOWN,
+            pointer,
+        },
+        dispatch
+    )
     const expectedModel: Model = {
         ...model0,
         pointers: [pointer],
@@ -235,7 +368,9 @@ test("pointer down when finder open tracks pointer", () => {
 })
 
 test("clicking node selects it and puts it on top of of the node order", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
+    const dispatch = () => {}
+    const onTableUploaded = () => {}
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -258,17 +393,24 @@ test("clicking node selects it and puts it on top of of the node order", () => {
         operation: operations["Add"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const { model: model2, node: node1 } = addNodeToGraph({
         model: model1,
         operation: operations["Sub"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.CLICKED_NODE,
-        node: node0,
-    })
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.CLICKED_NODE,
+            node: node0,
+        },
+        dispatch
+    )
     const expectedModel: Model = {
         ...model2,
         focus: {
@@ -284,15 +426,21 @@ test("clicking node selects it and puts it on top of of the node order", () => {
 })
 
 test("pointer move before pointer down changes node placement location", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
+    const dispatch = () => {}
     const pointer: Pointer = {
         id: 0,
         position: { x: 0, y: 0 },
     }
-    const { model: model1 } = update(effects, model, {
-        kind: EventKind.POINTER_MOVE,
-        pointer,
-    })
+    const model1 = update(
+        effects,
+        model,
+        {
+            kind: EventKind.POINTER_MOVE,
+            pointer,
+        },
+        dispatch
+    )
     const expectedModel: Model = {
         ...model,
         nodePlacementLocation: { x: 0, y: 0, show: false },
@@ -301,21 +449,32 @@ test("pointer move before pointer down changes node placement location", () => {
 })
 
 test("pointer move after pointer down pans camera", () => {
-    const effects = makeEffects()
-    const { model: model1 } = update(effects, model, {
-        kind: EventKind.POINTER_DOWN,
-        pointer: {
-            id: 0,
-            position: { x: 0, y: 0 },
+    const effects = makeEffects(mockDocument())
+    const dispatch = () => {}
+    const model1 = update(
+        effects,
+        model,
+        {
+            kind: EventKind.POINTER_DOWN,
+            pointer: {
+                id: 0,
+                position: { x: 0, y: 0 },
+            },
         },
-    })
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.POINTER_MOVE,
-        pointer: {
-            id: 0,
-            position: { x: 50, y: 75 },
+        dispatch
+    )
+    const model2 = update(
+        effects,
+        model1,
+        {
+            kind: EventKind.POINTER_MOVE,
+            pointer: {
+                id: 0,
+                position: { x: 50, y: 75 },
+            },
         },
-    })
+        dispatch
+    )
     const expectedModel: Model = {
         ...model,
         camera: translate(-50, -75),
@@ -335,7 +494,9 @@ test("pointer move after pointer down pans camera", () => {
 })
 
 test("pointer move after clicking node pointer down drags node", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
+    const dispatch = () => {}
+    const onTableUploaded = () => {}
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -358,31 +519,48 @@ test("pointer move after clicking node pointer down drags node", () => {
         operation: operations["Add"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const { model: model2, node: node1 } = addNodeToGraph({
         model: model1,
         operation: operations["Sub"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.CLICKED_NODE,
-        node: node0,
-    })
-    const { model: model4 } = update(effects, model3, {
-        kind: EventKind.POINTER_DOWN,
-        pointer: {
-            id: 0,
-            position: { x: 0, y: 0 },
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.CLICKED_NODE,
+            node: node0,
         },
-    })
-    const { model: model5 } = update(effects, model4, {
-        kind: EventKind.POINTER_MOVE,
-        pointer: {
-            id: 0,
-            position: { x: 50, y: 75 },
+        dispatch
+    )
+    const model4 = update(
+        effects,
+        model3,
+        {
+            kind: EventKind.POINTER_DOWN,
+            pointer: {
+                id: 0,
+                position: { x: 0, y: 0 },
+            },
         },
-    })
+        dispatch
+    )
+    const model5 = update(
+        effects,
+        model4,
+        {
+            kind: EventKind.POINTER_MOVE,
+            pointer: {
+                id: 0,
+                position: { x: 50, y: 75 },
+            },
+        },
+        dispatch
+    )
     const expectedModel: Model = {
         ...model2,
         pointers: [
@@ -408,7 +586,8 @@ test("pointer move after clicking node pointer down drags node", () => {
 })
 
 test("pointer move after clicking node, pointer down, then pointer up", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
+    const dispatch = () => {}
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -418,38 +597,60 @@ test("pointer move after clicking node, pointer down, then pointer up", () => {
             func: addFunc,
         },
     }
+    const onTableUploaded = () => {}
     const model0: Model = { ...model, operations }
     const { model: model1, node: node0 } = addNodeToGraph({
         model: model0,
         operation: operations["Add"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.CLICKED_NODE,
-        node: node0,
-    })
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.POINTER_DOWN,
-        pointer: {
-            id: 0,
-            position: { x: 0, y: 0 },
+    const model2 = update(
+        effects,
+        model1,
+        {
+            kind: EventKind.CLICKED_NODE,
+            node: node0,
         },
-    })
-    const { model: model4 } = update(effects, model3, {
-        kind: EventKind.POINTER_UP,
-        pointer: {
-            id: 0,
-            position: { x: 0, y: 0 },
+        dispatch
+    )
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.POINTER_DOWN,
+            pointer: {
+                id: 0,
+                position: { x: 0, y: 0 },
+            },
         },
-    })
-    const { model: model5 } = update(effects, model4, {
-        kind: EventKind.POINTER_MOVE,
-        pointer: {
-            id: 0,
-            position: { x: 50, y: 75 },
+        dispatch
+    )
+    const model4 = update(
+        effects,
+        model3,
+        {
+            kind: EventKind.POINTER_UP,
+            pointer: {
+                id: 0,
+                position: { x: 0, y: 0 },
+            },
         },
-    })
+        dispatch
+    )
+    const model5 = update(
+        effects,
+        model4,
+        {
+            kind: EventKind.POINTER_MOVE,
+            pointer: {
+                id: 0,
+                position: { x: 50, y: 75 },
+            },
+        },
+        dispatch
+    )
     const expectedModel: Model = {
         ...model1,
         nodePlacementLocation: { x: 50, y: 75, show: false },
@@ -465,12 +666,18 @@ test("pointer move after clicking node, pointer down, then pointer up", () => {
 })
 
 test("mouse wheel zooms in camera relative to mouse position", () => {
-    const effects = makeEffects()
-    const { model: model1 } = update(effects, model, {
-        kind: EventKind.WHEEL,
-        deltaY: 10,
-        position: { x: 50, y: 100 },
-    })
+    const dispatch = () => {}
+    const effects = makeEffects(mockDocument())
+    const model1 = update(
+        effects,
+        model,
+        {
+            kind: EventKind.WHEEL,
+            deltaY: 10,
+            position: { x: 50, y: 100 },
+        },
+        dispatch
+    )
     const expectedModel = {
         ...model,
         camera: [
@@ -482,7 +689,9 @@ test("mouse wheel zooms in camera relative to mouse position", () => {
 })
 
 test("clicking input selects it", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
+    const dispatch = () => {}
+    const onTableUploaded = () => {}
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -498,12 +707,18 @@ test("clicking input selects it", () => {
         operation: operations["Add"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const input = (model1.graph.nodes[node0] as NodeTransform).inputs[0]
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.CLICKED_INPUT,
-        input,
-    })
+    const model2 = update(
+        effects,
+        model1,
+        {
+            kind: EventKind.CLICKED_INPUT,
+            input,
+        },
+        dispatch
+    )
     const expectedModel: Model = {
         ...model1,
         focus: {
@@ -516,7 +731,9 @@ test("clicking input selects it", () => {
 })
 
 test("clicking new input selects it and deselects old input", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
+    const dispatch = () => {}
+    const onTableUploaded = () => {}
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -532,16 +749,27 @@ test("clicking new input selects it and deselects old input", () => {
         operation: operations["Add"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const [input0, input1] = (model1.graph.nodes[node0] as NodeTransform).inputs
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.CLICKED_INPUT,
-        input: input0,
-    })
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.CLICKED_INPUT,
-        input: input1,
-    })
+    const model2 = update(
+        effects,
+        model1,
+        {
+            kind: EventKind.CLICKED_INPUT,
+            input: input0,
+        },
+        dispatch
+    )
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.CLICKED_INPUT,
+            input: input1,
+        },
+        dispatch
+    )
     const expectedModel: Model = {
         ...model1,
         focus: {
@@ -555,7 +783,8 @@ test("clicking new input selects it and deselects old input", () => {
 
 test("clicking output after clicking input adds connection", () => {
     const effectModel: EffectModel = { uuid: 0, time: 0 }
-    const effects = makeEffects(effectModel)
+    const document = mockDocument()
+    const effects = makeEffects(document, effectModel)
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -572,44 +801,60 @@ test("clicking output after clicking input adds connection", () => {
             func: subFunc,
         },
     }
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const model0: Model = { ...model, operations }
     const { model: model1, node: node0 } = addNodeToGraph({
         model: model0,
         operation: operations["Add"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const { model: model2, node: node1 } = addNodeToGraph({
         model: model1,
         operation: operations["Sub"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const input = (model2.graph.nodes[node0] as NodeTransform).inputs[0]
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.CLICKED_INPUT,
-        input,
-    })
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.CLICKED_INPUT,
+            input,
+        },
+        dispatch
+    )
     const output = model3.graph.nodes[node1].outputs[0]
     const newEffectModel = { ...effectModel }
-    const { model: model4 } = update(effects, model3, {
-        kind: EventKind.CLICKED_OUTPUT,
-        output,
-    })
+    const model4 = update(
+        effects,
+        model3,
+        {
+            kind: EventKind.CLICKED_OUTPUT,
+            output,
+        },
+        dispatch
+    )
     const expectedModel: Model = {
         ...model2,
         graph: addEdge({
             graph: model2.graph,
             input,
             output,
-            generateUUID: makeEffects(newEffectModel).generateUUID,
+            generateUUID: makeEffects(document, newEffectModel).generateUUID,
         }).graph,
     }
     expect(model4).toEqual(expectedModel)
 })
 
 test("clicking output selects it", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -625,12 +870,18 @@ test("clicking output selects it", () => {
         operation: operations["Add"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const output = model1.graph.nodes[node0].outputs[0]
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.CLICKED_OUTPUT,
-        output,
-    })
+    const model2 = update(
+        effects,
+        model1,
+        {
+            kind: EventKind.CLICKED_OUTPUT,
+            output,
+        },
+        dispatch
+    )
     const expectedModel: Model = {
         ...model1,
         focus: {
@@ -643,7 +894,7 @@ test("clicking output selects it", () => {
 })
 
 test("clicking new output selects it and deselects old output", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -653,22 +904,35 @@ test("clicking new output selects it and deselects old output", () => {
             func: addFunc,
         },
     }
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const model0: Model = { ...model, operations }
     const { model: model1, node: node0 } = addNodeToGraph({
         model: model0,
         operation: operations["Add"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const [output0, output1] = model1.graph.nodes[node0].outputs
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.CLICKED_OUTPUT,
-        output: output0,
-    })
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.CLICKED_OUTPUT,
-        output: output1,
-    })
+    const model2 = update(
+        effects,
+        model1,
+        {
+            kind: EventKind.CLICKED_OUTPUT,
+            output: output0,
+        },
+        dispatch
+    )
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.CLICKED_OUTPUT,
+            output: output1,
+        },
+        dispatch
+    )
     const expectedModel: Model = {
         ...model1,
         focus: {
@@ -682,7 +946,10 @@ test("clicking new output selects it and deselects old output", () => {
 
 test("clicking input after clicking output adds connection", () => {
     const effectModel = defaultEffectModel()
-    const effects = makeEffects(effectModel)
+    const document = mockDocument()
+    const effects = makeEffects(document, effectModel)
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -705,38 +972,51 @@ test("clicking input after clicking output adds connection", () => {
         operation: operations["Add"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const { model: model2, node: node1 } = addNodeToGraph({
         model: model1,
         operation: operations["Sub"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const output = model2.graph.nodes[node1].outputs[0]
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.CLICKED_OUTPUT,
-        output,
-    })
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.CLICKED_OUTPUT,
+            output,
+        },
+        dispatch
+    )
     const newEffectModel = { ...effectModel }
     const input = (model3.graph.nodes[node0] as NodeTransform).inputs[0]
-    const { model: model4 } = update(effects, model3, {
-        kind: EventKind.CLICKED_INPUT,
-        input,
-    })
+    const model4 = update(
+        effects,
+        model3,
+        {
+            kind: EventKind.CLICKED_INPUT,
+            input,
+        },
+        dispatch
+    )
     const expectedModel: Model = {
         ...model2,
         graph: addEdge({
             graph: model2.graph,
             input,
             output,
-            generateUUID: makeEffects(newEffectModel).generateUUID,
+            generateUUID: makeEffects(document, newEffectModel).generateUUID,
         }).graph,
     }
     expect(model4).toEqual(expectedModel)
 })
 
 test("double click opens finder", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
+    const dispatch = () => {}
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -754,33 +1034,58 @@ test("double click opens finder", () => {
         },
     }
     const model0: Model = { ...model, operations }
-    const { model: model1 } = update(effects, model0, {
-        kind: EventKind.POINTER_DOWN,
-        pointer: {
-            id: 0,
-            position: { x: 0, y: 0 },
+    const model1 = update(
+        effects,
+        model0,
+        {
+            kind: EventKind.POINTER_DOWN,
+            pointer: {
+                id: 0,
+                position: { x: 0, y: 0 },
+            },
         },
-    })
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.CLICKED_BACKGROUND,
-    })
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.POINTER_UP,
-        pointer: {
-            id: 0,
-            position: { x: 0, y: 0 },
+        dispatch
+    )
+    const model2 = update(
+        effects,
+        model1,
+        {
+            kind: EventKind.CLICKED_BACKGROUND,
         },
-    })
-    const { model: model4 } = update(effects, model3, {
-        kind: EventKind.POINTER_DOWN,
-        pointer: {
-            id: 0,
-            position: { x: 50, y: 50 },
+        dispatch
+    )
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.POINTER_UP,
+            pointer: {
+                id: 0,
+                position: { x: 0, y: 0 },
+            },
         },
-    })
-    const { model: model5 } = update(effects, model4, {
-        kind: EventKind.CLICKED_BACKGROUND,
-    })
+        dispatch
+    )
+    const model4 = update(
+        effects,
+        model3,
+        {
+            kind: EventKind.POINTER_DOWN,
+            pointer: {
+                id: 0,
+                position: { x: 50, y: 50 },
+            },
+        },
+        dispatch
+    )
+    const model5 = update(
+        effects,
+        model4,
+        {
+            kind: EventKind.CLICKED_BACKGROUND,
+        },
+        dispatch
+    )
     const expectedModel: Model = {
         ...model0,
         focus: {
@@ -805,6 +1110,7 @@ test("double click opens finder", () => {
 })
 
 test("f key down when finder is not shown opens finder", () => {
+    const dispatch = () => {}
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -822,10 +1128,15 @@ test("f key down when finder is not shown opens finder", () => {
         },
     }
     const model0: Model = { ...model, operations }
-    const { model: model1 } = update(makeEffects(), model0, {
-        kind: EventKind.KEYDOWN,
-        key: "f",
-    })
+    const model1 = update(
+        makeEffects(mockDocument()),
+        model0,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "f",
+        },
+        dispatch
+    )
     const expectedModel: Model = {
         ...model0,
         focus: {
@@ -843,6 +1154,8 @@ test("f key down when finder is not shown opens finder", () => {
 })
 
 test("clicking a finder option adds node to graph", () => {
+    const dispatch = () => {}
+    const onTableUploaded = () => {}
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -860,22 +1173,32 @@ test("clicking a finder option adds node to graph", () => {
         },
     }
     const model0 = openFinderInsert({ ...model, operations })
-    const { model: model1 } = update(makeEffects(), model0, {
-        kind: EventKind.FINDER_INSERT,
-        option: "Add",
-    })
+    const document = mockDocument()
+    const model1 = update(
+        makeEffects(document),
+        model0,
+        {
+            kind: EventKind.FINDER_INSERT,
+            option: "Add",
+        },
+        dispatch
+    )
     const { model: expectedModel } = addNodeToGraph({
         model: { ...model, operations },
         position: { x: 250, y: 250 },
         operation: operations["Add"],
-        effects: makeEffects(),
+        effects: makeEffects(document),
+        onTableUploaded,
     })
     expect(model1).toEqual(expectedModel)
 })
 
 test("pressing number on keyboard appends to number node", () => {
     const effectModel = defaultEffectModel()
-    const effects = makeEffects(effectModel)
+    const document = mockDocument()
+    const effects = makeEffects(document, effectModel)
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const operations: Operations = {
         Number: {
             kind: OperationKind.NUMBER,
@@ -888,17 +1211,22 @@ test("pressing number on keyboard appends to number node", () => {
         operation: operations["Number"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const model1 = focusBody(model0, model0.graph.nodes[node].body!)
     let model2 = model1
     for (const key of "1234567890") {
-        const { model: model } = update(effects, model2, {
-            kind: EventKind.KEYDOWN,
-            key,
-        })
-        model2 = model
+        model2 = update(
+            effects,
+            model2,
+            {
+                kind: EventKind.KEYDOWN,
+                key,
+            },
+            dispatch
+        )
     }
-    const body = makeEffects({
+    const body = makeEffects(document, {
         ...effectModel,
         uuid: effectModel.uuid - 1,
     }).generateUUID()
@@ -928,7 +1256,10 @@ test("pressing number on keyboard appends to number node", () => {
 
 test("pressing -3.14 on keyboard writes a float for the number", () => {
     const effectModel = defaultEffectModel()
-    const effects = makeEffects(effectModel)
+    const document = mockDocument()
+    const effects = makeEffects(document, effectModel)
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const operations: Operations = {
         Number: {
             kind: OperationKind.NUMBER,
@@ -941,17 +1272,22 @@ test("pressing -3.14 on keyboard writes a float for the number", () => {
         operation: operations["Number"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const model1 = focusBody(model0, model0.graph.nodes[node].body!)
     let model2 = model1
     for (const key of "-3.14") {
-        const { model: model } = update(effects, model2, {
-            kind: EventKind.KEYDOWN,
-            key,
-        })
-        model2 = model
+        model2 = update(
+            effects,
+            model2,
+            {
+                kind: EventKind.KEYDOWN,
+                key,
+            },
+            dispatch
+        )
     }
-    const body = makeEffects({
+    const body = makeEffects(document, {
         ...effectModel,
         uuid: effectModel.uuid - 1,
     }).generateUUID()
@@ -981,7 +1317,8 @@ test("pressing -3.14 on keyboard writes a float for the number", () => {
 
 test("pressing -3.1.4 on keyboard ignores the second decimal", () => {
     const effectModel = defaultEffectModel()
-    const effects = makeEffects(effectModel)
+    const document = mockDocument()
+    const effects = makeEffects(document, effectModel)
     const operations: Operations = {
         Number: {
             kind: OperationKind.NUMBER,
@@ -989,22 +1326,29 @@ test("pressing -3.1.4 on keyboard ignores the second decimal", () => {
             outputs: ["out"],
         },
     }
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const { model: model0, node } = addNodeToGraph({
         model: { ...model, operations },
         operation: operations["Number"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const model1 = focusBody(model0, model0.graph.nodes[node].body!)
     let model2 = model1
     for (const key of "-3.1.4") {
-        const { model: model } = update(effects, model2, {
-            kind: EventKind.KEYDOWN,
-            key,
-        })
-        model2 = model
+        model2 = update(
+            effects,
+            model2,
+            {
+                kind: EventKind.KEYDOWN,
+                key,
+            },
+            dispatch
+        )
     }
-    const body = makeEffects({
+    const body = makeEffects(document, {
         ...effectModel,
         uuid: effectModel.uuid - 1,
     }).generateUUID()
@@ -1034,7 +1378,10 @@ test("pressing -3.1.4 on keyboard ignores the second decimal", () => {
 
 test("pressing backspace on keyboard deletes from number node", () => {
     const effectModel = defaultEffectModel()
-    const effects = makeEffects(effectModel)
+    const document = mockDocument()
+    const effects = makeEffects(document, effectModel)
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const operations: Operations = {
         Number: {
             kind: OperationKind.NUMBER,
@@ -1047,21 +1394,31 @@ test("pressing backspace on keyboard deletes from number node", () => {
         operation: operations["Number"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const model1 = focusBody(model0, model0.graph.nodes[node].body!)
     let model2 = model1
     for (const key of "1234567890") {
-        const { model: model } = update(effects, model2, {
-            kind: EventKind.KEYDOWN,
-            key,
-        })
-        model2 = model
+        model2 = update(
+            effects,
+            model2,
+            {
+                kind: EventKind.KEYDOWN,
+                key,
+            },
+            dispatch
+        )
     }
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.KEYDOWN,
-        key: "Backspace",
-    })
-    const body = makeEffects({
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "Backspace",
+        },
+        dispatch
+    )
+    const body = makeEffects(document, {
         ...effectModel,
         uuid: effectModel.uuid - 1,
     }).generateUUID()
@@ -1091,7 +1448,10 @@ test("pressing backspace on keyboard deletes from number node", () => {
 
 test("pressing backspace when number node value is 0 has no effect", () => {
     const effectModel = defaultEffectModel()
-    const effects = makeEffects(effectModel)
+    const document = mockDocument()
+    const effects = makeEffects(document, effectModel)
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const operations: Operations = {
         Number: {
             kind: OperationKind.NUMBER,
@@ -1104,17 +1464,22 @@ test("pressing backspace when number node value is 0 has no effect", () => {
         operation: operations["Number"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const model1 = focusBody(model0, model0.graph.nodes[node].body!)
     let model2 = model1
     for (let i = 0; i < 3; ++i) {
-        const { model: model } = update(effects, model1, {
-            kind: EventKind.KEYDOWN,
-            key: "Backspace",
-        })
-        model2 = model
+        model2 = update(
+            effects,
+            model1,
+            {
+                kind: EventKind.KEYDOWN,
+                key: "Backspace",
+            },
+            dispatch
+        )
     }
-    const body = makeEffects({
+    const body = makeEffects(document, {
         ...effectModel,
         uuid: effectModel.uuid - 1,
     }).generateUUID()
@@ -1144,7 +1509,10 @@ test("pressing backspace when number node value is 0 has no effect", () => {
 
 test("pressing enter on keyboard while editing number node exits virtual keyboard", () => {
     const effectModel = defaultEffectModel()
-    const effects = makeEffects(effectModel)
+    const document = mockDocument()
+    const effects = makeEffects(document, effectModel)
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const operations: Operations = {
         Number: {
             kind: OperationKind.NUMBER,
@@ -1157,21 +1525,31 @@ test("pressing enter on keyboard while editing number node exits virtual keyboar
         operation: operations["Number"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const model1 = focusBody(model0, model0.graph.nodes[node].body!)
     let model2 = model1
     for (const key of "1234567890") {
-        const { model: model } = update(effects, model2, {
-            kind: EventKind.KEYDOWN,
-            key,
-        })
-        model2 = model
+        model2 = update(
+            effects,
+            model2,
+            {
+                kind: EventKind.KEYDOWN,
+                key,
+            },
+            dispatch
+        )
     }
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.KEYDOWN,
-        key: "Enter",
-    })
-    const body = makeEffects({
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "Enter",
+        },
+        dispatch
+    )
+    const body = makeEffects(document, {
         ...effectModel,
         uuid: effectModel.uuid - 1,
     }).generateUUID()
@@ -1196,7 +1574,10 @@ test("pressing enter on keyboard while editing number node exits virtual keyboar
 
 test("pressing non number on keyboard while editing number node is ignored", () => {
     const effectModel = defaultEffectModel()
-    const effects = makeEffects(effectModel)
+    const document = mockDocument()
+    const effects = makeEffects(document, effectModel)
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const operations: Operations = {
         Number: {
             kind: OperationKind.NUMBER,
@@ -1209,17 +1590,22 @@ test("pressing non number on keyboard while editing number node is ignored", () 
         operation: operations["Number"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const model1 = focusBody(model0, model0.graph.nodes[node].body)
     let model2 = model1
     for (const key of "qwertyuiopasdfghjklzxvbnm") {
-        const { model: model } = update(effects, model2, {
-            kind: EventKind.KEYDOWN,
-            key,
-        })
-        model2 = model
+        model2 = update(
+            effects,
+            model2,
+            {
+                kind: EventKind.KEYDOWN,
+                key,
+            },
+            dispatch
+        )
     }
-    const body = makeEffects({
+    const body = makeEffects(document, {
         ...effectModel,
         uuid: effectModel.uuid - 1,
     }).generateUUID()
@@ -1244,7 +1630,10 @@ test("pressing non number on keyboard while editing number node is ignored", () 
 
 test("pressing - on keyboard while editing number node makes the number negative", () => {
     const effectModel = defaultEffectModel()
-    const effects = makeEffects(effectModel)
+    const document = mockDocument()
+    const effects = makeEffects(document, effectModel)
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const operations: Operations = {
         Number: {
             kind: OperationKind.NUMBER,
@@ -1257,18 +1646,24 @@ test("pressing - on keyboard while editing number node makes the number negative
         operation: operations["Number"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const model1 = updateNumberText(
         model0,
         model0.graph.nodes[node].body,
         () => "10"
-    ).model
+    )
     const model2 = focusBody(model1, model1.graph.nodes[node].body!)
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.KEYDOWN,
-        key: "-",
-    })
-    const body = makeEffects({
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "-",
+        },
+        dispatch
+    )
+    const body = makeEffects(document, {
         ...effectModel,
         uuid: effectModel.uuid - 1,
     }).generateUUID()
@@ -1298,7 +1693,10 @@ test("pressing - on keyboard while editing number node makes the number negative
 
 test("pressing + on keyboard while editing number node makes the number negative", () => {
     const effectModel = defaultEffectModel()
-    const effects = makeEffects(effectModel)
+    const document = mockDocument()
+    const effects = makeEffects(document, effectModel)
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const operations: Operations = {
         Number: {
             kind: OperationKind.NUMBER,
@@ -1311,18 +1709,24 @@ test("pressing + on keyboard while editing number node makes the number negative
         operation: operations["Number"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const model1 = updateNumberText(
         model0,
         model0.graph.nodes[node].body,
         () => "-10"
-    ).model
+    )
     const model2 = focusBody(model1, model1.graph.nodes[node].body!)
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.KEYDOWN,
-        key: "+",
-    })
-    const body = makeEffects({
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "+",
+        },
+        dispatch
+    )
+    const body = makeEffects(document, {
         ...effectModel,
         uuid: effectModel.uuid - 1,
     }).generateUUID()
@@ -1352,7 +1756,10 @@ test("pressing + on keyboard while editing number node makes the number negative
 
 test("pressing c on keyboard while editing number node makes the number 0", () => {
     const effectModel = defaultEffectModel()
-    const effects = makeEffects(effectModel)
+    const document = mockDocument()
+    const effects = makeEffects(document, effectModel)
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const operations: Operations = {
         Number: {
             kind: OperationKind.NUMBER,
@@ -1365,13 +1772,19 @@ test("pressing c on keyboard while editing number node makes the number 0", () =
         operation: operations["Number"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const model1 = focusBody(model0, model0.graph.nodes[node].body!)
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.KEYDOWN,
-        key: "c",
-    })
-    const body = makeEffects({
+    const model2 = update(
+        effects,
+        model1,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "c",
+        },
+        dispatch
+    )
+    const body = makeEffects(document, {
         ...effectModel,
         uuid: effectModel.uuid - 1,
     }).generateUUID()
@@ -1400,7 +1813,9 @@ test("pressing c on keyboard while editing number node makes the number 0", () =
 })
 
 test("clicking a number node opens the numeric keyboard", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const operations: Operations = {
         Number: {
             kind: OperationKind.NUMBER,
@@ -1413,18 +1828,24 @@ test("clicking a number node opens the numeric keyboard", () => {
         operation: operations["Number"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const body = model0.graph.nodes[node].body!
-    const { model: model1 } = update(effects, model0, {
-        kind: EventKind.CLICKED_BODY,
-        body,
-    })
+    const model1 = update(
+        effects,
+        model0,
+        {
+            kind: EventKind.CLICKED_BODY,
+            body,
+        },
+        dispatch
+    )
     const expectedModel = focusBody(model0, body)
     expect(model1).toEqual(expectedModel)
 })
 
 test("clicking a number node when another number node is selected switches selections", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Number: {
             kind: OperationKind.NUMBER,
@@ -1432,34 +1853,50 @@ test("clicking a number node when another number node is selected switches selec
             outputs: ["out"],
         },
     }
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const { model: model0, node: node0 } = addNodeToGraph({
         model: { ...model, operations },
         operation: operations["Number"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const { model: model1, node: node1 } = addNodeToGraph({
         model: model0,
         operation: operations["Number"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const body0 = model1.graph.nodes[node0].body!
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.CLICKED_BODY,
-        body: body0,
-    })
+    const model2 = update(
+        effects,
+        model1,
+        {
+            kind: EventKind.CLICKED_BODY,
+            body: body0,
+        },
+        dispatch
+    )
     const body1 = model2.graph.nodes[node1].body!
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.CLICKED_BODY,
-        body: body1,
-    })
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.CLICKED_BODY,
+            body: body1,
+        },
+        dispatch
+    )
     const expectedModel = focusBody(model1, body1)
     expect(model3).toEqual(expectedModel)
 })
 
 test("clicking background when a number node is selected deselects it", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const operations: Operations = {
         Number: {
             kind: OperationKind.NUMBER,
@@ -1472,31 +1909,57 @@ test("clicking background when a number node is selected deselects it", () => {
         operation: operations["Number"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const body = model0.graph.nodes[node].body!
     const pointer: Pointer = {
         id: 0,
         position: { x: 0, y: 0 },
     }
-    const { model: model1 } = update(effects, model0, {
-        kind: EventKind.POINTER_DOWN,
-        pointer,
-    })
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.CLICKED_BODY,
-        body,
-    })
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.POINTER_UP,
-        pointer,
-    })
-    const { model: model4 } = update(effects, model3, {
-        kind: EventKind.POINTER_DOWN,
-        pointer,
-    })
-    const { model: model5 } = update(effects, model4, {
-        kind: EventKind.CLICKED_BACKGROUND,
-    })
+    const model1 = update(
+        effects,
+        model0,
+        {
+            kind: EventKind.POINTER_DOWN,
+            pointer,
+        },
+        dispatch
+    )
+    const model2 = update(
+        effects,
+        model1,
+        {
+            kind: EventKind.CLICKED_BODY,
+            body,
+        },
+        dispatch
+    )
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.POINTER_UP,
+            pointer,
+        },
+        dispatch
+    )
+    const model4 = update(
+        effects,
+        model3,
+        {
+            kind: EventKind.POINTER_DOWN,
+            pointer,
+        },
+        dispatch
+    )
+    const model5 = update(
+        effects,
+        model4,
+        {
+            kind: EventKind.CLICKED_BACKGROUND,
+        },
+        dispatch
+    )
     const expectedModel: Model = {
         ...model0,
         focus: {
@@ -1511,7 +1974,9 @@ test("clicking background when a number node is selected deselects it", () => {
 })
 
 test("pressing Escape when a number node is selected deselects it", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const operations: Operations = {
         Number: {
             kind: OperationKind.NUMBER,
@@ -1524,21 +1989,32 @@ test("pressing Escape when a number node is selected deselects it", () => {
         operation: operations["Number"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const body = model0.graph.nodes[node].body!
-    const { model: model1 } = update(effects, model0, {
-        kind: EventKind.CLICKED_BODY,
-        body,
-    })
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.KEYDOWN,
-        key: "Escape",
-    })
+    const model1 = update(
+        effects,
+        model0,
+        {
+            kind: EventKind.CLICKED_BODY,
+            body,
+        },
+        dispatch
+    )
+    const model2 = update(
+        effects,
+        model1,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "Escape",
+        },
+        dispatch
+    )
     expect(model2).toEqual(model0)
 })
 
 test("clicking input when a number node is selected deselects it and selects input", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Number: {
             kind: OperationKind.NUMBER,
@@ -1553,28 +2029,42 @@ test("clicking input when a number node is selected deselects it and selects inp
             func: addFunc,
         },
     }
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const { model: model0, node: number } = addNodeToGraph({
         model: { ...model, operations },
         operation: operations["Number"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const { model: model1, node: add } = addNodeToGraph({
         model: model0,
         operation: operations["Add"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const body = model1.graph.nodes[number].body!
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.CLICKED_BODY,
-        body,
-    })
+    const model2 = update(
+        effects,
+        model1,
+        {
+            kind: EventKind.CLICKED_BODY,
+            body,
+        },
+        dispatch
+    )
     const input = (model2.graph.nodes[add] as NodeTransform).inputs[0]
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.CLICKED_INPUT,
-        input,
-    })
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.CLICKED_INPUT,
+            input,
+        },
+        dispatch
+    )
     const expectedModel: Model = {
         ...model1,
         focus: {
@@ -1587,7 +2077,9 @@ test("clicking input when a number node is selected deselects it and selects inp
 })
 
 test("clicking output when a number node is selected deselects it and selects output", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const operations: Operations = {
         Number: {
             kind: OperationKind.NUMBER,
@@ -1600,17 +2092,28 @@ test("clicking output when a number node is selected deselects it and selects ou
         operation: operations["Number"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const body = model0.graph.nodes[node].body!
-    const { model: model1 } = update(effects, model0, {
-        kind: EventKind.CLICKED_BODY,
-        body,
-    })
+    const model1 = update(
+        effects,
+        model0,
+        {
+            kind: EventKind.CLICKED_BODY,
+            body,
+        },
+        dispatch
+    )
     const output = model0.graph.nodes[node].outputs[0]
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.CLICKED_OUTPUT,
-        output,
-    })
+    const model2 = update(
+        effects,
+        model1,
+        {
+            kind: EventKind.CLICKED_OUTPUT,
+            output,
+        },
+        dispatch
+    )
     const expectedModel: Model = {
         ...model0,
         focus: {
@@ -1623,7 +2126,9 @@ test("clicking output when a number node is selected deselects it and selects ou
 })
 
 test("clicking node when a number node is selected deselects it and selects node", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const operations: Operations = {
         Number: {
             kind: OperationKind.NUMBER,
@@ -1636,16 +2141,27 @@ test("clicking node when a number node is selected deselects it and selects node
         operation: operations["Number"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const body = model0.graph.nodes[node].body!
-    const { model: model1 } = update(effects, model0, {
-        kind: EventKind.CLICKED_BODY,
-        body,
-    })
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.CLICKED_NODE,
-        node,
-    })
+    const model1 = update(
+        effects,
+        model0,
+        {
+            kind: EventKind.CLICKED_BODY,
+            body,
+        },
+        dispatch
+    )
+    const model2 = update(
+        effects,
+        model1,
+        {
+            kind: EventKind.CLICKED_NODE,
+            node,
+        },
+        dispatch
+    )
     const expectedModel: Model = {
         ...model0,
         focus: {
@@ -1660,7 +2176,8 @@ test("clicking node when a number node is selected deselects it and selects node
 })
 
 test("zooming", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
+    const dispatch = () => {}
     const pointer0: Pointer = {
         id: 0,
         position: { x: 0, y: 0 },
@@ -1677,10 +2194,15 @@ test("zooming", () => {
         id: 1,
         position: { x: 30, y: 30 },
     }
-    const { model: model1 } = update(effects, model, {
-        kind: EventKind.POINTER_DOWN,
-        pointer: pointer0,
-    })
+    const model1 = update(
+        effects,
+        model,
+        {
+            kind: EventKind.POINTER_DOWN,
+            pointer: pointer0,
+        },
+        dispatch
+    )
     const expectedModel0: Model = {
         ...model,
         focus: {
@@ -1691,10 +2213,15 @@ test("zooming", () => {
         pointers: [pointer0],
     }
     expect(model1).toEqual(expectedModel0)
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.POINTER_DOWN,
-        pointer: pointer1,
-    })
+    const model2 = update(
+        effects,
+        model1,
+        {
+            kind: EventKind.POINTER_DOWN,
+            pointer: pointer1,
+        },
+        dispatch
+    )
     const expectedModel1: Model = {
         ...model,
         focus: {
@@ -1709,10 +2236,15 @@ test("zooming", () => {
         pointers: [pointer0, pointer1],
     }
     expect(model2).toEqual(expectedModel1)
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.POINTER_MOVE,
-        pointer: pointer2,
-    })
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.POINTER_MOVE,
+            pointer: pointer2,
+        },
+        dispatch
+    )
     const expectedModel2: Model = {
         ...model,
         focus: {
@@ -1727,10 +2259,15 @@ test("zooming", () => {
         pointers: [pointer0, pointer2],
     }
     expect(model3).toEqual(expectedModel2)
-    const { model: model4 } = update(effects, model3, {
-        kind: EventKind.POINTER_MOVE,
-        pointer: pointer3,
-    })
+    const model4 = update(
+        effects,
+        model3,
+        {
+            kind: EventKind.POINTER_MOVE,
+            pointer: pointer3,
+        },
+        dispatch
+    )
     const expectedModel3: Model = {
         ...model,
         focus: {
@@ -1752,7 +2289,9 @@ test("zooming", () => {
 })
 
 test("pressing d on keyboard with node selected deletes it", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -1768,20 +2307,33 @@ test("pressing d on keyboard with node selected deletes it", () => {
         operation: operations["Add"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.CLICKED_NODE,
-        node,
-    })
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.KEYDOWN,
-        key: "d",
-    })
+    const model2 = update(
+        effects,
+        model1,
+        {
+            kind: EventKind.CLICKED_NODE,
+            node,
+        },
+        dispatch
+    )
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "d",
+        },
+        dispatch
+    )
     expect(model3).toEqual(model0)
 })
 
 test("clicking background when a node is selected deselects it", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -1797,30 +2349,56 @@ test("clicking background when a node is selected deselects it", () => {
         operation: operations["Add"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const pointer: Pointer = {
         id: 0,
         position: { x: 0, y: 0 },
     }
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.POINTER_DOWN,
-        pointer,
-    })
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.CLICKED_NODE,
-        node,
-    })
-    const { model: model4 } = update(effects, model3, {
-        kind: EventKind.POINTER_UP,
-        pointer,
-    })
-    const { model: model5 } = update(effects, model4, {
-        kind: EventKind.POINTER_DOWN,
-        pointer,
-    })
-    const { model: model6 } = update(effects, model5, {
-        kind: EventKind.CLICKED_BACKGROUND,
-    })
+    const model2 = update(
+        effects,
+        model1,
+        {
+            kind: EventKind.POINTER_DOWN,
+            pointer,
+        },
+        dispatch
+    )
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.CLICKED_NODE,
+            node,
+        },
+        dispatch
+    )
+    const model4 = update(
+        effects,
+        model3,
+        {
+            kind: EventKind.POINTER_UP,
+            pointer,
+        },
+        dispatch
+    )
+    const model5 = update(
+        effects,
+        model4,
+        {
+            kind: EventKind.POINTER_DOWN,
+            pointer,
+        },
+        dispatch
+    )
+    const model6 = update(
+        effects,
+        model5,
+        {
+            kind: EventKind.CLICKED_BACKGROUND,
+        },
+        dispatch
+    )
     const expectedModel: Model = {
         ...model1,
         focus: {
@@ -1835,7 +2413,9 @@ test("clicking background when a node is selected deselects it", () => {
 })
 
 test("pressing escape when a node is selected deselects it", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -1851,20 +2431,33 @@ test("pressing escape when a node is selected deselects it", () => {
         operation: operations["Add"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.CLICKED_NODE,
-        node,
-    })
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.KEYDOWN,
-        key: "Escape",
-    })
+    const model2 = update(
+        effects,
+        model1,
+        {
+            kind: EventKind.CLICKED_NODE,
+            node,
+        },
+        dispatch
+    )
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "Escape",
+        },
+        dispatch
+    )
     expect(model3).toEqual(model1)
 })
 
 test("clicking background when a input is selected deselects it", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -1880,31 +2473,57 @@ test("clicking background when a input is selected deselects it", () => {
         operation: operations["Add"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const pointer: Pointer = {
         id: 0,
         position: { x: 0, y: 0 },
     }
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.POINTER_DOWN,
-        pointer,
-    })
+    const model2 = update(
+        effects,
+        model1,
+        {
+            kind: EventKind.POINTER_DOWN,
+            pointer,
+        },
+        dispatch
+    )
     const input = (model2.graph.nodes[node] as NodeTransform).inputs[0]
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.CLICKED_INPUT,
-        input,
-    })
-    const { model: model4 } = update(effects, model3, {
-        kind: EventKind.POINTER_UP,
-        pointer,
-    })
-    const { model: model5 } = update(effects, model4, {
-        kind: EventKind.POINTER_DOWN,
-        pointer,
-    })
-    const { model: model6 } = update(effects, model5, {
-        kind: EventKind.CLICKED_BACKGROUND,
-    })
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.CLICKED_INPUT,
+            input,
+        },
+        dispatch
+    )
+    const model4 = update(
+        effects,
+        model3,
+        {
+            kind: EventKind.POINTER_UP,
+            pointer,
+        },
+        dispatch
+    )
+    const model5 = update(
+        effects,
+        model4,
+        {
+            kind: EventKind.POINTER_DOWN,
+            pointer,
+        },
+        dispatch
+    )
+    const model6 = update(
+        effects,
+        model5,
+        {
+            kind: EventKind.CLICKED_BACKGROUND,
+        },
+        dispatch
+    )
     const expectedModel: Model = {
         ...model1,
         focus: {
@@ -1919,7 +2538,9 @@ test("clicking background when a input is selected deselects it", () => {
 })
 
 test("pressing escape when a input is selected deselects it", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -1935,21 +2556,34 @@ test("pressing escape when a input is selected deselects it", () => {
         operation: operations["Add"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const input = (model1.graph.nodes[node] as NodeTransform).inputs[0]
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.CLICKED_INPUT,
-        input,
-    })
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.KEYDOWN,
-        key: "Escape",
-    })
+    const model2 = update(
+        effects,
+        model1,
+        {
+            kind: EventKind.CLICKED_INPUT,
+            input,
+        },
+        dispatch
+    )
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "Escape",
+        },
+        dispatch
+    )
     expect(model3).toEqual(model1)
 })
 
 test("clicking background when a output is selected deselects it", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -1965,31 +2599,57 @@ test("clicking background when a output is selected deselects it", () => {
         operation: operations["Add"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const pointer: Pointer = {
         id: 0,
         position: { x: 0, y: 0 },
     }
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.POINTER_DOWN,
-        pointer,
-    })
+    const model2 = update(
+        effects,
+        model1,
+        {
+            kind: EventKind.POINTER_DOWN,
+            pointer,
+        },
+        dispatch
+    )
     const output = model2.graph.nodes[node].outputs[0]
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.CLICKED_OUTPUT,
-        output,
-    })
-    const { model: model4 } = update(effects, model3, {
-        kind: EventKind.POINTER_UP,
-        pointer,
-    })
-    const { model: model5 } = update(effects, model4, {
-        kind: EventKind.POINTER_DOWN,
-        pointer,
-    })
-    const { model: model6 } = update(effects, model5, {
-        kind: EventKind.CLICKED_BACKGROUND,
-    })
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.CLICKED_OUTPUT,
+            output,
+        },
+        dispatch
+    )
+    const model4 = update(
+        effects,
+        model3,
+        {
+            kind: EventKind.POINTER_UP,
+            pointer,
+        },
+        dispatch
+    )
+    const model5 = update(
+        effects,
+        model4,
+        {
+            kind: EventKind.POINTER_DOWN,
+            pointer,
+        },
+        dispatch
+    )
+    const model6 = update(
+        effects,
+        model5,
+        {
+            kind: EventKind.CLICKED_BACKGROUND,
+        },
+        dispatch
+    )
     const expectedModel: Model = {
         ...model1,
         focus: {
@@ -2004,7 +2664,9 @@ test("clicking background when a output is selected deselects it", () => {
 })
 
 test("pressing escape when a output is selected deselects it", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -2020,21 +2682,34 @@ test("pressing escape when a output is selected deselects it", () => {
         operation: operations["Add"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const output = model1.graph.nodes[node].outputs[0]
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.CLICKED_OUTPUT,
-        output,
-    })
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.KEYDOWN,
-        key: "Escape",
-    })
+    const model2 = update(
+        effects,
+        model1,
+        {
+            kind: EventKind.CLICKED_OUTPUT,
+            output,
+        },
+        dispatch
+    )
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "Escape",
+        },
+        dispatch
+    )
     expect(model3).toEqual(model1)
 })
 
 test("delete node", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -2050,16 +2725,22 @@ test("delete node", () => {
         operation: operations["Add"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.DELETE_NODE,
-        node,
-    })
+    const model2 = update(
+        effects,
+        model1,
+        {
+            kind: EventKind.DELETE_NODE,
+            node,
+        },
+        dispatch
+    )
     expect(model2).toEqual(model0)
 })
 
 test("delete input edge", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -2076,38 +2757,57 @@ test("delete input edge", () => {
             func: subFunc,
         },
     }
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const model0: Model = { ...model, operations }
     const { model: model1, node: node0 } = addNodeToGraph({
         model: model0,
         operation: operations["Add"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const { model: model2, node: node1 } = addNodeToGraph({
         model: model1,
         operation: operations["Sub"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const input = (model2.graph.nodes[node0] as NodeTransform).inputs[0]
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.CLICKED_INPUT,
-        input,
-    })
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.CLICKED_INPUT,
+            input,
+        },
+        dispatch
+    )
     const output = model3.graph.nodes[node1].outputs[0]
-    const { model: model4 } = update(effects, model3, {
-        kind: EventKind.CLICKED_OUTPUT,
-        output,
-    })
-    const { model: model5 } = update(effects, model4, {
-        kind: EventKind.DELETE_INPUT_EDGE,
-        input,
-    })
+    const model4 = update(
+        effects,
+        model3,
+        {
+            kind: EventKind.CLICKED_OUTPUT,
+            output,
+        },
+        dispatch
+    )
+    const model5 = update(
+        effects,
+        model4,
+        {
+            kind: EventKind.DELETE_INPUT_EDGE,
+            input,
+        },
+        dispatch
+    )
     expect(model5).toEqual(model2)
 })
 
 test("pressing d on keyboard with input selected delete edge attached", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -2124,42 +2824,68 @@ test("pressing d on keyboard with input selected delete edge attached", () => {
             func: subFunc,
         },
     }
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const model0: Model = { ...model, operations }
     const { model: model1, node: node0 } = addNodeToGraph({
         model: model0,
         operation: operations["Add"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const { model: model2, node: node1 } = addNodeToGraph({
         model: model1,
         operation: operations["Sub"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const input = (model2.graph.nodes[node0] as NodeTransform).inputs[0]
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.CLICKED_INPUT,
-        input,
-    })
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.CLICKED_INPUT,
+            input,
+        },
+        dispatch
+    )
     const output = model3.graph.nodes[node1].outputs[0]
-    const { model: model4 } = update(effects, model3, {
-        kind: EventKind.CLICKED_OUTPUT,
-        output,
-    })
-    const { model: model5 } = update(effects, model4, {
-        kind: EventKind.CLICKED_INPUT,
-        input,
-    })
-    const { model: model6 } = update(effects, model5, {
-        kind: EventKind.KEYDOWN,
-        key: "d",
-    })
+    const model4 = update(
+        effects,
+        model3,
+        {
+            kind: EventKind.CLICKED_OUTPUT,
+            output,
+        },
+        dispatch
+    )
+    const model5 = update(
+        effects,
+        model4,
+        {
+            kind: EventKind.CLICKED_INPUT,
+            input,
+        },
+        dispatch
+    )
+    const model6 = update(
+        effects,
+        model5,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "d",
+        },
+        dispatch
+    )
     expect(model6).toEqual(model2)
 })
 
 test("delete output edges", () => {
-    const effects = makeEffects()
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -2182,40 +2908,69 @@ test("delete output edges", () => {
         operation: operations["Add"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const { model: model2, node: node1 } = addNodeToGraph({
         model: model1,
         operation: operations["Sub"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const [input0, input1] = (model2.graph.nodes[node0] as NodeTransform).inputs
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.CLICKED_INPUT,
-        input: input0,
-    })
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.CLICKED_INPUT,
+            input: input0,
+        },
+        dispatch
+    )
     const output = model3.graph.nodes[node1].outputs[0]
-    const { model: model4 } = update(effects, model3, {
-        kind: EventKind.CLICKED_OUTPUT,
-        output,
-    })
-    const { model: model5 } = update(effects, model4, {
-        kind: EventKind.CLICKED_INPUT,
-        input: input1,
-    })
-    const { model: model6 } = update(effects, model5, {
-        kind: EventKind.CLICKED_OUTPUT,
-        output,
-    })
-    const { model: model7 } = update(effects, model6, {
-        kind: EventKind.DELETE_OUTPUT_EDGES,
-        output,
-    })
+    const model4 = update(
+        effects,
+        model3,
+        {
+            kind: EventKind.CLICKED_OUTPUT,
+            output,
+        },
+        dispatch
+    )
+    const model5 = update(
+        effects,
+        model4,
+        {
+            kind: EventKind.CLICKED_INPUT,
+            input: input1,
+        },
+        dispatch
+    )
+    const model6 = update(
+        effects,
+        model5,
+        {
+            kind: EventKind.CLICKED_OUTPUT,
+            output,
+        },
+        dispatch
+    )
+    const model7 = update(
+        effects,
+        model6,
+        {
+            kind: EventKind.DELETE_OUTPUT_EDGES,
+            output,
+        },
+        dispatch
+    )
     expect(model7).toEqual(model2)
 })
 
 test("pressing d on keyboard with output selected delete edges attached", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -2238,44 +2993,78 @@ test("pressing d on keyboard with output selected delete edges attached", () => 
         operation: operations["Add"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const { model: model2, node: node1 } = addNodeToGraph({
         model: model1,
         operation: operations["Sub"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const [input0, input1] = (model2.graph.nodes[node0] as NodeTransform).inputs
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.CLICKED_INPUT,
-        input: input0,
-    })
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.CLICKED_INPUT,
+            input: input0,
+        },
+        dispatch
+    )
     const output = model3.graph.nodes[node1].outputs[0]
-    const { model: model4 } = update(effects, model3, {
-        kind: EventKind.CLICKED_OUTPUT,
-        output,
-    })
-    const { model: model5 } = update(effects, model4, {
-        kind: EventKind.CLICKED_INPUT,
-        input: input1,
-    })
-    const { model: model6 } = update(effects, model5, {
-        kind: EventKind.CLICKED_OUTPUT,
-        output,
-    })
-    const { model: model7 } = update(effects, model6, {
-        kind: EventKind.CLICKED_OUTPUT,
-        output,
-    })
-    const { model: model8 } = update(effects, model7, {
-        kind: EventKind.KEYDOWN,
-        key: "d",
-    })
+    const model4 = update(
+        effects,
+        model3,
+        {
+            kind: EventKind.CLICKED_OUTPUT,
+            output,
+        },
+        dispatch
+    )
+    const model5 = update(
+        effects,
+        model4,
+        {
+            kind: EventKind.CLICKED_INPUT,
+            input: input1,
+        },
+        dispatch
+    )
+    const model6 = update(
+        effects,
+        model5,
+        {
+            kind: EventKind.CLICKED_OUTPUT,
+            output,
+        },
+        dispatch
+    )
+    const model7 = update(
+        effects,
+        model6,
+        {
+            kind: EventKind.CLICKED_OUTPUT,
+            output,
+        },
+        dispatch
+    )
+    const model8 = update(
+        effects,
+        model7,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "d",
+        },
+        dispatch
+    )
     expect(model8).toEqual(model2)
 })
 
 test("connecting output of same node where input is selected is not allowed", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -2291,22 +3080,33 @@ test("connecting output of same node where input is selected is not allowed", ()
         operation: operations["Add"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const input = (model1.graph.nodes[node0] as NodeTransform).inputs[0]
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.CLICKED_INPUT,
-        input,
-    })
+    const model2 = update(
+        effects,
+        model1,
+        {
+            kind: EventKind.CLICKED_INPUT,
+            input,
+        },
+        dispatch
+    )
     const output = model2.graph.nodes[node0].outputs[0]
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.CLICKED_OUTPUT,
-        output,
-    })
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.CLICKED_OUTPUT,
+            output,
+        },
+        dispatch
+    )
     expect(model3).toEqual(model2)
 })
 
 test("connecting input of same node where output is selected is not allowed", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -2316,29 +3116,45 @@ test("connecting input of same node where output is selected is not allowed", ()
             func: addFunc,
         },
     }
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const model0: Model = { ...model, operations }
     const { model: model1, node: node0 } = addNodeToGraph({
         model: model0,
         operation: operations["Add"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const output = model1.graph.nodes[node0].outputs[0]
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.CLICKED_OUTPUT,
-        output,
-    })
+    const model2 = update(
+        effects,
+        model1,
+        {
+            kind: EventKind.CLICKED_OUTPUT,
+            output,
+        },
+        dispatch
+    )
     const input = (model1.graph.nodes[node0] as NodeTransform).inputs[0]
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.CLICKED_INPUT,
-        input,
-    })
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.CLICKED_INPUT,
+            input,
+        },
+        dispatch
+    )
     expect(model3).toEqual(model2)
 })
 
 test("connecting output to input if input already has edge replaces it", () => {
     const effectModel = defaultEffectModel()
-    const effects = makeEffects(effectModel)
+    const document = mockDocument()
+    const effects = makeEffects(document, effectModel)
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -2368,45 +3184,68 @@ test("connecting output to input if input already has edge replaces it", () => {
         operation: operations["Add"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const { model: model2, node: node1 } = addNodeToGraph({
         model: model1,
         operation: operations["Sub"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const { model: model3, node: node2 } = addNodeToGraph({
         model: model2,
         operation: operations["Div"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const input = (model3.graph.nodes[node0] as NodeTransform).inputs[0]
-    const { model: model4 } = update(effects, model3, {
-        kind: EventKind.CLICKED_INPUT,
-        input,
-    })
+    const model4 = update(
+        effects,
+        model3,
+        {
+            kind: EventKind.CLICKED_INPUT,
+            input,
+        },
+        dispatch
+    )
     const output0 = model4.graph.nodes[node1].outputs[0]
-    const { model: model5 } = update(effects, model4, {
-        kind: EventKind.CLICKED_OUTPUT,
-        output: output0,
-    })
-    const { model: model6 } = update(effects, model5, {
-        kind: EventKind.CLICKED_INPUT,
-        input,
-    })
+    const model5 = update(
+        effects,
+        model4,
+        {
+            kind: EventKind.CLICKED_OUTPUT,
+            output: output0,
+        },
+        dispatch
+    )
+    const model6 = update(
+        effects,
+        model5,
+        {
+            kind: EventKind.CLICKED_INPUT,
+            input,
+        },
+        dispatch
+    )
     const output1 = model6.graph.nodes[node2].outputs[0]
-    const { model: model7 } = update(effects, model6, {
-        kind: EventKind.CLICKED_OUTPUT,
-        output: output1,
-    })
+    const model7 = update(
+        effects,
+        model6,
+        {
+            kind: EventKind.CLICKED_OUTPUT,
+            output: output1,
+        },
+        dispatch
+    )
     const expectedModel: Model = {
         ...model3,
         graph: addEdge({
             graph: model3.graph,
             input,
             output: output1,
-            generateUUID: makeEffects({
+            generateUUID: makeEffects(document, {
                 ...effectModel,
                 uuid: effectModel.uuid - 1,
             }).generateUUID,
@@ -2417,7 +3256,10 @@ test("connecting output to input if input already has edge replaces it", () => {
 
 test("connecting input to output if input already has edge replaces it", () => {
     const effectModel = defaultEffectModel()
-    const effects = makeEffects(effectModel)
+    const document = mockDocument()
+    const effects = makeEffects(document, effectModel)
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -2447,45 +3289,68 @@ test("connecting input to output if input already has edge replaces it", () => {
         operation: operations["Add"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const { model: model2, node: node1 } = addNodeToGraph({
         model: model1,
         operation: operations["Sub"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const { model: model3, node: node2 } = addNodeToGraph({
         model: model2,
         operation: operations["Div"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const input = (model3.graph.nodes[node0] as NodeTransform).inputs[0]
-    const { model: model4 } = update(effects, model3, {
-        kind: EventKind.CLICKED_INPUT,
-        input,
-    })
+    const model4 = update(
+        effects,
+        model3,
+        {
+            kind: EventKind.CLICKED_INPUT,
+            input,
+        },
+        dispatch
+    )
     const output0 = model4.graph.nodes[node1].outputs[0]
-    const { model: model5 } = update(effects, model4, {
-        kind: EventKind.CLICKED_OUTPUT,
-        output: output0,
-    })
+    const model5 = update(
+        effects,
+        model4,
+        {
+            kind: EventKind.CLICKED_OUTPUT,
+            output: output0,
+        },
+        dispatch
+    )
     const output1 = model5.graph.nodes[node2].outputs[0]
-    const { model: model6 } = update(effects, model5, {
-        kind: EventKind.CLICKED_OUTPUT,
-        output: output1,
-    })
-    const { model: model7 } = update(effects, model6, {
-        kind: EventKind.CLICKED_INPUT,
-        input,
-    })
+    const model6 = update(
+        effects,
+        model5,
+        {
+            kind: EventKind.CLICKED_OUTPUT,
+            output: output1,
+        },
+        dispatch
+    )
+    const model7 = update(
+        effects,
+        model6,
+        {
+            kind: EventKind.CLICKED_INPUT,
+            input,
+        },
+        dispatch
+    )
     const expectedModel: Model = {
         ...model3,
         graph: addEdge({
             graph: model3.graph,
             input,
             output: output1,
-            generateUUID: makeEffects({
+            generateUUID: makeEffects(document, {
                 ...effectModel,
                 uuid: effectModel.uuid - 1,
             }).generateUUID,
@@ -2495,7 +3360,8 @@ test("connecting input to output if input already has edge replaces it", () => {
 })
 
 test("three pointers down then one up doesn't change state", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
+    const dispatch = () => {}
     const pointer0: Pointer = {
         id: 0,
         position: { x: 0, y: 0 },
@@ -2508,22 +3374,42 @@ test("three pointers down then one up doesn't change state", () => {
         id: 2,
         position: { x: 0, y: 0 },
     }
-    const { model: model1 } = update(effects, model, {
-        kind: EventKind.POINTER_DOWN,
-        pointer: pointer0,
-    })
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.POINTER_DOWN,
-        pointer: pointer1,
-    })
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.POINTER_DOWN,
-        pointer: pointer2,
-    })
-    const { model: model4 } = update(effects, model3, {
-        kind: EventKind.POINTER_UP,
-        pointer: pointer2,
-    })
+    const model1 = update(
+        effects,
+        model,
+        {
+            kind: EventKind.POINTER_DOWN,
+            pointer: pointer0,
+        },
+        dispatch
+    )
+    const model2 = update(
+        effects,
+        model1,
+        {
+            kind: EventKind.POINTER_DOWN,
+            pointer: pointer1,
+        },
+        dispatch
+    )
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.POINTER_DOWN,
+            pointer: pointer2,
+        },
+        dispatch
+    )
+    const model4 = update(
+        effects,
+        model3,
+        {
+            kind: EventKind.POINTER_UP,
+            pointer: pointer2,
+        },
+        dispatch
+    )
     const expectedModel: Model = {
         ...model,
         pointers: [pointer0, pointer1],
@@ -2532,7 +3418,9 @@ test("three pointers down then one up doesn't change state", () => {
 })
 
 test("three pointers down on node then one up keeps state dragging", () => {
-    const effects = makeEffects()
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
+    const effects = makeEffects(mockDocument())
     const model0: Model = {
         ...model,
         operations: {
@@ -2550,6 +3438,7 @@ test("three pointers down on node then one up keeps state dragging", () => {
         operation: model0.operations["Add"],
         position: { x: 250, y: 250 },
         effects,
+        onTableUploaded,
     })
     const pointer0: Pointer = {
         id: 0,
@@ -2559,26 +3448,51 @@ test("three pointers down on node then one up keeps state dragging", () => {
         id: 1,
         position: { x: 0, y: 0 },
     }
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.POINTER_DOWN,
-        pointer: pointer0,
-    })
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.CLICKED_NODE,
-        node,
-    })
-    const { model: model4 } = update(effects, model3, {
-        kind: EventKind.POINTER_DOWN,
-        pointer: pointer1,
-    })
-    const { model: model5 } = update(effects, model4, {
-        kind: EventKind.CLICKED_NODE,
-        node,
-    })
-    const { model: model6 } = update(effects, model5, {
-        kind: EventKind.POINTER_UP,
-        pointer: pointer1,
-    })
+    const model2 = update(
+        effects,
+        model1,
+        {
+            kind: EventKind.POINTER_DOWN,
+            pointer: pointer0,
+        },
+        dispatch
+    )
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.CLICKED_NODE,
+            node,
+        },
+        dispatch
+    )
+    const model4 = update(
+        effects,
+        model3,
+        {
+            kind: EventKind.POINTER_DOWN,
+            pointer: pointer1,
+        },
+        dispatch
+    )
+    const model5 = update(
+        effects,
+        model4,
+        {
+            kind: EventKind.CLICKED_NODE,
+            node,
+        },
+        dispatch
+    )
+    const model6 = update(
+        effects,
+        model5,
+        {
+            kind: EventKind.POINTER_UP,
+            pointer: pointer1,
+        },
+        dispatch
+    )
     const expectedModel: Model = {
         ...model1,
         focus: {
@@ -2594,7 +3508,9 @@ test("three pointers down on node then one up keeps state dragging", () => {
 })
 
 test("pointer move when input selected updates node placement location", () => {
-    const effects = makeEffects()
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
+    const effects = makeEffects(mockDocument())
     const model0: Model = {
         ...model,
         operations: {
@@ -2612,27 +3528,43 @@ test("pointer move when input selected updates node placement location", () => {
         operation: model0.operations["Add"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const pointer0: Pointer = {
         id: 0,
         position: { x: 0, y: 0 },
     }
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.POINTER_DOWN,
-        pointer: pointer0,
-    })
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.CLICKED_INPUT,
-        input: (model2.graph.nodes[node] as NodeTransform).inputs[0],
-    })
+    const model2 = update(
+        effects,
+        model1,
+        {
+            kind: EventKind.POINTER_DOWN,
+            pointer: pointer0,
+        },
+        dispatch
+    )
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.CLICKED_INPUT,
+            input: (model2.graph.nodes[node] as NodeTransform).inputs[0],
+        },
+        dispatch
+    )
     const pointer1: Pointer = {
         id: 0,
         position: { x: 50, y: 50 },
     }
-    const { model: model4 } = update(effects, model3, {
-        kind: EventKind.POINTER_MOVE,
-        pointer: pointer1,
-    })
+    const model4 = update(
+        effects,
+        model3,
+        {
+            kind: EventKind.POINTER_MOVE,
+            pointer: pointer1,
+        },
+        dispatch
+    )
     const expectedModel: Model = {
         ...model3,
         nodePlacementLocation: { x: 50, y: 50, show: false },
@@ -2642,7 +3574,9 @@ test("pointer move when input selected updates node placement location", () => {
 })
 
 test("pointer move when output selected updates node placement location", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const model0: Model = {
         ...model,
         operations: {
@@ -2660,27 +3594,43 @@ test("pointer move when output selected updates node placement location", () => 
         operation: model0.operations["Add"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const pointer0: Pointer = {
         id: 0,
         position: { x: 0, y: 0 },
     }
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.POINTER_DOWN,
-        pointer: pointer0,
-    })
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.CLICKED_OUTPUT,
-        output: model2.graph.nodes[node].outputs[0],
-    })
+    const model2 = update(
+        effects,
+        model1,
+        {
+            kind: EventKind.POINTER_DOWN,
+            pointer: pointer0,
+        },
+        dispatch
+    )
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.CLICKED_OUTPUT,
+            output: model2.graph.nodes[node].outputs[0],
+        },
+        dispatch
+    )
     const pointer1: Pointer = {
         id: 0,
         position: { x: 50, y: 50 },
     }
-    const { model: model4 } = update(effects, model3, {
-        kind: EventKind.POINTER_MOVE,
-        pointer: pointer1,
-    })
+    const model4 = update(
+        effects,
+        model3,
+        {
+            kind: EventKind.POINTER_MOVE,
+            pointer: pointer1,
+        },
+        dispatch
+    )
     const expectedModel: Model = {
         ...model3,
         nodePlacementLocation: { x: 50, y: 50, show: false },
@@ -2690,7 +3640,9 @@ test("pointer move when output selected updates node placement location", () => 
 })
 
 test("pointer move when body selected updates node placement location", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const model0: Model = {
         ...model,
         operations: {
@@ -2706,27 +3658,43 @@ test("pointer move when body selected updates node placement location", () => {
         operation: model0.operations["Number"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const pointer0: Pointer = {
         id: 0,
         position: { x: 0, y: 0 },
     }
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.POINTER_DOWN,
-        pointer: pointer0,
-    })
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.CLICKED_BODY,
-        body: model2.graph.nodes[node].body!,
-    })
+    const model2 = update(
+        effects,
+        model1,
+        {
+            kind: EventKind.POINTER_DOWN,
+            pointer: pointer0,
+        },
+        dispatch
+    )
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.CLICKED_BODY,
+            body: model2.graph.nodes[node].body!,
+        },
+        dispatch
+    )
     const pointer1: Pointer = {
         id: 0,
         position: { x: 50, y: 50 },
     }
-    const { model: model4 } = update(effects, model3, {
-        kind: EventKind.POINTER_MOVE,
-        pointer: pointer1,
-    })
+    const model4 = update(
+        effects,
+        model3,
+        {
+            kind: EventKind.POINTER_MOVE,
+            pointer: pointer1,
+        },
+        dispatch
+    )
     const expectedModel: Model = {
         ...model3,
         nodePlacementLocation: { x: 50, y: 50, show: false },
@@ -2736,45 +3704,81 @@ test("pointer move when body selected updates node placement location", () => {
 })
 
 test("pointer move when finder open only updates pointer state", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
+    const dispatch = () => {}
     const pointer0: Pointer = {
         id: 0,
         position: { x: 0, y: 0 },
     }
-    const { model: model1 } = update(effects, model, {
-        kind: EventKind.POINTER_DOWN,
-        pointer: pointer0,
-    })
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.CLICKED_BACKGROUND,
-    })
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.POINTER_UP,
-        pointer: pointer0,
-    })
+    const model1 = update(
+        effects,
+        model,
+        {
+            kind: EventKind.POINTER_DOWN,
+            pointer: pointer0,
+        },
+        dispatch
+    )
+    const model2 = update(
+        effects,
+        model1,
+        {
+            kind: EventKind.CLICKED_BACKGROUND,
+        },
+        dispatch
+    )
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.POINTER_UP,
+            pointer: pointer0,
+        },
+        dispatch
+    )
     const pointer1: Pointer = {
         id: 0,
         position: { x: 0, y: 0 },
     }
-    const { model: model4 } = update(effects, model3, {
-        kind: EventKind.POINTER_DOWN,
-        pointer: pointer1,
-    })
-    const { model: model5 } = update(effects, model4, {
-        kind: EventKind.CLICKED_BACKGROUND,
-    })
-    const { model: model6 } = update(effects, model5, {
-        kind: EventKind.POINTER_UP,
-        pointer: pointer1,
-    })
+    const model4 = update(
+        effects,
+        model3,
+        {
+            kind: EventKind.POINTER_DOWN,
+            pointer: pointer1,
+        },
+        dispatch
+    )
+    const model5 = update(
+        effects,
+        model4,
+        {
+            kind: EventKind.CLICKED_BACKGROUND,
+        },
+        dispatch
+    )
+    const model6 = update(
+        effects,
+        model5,
+        {
+            kind: EventKind.POINTER_UP,
+            pointer: pointer1,
+        },
+        dispatch
+    )
     const pointer2: Pointer = {
         id: 0,
         position: { x: 50, y: 50 },
     }
-    const { model: model7 } = update(effects, model6, {
-        kind: EventKind.POINTER_MOVE,
-        pointer: pointer2,
-    })
+    const model7 = update(
+        effects,
+        model6,
+        {
+            kind: EventKind.POINTER_MOVE,
+            pointer: pointer2,
+        },
+        dispatch
+    )
     const expectedModel: Model = {
         ...model6,
         pointers: [],
@@ -2783,7 +3787,9 @@ test("pointer move when finder open only updates pointer state", () => {
 })
 
 test("pressing f with node selected opens finder", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const model0: Model = {
         ...model,
         operations: {
@@ -2801,27 +3807,48 @@ test("pressing f with node selected opens finder", () => {
         operation: model0.operations["Add"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const pointer0: Pointer = {
         id: 0,
         position: { x: 0, y: 0 },
     }
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.POINTER_DOWN,
-        pointer: pointer0,
-    })
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.CLICKED_NODE,
-        node,
-    })
-    const { model: model4 } = update(effects, model3, {
-        kind: EventKind.POINTER_UP,
-        pointer: pointer0,
-    })
-    const { model: model5 } = update(effects, model4, {
-        kind: EventKind.KEYDOWN,
-        key: "f",
-    })
+    const model2 = update(
+        effects,
+        model1,
+        {
+            kind: EventKind.POINTER_DOWN,
+            pointer: pointer0,
+        },
+        dispatch
+    )
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.CLICKED_NODE,
+            node,
+        },
+        dispatch
+    )
+    const model4 = update(
+        effects,
+        model3,
+        {
+            kind: EventKind.POINTER_UP,
+            pointer: pointer0,
+        },
+        dispatch
+    )
+    const model5 = update(
+        effects,
+        model4,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "f",
+        },
+        dispatch
+    )
     const expectedModel: Model = {
         ...model4,
         focus: {
@@ -2839,7 +3866,9 @@ test("pressing f with node selected opens finder", () => {
 })
 
 test("pressing f with input selected opens finder", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const model0: Model = {
         ...model,
         operations: {
@@ -2857,27 +3886,48 @@ test("pressing f with input selected opens finder", () => {
         operation: model0.operations["Add"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const pointer0: Pointer = {
         id: 0,
         position: { x: 0, y: 0 },
     }
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.POINTER_DOWN,
-        pointer: pointer0,
-    })
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.CLICKED_INPUT,
-        input: (model2.graph.nodes[node] as NodeTransform).inputs[0],
-    })
-    const { model: model4 } = update(effects, model3, {
-        kind: EventKind.POINTER_UP,
-        pointer: pointer0,
-    })
-    const { model: model5 } = update(effects, model4, {
-        kind: EventKind.KEYDOWN,
-        key: "f",
-    })
+    const model2 = update(
+        effects,
+        model1,
+        {
+            kind: EventKind.POINTER_DOWN,
+            pointer: pointer0,
+        },
+        dispatch
+    )
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.CLICKED_INPUT,
+            input: (model2.graph.nodes[node] as NodeTransform).inputs[0],
+        },
+        dispatch
+    )
+    const model4 = update(
+        effects,
+        model3,
+        {
+            kind: EventKind.POINTER_UP,
+            pointer: pointer0,
+        },
+        dispatch
+    )
+    const model5 = update(
+        effects,
+        model4,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "f",
+        },
+        dispatch
+    )
     const expectedModel: Model = {
         ...model4,
         focus: {
@@ -2895,7 +3945,9 @@ test("pressing f with input selected opens finder", () => {
 })
 
 test("pressing f with output selected opens finder", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const model0: Model = {
         ...model,
         operations: {
@@ -2913,27 +3965,48 @@ test("pressing f with output selected opens finder", () => {
         operation: model0.operations["Add"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const pointer0: Pointer = {
         id: 0,
         position: { x: 0, y: 0 },
     }
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.POINTER_DOWN,
-        pointer: pointer0,
-    })
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.CLICKED_OUTPUT,
-        output: model2.graph.nodes[node].outputs[0],
-    })
-    const { model: model4 } = update(effects, model3, {
-        kind: EventKind.POINTER_UP,
-        pointer: pointer0,
-    })
-    const { model: model5 } = update(effects, model4, {
-        kind: EventKind.KEYDOWN,
-        key: "f",
-    })
+    const model2 = update(
+        effects,
+        model1,
+        {
+            kind: EventKind.POINTER_DOWN,
+            pointer: pointer0,
+        },
+        dispatch
+    )
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.CLICKED_OUTPUT,
+            output: model2.graph.nodes[node].outputs[0],
+        },
+        dispatch
+    )
+    const model4 = update(
+        effects,
+        model3,
+        {
+            kind: EventKind.POINTER_UP,
+            pointer: pointer0,
+        },
+        dispatch
+    )
+    const model5 = update(
+        effects,
+        model4,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "f",
+        },
+        dispatch
+    )
     const expectedModel: Model = {
         ...model4,
         focus: {
@@ -2951,7 +4024,9 @@ test("pressing f with output selected opens finder", () => {
 })
 
 test("key up with input selected does nothing", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const model0: Model = {
         ...model,
         operations: {
@@ -2969,51 +4044,93 @@ test("key up with input selected does nothing", () => {
         operation: model0.operations["Add"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const pointer0: Pointer = {
         id: 0,
         position: { x: 0, y: 0 },
     }
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.POINTER_DOWN,
-        pointer: pointer0,
-    })
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.CLICKED_INPUT,
-        input: (model2.graph.nodes[node] as NodeTransform).inputs[0],
-    })
-    const { model: model4 } = update(effects, model3, {
-        kind: EventKind.POINTER_UP,
-        pointer: pointer0,
-    })
-    const { model: model5 } = update(effects, model4, {
-        kind: EventKind.KEYDOWN,
-        key: "z",
-    })
-    const { model: model6 } = update(effects, model5, {
-        kind: EventKind.KEYUP,
-        key: "z",
-    })
+    const model2 = update(
+        effects,
+        model1,
+        {
+            kind: EventKind.POINTER_DOWN,
+            pointer: pointer0,
+        },
+        dispatch
+    )
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.CLICKED_INPUT,
+            input: (model2.graph.nodes[node] as NodeTransform).inputs[0],
+        },
+        dispatch
+    )
+    const model4 = update(
+        effects,
+        model3,
+        {
+            kind: EventKind.POINTER_UP,
+            pointer: pointer0,
+        },
+        dispatch
+    )
+    const model5 = update(
+        effects,
+        model4,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "z",
+        },
+        dispatch
+    )
+    const model6 = update(
+        effects,
+        model5,
+        {
+            kind: EventKind.KEYUP,
+            key: "z",
+        },
+        dispatch
+    )
     expect(model6).toEqual(model4)
 })
 
 test("clicking background with finder open closes it", () => {
-    const effects = makeEffects()
-    const { model: model1 } = update(effects, model, {
-        kind: EventKind.KEYDOWN,
-        key: "f",
-    })
+    const effects = makeEffects(mockDocument())
+    const dispatch = () => {}
+    const model1 = update(
+        effects,
+        model,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "f",
+        },
+        dispatch
+    )
     const pointer: Pointer = {
         id: 0,
         position: { x: 0, y: 0 },
     }
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.POINTER_DOWN,
-        pointer,
-    })
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.CLICKED_BACKGROUND,
-    })
+    const model2 = update(
+        effects,
+        model1,
+        {
+            kind: EventKind.POINTER_DOWN,
+            pointer,
+        },
+        dispatch
+    )
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.CLICKED_BACKGROUND,
+        },
+        dispatch
+    )
     const expectedModel: Model = {
         ...model,
         pointers: [pointer],
@@ -3022,11 +4139,17 @@ test("clicking background with finder open closes it", () => {
 })
 
 test("pointer move after moving with keyboard stops showing node placement location", () => {
-    const effects = makeEffects()
-    const { model: model1 } = update(effects, model, {
-        kind: EventKind.KEYDOWN,
-        key: "h",
-    })
+    const effects = makeEffects(mockDocument())
+    const dispatch = () => {}
+    const model1 = update(
+        effects,
+        model,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "h",
+        },
+        dispatch
+    )
     expect(model1).toEqual({
         ...model,
         nodePlacementLocation: { x: 250, y: 250, show: true },
@@ -3036,23 +4159,34 @@ test("pointer move after moving with keyboard stops showing node placement locat
         id: 0,
         position: { x: 0, y: 0 },
     }
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.POINTER_MOVE,
-        pointer,
-    })
+    const model2 = update(
+        effects,
+        model1,
+        {
+            kind: EventKind.POINTER_MOVE,
+            pointer,
+        },
+        dispatch
+    )
     expect(model2).toEqual({
         ...model1,
         nodePlacementLocation: { x: 0, y: 0, show: false },
     })
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.POINTER_MOVE,
-        pointer,
-    })
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.POINTER_MOVE,
+            pointer,
+        },
+        dispatch
+    )
     expect(model3).toEqual(model2)
 })
 
 test("update body", () => {
-    const effects = makeEffects()
+    const onTableUploaded = () => {}
+    const effects = makeEffects(mockDocument())
     const model0: Model = {
         ...model,
         operations: {
@@ -3068,9 +4202,10 @@ test("update body", () => {
         operation: model0.operations["Number"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const body = model1.graph.nodes[node].body
-    const { model: model2 } = updateBody(model1, body, (number) => ({
+    const model2 = updateBody(model1, body, (number) => ({
         ...number,
         kind: BodyKind.NUMBER,
         value: 10,
@@ -3095,8 +4230,11 @@ test("update body", () => {
 })
 
 test("pressing any alphanumeric key while editing text node appends key to value", () => {
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
+    const document = mockDocument()
     const effectModel = defaultEffectModel()
-    const effects = makeEffects(effectModel)
+    const effects = makeEffects(document, effectModel)
     const operations: Operations = {
         Text: {
             kind: OperationKind.TEXT,
@@ -3109,16 +4247,21 @@ test("pressing any alphanumeric key while editing text node appends key to value
         operation: operations["Text"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const body = model0.graph.nodes[node].body
     const model2 = focusBody(model0, body)
     let model3 = model2
     for (const key of "qwertyuiopasdfghjklzxcvbnm1234567890") {
-        const { model: nextModel } = update(effects, model3, {
-            kind: EventKind.KEYDOWN,
-            key: key,
-        })
-        model3 = nextModel
+        model3 = update(
+            effects,
+            model3,
+            {
+                kind: EventKind.KEYDOWN,
+                key: key,
+            },
+            dispatch
+        )
     }
     const expectedModel: Model = {
         ...model0,
@@ -3145,8 +4288,11 @@ test("pressing any alphanumeric key while editing text node appends key to value
 })
 
 test("pressing backspace while editing text node removes letter from value", () => {
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const effectModel = defaultEffectModel()
-    const effects = makeEffects(effectModel)
+    const document = mockDocument()
+    const effects = makeEffects(document, effectModel)
     const operations: Operations = {
         Text: {
             kind: OperationKind.TEXT,
@@ -3159,21 +4305,31 @@ test("pressing backspace while editing text node removes letter from value", () 
         operation: operations["Text"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const body = model0.graph.nodes[node].body
     const model2 = focusBody(model0, body)
     let model3 = model2
     for (const key of "qwerty") {
-        const { model: nextModel } = update(effects, model3, {
-            kind: EventKind.KEYDOWN,
-            key: key,
-        })
-        model3 = nextModel
+        model3 = update(
+            effects,
+            model3,
+            {
+                kind: EventKind.KEYDOWN,
+                key: key,
+            },
+            dispatch
+        )
     }
-    const { model: model4 } = update(effects, model3, {
-        kind: EventKind.KEYDOWN,
-        key: "Backspace",
-    })
+    const model4 = update(
+        effects,
+        model3,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "Backspace",
+        },
+        dispatch
+    )
     const expectedModel: Model = {
         ...model0,
         operations,
@@ -3199,8 +4355,11 @@ test("pressing backspace while editing text node removes letter from value", () 
 })
 
 test("pressing enter while editing text node clears the focus", () => {
+    const document = mockDocument()
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const effectModel = defaultEffectModel()
-    const effects = makeEffects(effectModel)
+    const effects = makeEffects(document, effectModel)
     const operations: Operations = {
         Text: {
             kind: OperationKind.TEXT,
@@ -3213,21 +4372,31 @@ test("pressing enter while editing text node clears the focus", () => {
         operation: operations["Text"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const body = model0.graph.nodes[node].body
     const model2 = focusBody(model0, body)
     let model3 = model2
     for (const key of "qwerty") {
-        const { model: nextModel } = update(effects, model3, {
-            kind: EventKind.KEYDOWN,
-            key: key,
-        })
-        model3 = nextModel
+        model3 = update(
+            effects,
+            model3,
+            {
+                kind: EventKind.KEYDOWN,
+                key: key,
+            },
+            dispatch
+        )
     }
-    const { model: model4 } = update(effects, model3, {
-        kind: EventKind.KEYDOWN,
-        key: "Enter",
-    })
+    const model4 = update(
+        effects,
+        model3,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "Enter",
+        },
+        dispatch
+    )
     const expectedModel: Model = {
         ...model0,
         operations,
@@ -3248,7 +4417,10 @@ test("pressing enter while editing text node clears the focus", () => {
 
 test("pressing escape while editing text node clears the focus", () => {
     const effectModel = defaultEffectModel()
-    const effects = makeEffects(effectModel)
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
+    const document = mockDocument()
+    const effects = makeEffects(document, effectModel)
     const operations: Operations = {
         Text: {
             kind: OperationKind.TEXT,
@@ -3261,21 +4433,31 @@ test("pressing escape while editing text node clears the focus", () => {
         operation: operations["Text"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const body = model0.graph.nodes[node].body
     const model2 = focusBody(model0, body)
     let model3 = model2
     for (const key of "qwerty") {
-        const { model: nextModel } = update(effects, model3, {
-            kind: EventKind.KEYDOWN,
-            key: key,
-        })
-        model3 = nextModel
+        model3 = update(
+            effects,
+            model3,
+            {
+                kind: EventKind.KEYDOWN,
+                key: key,
+            },
+            dispatch
+        )
     }
-    const { model: model4 } = update(effects, model3, {
-        kind: EventKind.KEYDOWN,
-        key: "Escape",
-    })
+    const model4 = update(
+        effects,
+        model3,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "Escape",
+        },
+        dispatch
+    )
     const expectedModel: Model = {
         ...model0,
         operations,
@@ -3295,8 +4477,11 @@ test("pressing escape while editing text node clears the focus", () => {
 })
 
 test("pressing shift while editing text node does nothing", () => {
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const effectModel = defaultEffectModel()
-    const effects = makeEffects(effectModel)
+    const document = mockDocument()
+    const effects = makeEffects(document, effectModel)
     const operations: Operations = {
         Text: {
             kind: OperationKind.TEXT,
@@ -3309,25 +4494,36 @@ test("pressing shift while editing text node does nothing", () => {
         operation: operations["Text"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const body = model0.graph.nodes[node].body
     const model2 = focusBody(model0, body)
     let model3 = model2
     for (const key of "qwerty") {
-        const { model: nextModel } = update(effects, model3, {
-            kind: EventKind.KEYDOWN,
-            key: key,
-        })
-        model3 = nextModel
+        model3 = update(
+            effects,
+            model3,
+            {
+                kind: EventKind.KEYDOWN,
+                key: key,
+            },
+            dispatch
+        )
     }
-    const { model: model4 } = update(effects, model3, {
-        kind: EventKind.KEYDOWN,
-        key: "Shift",
-    })
+    const model4 = update(
+        effects,
+        model3,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "Shift",
+        },
+        dispatch
+    )
     expect(model4).toEqual(model3)
 })
 
 test("upload table", () => {
+    const dispatch = () => {}
     const table: Table = {
         name: "table.csv",
         columns: {
@@ -3335,12 +4531,17 @@ test("upload table", () => {
             b: [4, 5, 6],
         },
     }
-    const { model: model1 } = update(makeEffects(), model, {
-        kind: EventKind.UPLOAD_TABLE,
-        table,
-        position: { x: 0, y: 0 },
-    })
-    const generateUUID = makeEffects().generateUUID
+    const model1 = update(
+        makeEffects(mockDocument()),
+        model,
+        {
+            kind: EventKind.UPLOAD_TABLE,
+            table,
+            position: { x: 0, y: 0 },
+        },
+        dispatch
+    )
+    const generateUUID = makeEffects(mockDocument()).generateUUID
     const node = generateUUID()
     const output = generateUUID()
     const body = generateUUID()
@@ -3382,7 +4583,9 @@ test("upload table", () => {
 })
 
 test("pressing c with node selected opens finder in change mode", () => {
-    const effects = makeEffects()
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
+    const effects = makeEffects(mockDocument())
     const model0: Model = {
         ...model,
         operations: {
@@ -3412,43 +4615,76 @@ test("pressing c with node selected opens finder in change mode", () => {
         operation: model0.operations["Number"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const { model: model2, node: y } = addNodeToGraph({
         model: model1,
         operation: model1.operations["Number"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const { model: model3, node: add } = addNodeToGraph({
         model: model2,
         operation: model0.operations["Add"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
-    const { model: model4 } = update(effects, model3, {
-        kind: EventKind.CLICKED_OUTPUT,
-        output: model3.graph.nodes[x].outputs[0],
-    })
-    const { model: model5 } = update(effects, model4, {
-        kind: EventKind.CLICKED_INPUT,
-        input: (model4.graph.nodes[add] as NodeTransform).inputs[0],
-    })
-    const { model: model6 } = update(effects, model5, {
-        kind: EventKind.CLICKED_OUTPUT,
-        output: model5.graph.nodes[y].outputs[0],
-    })
-    const { model: model7 } = update(effects, model6, {
-        kind: EventKind.CLICKED_INPUT,
-        input: (model6.graph.nodes[add] as NodeTransform).inputs[1],
-    })
-    const { model: model8 } = update(effects, model7, {
-        kind: EventKind.CLICKED_NODE,
-        node: add,
-    })
-    const { model: model9 } = update(effects, model8, {
-        kind: EventKind.KEYDOWN,
-        key: "c",
-    })
+    const model4 = update(
+        effects,
+        model3,
+        {
+            kind: EventKind.CLICKED_OUTPUT,
+            output: model3.graph.nodes[x].outputs[0],
+        },
+        dispatch
+    )
+    const model5 = update(
+        effects,
+        model4,
+        {
+            kind: EventKind.CLICKED_INPUT,
+            input: (model4.graph.nodes[add] as NodeTransform).inputs[0],
+        },
+        dispatch
+    )
+    const model6 = update(
+        effects,
+        model5,
+        {
+            kind: EventKind.CLICKED_OUTPUT,
+            output: model5.graph.nodes[y].outputs[0],
+        },
+        dispatch
+    )
+    const model7 = update(
+        effects,
+        model6,
+        {
+            kind: EventKind.CLICKED_INPUT,
+            input: (model6.graph.nodes[add] as NodeTransform).inputs[1],
+        },
+        dispatch
+    )
+    const model8 = update(
+        effects,
+        model7,
+        {
+            kind: EventKind.CLICKED_NODE,
+            node: add,
+        },
+        dispatch
+    )
+    const model9 = update(
+        effects,
+        model8,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "c",
+        },
+        dispatch
+    )
     const expectedModel: Model = {
         ...model7,
         focus: {
@@ -3467,7 +4703,9 @@ test("pressing c with node selected opens finder in change mode", () => {
 })
 
 test("pressing change node context menu with node selected opens finder in change mode", () => {
-    const effects = makeEffects()
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
+    const effects = makeEffects(mockDocument())
     const model0: Model = {
         ...model,
         operations: {
@@ -3497,43 +4735,76 @@ test("pressing change node context menu with node selected opens finder in chang
         operation: model0.operations["Number"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const { model: model2, node: y } = addNodeToGraph({
         model: model1,
         operation: model1.operations["Number"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const { model: model3, node: add } = addNodeToGraph({
         model: model2,
         operation: model0.operations["Add"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
-    const { model: model4 } = update(effects, model3, {
-        kind: EventKind.CLICKED_OUTPUT,
-        output: model3.graph.nodes[x].outputs[0],
-    })
-    const { model: model5 } = update(effects, model4, {
-        kind: EventKind.CLICKED_INPUT,
-        input: (model4.graph.nodes[add] as NodeTransform).inputs[0],
-    })
-    const { model: model6 } = update(effects, model5, {
-        kind: EventKind.CLICKED_OUTPUT,
-        output: model5.graph.nodes[y].outputs[0],
-    })
-    const { model: model7 } = update(effects, model6, {
-        kind: EventKind.CLICKED_INPUT,
-        input: (model6.graph.nodes[add] as NodeTransform).inputs[1],
-    })
-    const { model: model8 } = update(effects, model7, {
-        kind: EventKind.CLICKED_NODE,
-        node: add,
-    })
-    const { model: model9 } = update(effects, model8, {
-        kind: EventKind.CHANGE_NODE,
-        node: add,
-    })
+    const model4 = update(
+        effects,
+        model3,
+        {
+            kind: EventKind.CLICKED_OUTPUT,
+            output: model3.graph.nodes[x].outputs[0],
+        },
+        dispatch
+    )
+    const model5 = update(
+        effects,
+        model4,
+        {
+            kind: EventKind.CLICKED_INPUT,
+            input: (model4.graph.nodes[add] as NodeTransform).inputs[0],
+        },
+        dispatch
+    )
+    const model6 = update(
+        effects,
+        model5,
+        {
+            kind: EventKind.CLICKED_OUTPUT,
+            output: model5.graph.nodes[y].outputs[0],
+        },
+        dispatch
+    )
+    const model7 = update(
+        effects,
+        model6,
+        {
+            kind: EventKind.CLICKED_INPUT,
+            input: (model6.graph.nodes[add] as NodeTransform).inputs[1],
+        },
+        dispatch
+    )
+    const model8 = update(
+        effects,
+        model7,
+        {
+            kind: EventKind.CLICKED_NODE,
+            node: add,
+        },
+        dispatch
+    )
+    const model9 = update(
+        effects,
+        model8,
+        {
+            kind: EventKind.CHANGE_NODE,
+            node: add,
+        },
+        dispatch
+    )
     const expectedModel: Model = {
         ...model7,
         focus: {
@@ -3552,7 +4823,8 @@ test("pressing change node context menu with node selected opens finder in chang
 })
 
 test("pressing enter with finder in change mode replaces node but preserves inputs and outputs", () => {
-    const effects = makeEffects()
+    let tracked = makeTracked()
+    const onTableUploaded = () => {}
     const model0: Model = {
         ...model,
         operations: {
@@ -3581,60 +4853,110 @@ test("pressing enter with finder in change mode replaces node but preserves inpu
         model: model0,
         operation: model0.operations["Number"],
         position: { x: 0, y: 0 },
-        effects,
+        effects: tracked.effects,
+        onTableUploaded,
     })
     const { model: model2, node: y } = addNodeToGraph({
         model: model1,
         operation: model1.operations["Number"],
         position: { x: 0, y: 0 },
-        effects,
+        effects: tracked.effects,
+        onTableUploaded,
     })
     const { model: model3, node: add } = addNodeToGraph({
         model: model2,
         operation: model0.operations["Add"],
         position: { x: 0, y: 0 },
-        effects,
+        effects: tracked.effects,
+        onTableUploaded,
     })
-    const { model: model4 } = update(effects, model3, {
-        kind: EventKind.CLICKED_OUTPUT,
-        output: model3.graph.nodes[x].outputs[0],
-    })
-    const { model: model5 } = update(effects, model4, {
-        kind: EventKind.CLICKED_INPUT,
-        input: (model4.graph.nodes[add] as NodeTransform).inputs[0],
-    })
-    const { model: model6 } = update(effects, model5, {
-        kind: EventKind.CLICKED_OUTPUT,
-        output: model5.graph.nodes[y].outputs[0],
-    })
-    const { model: model7 } = update(effects, model6, {
-        kind: EventKind.CLICKED_INPUT,
-        input: (model6.graph.nodes[add] as NodeTransform).inputs[1],
-    })
-    const { model: model8 } = update(effects, model7, {
-        kind: EventKind.CLICKED_NODE,
-        node: add,
-    })
-    const { model: model9 } = update(effects, model8, {
-        kind: EventKind.KEYDOWN,
-        key: "c",
-    })
+    const model4 = update(
+        tracked.effects,
+        model3,
+        {
+            kind: EventKind.CLICKED_OUTPUT,
+            output: model3.graph.nodes[x].outputs[0],
+        },
+        tracked.dispatch
+    )
+    const model5 = update(
+        tracked.effects,
+        model4,
+        {
+            kind: EventKind.CLICKED_INPUT,
+            input: (model4.graph.nodes[add] as NodeTransform).inputs[0],
+        },
+        tracked.dispatch
+    )
+    const model6 = update(
+        tracked.effects,
+        model5,
+        {
+            kind: EventKind.CLICKED_OUTPUT,
+            output: model5.graph.nodes[y].outputs[0],
+        },
+        tracked.dispatch
+    )
+    const model7 = update(
+        tracked.effects,
+        model6,
+        {
+            kind: EventKind.CLICKED_INPUT,
+            input: (model6.graph.nodes[add] as NodeTransform).inputs[1],
+        },
+        tracked.dispatch
+    )
+    const model8 = update(
+        tracked.effects,
+        model7,
+        {
+            kind: EventKind.CLICKED_NODE,
+            node: add,
+        },
+        tracked.dispatch
+    )
+    const model9 = update(
+        tracked.effects,
+        model8,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "c",
+        },
+        tracked.dispatch
+    )
     let model10 = model9
     for (const key of "Sub") {
-        const { model: nextModel } = update(effects, model10, {
-            kind: EventKind.KEYDOWN,
-            key: key,
-        })
-        model10 = nextModel
+        model10 = update(
+            tracked.effects,
+            model10,
+            {
+                kind: EventKind.KEYDOWN,
+                key: key,
+            },
+            tracked.dispatch
+        )
     }
-    const { model: model11, dispatch } = update(effects, model10, {
-        kind: EventKind.KEYDOWN,
-        key: "Enter",
-    })
-    expect(dispatch).toEqual([
+    expect(tracked.events).toEqual([])
+    expect(tracked.times).toEqual([])
+    const model11 = update(
+        tracked.effects,
+        model10,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "Enter",
+        },
+        tracked.dispatch
+    )
+    expect(tracked.events).toEqual([
         { kind: EventKind.FINDER_CHANGE, option: "Sub", node: add },
     ])
-    const { model: model12 } = update(effects, model11, dispatch![0])
+    expect(tracked.times).toEqual([])
+    const model12 = update(
+        tracked.effects,
+        model11,
+        tracked.events[0],
+        tracked.dispatch
+    )
     const node = model7.graph.nodes[add] as NodeTransform
     const expectedModel: Model = {
         ...model7,
@@ -3654,7 +4976,9 @@ test("pressing enter with finder in change mode replaces node but preserves inpu
 })
 
 test("cllicking finder option with finder in change mode replaces node but preserves inputs and outputs", () => {
-    const effects = makeEffects()
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
+    const effects = makeEffects(mockDocument())
     const model0: Model = {
         ...model,
         operations: {
@@ -3684,48 +5008,86 @@ test("cllicking finder option with finder in change mode replaces node but prese
         operation: model0.operations["Number"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const { model: model2, node: y } = addNodeToGraph({
         model: model1,
         operation: model1.operations["Number"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const { model: model3, node: add } = addNodeToGraph({
         model: model2,
         operation: model0.operations["Add"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
-    const { model: model4 } = update(effects, model3, {
-        kind: EventKind.CLICKED_OUTPUT,
-        output: model3.graph.nodes[x].outputs[0],
-    })
-    const { model: model5 } = update(effects, model4, {
-        kind: EventKind.CLICKED_INPUT,
-        input: (model4.graph.nodes[add] as NodeTransform).inputs[0],
-    })
-    const { model: model6 } = update(effects, model5, {
-        kind: EventKind.CLICKED_OUTPUT,
-        output: model5.graph.nodes[y].outputs[0],
-    })
-    const { model: model7 } = update(effects, model6, {
-        kind: EventKind.CLICKED_INPUT,
-        input: (model6.graph.nodes[add] as NodeTransform).inputs[1],
-    })
-    const { model: model8 } = update(effects, model7, {
-        kind: EventKind.CLICKED_NODE,
-        node: add,
-    })
-    const { model: model9 } = update(effects, model8, {
-        kind: EventKind.KEYDOWN,
-        key: "c",
-    })
-    const { model: model10 } = update(effects, model9, {
-        kind: EventKind.FINDER_CHANGE,
-        option: "Sub",
-        node: add,
-    })
+    const model4 = update(
+        effects,
+        model3,
+        {
+            kind: EventKind.CLICKED_OUTPUT,
+            output: model3.graph.nodes[x].outputs[0],
+        },
+        dispatch
+    )
+    const model5 = update(
+        effects,
+        model4,
+        {
+            kind: EventKind.CLICKED_INPUT,
+            input: (model4.graph.nodes[add] as NodeTransform).inputs[0],
+        },
+        dispatch
+    )
+    const model6 = update(
+        effects,
+        model5,
+        {
+            kind: EventKind.CLICKED_OUTPUT,
+            output: model5.graph.nodes[y].outputs[0],
+        },
+        dispatch
+    )
+    const model7 = update(
+        effects,
+        model6,
+        {
+            kind: EventKind.CLICKED_INPUT,
+            input: (model6.graph.nodes[add] as NodeTransform).inputs[1],
+        },
+        dispatch
+    )
+    const model8 = update(
+        effects,
+        model7,
+        {
+            kind: EventKind.CLICKED_NODE,
+            node: add,
+        },
+        dispatch
+    )
+    const model9 = update(
+        effects,
+        model8,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "c",
+        },
+        dispatch
+    )
+    const model10 = update(
+        effects,
+        model9,
+        {
+            kind: EventKind.FINDER_CHANGE,
+            option: "Sub",
+            node: add,
+        },
+        dispatch
+    )
     const node = model7.graph.nodes[add] as NodeTransform
     const expectedModel: Model = {
         ...model7,
@@ -3745,7 +5107,8 @@ test("cllicking finder option with finder in change mode replaces node but prese
 })
 
 test("change node with different input and output names", () => {
-    const effects = makeEffects()
+    let tracked = makeTracked()
+    const onTableUploaded = () => {}
     const model0: Model = {
         ...model,
         operations: {
@@ -3774,60 +5137,109 @@ test("change node with different input and output names", () => {
         model: model0,
         operation: model0.operations["Number"],
         position: { x: 0, y: 0 },
-        effects,
+        effects: tracked.effects,
+        onTableUploaded,
     })
     const { model: model2, node: y } = addNodeToGraph({
         model: model1,
         operation: model1.operations["Number"],
         position: { x: 0, y: 0 },
-        effects,
+        effects: tracked.effects,
+        onTableUploaded,
     })
     const { model: model3, node: add } = addNodeToGraph({
         model: model2,
         operation: model0.operations["Add"],
         position: { x: 0, y: 0 },
-        effects,
+        effects: tracked.effects,
+        onTableUploaded,
     })
-    const { model: model4 } = update(effects, model3, {
-        kind: EventKind.CLICKED_OUTPUT,
-        output: model3.graph.nodes[x].outputs[0],
-    })
-    const { model: model5 } = update(effects, model4, {
-        kind: EventKind.CLICKED_INPUT,
-        input: (model4.graph.nodes[add] as NodeTransform).inputs[0],
-    })
-    const { model: model6 } = update(effects, model5, {
-        kind: EventKind.CLICKED_OUTPUT,
-        output: model5.graph.nodes[y].outputs[0],
-    })
-    const { model: model7 } = update(effects, model6, {
-        kind: EventKind.CLICKED_INPUT,
-        input: (model6.graph.nodes[add] as NodeTransform).inputs[1],
-    })
-    const { model: model8 } = update(effects, model7, {
-        kind: EventKind.CLICKED_NODE,
-        node: add,
-    })
-    const { model: model9 } = update(effects, model8, {
-        kind: EventKind.KEYDOWN,
-        key: "c",
-    })
+    const model4 = update(
+        tracked.effects,
+        model3,
+        {
+            kind: EventKind.CLICKED_OUTPUT,
+            output: model3.graph.nodes[x].outputs[0],
+        },
+        tracked.dispatch
+    )
+    const model5 = update(
+        tracked.effects,
+        model4,
+        {
+            kind: EventKind.CLICKED_INPUT,
+            input: (model4.graph.nodes[add] as NodeTransform).inputs[0],
+        },
+        tracked.dispatch
+    )
+    const model6 = update(
+        tracked.effects,
+        model5,
+        {
+            kind: EventKind.CLICKED_OUTPUT,
+            output: model5.graph.nodes[y].outputs[0],
+        },
+        tracked.dispatch
+    )
+    const model7 = update(
+        tracked.effects,
+        model6,
+        {
+            kind: EventKind.CLICKED_INPUT,
+            input: (model6.graph.nodes[add] as NodeTransform).inputs[1],
+        },
+        tracked.dispatch
+    )
+    const model8 = update(
+        tracked.effects,
+        model7,
+        {
+            kind: EventKind.CLICKED_NODE,
+            node: add,
+        },
+        tracked.dispatch
+    )
+    const model9 = update(
+        tracked.effects,
+        model8,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "c",
+        },
+        tracked.dispatch
+    )
     let model10 = model9
     for (const key of "Column") {
-        const { model: nextModel } = update(effects, model10, {
-            kind: EventKind.KEYDOWN,
-            key: key,
-        })
-        model10 = nextModel
+        model10 = update(
+            tracked.effects,
+            model10,
+            {
+                kind: EventKind.KEYDOWN,
+                key: key,
+            },
+            tracked.dispatch
+        )
     }
-    const { model: model11, dispatch } = update(effects, model10, {
-        kind: EventKind.KEYDOWN,
-        key: "Enter",
-    })
-    expect(dispatch).toEqual([
+    expect(tracked.events).toEqual([])
+    expect(tracked.times).toEqual([])
+    const model11 = update(
+        tracked.effects,
+        model10,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "Enter",
+        },
+        tracked.dispatch
+    )
+    expect(tracked.events).toEqual([
         { kind: EventKind.FINDER_CHANGE, option: "Column", node: add },
     ])
-    const { model: model12 } = update(effects, model11, dispatch![0])
+    expect(tracked.times).toEqual([])
+    const event = tracked.events[0]
+    tracked = resetTracked(tracked)
+    const model12 = update(tracked.effects, model11, event, tracked.dispatch)
+    expect(tracked.events).toEqual([])
+    expect(tracked.times).toEqual([])
     const node = model7.graph.nodes[add] as NodeTransform
     const edges = Object.keys(model7.graph.edges)
     const expectedModel: Model = {
@@ -3879,7 +5291,8 @@ test("change node with different input and output names", () => {
 })
 
 test("change node with more inputs then existing node", () => {
-    const effects = makeEffects()
+    let tracked = makeTracked()
+    const onTableUploaded = () => {}
     const model0: Model = {
         ...model,
         operations: {
@@ -3908,60 +5321,109 @@ test("change node with more inputs then existing node", () => {
         model: model0,
         operation: model0.operations["Number"],
         position: { x: 0, y: 0 },
-        effects,
+        effects: tracked.effects,
+        onTableUploaded,
     })
     const { model: model2, node: y } = addNodeToGraph({
         model: model1,
         operation: model1.operations["Number"],
         position: { x: 0, y: 0 },
-        effects,
+        effects: tracked.effects,
+        onTableUploaded,
     })
     const { model: model3, node: add } = addNodeToGraph({
         model: model2,
         operation: model0.operations["Add"],
         position: { x: 0, y: 0 },
-        effects,
+        effects: tracked.effects,
+        onTableUploaded,
     })
-    const { model: model4 } = update(effects, model3, {
-        kind: EventKind.CLICKED_OUTPUT,
-        output: model3.graph.nodes[x].outputs[0],
-    })
-    const { model: model5 } = update(effects, model4, {
-        kind: EventKind.CLICKED_INPUT,
-        input: (model4.graph.nodes[add] as NodeTransform).inputs[0],
-    })
-    const { model: model6 } = update(effects, model5, {
-        kind: EventKind.CLICKED_OUTPUT,
-        output: model5.graph.nodes[y].outputs[0],
-    })
-    const { model: model7 } = update(effects, model6, {
-        kind: EventKind.CLICKED_INPUT,
-        input: (model6.graph.nodes[add] as NodeTransform).inputs[1],
-    })
-    const { model: model8 } = update(effects, model7, {
-        kind: EventKind.CLICKED_NODE,
-        node: add,
-    })
-    const { model: model9 } = update(effects, model8, {
-        kind: EventKind.KEYDOWN,
-        key: "c",
-    })
+    const model4 = update(
+        tracked.effects,
+        model3,
+        {
+            kind: EventKind.CLICKED_OUTPUT,
+            output: model3.graph.nodes[x].outputs[0],
+        },
+        tracked.dispatch
+    )
+    const model5 = update(
+        tracked.effects,
+        model4,
+        {
+            kind: EventKind.CLICKED_INPUT,
+            input: (model4.graph.nodes[add] as NodeTransform).inputs[0],
+        },
+        tracked.dispatch
+    )
+    const model6 = update(
+        tracked.effects,
+        model5,
+        {
+            kind: EventKind.CLICKED_OUTPUT,
+            output: model5.graph.nodes[y].outputs[0],
+        },
+        tracked.dispatch
+    )
+    const model7 = update(
+        tracked.effects,
+        model6,
+        {
+            kind: EventKind.CLICKED_INPUT,
+            input: (model6.graph.nodes[add] as NodeTransform).inputs[1],
+        },
+        tracked.dispatch
+    )
+    const model8 = update(
+        tracked.effects,
+        model7,
+        {
+            kind: EventKind.CLICKED_NODE,
+            node: add,
+        },
+        tracked.dispatch
+    )
+    const model9 = update(
+        tracked.effects,
+        model8,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "c",
+        },
+        tracked.dispatch
+    )
     let model10 = model9
     for (const key of "Linspace") {
-        const { model: nextModel } = update(effects, model10, {
-            kind: EventKind.KEYDOWN,
-            key: key,
-        })
-        model10 = nextModel
+        model10 = update(
+            tracked.effects,
+            model10,
+            {
+                kind: EventKind.KEYDOWN,
+                key: key,
+            },
+            tracked.dispatch
+        )
     }
-    const { model: model11, dispatch } = update(effects, model10, {
-        kind: EventKind.KEYDOWN,
-        key: "Enter",
-    })
-    expect(dispatch).toEqual([
+    expect(tracked.events).toEqual([])
+    expect(tracked.times).toEqual([])
+    const model11 = update(
+        tracked.effects,
+        model10,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "Enter",
+        },
+        tracked.dispatch
+    )
+    expect(tracked.events).toEqual([
         { kind: EventKind.FINDER_CHANGE, option: "Linspace", node: add },
     ])
-    const { model: model12 } = update(effects, model11, dispatch![0])
+    expect(tracked.times).toEqual([])
+    const event = tracked.events[0]
+    tracked = resetTracked(tracked)
+    const model12 = update(tracked.effects, model11, event, tracked.dispatch)
+    expect(tracked.events).toEqual([])
+    expect(tracked.times).toEqual([])
     const node = model7.graph.nodes[add] as NodeTransform
     const edges = Object.keys(model7.graph.edges)
     const expectedModel: Model = {
@@ -4010,7 +5472,8 @@ test("change node with more inputs then existing node", () => {
 })
 
 test("change node with fewer inputs then existing node", () => {
-    const effects = makeEffects()
+    let tracked = makeTracked()
+    const onTableUploaded = () => {}
     const model0: Model = {
         ...model,
         operations: {
@@ -4039,60 +5502,107 @@ test("change node with fewer inputs then existing node", () => {
         model: model0,
         operation: model0.operations["Number"],
         position: { x: 0, y: 0 },
-        effects,
+        effects: tracked.effects,
+        onTableUploaded,
     })
     const { model: model2, node: y } = addNodeToGraph({
         model: model1,
         operation: model1.operations["Number"],
         position: { x: 0, y: 0 },
-        effects,
+        effects: tracked.effects,
+        onTableUploaded,
     })
     const { model: model3, node: add } = addNodeToGraph({
         model: model2,
         operation: model0.operations["Add"],
         position: { x: 0, y: 0 },
-        effects,
+        effects: tracked.effects,
+        onTableUploaded,
     })
-    const { model: model4 } = update(effects, model3, {
-        kind: EventKind.CLICKED_OUTPUT,
-        output: model3.graph.nodes[x].outputs[0],
-    })
-    const { model: model5 } = update(effects, model4, {
-        kind: EventKind.CLICKED_INPUT,
-        input: (model4.graph.nodes[add] as NodeTransform).inputs[0],
-    })
-    const { model: model6 } = update(effects, model5, {
-        kind: EventKind.CLICKED_OUTPUT,
-        output: model5.graph.nodes[y].outputs[0],
-    })
-    const { model: model7 } = update(effects, model6, {
-        kind: EventKind.CLICKED_INPUT,
-        input: (model6.graph.nodes[add] as NodeTransform).inputs[1],
-    })
-    const { model: model8 } = update(effects, model7, {
-        kind: EventKind.CLICKED_NODE,
-        node: add,
-    })
-    const { model: model9 } = update(effects, model8, {
-        kind: EventKind.KEYDOWN,
-        key: "c",
-    })
+    const model4 = update(
+        tracked.effects,
+        model3,
+        {
+            kind: EventKind.CLICKED_OUTPUT,
+            output: model3.graph.nodes[x].outputs[0],
+        },
+        tracked.dispatch
+    )
+    const model5 = update(
+        tracked.effects,
+        model4,
+        {
+            kind: EventKind.CLICKED_INPUT,
+            input: (model4.graph.nodes[add] as NodeTransform).inputs[0],
+        },
+        tracked.dispatch
+    )
+    const model6 = update(
+        tracked.effects,
+        model5,
+        {
+            kind: EventKind.CLICKED_OUTPUT,
+            output: model5.graph.nodes[y].outputs[0],
+        },
+        tracked.dispatch
+    )
+    const model7 = update(
+        tracked.effects,
+        model6,
+        {
+            kind: EventKind.CLICKED_INPUT,
+            input: (model6.graph.nodes[add] as NodeTransform).inputs[1],
+        },
+        tracked.dispatch
+    )
+    const model8 = update(
+        tracked.effects,
+        model7,
+        {
+            kind: EventKind.CLICKED_NODE,
+            node: add,
+        },
+        tracked.dispatch
+    )
+    const model9 = update(
+        tracked.effects,
+        model8,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "c",
+        },
+        tracked.dispatch
+    )
     let model10 = model9
     for (const key of "Sin") {
-        const { model: nextModel } = update(effects, model10, {
-            kind: EventKind.KEYDOWN,
-            key: key,
-        })
-        model10 = nextModel
+        model10 = update(
+            tracked.effects,
+            model10,
+            {
+                kind: EventKind.KEYDOWN,
+                key: key,
+            },
+            tracked.dispatch
+        )
     }
-    const { model: model11, dispatch } = update(effects, model10, {
-        kind: EventKind.KEYDOWN,
-        key: "Enter",
-    })
-    expect(dispatch).toEqual([
+    expect(tracked.events).toEqual([])
+    expect(tracked.times).toEqual([])
+    const model11 = update(
+        tracked.effects,
+        model10,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "Enter",
+        },
+        tracked.dispatch
+    )
+    expect(tracked.events).toEqual([
         { kind: EventKind.FINDER_CHANGE, option: "Sin", node: add },
     ])
-    const { model: model12 } = update(effects, model11, dispatch![0])
+    expect(tracked.times).toEqual([])
+    const event = tracked.events[0]
+    tracked = resetTracked(tracked)
+    const model12 = update(tracked.effects, model11, event, tracked.dispatch)
     const node = model7.graph.nodes[add] as NodeTransform
     const edges = Object.keys(model7.graph.edges)
     const expectedModel: Model = {
@@ -4140,7 +5650,8 @@ test("change node with fewer inputs then existing node", () => {
 })
 
 test("change from source node to a source node does nothing", () => {
-    const effects = makeEffects()
+    let tracked = makeTracked()
+    const onTableUploaded = () => {}
     const model0: Model = {
         ...model,
         operations: {
@@ -4155,29 +5666,53 @@ test("change from source node to a source node does nothing", () => {
         model: model0,
         operation: model0.operations["Number"],
         position: { x: 0, y: 0 },
-        effects,
+        effects: tracked.effects,
+        onTableUploaded,
     })
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.CLICKED_NODE,
-        node: number,
-    })
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.KEYDOWN,
-        key: "c",
-    })
-    const { model: model4, dispatch } = update(effects, model3, {
-        kind: EventKind.KEYDOWN,
-        key: "Enter",
-    })
-    expect(dispatch).toEqual([
+    const model2 = update(
+        tracked.effects,
+        model1,
+        {
+            kind: EventKind.CLICKED_NODE,
+            node: number,
+        },
+        tracked.dispatch
+    )
+    const model3 = update(
+        tracked.effects,
+        model2,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "c",
+        },
+        tracked.dispatch
+    )
+    expect(tracked.events).toEqual([])
+    expect(tracked.times).toEqual([])
+    const model4 = update(
+        tracked.effects,
+        model3,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "Enter",
+        },
+        tracked.dispatch
+    )
+    expect(tracked.events).toEqual([
         { kind: EventKind.FINDER_CHANGE, option: "Number", node: number },
     ])
-    const { model: model5 } = update(effects, model4, dispatch![0])
+    expect(tracked.times).toEqual([])
+    const event = tracked.events[0]
+    tracked = resetTracked(tracked)
+    const model5 = update(tracked.effects, model4, event, tracked.dispatch)
     expect(model5).toEqual(model1)
+    expect(tracked.events).toEqual([])
+    expect(tracked.times).toEqual([])
 })
 
 test("change from source node to a transform node does nothing", () => {
-    const effects = makeEffects()
+    let tracked = makeTracked()
+    const onTableUploaded = () => {}
     const model0: Model = {
         ...model,
         operations: {
@@ -4199,41 +5734,68 @@ test("change from source node to a transform node does nothing", () => {
         model: model0,
         operation: model0.operations["Number"],
         position: { x: 0, y: 0 },
-        effects,
+        effects: tracked.effects,
+        onTableUploaded,
     })
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.CLICKED_NODE,
-        node: number,
-    })
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.KEYDOWN,
-        key: "c",
-    })
+    const model2 = update(
+        tracked.effects,
+        model1,
+        {
+            kind: EventKind.CLICKED_NODE,
+            node: number,
+        },
+        tracked.dispatch
+    )
+    const model3 = update(
+        tracked.effects,
+        model2,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "c",
+        },
+        tracked.dispatch
+    )
     let model4 = model3
     for (const key of "Add") {
-        const { model: nextModel } = update(effects, model4, {
-            kind: EventKind.KEYDOWN,
-            key: key,
-        })
-        model4 = nextModel
+        model4 = update(
+            tracked.effects,
+            model4,
+            {
+                kind: EventKind.KEYDOWN,
+                key: key,
+            },
+            tracked.dispatch
+        )
     }
-    const { model: model5, dispatch } = update(effects, model4, {
-        kind: EventKind.KEYDOWN,
-        key: "Enter",
-    })
-    expect(dispatch).toEqual([
+    expect(tracked.events).toEqual([])
+    expect(tracked.times).toEqual([])
+    const model5 = update(
+        tracked.effects,
+        model4,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "Enter",
+        },
+        tracked.dispatch
+    )
+    expect(tracked.events).toEqual([
         {
             kind: EventKind.FINDER_CHANGE,
             option: "Add",
             node: number,
         },
     ])
-    const { model: model6 } = update(effects, model5, dispatch![0])
+    expect(tracked.times).toEqual([])
+    const event = tracked.events[0]
+    tracked = resetTracked(tracked)
+    const model6 = update(tracked.effects, model5, event, tracked.dispatch)
     expect(model6).toEqual(model1)
 })
 
 test("deleting a node forces evaluation of outputs", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const model0: Model = {
         ...model,
         operations: {
@@ -4256,43 +5818,76 @@ test("deleting a node forces evaluation of outputs", () => {
         operation: model0.operations["Number"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const { model: model2, node: y } = addNodeToGraph({
         model: model1,
         operation: model1.operations["Number"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const { model: model3, node: add } = addNodeToGraph({
         model: model2,
         operation: model0.operations["Add"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
-    const { model: model4 } = update(effects, model3, {
-        kind: EventKind.CLICKED_OUTPUT,
-        output: model3.graph.nodes[x].outputs[0],
-    })
-    const { model: model5 } = update(effects, model4, {
-        kind: EventKind.CLICKED_INPUT,
-        input: (model4.graph.nodes[add] as NodeTransform).inputs[0],
-    })
-    const { model: model6 } = update(effects, model5, {
-        kind: EventKind.CLICKED_OUTPUT,
-        output: model5.graph.nodes[y].outputs[0],
-    })
-    const { model: model7 } = update(effects, model6, {
-        kind: EventKind.CLICKED_INPUT,
-        input: (model6.graph.nodes[add] as NodeTransform).inputs[1],
-    })
-    const { model: model8 } = update(effects, model7, {
-        kind: EventKind.CLICKED_NODE,
-        node: x,
-    })
-    const { model: model9 } = update(effects, model8, {
-        kind: EventKind.KEYDOWN,
-        key: "d",
-    })
+    const model4 = update(
+        effects,
+        model3,
+        {
+            kind: EventKind.CLICKED_OUTPUT,
+            output: model3.graph.nodes[x].outputs[0],
+        },
+        dispatch
+    )
+    const model5 = update(
+        effects,
+        model4,
+        {
+            kind: EventKind.CLICKED_INPUT,
+            input: (model4.graph.nodes[add] as NodeTransform).inputs[0],
+        },
+        dispatch
+    )
+    const model6 = update(
+        effects,
+        model5,
+        {
+            kind: EventKind.CLICKED_OUTPUT,
+            output: model5.graph.nodes[y].outputs[0],
+        },
+        dispatch
+    )
+    const model7 = update(
+        effects,
+        model6,
+        {
+            kind: EventKind.CLICKED_INPUT,
+            input: (model6.graph.nodes[add] as NodeTransform).inputs[1],
+        },
+        dispatch
+    )
+    const model8 = update(
+        effects,
+        model7,
+        {
+            kind: EventKind.CLICKED_NODE,
+            node: x,
+        },
+        dispatch
+    )
+    const model9 = update(
+        effects,
+        model8,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "d",
+        },
+        dispatch
+    )
     const edge = model7.graph.outputs[model7.graph.nodes[y].outputs[0]].edges[0]
     const expectedModel: Model = {
         ...model7,
@@ -4356,7 +5951,9 @@ test("deleting a node forces evaluation of outputs", () => {
 })
 
 test("prevent cycles from forming", () => {
-    const effects = makeEffects()
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
+    const effects = makeEffects(mockDocument())
     const model0: Model = {
         ...model,
         operations: {
@@ -4374,29 +5971,51 @@ test("prevent cycles from forming", () => {
         operation: model0.operations["Sin"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const { model: model2, node: b } = addNodeToGraph({
         model: model1,
         operation: model1.operations["Sin"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.CLICKED_OUTPUT,
-        output: model2.graph.nodes[a].outputs[0],
-    })
-    const { model: model4 } = update(effects, model3, {
-        kind: EventKind.CLICKED_INPUT,
-        input: (model2.graph.nodes[b] as NodeTransform).inputs[0],
-    })
-    const { model: model5 } = update(effects, model4, {
-        kind: EventKind.CLICKED_OUTPUT,
-        output: model2.graph.nodes[b].outputs[0],
-    })
-    const { model: model6 } = update(effects, model5, {
-        kind: EventKind.CLICKED_INPUT,
-        input: (model2.graph.nodes[a] as NodeTransform).inputs[0],
-    })
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.CLICKED_OUTPUT,
+            output: model2.graph.nodes[a].outputs[0],
+        },
+        dispatch
+    )
+    const model4 = update(
+        effects,
+        model3,
+        {
+            kind: EventKind.CLICKED_INPUT,
+            input: (model2.graph.nodes[b] as NodeTransform).inputs[0],
+        },
+        dispatch
+    )
+    const model5 = update(
+        effects,
+        model4,
+        {
+            kind: EventKind.CLICKED_OUTPUT,
+            output: model2.graph.nodes[b].outputs[0],
+        },
+        dispatch
+    )
+    const model6 = update(
+        effects,
+        model5,
+        {
+            kind: EventKind.CLICKED_INPUT,
+            input: (model2.graph.nodes[a] as NodeTransform).inputs[0],
+        },
+        dispatch
+    )
     const expectedModel: Model = {
         ...model5,
         focus: {
@@ -4408,8 +6027,27 @@ test("prevent cycles from forming", () => {
     expect(model6).toEqual(expectedModel)
 })
 
+interface PromisedTable {
+    table: Table
+    node: UUID
+}
+
+interface DeferedTable {
+    promise: Promise<PromisedTable>
+    onTableUploaded: OnTableUploaded
+}
+
+const deferedTable = (): DeferedTable => {
+    let resolve: (promised: PromisedTable) => void
+    const promise = new Promise<PromisedTable>((r) => (resolve = r))
+    const onTableUploaded = (table: Table, node: UUID) => {
+        resolve({ table, node })
+    }
+    return { promise, onTableUploaded }
+}
+
 test("upload csv using node prompts user for a table", async () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const model0: Model = {
         ...model,
         operations: {
@@ -4420,15 +6058,13 @@ test("upload csv using node prompts user for a table", async () => {
             },
         },
     }
-    const {
-        model: model1,
-        node,
-        event,
-    } = addNodeToGraph({
+    const { promise, onTableUploaded } = deferedTable()
+    const { model: model1, node } = addNodeToGraph({
         model: model0,
         operation: model0.operations["upload csv"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const body = model1.graph.nodes[node].body
     const output = model1.graph.nodes[node].outputs[0]
@@ -4465,8 +6101,7 @@ test("upload csv using node prompts user for a table", async () => {
         nodeOrder: [node],
     }
     expect(model1).toEqual(expectedModel)
-    expect(await event).toEqual({
-        kind: EventKind.UPLOAD_CSV,
+    expect(await promise).toEqual({
         table: {
             name: "table.csv",
             columns: {
@@ -4479,7 +6114,7 @@ test("upload csv using node prompts user for a table", async () => {
 })
 
 test("upload csv event replaces node body with a table", async () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const model0: Model = {
         ...model,
         operations: {
@@ -4490,19 +6125,24 @@ test("upload csv event replaces node body with a table", async () => {
             },
         },
     }
-    const {
-        model: model1,
-        node,
-        event,
-    } = addNodeToGraph({
+    const dispatch = () => {}
+    const { promise, onTableUploaded } = deferedTable()
+    const { model: model1, node } = addNodeToGraph({
         model: model0,
         operation: model0.operations["upload csv"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const body = model1.graph.nodes[node].body
     const output = model1.graph.nodes[node].outputs[0]
-    const { model: model2 } = update(effects, model1, (await event)!)
+    const { table } = await promise
+    const event: AppEvent = {
+        kind: EventKind.UPLOAD_CSV,
+        table,
+        node,
+    }
+    const model2 = update(effects, model1, event, dispatch)
     const expectedModel: Model = {
         ...model1,
         graph: {
@@ -4538,7 +6178,10 @@ test("upload csv event replaces node body with a table", async () => {
 
 test("pressing sft on virtual keyboard toggles upppercase", () => {
     const effectModel = defaultEffectModel()
-    const effects = makeEffects(effectModel)
+    const document = mockDocument()
+    const effects = makeEffects(document, effectModel)
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const operations: Operations = {
         Text: {
             kind: OperationKind.TEXT,
@@ -4551,13 +6194,19 @@ test("pressing sft on virtual keyboard toggles upppercase", () => {
         operation: operations["Text"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const body = model0.graph.nodes[node].body
     const model1 = focusBody(model0, body)
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.KEYDOWN,
-        key: "sft",
-    })
+    const model2 = update(
+        effects,
+        model1,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "sft",
+        },
+        dispatch
+    )
     const expectedModel: Model = {
         ...model1,
         focus: {

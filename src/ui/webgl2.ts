@@ -117,12 +117,12 @@ const mapString = <T>(
     return result
 }
 
-export class WebGL2Renderer {
+export class WebGL2Renderer<AppEvent> {
     _size: Size
     _cameras: Matrix3x3[]
 
     constructor(
-        public window: Window,
+        public window: Window<AppEvent>,
         public document: Document,
         public canvas: Canvas,
         public gl: WebGL2Context,
@@ -477,19 +477,19 @@ const createProgram = (gl: WebGL2Context): ProgramData => {
     }
 }
 
-interface Parameters {
+interface Parameters<AppEvent> {
     width: number
     height: number
     document: Document
-    window: Window
+    window: Window<AppEvent>
 }
 
-export const webGL2Renderer = ({
+export const webGL2Renderer = <AppEvent>({
     width,
     height,
     document,
     window,
-}: Parameters): WebGL2Renderer => {
+}: Parameters<AppEvent>): WebGL2Renderer<AppEvent> => {
     const canvas = document.createElement("canvas")
     canvas.style.touchAction = "none"
     canvas.style.userSelect = "none"

@@ -2,16 +2,20 @@ import * as papa from "papaparse"
 
 import { UUID } from "./model/graph"
 import { Columns, Table } from "./model/table"
+import { Document } from "./ui/dom"
 import { Row } from "./ui/row"
 
 export type GenerateUUID = () => UUID
-
 export type CurrentTime = () => number
+export type ShowCursor = (show: boolean) => void
+export type SetTimeout = (callback: () => void, ms: number) => void
 
 export interface Effects {
     currentTime: CurrentTime
     generateUUID: GenerateUUID
     promptUserForTable: () => Promise<Table>
+    showCursor: ShowCursor
+    setTimeout: SetTimeout
 }
 
 const promptUserForTable = (): Promise<Table> =>
@@ -57,5 +61,13 @@ const promptUserForTable = (): Promise<Table> =>
 
 const generateUUID = () => crypto.randomUUID()
 const currentTime = () => performance.now()
+export const showCursor = (document: Document, show: boolean) =>
+    (document.body.style.cursor = show ? "auto" : "none")
 
-export const effects = { currentTime, generateUUID, promptUserForTable }
+export const makeEffects = (document: Document): Effects => ({
+    currentTime,
+    generateUUID,
+    promptUserForTable,
+    showCursor: (show: boolean) => showCursor(document, show),
+    setTimeout: (callback: () => void, ms: number) => setTimeout(callback, ms),
+})

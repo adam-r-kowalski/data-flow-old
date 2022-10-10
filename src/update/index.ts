@@ -6,7 +6,6 @@ import {
     translate,
 } from "../linear_algebra/matrix3x3"
 import { length } from "../linear_algebra/vector3"
-import * as run from "../run"
 import { Model, NodePlacementLocation } from "../model"
 import { Focus, FocusKind } from "../model/focus"
 import { PointerAction, PointerActionKind } from "../model/pointer_action"
@@ -37,6 +36,7 @@ import {
     removeNode,
     removeOutputEdges,
     evaluateNode,
+    OnTableUploaded,
 } from "./graph"
 import {
     maybeTriggerQuickSelect,
@@ -78,13 +78,13 @@ import {
 } from "../event"
 import * as finder from "../finder"
 import { Effects, GenerateUUID } from "../effects"
+import { Dispatch } from "../run"
+import { Table } from "../model/table"
 
-type UpdateResult = run.UpdateResult<Model, AppEvent>
-
-const pointerDown = (model: Model, event: PointerDown): UpdateResult => {
+const pointerDown = (model: Model, event: PointerDown): Model => {
     const pointers = [...model.pointers, event.pointer]
     if (model.focus.kind !== FocusKind.NONE) {
-        return { model: { ...model, pointers } }
+        return { ...model, pointers }
     } else if (pointers.length > 1) {
         const pointerAction: PointerAction =
             pointers.length === 2
@@ -95,73 +95,65 @@ const pointerDown = (model: Model, event: PointerDown): UpdateResult => {
                   }
                 : { kind: PointerActionKind.NONE }
         return {
-            model: {
-                ...model,
-                openFinderFirstClick: false,
-                focus: {
-                    kind: FocusKind.NONE,
-                    pointerAction,
-                    quickSelect: { kind: QuickSelectKind.NONE },
-                },
-                pointers,
+            ...model,
+            openFinderFirstClick: false,
+            focus: {
+                kind: FocusKind.NONE,
+                pointerAction,
+                quickSelect: { kind: QuickSelectKind.NONE },
             },
+            pointers,
         }
     } else {
         return {
-            model: {
-                ...model,
-                focus: {
-                    kind: FocusKind.NONE,
-                    pointerAction: { kind: PointerActionKind.PAN },
-                    quickSelect: { kind: QuickSelectKind.NONE },
-                },
-                pointers,
+            ...model,
+            focus: {
+                kind: FocusKind.NONE,
+                pointerAction: { kind: PointerActionKind.PAN },
+                quickSelect: { kind: QuickSelectKind.NONE },
             },
+            pointers,
         }
     }
 }
 
-const pointerUp = (model: Model, event: PointerUp): UpdateResult => {
+const pointerUp = (model: Model, event: PointerUp): Model => {
     const pointers = model.pointers.filter((p) => p.id !== event.pointer.id)
     switch (model.focus.kind) {
         case FocusKind.NONE:
             switch (pointers.length) {
                 case 1:
                     return {
-                        model: {
-                            ...model,
-                            pointers,
-                            focus: {
-                                kind: FocusKind.NONE,
-                                pointerAction: { kind: PointerActionKind.PAN },
-                                quickSelect: { kind: QuickSelectKind.NONE },
-                            },
+                        ...model,
+                        pointers,
+                        focus: {
+                            kind: FocusKind.NONE,
+                            pointerAction: { kind: PointerActionKind.PAN },
+                            quickSelect: { kind: QuickSelectKind.NONE },
                         },
                     }
                 case 0:
                     return {
-                        model: {
-                            ...model,
-                            pointers,
-                            focus: {
-                                kind: FocusKind.NONE,
-                                pointerAction: { kind: PointerActionKind.NONE },
-                                quickSelect: { kind: QuickSelectKind.NONE },
-                            },
+                        ...model,
+                        pointers,
+                        focus: {
+                            kind: FocusKind.NONE,
+                            pointerAction: { kind: PointerActionKind.NONE },
+                            quickSelect: { kind: QuickSelectKind.NONE },
                         },
                     }
                 default:
-                    return { model: { ...model, pointers } }
+                    return { ...model, pointers }
             }
         case FocusKind.NODE:
             if (pointers.length === 0) {
                 const focus: Focus = { ...model.focus, drag: false }
-                return { model: { ...model, pointers, focus } }
+                return { ...model, pointers, focus }
             } else {
-                return { model: { ...model, pointers } }
+                return { ...model, pointers }
             }
         default:
-            return { model: { ...model, pointers } }
+            return { ...model, pointers }
     }
 }
 
@@ -171,149 +163,147 @@ export const changeNth = <T>(xs: Readonly<T[]>, i: number, x: T): T[] => [
     ...xs.slice(i + 1),
 ]
 
-const pointerMove = (model: Model, event: PointerMove): UpdateResult => {
-    const result = (() => {
-        const index = model.pointers.findIndex((p) => p.id === event.pointer.id)
-        const pointer = model.pointers[index]
-        const pointers =
-            index === -1
-                ? model.pointers
-                : changeNth(model.pointers, index, event.pointer)
-        const nodePlacementLocation: NodePlacementLocation = {
-            x: event.pointer.position.x,
-            y: event.pointer.position.y,
-            show: false,
-        }
-        switch (model.focus.kind) {
-            case FocusKind.NONE:
-                const previousPointerAction = model.focus.pointerAction
-                switch (previousPointerAction.kind) {
-                    case PointerActionKind.NONE:
-                        const render = model.nodePlacementLocation.show
-                            ? true
-                            : undefined
-                        return {
-                            model: {
-                                ...model,
-                                nodePlacementLocation,
-                                pointers,
-                            },
-                            render,
-                        }
-                    case PointerActionKind.PAN:
-                        const dx = event.pointer.position.x - pointer.position.x
-                        const dy = event.pointer.position.y - pointer.position.y
-                        const camera = multiplyMatrices(
-                            model.camera,
-                            translate(-dx, -dy)
-                        )
-                        return {
-                            model: { ...model, pointers, camera },
-                        }
-                    case PointerActionKind.ZOOM:
-                        const [p0, p1] = [pointers[0], pointers[1]]
-                        const { x: x1, y: y1 } = p0.position
-                        const { x: x2, y: y2 } = p1.position
-                        const x = (p0.position.x + p1.position.x) / 2
-                        const y = (p0.position.y + p1.position.y) / 2
-                        const pointerAction: PointerAction = {
-                            kind: PointerActionKind.ZOOM,
-                            pointerDistance: Math.sqrt(
-                                Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)
-                            ),
-                            pointerCenter: { x, y },
-                        }
-                        const focus: Focus = {
-                            kind: FocusKind.NONE,
-                            pointerAction,
-                            quickSelect: { kind: QuickSelectKind.NONE },
-                        }
-                        if (previousPointerAction.pointerDistance > 0) {
-                            const move = translate(x, y)
-                            const zoom = Math.pow(
-                                2,
-                                (previousPointerAction.pointerDistance -
-                                    pointerAction.pointerDistance) *
-                                    0.01
-                            )
-                            const moveBack = translate(-x, -y)
-                            const dx = x - previousPointerAction.pointerCenter.x
-                            const dy = y - previousPointerAction.pointerCenter.y
-                            const camera = multiplyMatrices(
-                                model.camera,
-                                move,
-                                scale(zoom, zoom),
-                                moveBack,
-                                translate(-dx, -dy)
-                            )
-                            return {
-                                model: { ...model, focus, pointers, camera },
-                            }
-                        } else {
-                            return { model: { ...model, focus, pointers } }
-                        }
-                }
-            case FocusKind.NODE:
-                if (model.focus.drag) {
+const pointerMove = (
+    model: Model,
+    event: PointerMove,
+    showCursor: () => void
+): Model => {
+    showCursor()
+    const index = model.pointers.findIndex((p) => p.id === event.pointer.id)
+    const pointer = model.pointers[index]
+    const pointers =
+        index === -1
+            ? model.pointers
+            : changeNth(model.pointers, index, event.pointer)
+    const nodePlacementLocation: NodePlacementLocation = {
+        x: event.pointer.position.x,
+        y: event.pointer.position.y,
+        show: false,
+    }
+    switch (model.focus.kind) {
+        case FocusKind.NONE:
+            const previousPointerAction = model.focus.pointerAction
+            switch (previousPointerAction.kind) {
+                case PointerActionKind.NONE:
+                    return {
+                        ...model,
+                        nodePlacementLocation,
+                        pointers,
+                    }
+                case PointerActionKind.PAN:
                     const dx = event.pointer.position.x - pointer.position.x
                     const dy = event.pointer.position.y - pointer.position.y
-                    const scaling = length(
-                        multiplyMatrixVector(model.camera, [0, 1, 0])
-                    )
-                    const graph = changeNodePosition(
-                        model.graph,
-                        model.focus.node,
-                        (p) => ({
-                            x: p.x + dx * scaling,
-                            y: p.y + dy * scaling,
-                        })
+                    const camera = multiplyMatrices(
+                        model.camera,
+                        translate(-dx, -dy)
                     )
                     return {
-                        model: { ...model, pointers, graph },
+                        ...model,
+                        pointers,
+                        camera,
                     }
-                } else {
-                    return {
-                        model: { ...model, pointers, nodePlacementLocation },
+                case PointerActionKind.ZOOM:
+                    const [p0, p1] = [pointers[0], pointers[1]]
+                    const { x: x1, y: y1 } = p0.position
+                    const { x: x2, y: y2 } = p1.position
+                    const x = (p0.position.x + p1.position.x) / 2
+                    const y = (p0.position.y + p1.position.y) / 2
+                    const pointerAction: PointerAction = {
+                        kind: PointerActionKind.ZOOM,
+                        pointerDistance: Math.sqrt(
+                            Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)
+                        ),
+                        pointerCenter: { x, y },
                     }
+                    const focus: Focus = {
+                        kind: FocusKind.NONE,
+                        pointerAction,
+                        quickSelect: { kind: QuickSelectKind.NONE },
+                    }
+                    if (previousPointerAction.pointerDistance > 0) {
+                        const move = translate(x, y)
+                        const zoom = Math.pow(
+                            2,
+                            (previousPointerAction.pointerDistance -
+                                pointerAction.pointerDistance) *
+                                0.01
+                        )
+                        const moveBack = translate(-x, -y)
+                        const dx = x - previousPointerAction.pointerCenter.x
+                        const dy = y - previousPointerAction.pointerCenter.y
+                        const camera = multiplyMatrices(
+                            model.camera,
+                            move,
+                            scale(zoom, zoom),
+                            moveBack,
+                            translate(-dx, -dy)
+                        )
+                        return { ...model, focus, pointers, camera }
+                    } else {
+                        return { ...model, focus, pointers }
+                    }
+            }
+        case FocusKind.NODE:
+            if (model.focus.drag) {
+                const dx = event.pointer.position.x - pointer.position.x
+                const dy = event.pointer.position.y - pointer.position.y
+                const scaling = length(
+                    multiplyMatrixVector(model.camera, [0, 1, 0])
+                )
+                const graph = changeNodePosition(
+                    model.graph,
+                    model.focus.node,
+                    (p) => ({
+                        x: p.x + dx * scaling,
+                        y: p.y + dy * scaling,
+                    })
+                )
+                return {
+                    ...model,
+                    pointers,
+                    graph,
                 }
-            case FocusKind.BODY_NUMBER:
-            case FocusKind.BODY_TEXT:
-            case FocusKind.INPUT:
-            case FocusKind.OUTPUT:
-                return { model: { ...model, pointers, nodePlacementLocation } }
-            case FocusKind.FINDER_INSERT:
-            case FocusKind.FINDER_CHANGE:
-                return { model: { ...model, pointers } }
-        }
-    })()
-    return { ...result, cursor: true }
-}
-
-const clickedNode = (model: Model, event: ClickedNode): UpdateResult => {
-    const nodeOrder = model.nodeOrder.filter((uuid) => uuid !== event.node)
-    nodeOrder.push(event.node)
-    return {
-        model: {
-            ...model,
-            focus: {
-                kind: FocusKind.NODE,
-                node: event.node,
-                drag: true,
-                quickSelect: { kind: QuickSelectKind.NONE },
-                move: {
-                    left: false,
-                    up: false,
-                    down: false,
-                    right: false,
-                    now: 0,
-                },
-            },
-            nodeOrder,
-        },
+            } else {
+                return {
+                    ...model,
+                    pointers,
+                    nodePlacementLocation,
+                }
+            }
+        case FocusKind.BODY_NUMBER:
+        case FocusKind.BODY_TEXT:
+        case FocusKind.INPUT:
+        case FocusKind.OUTPUT:
+            return { ...model, pointers, nodePlacementLocation }
+        case FocusKind.FINDER_INSERT:
+        case FocusKind.FINDER_CHANGE:
+            return { ...model, pointers }
     }
 }
 
-const wheel = (model: Model, event: Wheel): UpdateResult => {
+const clickedNode = (model: Model, event: ClickedNode): Model => {
+    const nodeOrder = model.nodeOrder.filter((uuid) => uuid !== event.node)
+    nodeOrder.push(event.node)
+    return {
+        ...model,
+        focus: {
+            kind: FocusKind.NODE,
+            node: event.node,
+            drag: true,
+            quickSelect: { kind: QuickSelectKind.NONE },
+            move: {
+                left: false,
+                up: false,
+                down: false,
+                right: false,
+                now: 0,
+            },
+        },
+        nodeOrder,
+    }
+}
+
+const wheel = (model: Model, event: Wheel): Model => {
     const move = translate(event.position.x, event.position.y)
     const zoom = Math.pow(2, event.deltaY * 0.01)
     const moveBack = translate(-event.position.x, -event.position.y)
@@ -323,28 +313,24 @@ const wheel = (model: Model, event: Wheel): UpdateResult => {
         scale(zoom, zoom),
         moveBack
     )
-    return {
-        model: { ...model, camera },
-    }
+    return { ...model, camera }
 }
 
 const clickedInput = (
     model: Model,
     event: ClickedInput,
     generateUUID: GenerateUUID
-): UpdateResult => ({ model: selectInput(model, event.input, generateUUID) })
+): Model => selectInput(model, event.input, generateUUID)
 
 const clickedOutput = (
     model: Model,
     event: ClickedOutput,
     generateUUID: GenerateUUID
-): UpdateResult => ({ model: selectOutput(model, event.output, generateUUID) })
+): Model => selectOutput(model, event.output, generateUUID)
 
-const openFinderTimeout = (model: Model): UpdateResult => ({
-    model: {
-        ...model,
-        openFinderFirstClick: false,
-    },
+const openFinderTimeout = (model: Model): Model => ({
+    ...model,
+    openFinderFirstClick: false,
 })
 
 export const openFinderInsert = (model: Model): Model => ({
@@ -382,12 +368,10 @@ export const updateNumberText = (
     model: Model,
     body: UUID,
     transform: (text: string) => string
-): UpdateResult => {
+): Model => {
     return {
-        model: {
-            ...model,
-            graph: changeNumberText(model.graph, body, transform),
-        },
+        ...model,
+        graph: changeNumberText(model.graph, body, transform),
     }
 }
 
@@ -396,12 +380,12 @@ interface AddNodeInputs {
     operation: Operation
     position: Position
     effects: Effects
+    onTableUploaded: OnTableUploaded
 }
 
 interface AddNodeOutputs {
     model: Model
     node: UUID
-    event?: Promise<UploadCsv>
 }
 
 export const addNodeToGraph = ({
@@ -409,12 +393,14 @@ export const addNodeToGraph = ({
     operation,
     position,
     effects,
+    onTableUploaded,
 }: AddNodeInputs): AddNodeOutputs => {
-    const { graph, node, event } = addNode({
+    const { graph, node } = addNode({
         graph: model.graph,
         operation,
         position,
         effects,
+        onTableUploaded,
     })
     return {
         model: {
@@ -423,7 +409,6 @@ export const addNodeToGraph = ({
             nodeOrder: [...model.nodeOrder, node],
         },
         node,
-        event,
     }
 }
 
@@ -452,7 +437,7 @@ export const updateBody = (
     model: Model,
     body: UUID,
     transform: (body: Body) => Body
-): UpdateResult => {
+): Model => {
     const currentBody = model.graph.bodys[body]
     const nextBody = transform(currentBody)
     const graph: Graph = {
@@ -464,96 +449,88 @@ export const updateBody = (
     }
     const node = graph.bodys[body].node
     return {
-        model: {
-            ...model,
-            graph: evaluateNode(graph, node),
-        },
+        ...model,
+        graph: evaluateNode(graph, node),
     }
 }
 
-const keyDown = (
-    model: Model,
-    event: KeyDown,
+interface KeyDownProps {
+    model: Model
+    event: KeyDown
     effects: Effects
-): UpdateResult => {
+    onFinderInsert: (option: string) => void
+    onFinderChange: (option: string, node: UUID) => void
+    onFinderClose: () => void
+    moveNode: () => void
+    onPanCamera: () => void
+    onZoomCamera: () => void
+}
+
+const keyDown = (props: KeyDownProps): Model => {
+    const {
+        model,
+        event,
+        effects,
+        onFinderInsert,
+        onFinderChange,
+        onFinderClose,
+        moveNode,
+        onPanCamera,
+        onZoomCamera,
+    } = props
     const { generateUUID, currentTime } = effects
     const { key } = event
     switch (model.focus.quickSelect.kind) {
         case QuickSelectKind.INPUT:
-            return {
-                model: quickSelectInput(
-                    model,
-                    model.focus.quickSelect,
-                    key,
-                    generateUUID
-                ),
-            }
+            return quickSelectInput(
+                model,
+                model.focus.quickSelect,
+                key,
+                generateUUID
+            )
         case QuickSelectKind.OUTPUT:
-            return {
-                model: quickSelectOutput(
-                    model,
-                    model.focus.quickSelect,
-                    key,
-                    generateUUID
-                ),
-            }
+            return quickSelectOutput(
+                model,
+                model.focus.quickSelect,
+                key,
+                generateUUID
+            )
         case QuickSelectKind.NODE:
-            return {
-                model: quickSelectNode(model, model.focus.quickSelect, key),
-            }
+            return quickSelectNode(model, model.focus.quickSelect, key)
         case QuickSelectKind.BODY:
-            return {
-                model: quickSelectBody(model, model.focus.quickSelect, key),
-            }
+            return quickSelectBody(model, model.focus.quickSelect, key)
         case QuickSelectKind.NONE:
             const focus = model.focus
             switch (focus.kind) {
                 case FocusKind.FINDER_INSERT: {
-                    const result = finder.update<AppEvent>({
-                        model: focus.finder,
-                        event,
-                        onSelect: (option) => ({
-                            kind: EventKind.FINDER_INSERT,
-                            option,
-                        }),
-                        onClose: { kind: EventKind.FINDER_CLOSE },
-                    })
-                    const dispatch = result.event ? [result.event] : undefined
                     return {
-                        model: {
-                            ...model,
-                            focus: {
-                                ...focus,
-                                finder: result.model,
-                            },
+                        ...model,
+                        focus: {
+                            ...focus,
+                            finder: finder.update({
+                                model: focus.finder,
+                                event,
+                                onSelect: onFinderInsert,
+                                onClose: onFinderClose,
+                            }),
                         },
-                        dispatch,
                     }
                 }
                 case FocusKind.FINDER_CHANGE: {
-                    const result = finder.update<AppEvent>({
-                        model: focus.finder,
-                        event,
-                        onSelect: (option) => ({
-                            kind: EventKind.FINDER_CHANGE,
-                            option,
-                            node: focus.node,
-                        }),
-                        onClose: { kind: EventKind.FINDER_CLOSE },
-                    })
-                    const dispatch = result.event ? [result.event] : undefined
                     return {
-                        model: {
-                            ...model,
-                            focus: {
-                                ...focus,
-                                finder: result.model,
-                            },
+                        ...model,
+                        focus: {
+                            ...focus,
+                            finder: finder.update({
+                                model: focus.finder,
+                                event,
+                                onSelect: (option) =>
+                                    onFinderChange(option, focus.node),
+                                onClose: onFinderClose,
+                            }),
                         },
-                        dispatch,
                     }
                 }
-
                 case FocusKind.BODY_NUMBER: {
                     switch (key) {
                         case "Backspace":
@@ -613,17 +590,9 @@ const keyDown = (
                             )
                         case "Enter":
                         case "Escape":
-                            return {
-                                model: clearFocus(model),
-                            }
+                            return clearFocus(model)
                         default:
-                            return {
-                                model: maybeTriggerQuickSelect(
-                                    model,
-                                    focus,
-                                    key
-                                ),
-                            }
+                            return maybeTriggerQuickSelect(model, focus, key)
                     }
                 }
                 case FocusKind.BODY_TEXT: {
@@ -631,19 +600,16 @@ const keyDown = (
                     switch (key) {
                         case "Enter":
                         case "Escape":
-                            return {
-                                model: clearFocus(model),
-                            }
+                        case "<c-Control>":
+                            return clearFocus(model)
                         case "Shift":
-                            return { model }
+                            return model
                         case "sft":
                             return {
-                                model: {
-                                    ...model,
-                                    focus: {
-                                        ...focus,
-                                        uppercase: !focus.uppercase,
-                                    },
+                                ...model,
+                                focus: {
+                                    ...focus,
+                                    uppercase: !focus.uppercase,
                                 },
                             }
                         case "Backspace":
@@ -667,21 +633,15 @@ const keyDown = (
                 case FocusKind.NODE:
                     switch (key) {
                         case "f":
-                            return {
-                                model: openFinderInsert(model),
-                            }
+                            return openFinderInsert(model)
                         case "c":
-                            return {
-                                model: openFinderChange(model, focus.node),
-                            }
+                            return openFinderChange(model, focus.node)
                         case "d":
                         case "Backspace":
                         case "Delete":
-                            return {
-                                model: removeNodeFromGraph(model, focus.node),
-                            }
+                            return removeNodeFromGraph(model, focus.node)
                         case "Escape":
-                            return { model: clearFocus(model) }
+                            return clearFocus(model)
                         default:
                             const nextModel = maybeTriggerQuickSelect(
                                 model,
@@ -689,84 +649,61 @@ const keyDown = (
                                 key
                             )
                             return model !== nextModel
-                                ? { model: nextModel }
+                                ? nextModel
                                 : maybeStartMoveNode(
                                       nextModel,
                                       focus,
                                       key,
-                                      currentTime
+                                      currentTime,
+                                      moveNode
                                   )
                     }
                 case FocusKind.INPUT:
                     switch (key) {
                         case "f":
-                            return {
-                                model: openFinderInsert(model),
-                            }
+                            return openFinderInsert(model)
                         case "d":
                         case "Backspace":
                         case "Delete":
-                            return {
-                                model: clearFocus({
-                                    ...model,
-                                    graph: removeInputEdge(
-                                        model.graph,
-                                        focus.input
-                                    ),
-                                }),
-                            }
-                        case "Escape":
-                            return { model: clearFocus(model) }
-                        default:
-                            return {
-                                model: maybeTriggerQuickSelect(
-                                    model,
-                                    focus,
-                                    key
+                            return clearFocus({
+                                ...model,
+                                graph: removeInputEdge(
+                                    model.graph,
+                                    focus.input
                                 ),
-                            }
+                            })
+                        case "Escape":
+                            return clearFocus(model)
+                        default:
+                            return maybeTriggerQuickSelect(model, focus, key)
                     }
                 case FocusKind.OUTPUT:
                     switch (key) {
                         case "f":
-                            return {
-                                model: openFinderInsert(model),
-                            }
+                            return openFinderInsert(model)
                         case "d":
                         case "Backspace":
                         case "Delete":
-                            return {
-                                model: clearFocus({
-                                    ...model,
-                                    graph: removeOutputEdges(
-                                        model.graph,
-                                        focus.output
-                                    ),
-                                }),
-                            }
-                        case "Escape":
-                            return { model: clearFocus(model) }
-                        default:
-                            return {
-                                model: maybeTriggerQuickSelect(
-                                    model,
-                                    focus,
-                                    key
+                            return clearFocus({
+                                ...model,
+                                graph: removeOutputEdges(
+                                    model.graph,
+                                    focus.output
                                 ),
-                            }
+                            })
+                        case "Escape":
+                            return clearFocus(model)
+                        default:
+                            return maybeTriggerQuickSelect(model, focus, key)
                     }
                 case FocusKind.NONE:
                     switch (key) {
                         case "f":
-                            return {
-                                model: openFinderInsert(model),
-                            }
+                            return openFinderInsert(model)
                         case "z":
                             return {
-                                model: {
-                                    ...model,
-                                    camera: identity(),
-                                },
+                                ...model,
+                                camera: identity(),
                             }
                         default:
                             const nextModel = maybeTriggerQuickSelect(
@@ -775,25 +712,27 @@ const keyDown = (
                                 key
                             )
                             return nextModel !== model
-                                ? { model: nextModel }
+                                ? nextModel
                                 : maybeStartMoveCamera(
                                       nextModel,
                                       event,
-                                      currentTime
+                                      currentTime,
+                                      onPanCamera,
+                                      onZoomCamera
                                   )
                     }
             }
     }
 }
 
-const keyUp = (model: Model, event: KeyUp): UpdateResult => {
+const keyUp = (model: Model, event: KeyUp): Model => {
     switch (model.focus.kind) {
         case FocusKind.NONE:
             return maybeStopMoveCamera(model, event)
         case FocusKind.NODE:
             return maybeStopMoveNode(model, model.focus, event.key)
         default:
-            return { model }
+            return model
     }
 }
 
@@ -822,27 +761,25 @@ export const focusBody = (model: Model, bodyUUID: UUID): Model => {
     }
 }
 
-const clickedBody = (model: Model, { body }: ClickedBody): UpdateResult => ({
-    model: focusBody(clearFocus(model), body),
-})
+const clickedBody = (model: Model, { body }: ClickedBody): Model =>
+    focusBody(clearFocus(model), body)
 
-const clickedBackground = (model: Model): UpdateResult => {
+const clickedBackground = (
+    model: Model,
+    openFinderTimeoutAfter: (ms: number) => void
+): Model => {
     if (
         [FocusKind.FINDER_INSERT, FocusKind.FINDER_CHANGE].includes(
             model.focus.kind
         )
     ) {
-        return {
-            model: clearFocus(model),
-        }
+        return clearFocus(model)
     } else if (model.openFinderFirstClick) {
         const { x, y } = model.pointers[0].position
-        return {
-            model: openFinderInsert({
-                ...model,
-                nodePlacementLocation: { x, y, show: false },
-            }),
-        }
+        return openFinderInsert({
+            ...model,
+            nodePlacementLocation: { x, y, show: false },
+        })
     } else {
         const focus: Focus =
             model.focus.kind === FocusKind.NONE
@@ -852,62 +789,46 @@ const clickedBackground = (model: Model): UpdateResult => {
                       pointerAction: { kind: PointerActionKind.PAN },
                       quickSelect: { kind: QuickSelectKind.NONE },
                   }
+        openFinderTimeoutAfter(300)
         return {
-            model: {
-                ...model,
-                openFinderFirstClick: model.pointers.length == 1,
-                focus,
-            },
-            schedule: [
-                {
-                    after: { milliseconds: 300 },
-                    event: { kind: EventKind.OPEN_FINDER_TIMEOUT },
-                },
-            ],
+            ...model,
+            openFinderFirstClick: model.pointers.length == 1,
+            focus,
         }
     }
 }
 
-const changeNode = (model: Model, { node }: ChangeNode): UpdateResult => ({
-    model: openFinderChange(model, node),
-})
+const changeNode = (model: Model, { node }: ChangeNode): Model =>
+    openFinderChange(model, node)
 
-const deleteNode = (model: Model, { node }: DeleteNode): UpdateResult => ({
-    model: removeNodeFromGraph(model, node),
-})
+const deleteNode = (model: Model, { node }: DeleteNode): Model =>
+    removeNodeFromGraph(model, node)
 
-const deleteInputEdge = (
-    model: Model,
-    { input }: DeleteInputEdge
-): UpdateResult => ({
-    model: clearFocus({
+const deleteInputEdge = (model: Model, { input }: DeleteInputEdge): Model =>
+    clearFocus({
         ...model,
         graph: removeInputEdge(model.graph, input),
-    }),
-})
+    })
 
 const deleteOutputEdges = (
     model: Model,
     { output }: DeleteOutputEdges
-): UpdateResult => ({
-    model: clearFocus({
+): Model =>
+    clearFocus({
         ...model,
         graph: removeOutputEdges(model.graph, output),
-    }),
-})
+    })
 
-const resetCamera = (model: Model): UpdateResult => ({
-    model: {
-        ...model,
-        camera: identity(),
-    },
+const resetCamera = (model: Model): Model => ({
+    ...model,
+    camera: identity(),
 })
 
 export const uploadTable = (
     model: Model,
     event: UploadTable,
     generateUUID: GenerateUUID
-): UpdateResult => {
+): Model => {
     const nodeUUID = generateUUID()
     const output: Output = {
         uuid: generateUUID(),
@@ -935,20 +856,18 @@ export const uploadTable = (
         position: { x, y },
     }
     return {
-        model: {
-            ...model,
-            graph: {
-                ...model.graph,
-                nodes: { ...model.graph.nodes, [node.uuid]: node },
-                bodys: { ...model.graph.bodys, [body.uuid]: body },
-                outputs: { ...model.graph.outputs, [output.uuid]: output },
-            },
-            nodeOrder: [...model.nodeOrder, node.uuid],
+        ...model,
+        graph: {
+            ...model.graph,
+            nodes: { ...model.graph.nodes, [node.uuid]: node },
+            bodys: { ...model.graph.bodys, [body.uuid]: body },
+            outputs: { ...model.graph.outputs, [output.uuid]: output },
         },
+        nodeOrder: [...model.nodeOrder, node.uuid],
     }
 }
 
-export const uploadCsv = (model: Model, event: UploadCsv): UpdateResult => {
+export const uploadCsv = (model: Model, event: UploadCsv): Model => {
     const node: Node = {
         ...model.graph.nodes[event.node],
         name: event.table.name,
@@ -960,13 +879,11 @@ export const uploadCsv = (model: Model, event: UploadCsv): UpdateResult => {
         value: event.table,
     }
     return {
-        model: {
-            ...model,
-            graph: {
-                ...model.graph,
-                nodes: { ...model.graph.nodes, [node.uuid]: node },
-                bodys: { ...model.graph.bodys, [body.uuid]: body },
-            },
+        ...model,
+        graph: {
+            ...model.graph,
+            nodes: { ...model.graph.nodes, [node.uuid]: node },
+            bodys: { ...model.graph.bodys, [body.uuid]: body },
         },
     }
 }
@@ -974,32 +891,31 @@ export const uploadCsv = (model: Model, event: UploadCsv): UpdateResult => {
 export const finderInsert = (
     model: Model,
     event: FinderInsert,
-    effects: Effects
-): UpdateResult => {
+    effects: Effects,
+    onTableUploaded: (table: Table, node: UUID) => void
+): Model => {
     const operation = model.operations[event.option]
     const [x, y, _] = multiplyMatrixVector(model.camera, [
         model.nodePlacementLocation.x,
         model.nodePlacementLocation.y,
         1,
     ])
-    const { model: nextModel, event: promise } = addNodeToGraph({
-        model,
-        operation,
-        position: { x, y },
-        effects,
-    })
-    return {
-        model: clearFocus(nextModel),
-
-        promise,
-    }
+    return clearFocus(
+        addNodeToGraph({
+            model,
+            operation,
+            position: { x, y },
+            effects,
+            onTableUploaded,
+        }).model
+    )
 }
 
 export const finderChange = (
     model: Model,
     event: FinderChange,
     generateUUID: GenerateUUID
-): UpdateResult => {
+): Model => {
     const operation = model.operations[event.option]
     switch (operation.kind) {
         case OperationKind.TRANSFORM:
@@ -1104,29 +1020,52 @@ export const finderChange = (
                         outputs,
                     }
                     const graph2 = evaluateNode(graph1, event.node)
-                    return {
-                        model: clearFocus({ ...model, graph: graph2 }),
-                    }
+                    return clearFocus({ ...model, graph: graph2 })
                 case NodeKind.SOURCE:
-                    return { model: clearFocus(model) }
+                    return clearFocus(model)
             }
         default:
-            return { model: clearFocus(model) }
+            return clearFocus(model)
     }
 }
 
-export const finderClose = (model: Model): UpdateResult => ({
-    model: clearFocus(model),
-})
+export const finderClose = (model: Model): Model => clearFocus(model)
 
 export const update = (
     effects: Effects,
     model: Model,
-    event: AppEvent
-): UpdateResult => {
+    event: AppEvent,
+    dispatch: Dispatch<AppEvent>
+): Model => {
+    const onPanCamera = () => {
+        effects.showCursor(false)
+        dispatch({ kind: EventKind.PAN_CAMERA })
+    }
+    const onZoomCamera = () => {
+        effects.showCursor(false)
+        dispatch({ kind: EventKind.ZOOM_CAMERA })
+    }
+    const panAfter = (ms: number) => {
+        effects.setTimeout(() => dispatch({ kind: EventKind.PAN_CAMERA }), ms)
+    }
+    const zoomAfter = (ms: number) => {
+        effects.setTimeout(() => dispatch({ kind: EventKind.ZOOM_CAMERA }), ms)
+    }
+    const moveNodeAfter = (ms: number) => {
+        effects.setTimeout(() => dispatch({ kind: EventKind.MOVE_NODE }), ms)
+    }
+    const openFinderTimeoutAfter = (ms: number) => {
+        effects.setTimeout(
+            () => dispatch({ kind: EventKind.OPEN_FINDER_TIMEOUT }),
+            ms
+        )
+    }
+    const onTableUploaded = (table: Table, node: UUID) => {
+        dispatch({ kind: EventKind.UPLOAD_CSV, table, node })
+    }
     switch (event.kind) {
         case EventKind.POINTER_MOVE:
-            return pointerMove(model, event)
+            return pointerMove(model, event, () => effects.showCursor(true))
         case EventKind.POINTER_DOWN:
             return pointerDown(model, event)
         case EventKind.POINTER_UP:
@@ -1142,13 +1081,25 @@ export const update = (
         case EventKind.OPEN_FINDER_TIMEOUT:
             return openFinderTimeout(model)
         case EventKind.KEYDOWN:
-            return keyDown(model, event, effects)
+            return keyDown({
+                model,
+                event,
+                effects,
+                onFinderInsert: (option) =>
+                    dispatch({ kind: EventKind.FINDER_INSERT, option }),
+                onFinderChange: (option, node) =>
+                    dispatch({ kind: EventKind.FINDER_CHANGE, option, node }),
+                onFinderClose: () => dispatch({ kind: EventKind.FINDER_CLOSE }),
+                moveNode: () => dispatch({ kind: EventKind.MOVE_NODE }),
+                onPanCamera,
+                onZoomCamera,
+            })
         case EventKind.KEYUP:
             return keyUp(model, event)
         case EventKind.CLICKED_BODY:
             return clickedBody(model, event)
         case EventKind.CLICKED_BACKGROUND:
-            return clickedBackground(model)
+            return clickedBackground(model, openFinderTimeoutAfter)
         case EventKind.CHANGE_NODE:
             return changeNode(model, event)
         case EventKind.DELETE_NODE:
@@ -1158,19 +1109,19 @@ export const update = (
         case EventKind.DELETE_OUTPUT_EDGES:
             return deleteOutputEdges(model, event)
         case EventKind.PAN_CAMERA:
-            return panCamera(model, effects.currentTime)
+            return panCamera(model, effects.currentTime, panAfter)
         case EventKind.ZOOM_CAMERA:
-            return zoomCamera(model, effects.currentTime)
+            return zoomCamera(model, effects.currentTime, zoomAfter)
         case EventKind.RESET_CAMERA:
             return resetCamera(model)
         case EventKind.MOVE_NODE:
-            return moveNode(model, effects.currentTime)
+            return moveNode(model, effects.currentTime, moveNodeAfter)
         case EventKind.UPLOAD_TABLE:
             return uploadTable(model, event, effects.generateUUID)
         case EventKind.UPLOAD_CSV:
             return uploadCsv(model, event)
         case EventKind.FINDER_INSERT:
-            return finderInsert(model, event, effects)
+            return finderInsert(model, event, effects, onTableUploaded)
         case EventKind.FINDER_CHANGE:
             return finderChange(model, event, effects.generateUUID)
         case EventKind.FINDER_CLOSE:

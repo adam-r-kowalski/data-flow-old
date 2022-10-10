@@ -9,55 +9,31 @@ export const transformPointer = (p: PointerEvent): Pointer => ({
     position: { x: p.clientX, y: p.clientY },
 })
 
-export type Dispatch<AppEvent> = (event: AppEvent) => Promise<void>
+export type Dispatch<AppEvent> = (event: AppEvent) => void
 
 type View<Model, AppEvent> = (model: Model, dispatch: Dispatch<AppEvent>) => UI
 
-interface Milliseconds {
-    milliseconds: number
-}
-
-interface Scheduled<AppEvent> {
-    after: Milliseconds
-    event: AppEvent
-}
-
-export interface UpdateResult<Model, AppEvent> {
-    model: Model
-    schedule?: Scheduled<AppEvent>[]
-    dispatch?: AppEvent[]
-    promise?: Promise<AppEvent>
-    cursor?: boolean
-}
-
 type Update<Model, AppEvent> = (
     model: Model,
-    event: AppEvent
-) => UpdateResult<Model, AppEvent>
+    event: AppEvent,
+    dispatch: Dispatch<AppEvent>
+) => Model
 
 interface Properties<Model, AppEvent> {
     model: Model
     view: View<Model, AppEvent>
     update: Update<Model, AppEvent>
-    window: Window
+    window: Window<AppEvent>
     document: Document
     requestAnimationFrame: (callback: () => void) => void
-    setTimeout: (callback: () => void, milliseconds: number) => void
     pointerDown: (dispatch: Dispatch<AppEvent>, pointer: Pointer) => void
 }
 
 export const run = <Model, AppEvent>(
     properties: Properties<Model, AppEvent>
 ): Dispatch<AppEvent> => {
-    let {
-        model,
-        view,
-        update,
-        window,
-        document,
-        requestAnimationFrame,
-        setTimeout,
-    } = properties
+    let { model, view, update, window, document, requestAnimationFrame } =
+        properties
     let renderer = webGL2Renderer({
         width: window.innerWidth,
         height: window.innerHeight,
@@ -74,27 +50,13 @@ export const run = <Model, AppEvent>(
             })
         }
     }
-    const dispatch = async (event: AppEvent): Promise<void> => {
-        const {
-            model: newModel,
-            schedule,
-            dispatch: dispatchEvents,
-            promise,
-            cursor,
-        } = update(model, event)
+    window.addEventListener("message", (message) => {
+        const newModel = update(model, message.data, dispatch)
         const modelChanged = model !== newModel
         model = newModel
         if (modelChanged) scheduleRender()
-        for (const { after, event } of schedule ?? []) {
-            const { milliseconds } = after
-            setTimeout(() => dispatch(event), milliseconds)
-        }
-        for (const event of dispatchEvents ?? []) dispatch(event)
-        if (cursor !== undefined) {
-            document.body.style.cursor = cursor ? "auto" : "none"
-        }
-        if (promise !== undefined) await promise.then(dispatch)
-    }
+    })
+    const dispatch = (event: AppEvent): void => window.postMessage(event)
     document.body.appendChild(renderer.canvas)
     document.addEventListener("pointerdown", (p) => {
         const transformed = transformPointer(p)

@@ -1,32 +1,27 @@
 import { CurrentTime } from "../effects"
-import { AppEvent, EventKind } from "../event"
 import { inverse, multiplyMatrixVector } from "../linear_algebra/matrix3x3"
 import { length } from "../linear_algebra/vector3"
 import { Model, NodePlacementLocation } from "../model"
 import { FocusKind, FocusNode } from "../model/focus"
-import * as run from "../run"
 import { changeNodePosition } from "./graph"
-
-type UpdateResult = run.UpdateResult<Model, AppEvent>
 
 export const maybeStartMoveNode = (
     model: Model,
     focus: FocusNode,
     key: string,
-    currentTime: CurrentTime
-): UpdateResult => {
-    interface Result {
-        now: number
-        dispatch?: AppEvent[]
-    }
+    currentTime: CurrentTime,
+    moveNode: () => void
+): Model => {
     const { left, down, up, right } = focus.move
     const notMoving = !(left || down || up || right)
-    const { now, dispatch }: Result = notMoving
-        ? {
-              now: currentTime(),
-              dispatch: [{ kind: EventKind.MOVE_NODE }],
-          }
-        : { now: focus.move.now }
+    const now = (() => {
+        if (notMoving) {
+            moveNode()
+            return currentTime()
+        } else {
+            return focus.move.now
+        }
+    })()
     const nodePlacementLocation: NodePlacementLocation = {
         ...model.nodePlacementLocation,
         show: false,
@@ -35,61 +30,49 @@ export const maybeStartMoveNode = (
         case "h":
         case "ArrowLeft": {
             return {
-                model: {
-                    ...model,
-                    focus: {
-                        ...focus,
-                        move: { ...focus.move, left: true, now },
-                    },
-                    nodePlacementLocation,
+                ...model,
+                focus: {
+                    ...focus,
+                    move: { ...focus.move, left: true, now },
                 },
-                dispatch,
+                nodePlacementLocation,
             }
         }
         case "j":
         case "ArrowDown": {
             return {
-                model: {
-                    ...model,
-                    focus: {
-                        ...focus,
-                        move: { ...focus.move, down: true, now },
-                    },
-                    nodePlacementLocation,
+                ...model,
+                focus: {
+                    ...focus,
+                    move: { ...focus.move, down: true, now },
                 },
-                dispatch,
+                nodePlacementLocation,
             }
         }
         case "k":
         case "ArrowUp": {
             return {
-                model: {
-                    ...model,
-                    focus: {
-                        ...focus,
-                        move: { ...focus.move, up: true, now },
-                    },
-                    nodePlacementLocation,
+                ...model,
+                focus: {
+                    ...focus,
+                    move: { ...focus.move, up: true, now },
                 },
-                dispatch,
+                nodePlacementLocation,
             }
         }
         case "l":
         case "ArrowRight": {
             return {
-                model: {
-                    ...model,
-                    focus: {
-                        ...focus,
-                        move: { ...focus.move, right: true, now },
-                    },
-                    nodePlacementLocation,
+                ...model,
+                focus: {
+                    ...focus,
+                    move: { ...focus.move, right: true, now },
                 },
-                dispatch,
+                nodePlacementLocation,
             }
         }
         default:
-            return { model }
+            return model
     }
 }
 
@@ -97,65 +80,58 @@ export const maybeStopMoveNode = (
     model: Model,
     focus: FocusNode,
     key: string
-): UpdateResult => {
+): Model => {
     switch (key) {
         case "h":
         case "ArrowLeft": {
             return {
-                model: {
-                    ...model,
-                    focus: {
-                        ...focus,
-                        move: { ...focus.move, left: false },
-                    },
+                ...model,
+                focus: {
+                    ...focus,
+                    move: { ...focus.move, left: false },
                 },
             }
         }
         case "j":
         case "ArrowDown": {
             return {
-                model: {
-                    ...model,
-                    focus: {
-                        ...focus,
-                        move: { ...focus.move, down: false },
-                    },
+                ...model,
+                focus: {
+                    ...focus,
+                    move: { ...focus.move, down: false },
                 },
             }
         }
         case "k":
         case "ArrowUp": {
             return {
-                model: {
-                    ...model,
-                    focus: {
-                        ...focus,
-                        move: { ...focus.move, up: false },
-                    },
+                ...model,
+                focus: {
+                    ...focus,
+                    move: { ...focus.move, up: false },
                 },
             }
         }
         case "l":
         case "ArrowRight": {
             return {
-                model: {
-                    ...model,
-                    focus: {
-                        ...focus,
-                        move: { ...focus.move, right: false },
-                    },
+                ...model,
+                focus: {
+                    ...focus,
+                    move: { ...focus.move, right: false },
                 },
             }
         }
         default:
-            return { model }
+            return model
     }
 }
 
 export const moveNode = (
     model: Model,
-    currentTime: CurrentTime
-): UpdateResult => {
+    currentTime: CurrentTime,
+    moveNodeAfter: (ms: number) => void
+): Model => {
     switch (model.focus.kind) {
         case FocusKind.NODE:
             const { left, down, up, right } = model.focus.move
@@ -183,26 +159,19 @@ export const moveNode = (
                         y: p.y + (y / normalized_distance) * speed,
                     })
                 )
+                moveNodeAfter(10)
                 return {
-                    model: {
-                        ...model,
-                        focus: {
-                            ...model.focus,
-                            move: { ...model.focus.move, now },
-                        },
-                        graph,
+                    ...model,
+                    focus: {
+                        ...model.focus,
+                        move: { ...model.focus.move, now },
                     },
-                    schedule: [
-                        {
-                            after: { milliseconds: 10 },
-                            event: { kind: EventKind.MOVE_NODE },
-                        },
-                    ],
+                    graph,
                 }
             } else {
-                return { model }
+                return model
             }
         default:
-            return { model }
+            return model
     }
 }

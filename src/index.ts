@@ -3,14 +3,16 @@ import * as papa from "papaparse"
 import { update } from "./update"
 import { run, transformPointer } from "./run"
 import { view } from "./view"
-import { Model } from "./model"
 import { demoModel } from "./model/demo"
 import { Document } from "./ui/dom"
 import { Columns, Value } from "./model/table"
-import { EventKind, AppEvent } from "./event"
-import { effects } from "./effects"
+import { EventKind } from "./event"
+import { makeEffects } from "./effects"
 
 type Row = { [name: string]: Value }
+
+const doc = document as Document
+const effects = makeEffects(doc)
 
 const dispatch = run({
     model: demoModel(
@@ -18,11 +20,10 @@ const dispatch = run({
         effects
     ),
     view,
-    update: (model: Model, event: AppEvent) => update(effects, model, event),
+    update: (model, event, dispatch) => update(effects, model, event, dispatch),
     window,
-    document: document as Document,
+    document: doc,
     requestAnimationFrame,
-    setTimeout,
     pointerDown: (dispatch, pointer) => {
         dispatch({
             kind: EventKind.POINTER_DOWN,

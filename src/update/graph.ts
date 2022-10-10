@@ -1,5 +1,3 @@
-import { EventKind, UploadCsv } from "../event"
-
 import {
     Body,
     BodyKind,
@@ -17,18 +15,21 @@ import {
     UUID,
 } from "../model/graph"
 import { Effects, GenerateUUID } from "../effects"
+import { Table } from "../model/table"
+
+export type OnTableUploaded = (table: Table, node: UUID) => void
 
 interface AddNodeInputs {
     graph: Graph
     operation: Operation
     position: Position
     effects: Effects
+    onTableUploaded: OnTableUploaded
 }
 
 interface AddNodeOutputs {
     graph: Graph
     node: UUID
-    event?: Promise<UploadCsv>
 }
 
 export const addNode = ({
@@ -36,6 +37,7 @@ export const addNode = ({
     operation,
     position,
     effects,
+    onTableUploaded,
 }: AddNodeInputs): AddNodeOutputs => {
     const { generateUUID, promptUserForTable } = effects
     const nodeUUID = generateUUID()
@@ -204,15 +206,9 @@ export const addNode = ({
                 position,
             }
             bodys[body.uuid] = body
-            const event = promptUserForTable().then((table) => {
-                return new Promise<UploadCsv>((resolve) => {
-                    resolve({
-                        kind: EventKind.UPLOAD_CSV,
-                        table,
-                        node: nodeUUID,
-                    })
-                })
-            })
+            promptUserForTable().then((table) =>
+                onTableUploaded(table, nodeUUID)
+            )
             return {
                 graph: {
                     ...graph,
@@ -225,7 +221,6 @@ export const addNode = ({
                     bodys,
                 },
                 node: nodeUUID,
-                event,
             }
         }
     }

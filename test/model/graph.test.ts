@@ -13,6 +13,7 @@ import {
     NodeTransform,
 } from "../../src/model/graph"
 import { tensorFunc } from "../../src/model/operations"
+import { mockDocument } from "../../src/ui/mock"
 import {
     addNode,
     addEdge,
@@ -45,6 +46,7 @@ test("empty graph", () => {
 const addFunc = tensorFunc(tf.add)
 
 test("add operation to graph", () => {
+    const onTableUploaded = () => {}
     const graph = emptyGraph()
     const { graph: graph1, node } = addNode({
         graph,
@@ -56,10 +58,11 @@ test("add operation to graph", () => {
             func: addFunc,
         },
         position: { x: 0, y: 0 },
-        effects: makeEffects(),
+        effects: makeEffects(mockDocument()),
+        onTableUploaded,
     })
     expect(graph).toEqual(emptyGraph())
-    const generateUUID = makeEffects().generateUUID
+    const generateUUID = makeEffects(mockDocument()).generateUUID
     const addUUID = generateUUID()
     const xUUID = generateUUID()
     const yUUID = generateUUID()
@@ -114,6 +117,7 @@ test("add operation to graph", () => {
 })
 
 test("add operation with body to graph", () => {
+    const onTableUploaded = () => {}
     const graph = emptyGraph()
     const { graph: graph1, node } = addNode({
         graph,
@@ -123,10 +127,11 @@ test("add operation with body to graph", () => {
             outputs: ["out"],
         },
         position: { x: 0, y: 0 },
-        effects: makeEffects(),
+        effects: makeEffects(mockDocument()),
+        onTableUploaded,
     })
     expect(graph).toEqual(emptyGraph())
-    const generateUUID = makeEffects().generateUUID
+    const generateUUID = makeEffects(mockDocument()).generateUUID
     const numberUUID = generateUUID()
     const outUUID = generateUUID()
     const bodyUUID = generateUUID()
@@ -162,6 +167,7 @@ test("add operation with body to graph", () => {
 })
 
 test("add text operation", () => {
+    const onTableUploaded = () => {}
     const graph = emptyGraph()
     const { graph: graph1, node } = addNode({
         graph,
@@ -171,10 +177,11 @@ test("add text operation", () => {
             outputs: ["out"],
         },
         position: { x: 0, y: 0 },
-        effects: makeEffects(),
+        effects: makeEffects(mockDocument()),
+        onTableUploaded,
     })
     expect(graph).toEqual(emptyGraph())
-    const generateUUID = makeEffects().generateUUID
+    const generateUUID = makeEffects(mockDocument()).generateUUID
     const textUUID = generateUUID()
     const outUUID = generateUUID()
     const bodyUUID = generateUUID()
@@ -209,7 +216,8 @@ test("add text operation", () => {
 })
 
 test("add two operations to graph", () => {
-    const effects = makeEffects()
+    const onTableUploaded = () => {}
+    const effects = makeEffects(mockDocument())
     const graph = emptyGraph()
     const { graph: graph1, node: actualAddUUID } = addNode({
         graph,
@@ -222,6 +230,7 @@ test("add two operations to graph", () => {
         },
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const { graph: graph2, node: actualNumberUUID } = addNode({
         graph: graph1,
@@ -232,9 +241,10 @@ test("add two operations to graph", () => {
         },
         position: { x: 50, y: 50 },
         effects,
+        onTableUploaded,
     })
     expect(graph).toEqual(emptyGraph())
-    const generateUUID = makeEffects().generateUUID
+    const generateUUID = makeEffects(mockDocument()).generateUUID
     const addUUID = generateUUID()
     const x: Input = {
         uuid: generateUUID(),
@@ -327,7 +337,8 @@ test("add two operations to graph", () => {
 })
 
 test("add edge between two operations", () => {
-    const effects = makeEffects()
+    const onTableUploaded = () => {}
+    const effects = makeEffects(mockDocument())
     const { graph, edge: actualEdgeUUID } = (() => {
         const graph = emptyGraph()
         const { graph: graph1, node: add } = addNode({
@@ -341,6 +352,7 @@ test("add edge between two operations", () => {
             },
             position: { x: 0, y: 0 },
             effects,
+            onTableUploaded,
         })
         const { graph: graph2, node: number } = addNode({
             graph: graph1,
@@ -351,6 +363,7 @@ test("add edge between two operations", () => {
             },
             position: { x: 50, y: 50 },
             effects,
+            onTableUploaded,
         })
         const out = graph2.nodes[number].outputs[0]
         const x = (graph2.nodes[add] as NodeTransform).inputs[0]
@@ -361,7 +374,7 @@ test("add edge between two operations", () => {
             generateUUID: effects.generateUUID,
         })
     })()
-    const generateUUID = makeEffects().generateUUID
+    const generateUUID = makeEffects(mockDocument()).generateUUID
     const addUUID = generateUUID()
     const xUUID = generateUUID()
     const yUUID = generateUUID()
@@ -454,7 +467,8 @@ test("add edge between two operations", () => {
 })
 
 test("change node position", () => {
-    const effects = makeEffects()
+    const onTableUploaded = () => {}
+    const effects = makeEffects(mockDocument())
     const graph = emptyGraph()
     const { graph: graph1, node } = addNode({
         graph,
@@ -467,12 +481,13 @@ test("change node position", () => {
         },
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const graph2 = changeNodePosition(graph1, node, (p) => ({
         x: p.x + 25,
         y: p.y - 25,
     }))
-    const generateUUID = makeEffects().generateUUID
+    const generateUUID = makeEffects(mockDocument()).generateUUID
     const addUUID = generateUUID()
     const xUUID = generateUUID()
     const yUUID = generateUUID()
@@ -550,7 +565,8 @@ test("change node position", () => {
 })
 
 test("remove node from graph", () => {
-    const effects = makeEffects()
+    const onTableUploaded = () => {}
+    const effects = makeEffects(mockDocument())
     const graph = emptyGraph()
     const { graph: graph1, node: add } = addNode({
         graph,
@@ -563,6 +579,7 @@ test("remove node from graph", () => {
         },
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const { graph: graph2, node: number } = addNode({
         graph: graph1,
@@ -573,6 +590,7 @@ test("remove node from graph", () => {
         },
         position: { x: 50, y: 50 },
         effects,
+        onTableUploaded,
     })
     const out = graph2.nodes[number].outputs[0]
     const x = (graph2.nodes[add] as NodeTransform).inputs[0]
@@ -584,7 +602,7 @@ test("remove node from graph", () => {
     })
     const graph4 = removeNode(graph3, add)
     {
-        const generateUUID = makeEffects().generateUUID
+        const generateUUID = makeEffects(mockDocument()).generateUUID
         const addUUID = generateUUID()
         const xUUID = generateUUID()
         const yUUID = generateUUID()
@@ -693,7 +711,8 @@ test("remove node from graph", () => {
 })
 
 test("remove input edge", () => {
-    const effects = makeEffects()
+    const onTableUploaded = () => {}
+    const effects = makeEffects(mockDocument())
     const graph = emptyGraph()
     const { graph: graph1, node: add } = addNode({
         graph,
@@ -706,6 +725,7 @@ test("remove input edge", () => {
         },
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const { graph: graph2, node: number } = addNode({
         graph: graph1,
@@ -716,6 +736,7 @@ test("remove input edge", () => {
         },
         position: { x: 50, y: 50 },
         effects,
+        onTableUploaded,
     })
     const x = (graph2.nodes[add] as NodeTransform).inputs[0]
     const out = graph2.nodes[number].outputs[0]
@@ -727,7 +748,7 @@ test("remove input edge", () => {
     })
     const graph4 = removeInputEdge(graph3, x)
     {
-        const generateUUID = makeEffects().generateUUID
+        const generateUUID = makeEffects(mockDocument()).generateUUID
         const addUUID = generateUUID()
         const xUUID = generateUUID()
         const yUUID = generateUUID()
@@ -845,7 +866,8 @@ test("remove input edge", () => {
 })
 
 test("remove node with output edges", () => {
-    const effects = makeEffects()
+    const onTableUploaded = () => {}
+    const effects = makeEffects(mockDocument())
     const graph = emptyGraph()
     const { graph: graph1, node: add } = addNode({
         graph,
@@ -858,6 +880,7 @@ test("remove node with output edges", () => {
         },
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const { graph: graph2, node: number } = addNode({
         graph: graph1,
@@ -868,6 +891,7 @@ test("remove node with output edges", () => {
         },
         position: { x: 50, y: 50 },
         effects,
+        onTableUploaded,
     })
     const x = (graph2.nodes[add] as NodeTransform).inputs[0]
     const out = graph2.nodes[number].outputs[0]
@@ -879,7 +903,7 @@ test("remove node with output edges", () => {
     })
     const graph4 = removeNode(graph3, number)
     {
-        const generateUUID = makeEffects().generateUUID
+        const generateUUID = makeEffects(mockDocument()).generateUUID
         const addUUID = generateUUID()
         const xUUID = generateUUID()
         const yUUID = generateUUID()
@@ -991,7 +1015,8 @@ test("remove node with output edges", () => {
 })
 
 test("remove input edge when node has no inputs nothing changes", () => {
-    const effects = makeEffects()
+    const onTableUploaded = () => {}
+    const effects = makeEffects(mockDocument())
     const graph = emptyGraph()
     const { graph: graph1, node: add } = addNode({
         graph,
@@ -1004,6 +1029,7 @@ test("remove input edge when node has no inputs nothing changes", () => {
         },
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const { graph: graph2 } = addNode({
         graph: graph1,
@@ -1014,11 +1040,12 @@ test("remove input edge when node has no inputs nothing changes", () => {
         },
         position: { x: 50, y: 50 },
         effects,
+        onTableUploaded,
     })
     const input = (graph2.nodes[add] as NodeTransform).inputs[0]
     const graph3 = removeInputEdge(graph2, input)
     {
-        const generateUUID = makeEffects().generateUUID
+        const generateUUID = makeEffects(mockDocument()).generateUUID
         const addUUID = generateUUID()
         const xUUID = generateUUID()
         const yUUID = generateUUID()
@@ -1103,7 +1130,8 @@ test("remove input edge when node has no inputs nothing changes", () => {
 })
 
 test("remove output edge", () => {
-    const effects = makeEffects()
+    const onTableUploaded = () => {}
+    const effects = makeEffects(mockDocument())
     const graph = emptyGraph()
     const { graph: graph1, node: add } = addNode({
         graph,
@@ -1116,6 +1144,7 @@ test("remove output edge", () => {
         },
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const { graph: graph2, node: number } = addNode({
         graph: graph1,
@@ -1126,6 +1155,7 @@ test("remove output edge", () => {
         },
         position: { x: 50, y: 50 },
         effects,
+        onTableUploaded,
     })
     const x = (graph2.nodes[add] as NodeTransform).inputs[0]
     const out = graph2.nodes[number].outputs[0]
@@ -1137,7 +1167,7 @@ test("remove output edge", () => {
     })
     const graph4 = removeOutputEdges(graph3, out)
     {
-        const generateUUID = makeEffects().generateUUID
+        const generateUUID = makeEffects(mockDocument()).generateUUID
         const addUUID = generateUUID()
         const xUUID = generateUUID()
         const yUUID = generateUUID()
@@ -1255,6 +1285,7 @@ test("remove output edge", () => {
 })
 
 test("change number text of wrong body kind does nothing", () => {
+    const onTableUploaded = () => {}
     const graph = emptyGraph()
     const { graph: graph1, node } = addNode({
         graph,
@@ -1264,7 +1295,8 @@ test("change number text of wrong body kind does nothing", () => {
             outputs: ["out"],
         },
         position: { x: 0, y: 0 },
-        effects: makeEffects(),
+        effects: makeEffects(mockDocument()),
+        onTableUploaded,
     })
     const body = graph1.nodes[node].body
     const graph2 = changeNumberText(graph1, body, () => "100")

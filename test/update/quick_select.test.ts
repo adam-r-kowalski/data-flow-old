@@ -8,6 +8,7 @@ import { NodeTransform, OperationKind, Operations } from "../../src/model/graph"
 import { tensorFunc } from "../../src/model/operations"
 import { PointerActionKind } from "../../src/model/pointer_action"
 import { QuickSelectKind } from "../../src/model/quick_select"
+import { mockDocument } from "../../src/ui/mock"
 import { addNodeToGraph, update } from "../../src/update"
 import { makeEffects } from "../mock_effects"
 
@@ -15,7 +16,7 @@ const model = emptyModel({ width: 500, height: 500 })
 const addFunc = tensorFunc(tf.add)
 
 test("pressing i with nothing focused launches quick select for inputs", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -25,18 +26,26 @@ test("pressing i with nothing focused launches quick select for inputs", () => {
             func: addFunc,
         },
     }
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const model0: Model = { ...model, operations }
     const { model: model1, node } = addNodeToGraph({
         model: model0,
         operation: operations["Add"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const inputs = (model1.graph.nodes[node] as NodeTransform).inputs
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.KEYDOWN,
-        key: "i",
-    })
+    const model2 = update(
+        effects,
+        model1,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "i",
+        },
+        dispatch
+    )
     const expectedModel: Model = {
         ...model1,
         focus: {
@@ -55,7 +64,7 @@ test("pressing i with nothing focused launches quick select for inputs", () => {
 })
 
 test("pressing i with output focused launches quick select for inputs", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -65,23 +74,36 @@ test("pressing i with output focused launches quick select for inputs", () => {
             func: addFunc,
         },
     }
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const model0: Model = { ...model, operations }
     const { model: model1, node } = addNodeToGraph({
         model: model0,
         operation: operations["Add"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const output = model1.graph.nodes[node].outputs[0]
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.CLICKED_OUTPUT,
-        output,
-    })
+    const model2 = update(
+        effects,
+        model1,
+        {
+            kind: EventKind.CLICKED_OUTPUT,
+            output,
+        },
+        dispatch
+    )
     const inputs = (model2.graph.nodes[node] as NodeTransform).inputs
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.KEYDOWN,
-        key: "i",
-    })
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "i",
+        },
+        dispatch
+    )
     const expectedModel: Model = {
         ...model1,
         focus: {
@@ -100,7 +122,7 @@ test("pressing i with output focused launches quick select for inputs", () => {
 })
 
 test("pressing i with input focused launches quick select for inputs", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -110,22 +132,35 @@ test("pressing i with input focused launches quick select for inputs", () => {
             func: addFunc,
         },
     }
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const model0: Model = { ...model, operations }
     const { model: model1, node } = addNodeToGraph({
         model: model0,
         operation: operations["Add"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const inputs = (model1.graph.nodes[node] as NodeTransform).inputs
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.CLICKED_INPUT,
-        input: inputs[0],
-    })
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.KEYDOWN,
-        key: "i",
-    })
+    const model2 = update(
+        effects,
+        model1,
+        {
+            kind: EventKind.CLICKED_INPUT,
+            input: inputs[0],
+        },
+        dispatch
+    )
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "i",
+        },
+        dispatch
+    )
     const expectedModel: Model = {
         ...model1,
         focus: {
@@ -144,7 +179,7 @@ test("pressing i with input focused launches quick select for inputs", () => {
 })
 
 test("pressing i with body focused launches quick select for inputs", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Number: {
             kind: OperationKind.NUMBER,
@@ -159,28 +194,42 @@ test("pressing i with body focused launches quick select for inputs", () => {
             func: addFunc,
         },
     }
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const model0: Model = { ...model, operations }
     const { model: model1, node: node0 } = addNodeToGraph({
         model: model0,
         operation: operations["Number"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const { model: model2, node: node1 } = addNodeToGraph({
         model: model1,
         operation: operations["Add"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const body = model2.graph.nodes[node0].body!
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.CLICKED_BODY,
-        body,
-    })
-    const { model: model4 } = update(effects, model3, {
-        kind: EventKind.KEYDOWN,
-        key: "i",
-    })
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.CLICKED_BODY,
+            body,
+        },
+        dispatch
+    )
+    const model4 = update(
+        effects,
+        model3,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "i",
+        },
+        dispatch
+    )
     const inputs = (model4.graph.nodes[node1] as NodeTransform).inputs
     const expectedModel: Model = {
         ...model2,
@@ -200,7 +249,7 @@ test("pressing i with body focused launches quick select for inputs", () => {
 })
 
 test("pressing i with node focused launches quick select for inputs", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -210,21 +259,34 @@ test("pressing i with node focused launches quick select for inputs", () => {
             func: addFunc,
         },
     }
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const model0: Model = { ...model, operations }
     const { model: model1, node } = addNodeToGraph({
         model: model0,
         operation: operations["Add"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.CLICKED_NODE,
-        node,
-    })
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.KEYDOWN,
-        key: "i",
-    })
+    const model2 = update(
+        effects,
+        model1,
+        {
+            kind: EventKind.CLICKED_NODE,
+            node,
+        },
+        dispatch
+    )
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "i",
+        },
+        dispatch
+    )
     const inputs = (model3.graph.nodes[node] as NodeTransform).inputs
     const expectedModel: Model = {
         ...model2,
@@ -246,7 +308,7 @@ test("pressing i with node focused launches quick select for inputs", () => {
 })
 
 test("pressing hotkey with input quick select will select the input and disable quick select", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -257,21 +319,34 @@ test("pressing hotkey with input quick select will select the input and disable 
         },
     }
     const model0: Model = { ...model, operations }
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const { model: model1, node } = addNodeToGraph({
         model: model0,
         operation: operations["Add"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const inputs = (model1.graph.nodes[node] as NodeTransform).inputs
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.KEYDOWN,
-        key: "i",
-    })
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.KEYDOWN,
-        key: "a",
-    })
+    const model2 = update(
+        effects,
+        model1,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "i",
+        },
+        dispatch
+    )
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "a",
+        },
+        dispatch
+    )
     const expectedModel: Model = {
         ...model1,
         focus: {
@@ -284,7 +359,7 @@ test("pressing hotkey with input quick select will select the input and disable 
 })
 
 test("pressing o with nothing focused launches quick select for outputs", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -294,18 +369,26 @@ test("pressing o with nothing focused launches quick select for outputs", () => 
             func: addFunc,
         },
     }
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const model0: Model = { ...model, operations }
     const { model: model1, node } = addNodeToGraph({
         model: model0,
         operation: operations["Add"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const output = model1.graph.nodes[node].outputs[0]
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.KEYDOWN,
-        key: "o",
-    })
+    const model2 = update(
+        effects,
+        model1,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "o",
+        },
+        dispatch
+    )
     const expectedModel: Model = {
         ...model1,
         focus: {
@@ -323,7 +406,7 @@ test("pressing o with nothing focused launches quick select for outputs", () => 
 })
 
 test("pressing o with output focused launches quick select for outputs", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -333,22 +416,35 @@ test("pressing o with output focused launches quick select for outputs", () => {
             func: addFunc,
         },
     }
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const model0: Model = { ...model, operations }
     const { model: model1, node } = addNodeToGraph({
         model: model0,
         operation: operations["Add"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const output = model1.graph.nodes[node].outputs[0]
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.CLICKED_OUTPUT,
-        output,
-    })
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.KEYDOWN,
-        key: "o",
-    })
+    const model2 = update(
+        effects,
+        model1,
+        {
+            kind: EventKind.CLICKED_OUTPUT,
+            output,
+        },
+        dispatch
+    )
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "o",
+        },
+        dispatch
+    )
     const expectedModel: Model = {
         ...model1,
         focus: {
@@ -366,7 +462,7 @@ test("pressing o with output focused launches quick select for outputs", () => {
 })
 
 test("pressing o with input focused launches quick select for outputs", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -376,22 +472,35 @@ test("pressing o with input focused launches quick select for outputs", () => {
             func: addFunc,
         },
     }
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const model0: Model = { ...model, operations }
     const { model: model1, node } = addNodeToGraph({
         model: model0,
         operation: operations["Add"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const inputs = (model1.graph.nodes[node] as NodeTransform).inputs
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.CLICKED_INPUT,
-        input: inputs[0],
-    })
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.KEYDOWN,
-        key: "o",
-    })
+    const model2 = update(
+        effects,
+        model1,
+        {
+            kind: EventKind.CLICKED_INPUT,
+            input: inputs[0],
+        },
+        dispatch
+    )
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "o",
+        },
+        dispatch
+    )
     const output = model3.graph.nodes[node].outputs[0]
     const expectedModel: Model = {
         ...model1,
@@ -410,7 +519,7 @@ test("pressing o with input focused launches quick select for outputs", () => {
 })
 
 test("pressing o with body focused launches quick select for outputs", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Number: {
             kind: OperationKind.NUMBER,
@@ -425,28 +534,42 @@ test("pressing o with body focused launches quick select for outputs", () => {
             func: addFunc,
         },
     }
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const model0: Model = { ...model, operations }
     const { model: model1, node: node0 } = addNodeToGraph({
         model: model0,
         operation: operations["Number"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const { model: model2, node: node1 } = addNodeToGraph({
         model: model1,
         operation: operations["Add"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const body = model2.graph.nodes[node0].body!
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.CLICKED_BODY,
-        body,
-    })
-    const { model: model4 } = update(effects, model3, {
-        kind: EventKind.KEYDOWN,
-        key: "o",
-    })
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.CLICKED_BODY,
+            body,
+        },
+        dispatch
+    )
+    const model4 = update(
+        effects,
+        model3,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "o",
+        },
+        dispatch
+    )
     const output0 = model4.graph.nodes[node0].outputs[0]
     const output1 = model4.graph.nodes[node1].outputs[0]
     const expectedModel: Model = {
@@ -467,7 +590,7 @@ test("pressing o with body focused launches quick select for outputs", () => {
 })
 
 test("pressing o with node focused launches quick select for outputs", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -477,21 +600,34 @@ test("pressing o with node focused launches quick select for outputs", () => {
             func: addFunc,
         },
     }
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const model0: Model = { ...model, operations }
     const { model: model1, node } = addNodeToGraph({
         model: model0,
         operation: operations["Add"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.CLICKED_NODE,
-        node,
-    })
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.KEYDOWN,
-        key: "o",
-    })
+    const model2 = update(
+        effects,
+        model1,
+        {
+            kind: EventKind.CLICKED_NODE,
+            node,
+        },
+        dispatch
+    )
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "o",
+        },
+        dispatch
+    )
     const output = model3.graph.nodes[node].outputs[0]
     const expectedModel: Model = {
         ...model2,
@@ -512,7 +648,7 @@ test("pressing o with node focused launches quick select for outputs", () => {
 })
 
 test("pressing hotkey with output quick select will select the output and disable quick select", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -522,22 +658,35 @@ test("pressing hotkey with output quick select will select the output and disabl
             func: addFunc,
         },
     }
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const model0: Model = { ...model, operations }
     const { model: model1, node } = addNodeToGraph({
         model: model0,
         operation: operations["Add"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
     const output = model1.graph.nodes[node].outputs[0]
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.KEYDOWN,
-        key: "o",
-    })
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.KEYDOWN,
-        key: "a",
-    })
+    const model2 = update(
+        effects,
+        model1,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "o",
+        },
+        dispatch
+    )
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "a",
+        },
+        dispatch
+    )
     const expectedModel: Model = {
         ...model1,
         focus: {
@@ -550,7 +699,7 @@ test("pressing hotkey with output quick select will select the output and disabl
 })
 
 test("pressing invalid hotkey with output quick select will disable quick select", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -560,21 +709,34 @@ test("pressing invalid hotkey with output quick select will disable quick select
             func: addFunc,
         },
     }
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const model0: Model = { ...model, operations }
     const { model: model1 } = addNodeToGraph({
         model: model0,
         operation: operations["Add"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.KEYDOWN,
-        key: "o",
-    })
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.KEYDOWN,
-        key: "z",
-    })
+    const model2 = update(
+        effects,
+        model1,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "o",
+        },
+        dispatch
+    )
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "z",
+        },
+        dispatch
+    )
     const expectedModel: Model = {
         ...model1,
         focus: {
@@ -587,7 +749,7 @@ test("pressing invalid hotkey with output quick select will disable quick select
 })
 
 test("pressing n with nothing focused launches quick select for nodes", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -597,17 +759,25 @@ test("pressing n with nothing focused launches quick select for nodes", () => {
             func: addFunc,
         },
     }
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const model0: Model = { ...model, operations }
     const { model: model1, node } = addNodeToGraph({
         model: model0,
         operation: operations["Add"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.KEYDOWN,
-        key: "n",
-    })
+    const model2 = update(
+        effects,
+        model1,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "n",
+        },
+        dispatch
+    )
     const expectedModel: Model = {
         ...model1,
         focus: {
@@ -623,7 +793,7 @@ test("pressing n with nothing focused launches quick select for nodes", () => {
 })
 
 test("pressing hotkey with node quick select will select the node and disable quick select", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -633,21 +803,34 @@ test("pressing hotkey with node quick select will select the node and disable qu
             func: addFunc,
         },
     }
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const model0: Model = { ...model, operations }
     const { model: model1, node } = addNodeToGraph({
         model: model0,
         operation: operations["Add"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.KEYDOWN,
-        key: "n",
-    })
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.KEYDOWN,
-        key: "a",
-    })
+    const model2 = update(
+        effects,
+        model1,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "n",
+        },
+        dispatch
+    )
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "a",
+        },
+        dispatch
+    )
     const expectedModel: Model = {
         ...model1,
         focus: {
@@ -662,7 +845,7 @@ test("pressing hotkey with node quick select will select the node and disable qu
 })
 
 test("pressing invalid hotkey with node quick select will disable quick select", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Add: {
             kind: OperationKind.TRANSFORM,
@@ -672,21 +855,34 @@ test("pressing invalid hotkey with node quick select will disable quick select",
             func: addFunc,
         },
     }
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const model0: Model = { ...model, operations }
     const { model: model1 } = addNodeToGraph({
         model: model0,
         operation: operations["Add"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.KEYDOWN,
-        key: "n",
-    })
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.KEYDOWN,
-        key: "z",
-    })
+    const model2 = update(
+        effects,
+        model1,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "n",
+        },
+        dispatch
+    )
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "z",
+        },
+        dispatch
+    )
     const expectedModel: Model = {
         ...model1,
         focus: {
@@ -699,7 +895,7 @@ test("pressing invalid hotkey with node quick select will disable quick select",
 })
 
 test("pressing b with nothing focused launches quick select for body", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Number: {
             kind: OperationKind.NUMBER,
@@ -707,17 +903,25 @@ test("pressing b with nothing focused launches quick select for body", () => {
             outputs: ["out"],
         },
     }
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const model0: Model = { ...model, operations }
     const { model: model1, node } = addNodeToGraph({
         model: model0,
         operation: operations["Number"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.KEYDOWN,
-        key: "b",
-    })
+    const model2 = update(
+        effects,
+        model1,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "b",
+        },
+        dispatch
+    )
     const body = model2.graph.nodes[node].body!
     const expectedModel: Model = {
         ...model1,
@@ -734,7 +938,7 @@ test("pressing b with nothing focused launches quick select for body", () => {
 })
 
 test("pressing hotkey with body quick select will select the body and disable quick select", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Number: {
             kind: OperationKind.NUMBER,
@@ -742,21 +946,34 @@ test("pressing hotkey with body quick select will select the body and disable qu
             outputs: ["out"],
         },
     }
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const model0: Model = { ...model, operations }
     const { model: model1, node } = addNodeToGraph({
         model: model0,
         operation: operations["Number"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.KEYDOWN,
-        key: "b",
-    })
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.KEYDOWN,
-        key: "a",
-    })
+    const model2 = update(
+        effects,
+        model1,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "b",
+        },
+        dispatch
+    )
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "a",
+        },
+        dispatch
+    )
     const body = model3.graph.nodes[node].body!
     const expectedModel: Model = {
         ...model1,
@@ -770,7 +987,7 @@ test("pressing hotkey with body quick select will select the body and disable qu
 })
 
 test("pressing hotkey with body quick select will select the text body and disable quick select", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Text: {
             kind: OperationKind.TEXT,
@@ -778,21 +995,34 @@ test("pressing hotkey with body quick select will select the text body and disab
             outputs: ["out"],
         },
     }
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const model0: Model = { ...model, operations }
     const { model: model1, node } = addNodeToGraph({
         model: model0,
         operation: operations["Text"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.KEYDOWN,
-        key: "b",
-    })
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.KEYDOWN,
-        key: "a",
-    })
+    const model2 = update(
+        effects,
+        model1,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "b",
+        },
+        dispatch
+    )
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "a",
+        },
+        dispatch
+    )
     const body = model3.graph.nodes[node].body!
     const expectedModel: Model = {
         ...model1,
@@ -807,7 +1037,7 @@ test("pressing hotkey with body quick select will select the text body and disab
 })
 
 test("pressing invalid hotkey with body quick select will disable quick select", () => {
-    const effects = makeEffects()
+    const effects = makeEffects(mockDocument())
     const operations: Operations = {
         Number: {
             kind: OperationKind.NUMBER,
@@ -815,21 +1045,34 @@ test("pressing invalid hotkey with body quick select will disable quick select",
             outputs: ["out"],
         },
     }
+    const onTableUploaded = () => {}
+    const dispatch = () => {}
     const model0: Model = { ...model, operations }
     const { model: model1 } = addNodeToGraph({
         model: model0,
         operation: operations["Number"],
         position: { x: 0, y: 0 },
         effects,
+        onTableUploaded,
     })
-    const { model: model2 } = update(effects, model1, {
-        kind: EventKind.KEYDOWN,
-        key: "b",
-    })
-    const { model: model3 } = update(effects, model2, {
-        kind: EventKind.KEYDOWN,
-        key: "z",
-    })
+    const model2 = update(
+        effects,
+        model1,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "b",
+        },
+        dispatch
+    )
+    const model3 = update(
+        effects,
+        model2,
+        {
+            kind: EventKind.KEYDOWN,
+            key: "z",
+        },
+        dispatch
+    )
     const expectedModel: Model = {
         ...model1,
         focus: {

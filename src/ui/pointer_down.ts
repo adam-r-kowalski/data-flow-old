@@ -23,9 +23,11 @@ export const pointerDown = <AppEvent>(
                         now,
                     }
                     if (now - timeout.now < 200) {
+                        timeout.now = now
                         timeout.count += 1
                     } else {
                         timeout.count = 1
+                        timeout.now = now
                     }
                     onClick(timeout.count)
                     renderer.clickTimeouts[id] = timeout

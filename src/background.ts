@@ -1,9 +1,9 @@
-import { Color, container, UI } from "./ui"
+import { Color, container, OnClick, UI } from "./ui"
 
 interface Properties {
     color: Color
-    onClick: () => void
+    onClick: OnClick
 }
 
 export const view = ({ color, onClick }: Properties): UI =>
-    container({ color, onClick })
+    container({ id: "background", color, onClick })

@@ -1199,6 +1199,7 @@ test("view with no nodes or edges", () => {
     const actual = view(model, dispatch)
     const expected = stack([
         container({
+            id: "background",
             color: model.theme.background,
             onClick: () => {},
         }),
@@ -1258,6 +1259,7 @@ test("view with no nodes or edges but finder shown", () => {
     const actual = view(model, dispatch)
     const expected = stack([
         container({
+            id: "background",
             color: model.theme.background,
             onClick: () => {},
         }),
@@ -1317,6 +1319,7 @@ test("view with no nodes or edges but finder shown capitalized", () => {
     const actual = view(model, dispatch)
     const expected = stack([
         container({
+            id: "background",
             color: model.theme.background,
             onClick: () => {},
         }),
@@ -1387,6 +1390,7 @@ test("view with positive number", () => {
     const actual = view(model, dispatch)
     const expected = stack([
         container({
+            id: "background",
             color: model.theme.background,
             onClick: () => {},
         }),
@@ -1467,6 +1471,7 @@ test("view with negative number", () => {
     const actual = view(model, dispatch)
     const expected = stack([
         container({
+            id: "background",
             color: model.theme.background,
             onClick: () => {},
         }),
@@ -1547,6 +1552,7 @@ test("view with text", () => {
     const actual = view(model, dispatch)
     const expected = stack([
         container({
+            id: "background",
             color: model.theme.background,
             onClick: () => {},
         }),
@@ -1657,6 +1663,7 @@ test("view with three nodes and no edges", () => {
     const actual = view(model, dispatch)
     const expected = stack([
         container({
+            id: "background",
             color: model.theme.background,
             onClick: () => {},
         }),
@@ -1794,6 +1801,7 @@ test("view with three nodes and no edges", () => {
     const actual = view(model, dispatch)
     const expected = stack([
         container({
+            id: "background",
             color: model.theme.background,
             onClick: () => {},
         }),
@@ -1954,6 +1962,7 @@ test("view with three nodes and one edges", () => {
     const actual = view(model, dispatch)
     const expected = stack([
         container({
+            id: "background",
             color: model.theme.background,
             onClick: () => {},
         }),
@@ -2072,6 +2081,7 @@ test("view with body selected", () => {
     const actual = view(model, dispatch)
     const expected = stack([
         container({
+            id: "background",
             color: model.theme.background,
             onClick: () => {},
         }),
@@ -2208,6 +2218,7 @@ test("view with input selected", () => {
     const actual = view(model, dispatch)
     const expected = stack([
         container({
+            id: "background",
             color: model.theme.background,
             onClick: () => {},
         }),
@@ -2365,6 +2376,7 @@ test("view with output selected", () => {
     const actual = view(model, dispatch)
     const expected = stack([
         container({
+            id: "background",
             color: model.theme.background,
             onClick: () => {},
         }),
@@ -2449,6 +2461,7 @@ test("view with node placement location shown", () => {
     const actual = view(model, dispatch)
     const expected = stack([
         container({
+            id: "background",
             color: model.theme.background,
             onClick: () => {},
         }),

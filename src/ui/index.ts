@@ -285,4 +285,4 @@ export interface Pointer {
     position: Position
 }
 
-export type OnClick = () => void
+export type OnClick = (count: number) => void

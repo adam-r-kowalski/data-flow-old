@@ -32,16 +32,17 @@ const update = (model: Model, event: AppEvent): Model => {
     }
 }
 
-const mockRenderer = webGL2Renderer({
-    width: 500,
-    height: 500,
-    document: mockDocument(),
-    window: mockWindow(),
-})
+const mockRenderer = () =>
+    webGL2Renderer({
+        width: 500,
+        height: 500,
+        document: mockDocument(),
+        window: mockWindow(),
+    })
 
 test("click first container", () => {
     let model = initialModel
-    let renderer = mockRenderer
+    let renderer = mockRenderer()
     const dispatch = (event: AppEvent) => (model = update(model, event))
     const ui = scene({
         camera: identity(),
@@ -65,16 +66,20 @@ test("click first container", () => {
         ],
     })
     renderer = render(renderer, ui)
-    renderer = pointerDown(renderer, {
-        position: { x: 125, y: 225 },
-        id: 0,
-    })
+    renderer = pointerDown(
+        renderer,
+        {
+            position: { x: 125, y: 225 },
+            id: 0,
+        },
+        0
+    )
     expect(model).toEqual({ a: 1, b: 0 })
 })
 
 test("click second container", () => {
     let model = initialModel
-    let renderer = mockRenderer
+    let renderer = mockRenderer()
     const dispatch = (event: AppEvent) => (model = update(model, event))
     const ui = scene({
         camera: identity(),
@@ -98,17 +103,21 @@ test("click second container", () => {
         ],
     })
     renderer = render(renderer, ui)
-    renderer = pointerDown(renderer, {
-        position: { x: 325, y: 275 },
-        id: 0,
-    })
+    renderer = pointerDown(
+        renderer,
+        {
+            position: { x: 325, y: 275 },
+            id: 0,
+        },
+        0
+    )
     expect(model).toEqual({ a: 0, b: 1 })
 })
 
 test("click translated container", () => {
     let model = initialModel
     const dispatch = (event: AppEvent) => (model = update(model, event))
-    let renderer = mockRenderer
+    let renderer = mockRenderer()
     const ui = scene({
         camera: translate(100, 0),
         children: [
@@ -131,16 +140,90 @@ test("click translated container", () => {
         ],
     })
     renderer = render(renderer, ui)
-    renderer = pointerDown(renderer, {
-        position: { x: 25, y: 225 },
-        id: 0,
-    })
+    renderer = pointerDown(
+        renderer,
+        {
+            position: { x: 25, y: 225 },
+            id: 0,
+        },
+        0
+    )
     expect(model).toEqual({ a: 1, b: 0 })
 })
 
 test("renderer starts with identity camera", () => {
-    const renderer = mockRenderer
+    const renderer = mockRenderer()
     const view = container({ width: 50, height: 50, color: red })
     render(renderer, view)
     expect(renderer.cameras).toEqual([identity()])
+})
+
+test("double click", () => {
+    let renderer = mockRenderer()
+    let count = 0
+    const dispatch = (c: number) => (count = c)
+    const ui = container({
+        id: "id",
+        width: 50,
+        height: 50,
+        color: red,
+        x: 100,
+        y: 200,
+        onClick: dispatch,
+    })
+    renderer = render(renderer, ui)
+    expect(count).toEqual(0)
+    renderer = pointerDown(
+        renderer,
+        {
+            position: { x: 125, y: 225 },
+            id: 0,
+        },
+        0
+    )
+    expect(count).toEqual(1)
+    renderer = pointerDown(
+        renderer,
+        {
+            position: { x: 125, y: 225 },
+            id: 0,
+        },
+        0
+    )
+    expect(count).toEqual(2)
+})
+
+test("double click after timeout", () => {
+    let renderer = mockRenderer()
+    let count = 0
+    const dispatch = (c: number) => (count = c)
+    const ui = container({
+        id: "id",
+        width: 50,
+        height: 50,
+        color: red,
+        x: 100,
+        y: 200,
+        onClick: dispatch,
+    })
+    renderer = render(renderer, ui)
+    expect(count).toEqual(0)
+    renderer = pointerDown(
+        renderer,
+        {
+            position: { x: 125, y: 225 },
+            id: 0,
+        },
+        0
+    )
+    expect(count).toEqual(1)
+    renderer = pointerDown(
+        renderer,
+        {
+            position: { x: 125, y: 225 },
+            id: 0,
+        },
+        260
+    )
+    expect(count).toEqual(1)
 })

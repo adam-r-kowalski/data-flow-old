@@ -3,6 +3,7 @@ import { Entry, WorldSpace, OnClick } from "."
 export interface ClickHandler {
     onClick: OnClick
     worldSpace: WorldSpace
+    id?: string
 }
 
 export type ClickHandlers = ClickHandler[][]
@@ -19,6 +20,7 @@ export const combine = (
     handlers[entry.z].push({
         onClick: entry.ui.onClick,
         worldSpace: entry.geometry.worldSpace,
+        id: entry.ui.id,
     })
     return handlers
 }

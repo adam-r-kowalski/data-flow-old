@@ -21,6 +21,7 @@ const dispatch = run({
     window,
     document: doc,
     requestAnimationFrame,
+    currentTime: effects.currentTime,
     pointerDown: (dispatch, pointer) => {
         dispatch({
             kind: EventKind.POINTER_DOWN,

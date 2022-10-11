@@ -117,6 +117,13 @@ const mapString = <T>(
     return result
 }
 
+export interface ClickTimeout {
+    count: number
+    now: number
+}
+
+export type ClickTimeouts = { [id: string]: ClickTimeout }
+
 export class WebGL2Renderer<AppEvent> {
     _size: Size
     _cameras: Matrix3x3[]
@@ -129,7 +136,8 @@ export class WebGL2Renderer<AppEvent> {
         public program: ProgramData,
         public textures: Texture[],
         public textMeasurementsCache: Map<string, TextMeasurements>,
-        public clickHandlers: ClickHandlers
+        public clickHandlers: ClickHandlers,
+        public clickTimeouts: ClickTimeouts
     ) {
         this._size = { width: 0, height: 0 }
         this._cameras = []
@@ -522,7 +530,8 @@ export const webGL2Renderer = <AppEvent>({
         program,
         [texture],
         new Map(),
-        []
+        [],
+        {}
     )
     renderer.size = { width, height }
     return renderer

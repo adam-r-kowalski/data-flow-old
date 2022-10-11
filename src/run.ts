@@ -3,6 +3,7 @@ import { render } from "./ui/render"
 import { webGL2Renderer } from "./ui/webgl2"
 import { Pointer, UI } from "./ui"
 import { Document, Window, PointerEvent } from "./ui/dom"
+import { CurrentTime } from "./effects"
 
 export const transformPointer = (p: PointerEvent): Pointer => ({
     id: p.pointerId,
@@ -26,14 +27,22 @@ interface Properties<Model, AppEvent> {
     window: Window<AppEvent>
     document: Document
     requestAnimationFrame: (callback: () => void) => void
+    currentTime: CurrentTime
     pointerDown: (dispatch: Dispatch<AppEvent>, pointer: Pointer) => void
 }
 
 export const run = <Model, AppEvent>(
     properties: Properties<Model, AppEvent>
 ): Dispatch<AppEvent> => {
-    let { model, view, update, window, document, requestAnimationFrame } =
-        properties
+    let {
+        model,
+        view,
+        update,
+        window,
+        document,
+        requestAnimationFrame,
+        currentTime,
+    } = properties
     let renderer = webGL2Renderer({
         width: window.innerWidth,
         height: window.innerHeight,
@@ -61,7 +70,7 @@ export const run = <Model, AppEvent>(
     document.addEventListener("pointerdown", (p) => {
         const transformed = transformPointer(p)
         properties.pointerDown(dispatch, transformed)
-        renderer = pointerDown(renderer, transformed)
+        renderer = pointerDown(renderer, transformed, currentTime())
     })
     window.addEventListener("resize", () => {
         renderer.size = {

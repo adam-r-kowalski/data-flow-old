@@ -1,5 +1,5 @@
 import { Pointer, WorldSpace } from "."
-import { WebGL2Renderer } from "./webgl2"
+import { ClickTimeout, WebGL2Renderer } from "./webgl2"
 
 const inWorldSpace = ({ x0, y0, x1, y1 }: WorldSpace, pointer: Pointer) =>
     x0 <= pointer.position.x &&
@@ -9,13 +9,31 @@ const inWorldSpace = ({ x0, y0, x1, y1 }: WorldSpace, pointer: Pointer) =>
 
 export const pointerDown = <AppEvent>(
     renderer: WebGL2Renderer<AppEvent>,
-    pointer: Pointer
+    pointer: Pointer,
+    now: number
 ): WebGL2Renderer<AppEvent> => {
     for (let i = renderer.clickHandlers.length; i > 0; --i) {
-        for (const { onClick, worldSpace } of renderer.clickHandlers[i - 1]) {
+        for (const { onClick, worldSpace, id } of renderer.clickHandlers[
+            i - 1
+        ]) {
             if (inWorldSpace(worldSpace, pointer)) {
-                onClick()
-                return renderer
+                if (id) {
+                    let timeout: ClickTimeout = renderer.clickTimeouts[id] ?? {
+                        count: 0,
+                        now,
+                    }
+                    if (now - timeout.now < 200) {
+                        timeout.count += 1
+                    } else {
+                        timeout.count = 1
+                    }
+                    onClick(timeout.count)
+                    renderer.clickTimeouts[id] = timeout
+                    return renderer
+                } else {
+                    onClick(1)
+                    return renderer
+                }
             }
         }
     }

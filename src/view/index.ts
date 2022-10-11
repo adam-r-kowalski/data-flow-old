@@ -32,6 +32,7 @@ import { identity } from "../linear_algebra/matrix3x3"
 import * as alphabeticVirtualKeyboard from "../alphabetic_virtual_keyboard"
 import * as numericVirtualKeyboard from "../numeric_virtual_keyboard"
 import * as finder from "../finder"
+import * as background from "../background"
 import { Dispatch } from "../run"
 import { AppEvent, EventKind } from "../event"
 
@@ -492,7 +493,7 @@ export const view = (model: Model, dispatch: Dispatch<AppEvent>): UI => {
         })
     )
     const stacked: UI[] = [
-        container({
+        background.view({
             color: model.theme.background,
             onClick: onClickBackground,
         }),

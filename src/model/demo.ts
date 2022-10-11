@@ -5,23 +5,18 @@ import {
     changeNumberText,
     OnTableUploaded,
 } from "../update/graph"
-import { Model, Window } from "."
-import { emptyModel } from "./empty"
-import { operations } from "./operations"
+import { Model } from "."
 import { Effects } from "../effects"
+import { operations } from "./operations"
 
-export const demoModel = (
-    window: Window,
+export const loadDemoModel = (
+    model: Model,
     effects: Effects,
     onTableUploaded: OnTableUploaded
 ): Model => {
-    const model: Model = {
-        ...emptyModel(window),
-        operations,
-    }
     const { graph: graph0, node: start } = addNode({
         graph: model.graph,
-        operation: model.operations["number"],
+        operation: operations["number"],
         position: { x: 25, y: 20 },
         effects,
         onTableUploaded,
@@ -33,7 +28,7 @@ export const demoModel = (
     )
     const { graph: graph2, node: stop } = addNode({
         graph: graph1,
-        operation: model.operations["number"],
+        operation: operations["number"],
         position: { x: 25, y: 90 },
         effects,
         onTableUploaded,
@@ -41,7 +36,7 @@ export const demoModel = (
     const graph3 = changeNumberText(graph2, graph2.nodes[stop].body!, () => "9")
     const { graph: graph4, node: num } = addNode({
         graph: graph3,
-        operation: model.operations["number"],
+        operation: operations["number"],
         position: { x: 25, y: 160 },
         effects,
         onTableUploaded,
@@ -49,7 +44,7 @@ export const demoModel = (
     const graph5 = changeNumberText(graph4, graph4.nodes[num].body!, () => "10")
     const { graph: graph6, node: linspace } = addNode({
         graph: graph5,
-        operation: model.operations["linspace"],
+        operation: operations["linspace"],
         position: { x: 175, y: 20 },
         effects,
         onTableUploaded,
@@ -74,7 +69,7 @@ export const demoModel = (
     })
     const { graph: graph10, node: square } = addNode({
         graph: graph9,
-        operation: model.operations["square"],
+        operation: operations["square"],
         position: { x: 450, y: 350 },
         effects,
         onTableUploaded,
@@ -87,7 +82,7 @@ export const demoModel = (
     })
     const { graph: graph12, node: scatter } = addNode({
         graph: graph11,
-        operation: model.operations["scatter"],
+        operation: operations["scatter"],
         position: { x: 700, y: 20 },
         effects,
         onTableUploaded,
@@ -106,7 +101,7 @@ export const demoModel = (
     })
     const { graph: graph15, node: stack } = addNode({
         graph: graph14,
-        operation: model.operations["stack"],
+        operation: operations["stack"],
         position: { x: 750, y: 400 },
         effects,
         onTableUploaded,
@@ -127,5 +122,6 @@ export const demoModel = (
         ...model,
         graph: graph17,
         nodeOrder: [start, stop, num, linspace, square, scatter, stack],
+        operations,
     }
 }

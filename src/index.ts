@@ -3,11 +3,11 @@ import * as papa from "papaparse"
 import { update } from "./update"
 import { run, transformPointer } from "./run"
 import { view } from "./view"
-import { demoModel } from "./model/demo"
 import { Document } from "./ui/dom"
 import { Columns, Value } from "./model/table"
 import { EventKind } from "./event"
 import { makeEffects } from "./effects"
+import { emptyModel } from "./model/empty"
 
 type Row = { [name: string]: Value }
 
@@ -15,10 +15,7 @@ const doc = document as Document
 const effects = makeEffects(doc)
 
 const dispatch = run({
-    model: demoModel(
-        { width: window.innerWidth, height: window.innerHeight },
-        effects
-    ),
+    model: emptyModel({ width: window.innerWidth, height: window.innerHeight }),
     view,
     update: (model, event, dispatch) => update(effects, model, event, dispatch),
     window,
@@ -31,6 +28,8 @@ const dispatch = run({
         })
     },
 })
+
+dispatch({ kind: EventKind.LOAD_DEMO_MODEL })
 
 if (typeof PointerEvent.prototype.getCoalescedEvents === "function") {
     document.addEventListener("pointermove", (e) => {

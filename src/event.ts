@@ -29,6 +29,7 @@ export enum EventKind {
     FINDER_INSERT,
     FINDER_CHANGE,
     FINDER_CLOSE,
+    LOAD_DEMO_MODEL,
 }
 
 export interface PointerMove {
@@ -153,6 +154,10 @@ export interface FinderClose {
     readonly kind: EventKind.FINDER_CLOSE
 }
 
+export interface LoadDemoModel {
+    readonly kind: EventKind.LOAD_DEMO_MODEL
+}
+
 export type AppEvent =
     | PointerMove
     | PointerDown
@@ -179,3 +184,4 @@ export type AppEvent =
     | FinderInsert
     | FinderChange
     | FinderClose
+    | LoadDemoModel

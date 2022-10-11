@@ -80,6 +80,7 @@ import * as finder from "../finder"
 import { Effects, GenerateUUID } from "../effects"
 import { Dispatch } from "../run"
 import { Table } from "../model/table"
+import { loadDemoModel } from "../model/demo"
 
 const pointerDown = (model: Model, event: PointerDown): Model => {
     const pointers = [...model.pointers, event.pointer]
@@ -1126,5 +1127,7 @@ export const update = (
             return finderChange(model, event, effects.generateUUID)
         case EventKind.FINDER_CLOSE:
             return finderClose(model)
+        case EventKind.LOAD_DEMO_MODEL:
+            return loadDemoModel(model, effects, onTableUploaded)
     }
 }

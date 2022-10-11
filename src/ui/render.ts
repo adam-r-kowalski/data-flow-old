@@ -1,11 +1,15 @@
 import { batchGeometry } from "./batch_geometry"
 import { initCameraStack } from "./camera_stack"
 import { reduce } from "./reduce"
-import { UI, layout, geometry, Renderer } from "."
+import { UI, layout, geometry } from "."
 import * as reducer from "./reducer"
 import { Accumulator } from "./reducer"
+import { WebGL2Renderer } from "./webgl2"
 
-export const render = <R extends Renderer>(renderer: R, ui: UI): R => {
+export const render = <AppEvent>(
+    renderer: WebGL2Renderer<AppEvent>,
+    ui: UI
+): WebGL2Renderer<AppEvent> => {
     const { width, height } = renderer.size
     renderer.clear()
     const constraints = {

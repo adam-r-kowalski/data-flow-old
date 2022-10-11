@@ -1,4 +1,5 @@
-import { Renderer, Pointer, WorldSpace } from "."
+import { Pointer, WorldSpace } from "."
+import { WebGL2Renderer } from "./webgl2"
 
 const inWorldSpace = ({ x0, y0, x1, y1 }: WorldSpace, pointer: Pointer) =>
     x0 <= pointer.position.x &&
@@ -6,10 +7,10 @@ const inWorldSpace = ({ x0, y0, x1, y1 }: WorldSpace, pointer: Pointer) =>
     y0 <= pointer.position.y &&
     pointer.position.y <= y1
 
-export const pointerDown = <R extends Renderer>(
-    renderer: R,
+export const pointerDown = <AppEvent>(
+    renderer: WebGL2Renderer<AppEvent>,
     pointer: Pointer
-): R => {
+): WebGL2Renderer<AppEvent> => {
     for (let i = renderer.clickHandlers.length; i > 0; --i) {
         for (const { onClick, worldSpace } of renderer.clickHandlers[i - 1]) {
             if (inWorldSpace(worldSpace, pointer)) {

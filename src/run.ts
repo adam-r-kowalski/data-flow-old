@@ -1,13 +1,7 @@
 import { pointerDown } from "./ui/pointer_down"
-import { render } from "./ui/render"
-import { webGL2Renderer } from "./ui/webgl2"
+import { makeRenderer, resize, render } from "./ui/renderer"
 import { Pointer, UI } from "./ui"
-import { Document, Window, PointerEvent } from "./ui/dom"
-
-export const transformPointer = (p: PointerEvent): Pointer => ({
-    id: p.pointerId,
-    position: { x: p.clientX, y: p.clientY },
-})
+import { Document, Window } from "./ui/dom"
 
 export type Dispatch<AppEvent> = (event: AppEvent) => void
 
@@ -34,7 +28,7 @@ export const run = <Model, AppEvent>(
 ): Dispatch<AppEvent> => {
     let { model, view, update, window, document, requestAnimationFrame } =
         properties
-    let renderer = webGL2Renderer({
+    const renderer = makeRenderer({
         width: window.innerWidth,
         height: window.innerHeight,
         window,
@@ -42,13 +36,12 @@ export const run = <Model, AppEvent>(
     })
     let renderQueued = false
     const scheduleRender = () => {
-        if (!renderQueued) {
-            renderQueued = true
-            requestAnimationFrame(() => {
-                renderer = render(renderer, view(model, dispatch))
-                renderQueued = false
-            })
-        }
+        if (renderQueued) return
+        renderQueued = true
+        requestAnimationFrame(() => {
+            render(renderer, view(model, dispatch))
+            renderQueued = false
+        })
     }
     window.addEventListener("message", (message) => {
         const newModel = update(model, message.data, dispatch)
@@ -59,15 +52,19 @@ export const run = <Model, AppEvent>(
     const dispatch = (event: AppEvent): void => window.postMessage(event)
     document.body.appendChild(renderer.canvas)
     document.addEventListener("pointerdown", (p) => {
-        const transformed = transformPointer(p)
+        const transformed = {
+            id: p.pointerId,
+            count: p.detail,
+            position: { x: p.clientX, y: p.clientY },
+        }
         properties.pointerDown(dispatch, transformed)
-        renderer = pointerDown(renderer, transformed)
+        pointerDown(renderer, transformed)
     })
     window.addEventListener("resize", () => {
-        renderer.size = {
+        resize(renderer, {
             width: window.innerWidth,
             height: window.innerHeight,
-        }
+        })
         scheduleRender()
     })
     scheduleRender()

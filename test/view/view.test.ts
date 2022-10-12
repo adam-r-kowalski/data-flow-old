@@ -1184,7 +1184,6 @@ test("view with no nodes or edges", () => {
         },
         camera: identity(),
         operations: {},
-        openFinderFirstClick: false,
         panCamera: {
             left: false,
             up: false,
@@ -1241,7 +1240,6 @@ test("view with no nodes or edges but finder shown", () => {
         nodePlacementLocation: { x: 250, y: 250, show: false },
         window: { width: 500, height: 500 },
         focus,
-        openFinderFirstClick: false,
         camera: identity(),
         operations: {},
         panCamera: {
@@ -1300,7 +1298,6 @@ test("view with no nodes or edges but finder shown capitalized", () => {
         nodePlacementLocation: { x: 250, y: 250, show: false },
         window: { width: 500, height: 500 },
         focus,
-        openFinderFirstClick: false,
         camera: identity(),
         operations: {},
         panCamera: {
@@ -1370,7 +1367,6 @@ test("view with positive number", () => {
             body: "body",
             quickSelect: { kind: QuickSelectKind.NONE },
         },
-        openFinderFirstClick: false,
         camera: identity(),
         operations: {},
         panCamera: {
@@ -1450,7 +1446,6 @@ test("view with negative number", () => {
             body: "body",
             quickSelect: { kind: QuickSelectKind.NONE },
         },
-        openFinderFirstClick: false,
         camera: identity(),
         operations: {},
         panCamera: {
@@ -1530,7 +1525,6 @@ test("view with text", () => {
             quickSelect: { kind: QuickSelectKind.NONE },
             uppercase: false,
         },
-        openFinderFirstClick: false,
         camera: identity(),
         operations: {},
         panCamera: {
@@ -1640,7 +1634,6 @@ test("view with three nodes and no edges", () => {
             pointerAction: { kind: PointerActionKind.NONE },
             quickSelect: { kind: QuickSelectKind.NONE },
         },
-        openFinderFirstClick: false,
         camera: identity(),
         operations: {},
         panCamera: {
@@ -1777,7 +1770,6 @@ test("view with three nodes and no edges", () => {
             move: { left: false, up: false, down: false, right: false, now: 0 },
             quickSelect: { kind: QuickSelectKind.NONE },
         },
-        openFinderFirstClick: false,
         camera: identity(),
         operations: {},
         panCamera: {
@@ -1937,7 +1929,6 @@ test("view with three nodes and one edges", () => {
             pointerAction: { kind: PointerActionKind.NONE },
             quickSelect: { kind: QuickSelectKind.NONE },
         },
-        openFinderFirstClick: false,
         camera: identity(),
         operations: {},
         panCamera: {
@@ -2055,7 +2046,6 @@ test("view with body selected", () => {
             body: "body",
             quickSelect: { kind: QuickSelectKind.NONE },
         },
-        openFinderFirstClick: false,
         camera: identity(),
         operations: {},
         panCamera: {
@@ -2191,7 +2181,6 @@ test("view with input selected", () => {
             input: "x1",
             quickSelect: { kind: QuickSelectKind.NONE },
         },
-        openFinderFirstClick: false,
         camera: identity(),
         operations: {},
         panCamera: {
@@ -2348,7 +2337,6 @@ test("view with output selected", () => {
             output: "out0",
             quickSelect: { kind: QuickSelectKind.NONE },
         },
-        openFinderFirstClick: false,
         camera: identity(),
         operations: {},
         panCamera: {
@@ -2434,7 +2422,6 @@ test("view with node placement location shown", () => {
         },
         camera: identity(),
         operations: {},
-        openFinderFirstClick: false,
         panCamera: {
             left: false,
             up: false,

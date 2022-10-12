@@ -4,11 +4,11 @@ import * as layerGeometry from "../../src/ui/layer_geometry"
 import * as reducer from "../../src/ui/reducer"
 import { reduce } from "../../src/ui/reduce"
 import { mockDocument, mockWindow } from "../../src/ui/mock"
-import { webGL2Renderer } from "../../src/ui/webgl2"
+import { makeRenderer, measureText } from "../../src/ui/renderer"
 import { batchGeometry } from "../../src/ui/batch_geometry"
 
 const mockRenderer = () =>
-    webGL2Renderer({
+    makeRenderer({
         width: 500,
         height: 500,
         document: mockDocument(),
@@ -24,7 +24,7 @@ test("text layout", () => {
         minHeight: 0,
         maxHeight: 100,
     }
-    const uiLayout = layout(ui, constraints, renderer.measureText)
+    const uiLayout = layout(ui, constraints, measureText.bind(null, renderer))
     const expectedLayout = {
         measurements: {
             widths: [24, 24, 24],
@@ -58,7 +58,7 @@ test("text layout with empty text", () => {
         minHeight: 0,
         maxHeight: 100,
     }
-    const uiLayout = layout(ui, constraints, renderer.measureText)
+    const uiLayout = layout(ui, constraints, measureText.bind(null, renderer))
     const expectedLayout = {
         measurements: {
             widths: [],
@@ -79,7 +79,7 @@ test("text geometry", () => {
         minHeight: 0,
         maxHeight: 100,
     }
-    const uiLayout = layout(ui, constraints, renderer.measureText)
+    const uiLayout = layout(ui, constraints, measureText.bind(null, renderer))
     const offset = { x: 0, y: 0 }
     const uiGeometry = geometry(ui, uiLayout, offset, initCameraStack())
     const expectedGeometry = {
@@ -153,7 +153,7 @@ test("text layers", () => {
         minHeight: 0,
         maxHeight: 100,
     }
-    const uiLayout = layout(ui, constraints, renderer.measureText)
+    const uiLayout = layout(ui, constraints, measureText.bind(null, renderer))
     const offsets = { x: 0, y: 0 }
     const uiGeometry = geometry(ui, uiLayout, offsets, initCameraStack())
     const layers = reduce(ui, uiLayout, uiGeometry, layerGeometry)
@@ -242,7 +242,7 @@ test("batch geometry with texture change", () => {
         minHeight: 0,
         maxHeight: 100,
     }
-    const uiLayout = layout(ui, constraints, renderer.measureText)
+    const uiLayout = layout(ui, constraints, measureText.bind(null, renderer))
     const offsets = { x: 0, y: 0 }
     const uiGeometry = geometry(ui, uiLayout, offsets, initCameraStack())
     const { layers, idToWorldSpace, connections } = reduce(

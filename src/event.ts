@@ -10,7 +10,6 @@ export enum EventKind {
     WHEEL,
     CLICKED_INPUT,
     CLICKED_OUTPUT,
-    OPEN_FINDER_TIMEOUT,
     KEYDOWN,
     KEYUP,
     CLICKED_FINDER_OPTION,
@@ -29,6 +28,7 @@ export enum EventKind {
     FINDER_INSERT,
     FINDER_CHANGE,
     FINDER_CLOSE,
+    LOAD_DEMO_MODEL,
 }
 
 export interface PointerMove {
@@ -67,10 +67,6 @@ export interface ClickedOutput {
     readonly output: UUID
 }
 
-export interface OpenFinderTimeout {
-    readonly kind: EventKind.OPEN_FINDER_TIMEOUT
-}
-
 export interface KeyDown {
     readonly kind: EventKind.KEYDOWN
     readonly key: string
@@ -88,6 +84,8 @@ export interface ClickedBody {
 
 export interface ClickedBackground {
     readonly kind: EventKind.CLICKED_BACKGROUND
+    readonly count: number
+    readonly position: Position
 }
 
 export interface ChangeNode {
@@ -153,6 +151,10 @@ export interface FinderClose {
     readonly kind: EventKind.FINDER_CLOSE
 }
 
+export interface LoadDemoModel {
+    readonly kind: EventKind.LOAD_DEMO_MODEL
+}
+
 export type AppEvent =
     | PointerMove
     | PointerDown
@@ -161,7 +163,6 @@ export type AppEvent =
     | Wheel
     | ClickedInput
     | ClickedOutput
-    | OpenFinderTimeout
     | KeyDown
     | KeyUp
     | ClickedBody
@@ -179,3 +180,4 @@ export type AppEvent =
     | FinderInsert
     | FinderChange
     | FinderClose
+    | LoadDemoModel

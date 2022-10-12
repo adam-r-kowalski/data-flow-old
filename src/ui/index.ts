@@ -55,9 +55,6 @@ import {
     textTraverse,
 } from "./text"
 import { CameraStack } from "./camera_stack"
-import { Matrix3x3 } from "../linear_algebra/matrix3x3"
-import { Batch } from "./batch_geometry"
-import { ClickHandlers } from "./gather_on_click_handlers"
 import { Position } from "../model/graph"
 
 export { center } from "./center"
@@ -283,18 +280,15 @@ export interface Connection {
     color: Color
 }
 
-export interface Renderer {
-    size: Size
-    cameras: Matrix3x3[]
-    clickHandlers: ClickHandlers
-    clear: () => void
-    draw: (batch: Batch) => void
-    measureText: MeasureText
-}
-
 export interface Pointer {
     id: number
     position: Position
 }
 
-export type OnClick = () => void
+export interface ClickEvent {
+    id: number
+    position: Position
+    count: number
+}
+
+export type OnClick = (event: ClickEvent) => void

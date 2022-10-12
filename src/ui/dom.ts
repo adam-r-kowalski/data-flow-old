@@ -172,17 +172,18 @@ export interface Body {
     style: BodyStyle
 }
 
-export interface PointerEvent {
+export interface PointerDownEvent {
     clientX: number
     clientY: number
     pointerId: number
+    detail: number
 }
 
 export interface Document {
     createElement: (tagName: "canvas") => Canvas
     addEventListener: (
         event: "pointerdown",
-        callback: (p: PointerEvent) => void
+        callback: (p: PointerDownEvent) => void
     ) => void
     body: Body
 }

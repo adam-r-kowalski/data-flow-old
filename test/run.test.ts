@@ -132,30 +132,36 @@ test("pointer down events can lead to on click handlers firing", () => {
         clientX: 0,
         clientY: 0,
         pointerId: 0,
+        detail: 1,
     })
     document.fireEvent("pointerdown", {
         clientX: 51,
         clientY: 0,
         pointerId: 0,
+        detail: 2,
     })
     document.fireEvent("pointerdown", {
         clientX: 200,
         clientY: 200,
         pointerId: 0,
+        detail: 3,
     })
     expect(window.events).toEqual([AppEvent.A, AppEvent.B])
     expect(pointers).toEqual([
         {
             id: 0,
             position: { x: 0, y: 0 },
+            count: 1,
         },
         {
             id: 0,
             position: { x: 51, y: 0 },
+            count: 2,
         },
         {
             id: 0,
             position: { x: 200, y: 200 },
+            count: 3,
         },
     ])
 })

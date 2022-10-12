@@ -1,10 +1,9 @@
 import { Matrix3x3 } from "../linear_algebra/matrix3x3"
 import { Pointer } from "../ui"
-import { Graph, Operations, UUID } from './graph'
-import { Focus } from './focus'
-import { Theme } from './theme'
-import { PanCamera, ZoomCamera } from './move_camera'
-
+import { Graph, Operations, UUID } from "./graph"
+import { Focus } from "./focus"
+import { Theme } from "./theme"
+import { PanCamera, ZoomCamera } from "./move_camera"
 
 export interface Window {
     readonly width: number
@@ -22,7 +21,6 @@ export interface Model {
     readonly nodeOrder: Readonly<UUID[]>
     readonly pointers: Readonly<Pointer[]>
     readonly focus: Focus
-    readonly openFinderFirstClick: boolean
     readonly nodePlacementLocation: NodePlacementLocation
     readonly window: Window
     readonly camera: Matrix3x3

@@ -6,14 +6,14 @@ import * as layerGeometry from "../../src/ui/layer_geometry"
 import * as reducer from "../../src/ui/reducer"
 import { reduce } from "../../src/ui/reduce"
 import { mockDocument, mockWindow } from "../../src/ui/mock"
-import { webGL2Renderer } from "../../src/ui/webgl2"
+import { makeRenderer, measureText } from "../../src/ui/renderer"
 
 const red = { red: 255, green: 0, blue: 0, alpha: 255 }
 const green = { red: 0, green: 255, blue: 0, alpha: 255 }
 const blue = { red: 0, green: 0, blue: 255, alpha: 255 }
 
 const mockRenderer = () =>
-    webGL2Renderer({
+    makeRenderer({
         width: 500,
         height: 500,
         document: mockDocument(),
@@ -40,7 +40,7 @@ test("column layout", () => {
         minHeight: 0,
         maxHeight: 100,
     }
-    const uiLayout = layout(ui, constraints, renderer.measureText)
+    const uiLayout = layout(ui, constraints, measureText.bind(null, renderer))
     const expectedLayout = {
         size: { width: 50, height: 100 },
         totalChildHeight: 100,
@@ -72,7 +72,7 @@ test("column geometry", () => {
         minHeight: 0,
         maxHeight: 100,
     }
-    const uiLayout = layout(ui, constraints, renderer.measureText)
+    const uiLayout = layout(ui, constraints, measureText.bind(null, renderer))
     const offsets = { x: 0, y: 0 }
     const uiGeometry = geometry(ui, uiLayout, offsets, initCameraStack())
     const expectedGeometry = {
@@ -127,7 +127,7 @@ test("column layers", () => {
         minHeight: 0,
         maxHeight: 100,
     }
-    const uiLayout = layout(ui, constraints, renderer.measureText)
+    const uiLayout = layout(ui, constraints, measureText.bind(null, renderer))
     const offsets = { x: 0, y: 0 }
     const uiGeometry = geometry(ui, uiLayout, offsets, initCameraStack())
     const layers = reduce(ui, uiLayout, uiGeometry, layerGeometry)
@@ -185,7 +185,7 @@ test("column batch", () => {
         minHeight: 0,
         maxHeight: 100,
     }
-    const uiLayout = layout(ui, constraints, renderer.measureText)
+    const uiLayout = layout(ui, constraints, measureText.bind(null, renderer))
     const offsets = { x: 0, y: 0 }
     const uiGeometry = geometry(ui, uiLayout, offsets, initCameraStack())
     const { layers, connections, idToWorldSpace } = reduce(
@@ -257,7 +257,7 @@ test("column cross axis alignment start layout", () => {
         minHeight: 0,
         maxHeight: 500,
     }
-    const uiLayout = layout(ui, constraints, renderer.measureText)
+    const uiLayout = layout(ui, constraints, measureText.bind(null, renderer))
     const expectedLayout = {
         size: { width: 100, height: 200 },
         totalChildHeight: 200,
@@ -295,7 +295,7 @@ test("column cross axis alignment start geometry", () => {
         minHeight: 0,
         maxHeight: 500,
     }
-    const uiLayout = layout(ui, constraints, renderer.measureText)
+    const uiLayout = layout(ui, constraints, measureText.bind(null, renderer))
     const offsets = { x: 0, y: 0 }
     const uiGeometry = geometry(ui, uiLayout, offsets, initCameraStack())
     const expectedGeometry = {
@@ -367,7 +367,7 @@ test("column cross axis alignment center layout", () => {
         minHeight: 0,
         maxHeight: 500,
     }
-    const uiLayout = layout(ui, constraints, renderer.measureText)
+    const uiLayout = layout(ui, constraints, measureText.bind(null, renderer))
     const expectedLayout = {
         size: { width: 100, height: 200 },
         totalChildHeight: 200,
@@ -405,7 +405,7 @@ test("column cross axis alignment center geometry", () => {
         minHeight: 0,
         maxHeight: 500,
     }
-    const uiLayout = layout(ui, constraints, renderer.measureText)
+    const uiLayout = layout(ui, constraints, measureText.bind(null, renderer))
     const offsets = { x: 0, y: 0 }
     const uiGeometry = geometry(ui, uiLayout, offsets, initCameraStack())
     const expectedGeometry = {
@@ -477,7 +477,7 @@ test("column cross axis alignment end layout", () => {
         minHeight: 0,
         maxHeight: 500,
     }
-    const uiLayout = layout(ui, constraints, renderer.measureText)
+    const uiLayout = layout(ui, constraints, measureText.bind(null, renderer))
     const expectedLayout = {
         size: { width: 100, height: 200 },
         totalChildHeight: 200,
@@ -515,7 +515,7 @@ test("column cross axis alignment end geometry", () => {
         minHeight: 0,
         maxHeight: 500,
     }
-    const uiLayout = layout(ui, constraints, renderer.measureText)
+    const uiLayout = layout(ui, constraints, measureText.bind(null, renderer))
     const offsets = { x: 0, y: 0 }
     const uiGeometry = geometry(ui, uiLayout, offsets, initCameraStack())
     const expectedGeometry = {
@@ -587,7 +587,7 @@ test("column main axis alignment start layout", () => {
         minHeight: 0,
         maxHeight: 500,
     }
-    const uiLayout = layout(ui, constraints, renderer.measureText)
+    const uiLayout = layout(ui, constraints, measureText.bind(null, renderer))
     const expectedLayout = {
         size: { width: 100, height: 200 },
         totalChildHeight: 200,
@@ -625,7 +625,7 @@ test("column main axis alignment start geometry", () => {
         minHeight: 0,
         maxHeight: 500,
     }
-    const uiLayout = layout(ui, constraints, renderer.measureText)
+    const uiLayout = layout(ui, constraints, measureText.bind(null, renderer))
     const offsets = { x: 0, y: 0 }
     const uiGeometry = geometry(ui, uiLayout, offsets, initCameraStack())
     const expectedGeometry = {
@@ -697,7 +697,7 @@ test("column main axis alignment center layout", () => {
         minHeight: 0,
         maxHeight: 500,
     }
-    const uiLayout = layout(ui, constraints, renderer.measureText)
+    const uiLayout = layout(ui, constraints, measureText.bind(null, renderer))
     const expectedLayout = {
         size: { width: 100, height: 500 },
         totalChildHeight: 200,
@@ -735,7 +735,7 @@ test("column main axis alignment center geometry", () => {
         minHeight: 0,
         maxHeight: 500,
     }
-    const uiLayout = layout(ui, constraints, renderer.measureText)
+    const uiLayout = layout(ui, constraints, measureText.bind(null, renderer))
     const offsets = { x: 0, y: 0 }
     const uiGeometry = geometry(ui, uiLayout, offsets, initCameraStack())
     const expectedGeometry = {
@@ -807,7 +807,7 @@ test("column main axis alignment end layout", () => {
         minHeight: 0,
         maxHeight: 500,
     }
-    const uiLayout = layout(ui, constraints, renderer.measureText)
+    const uiLayout = layout(ui, constraints, measureText.bind(null, renderer))
     const expectedLayout = {
         size: { width: 100, height: 500 },
         totalChildHeight: 200,
@@ -845,7 +845,7 @@ test("column main axis alignment end geometry", () => {
         minHeight: 0,
         maxHeight: 500,
     }
-    const uiLayout = layout(ui, constraints, renderer.measureText)
+    const uiLayout = layout(ui, constraints, measureText.bind(null, renderer))
     const offsets = { x: 0, y: 0 }
     const uiGeometry = geometry(ui, uiLayout, offsets, initCameraStack())
     const expectedGeometry = {
@@ -917,7 +917,7 @@ test("column main axis alignment space between layout", () => {
         minHeight: 0,
         maxHeight: 500,
     }
-    const uiLayout = layout(ui, constraints, renderer.measureText)
+    const uiLayout = layout(ui, constraints, measureText.bind(null, renderer))
     const expectedLayout = {
         size: { width: 100, height: 500 },
         totalChildHeight: 200,
@@ -955,7 +955,7 @@ test("column main axis alignment space between geometry", () => {
         minHeight: 0,
         maxHeight: 500,
     }
-    const uiLayout = layout(ui, constraints, renderer.measureText)
+    const uiLayout = layout(ui, constraints, measureText.bind(null, renderer))
     const offsets = { x: 0, y: 0 }
     const uiGeometry = geometry(ui, uiLayout, offsets, initCameraStack())
     const expectedGeometry = {
@@ -1027,7 +1027,7 @@ test("column main axis alignment space evenly layout", () => {
         minHeight: 0,
         maxHeight: 500,
     }
-    const uiLayout = layout(ui, constraints, renderer.measureText)
+    const uiLayout = layout(ui, constraints, measureText.bind(null, renderer))
     const expectedLayout = {
         size: { width: 100, height: 500 },
         totalChildHeight: 200,
@@ -1065,7 +1065,7 @@ test("column main axis alignment space evenly geometry", () => {
         minHeight: 0,
         maxHeight: 500,
     }
-    const uiLayout = layout(ui, constraints, renderer.measureText)
+    const uiLayout = layout(ui, constraints, measureText.bind(null, renderer))
     const offsets = { x: 0, y: 0 }
     const uiGeometry = geometry(ui, uiLayout, offsets, initCameraStack())
     const expectedGeometry = {

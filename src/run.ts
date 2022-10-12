@@ -52,7 +52,6 @@ export const run = <Model, AppEvent>(
     const dispatch = (event: AppEvent): void => window.postMessage(event)
     document.body.appendChild(renderer.canvas)
     document.addEventListener("pointerdown", (p) => {
-        console.log(p.detail)
         const transformed = {
             id: p.pointerId,
             count: p.detail,

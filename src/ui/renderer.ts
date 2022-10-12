@@ -124,188 +124,188 @@ export interface ClickTimeout {
 
 export type ClickTimeouts = { [id: string]: ClickTimeout }
 
-export class WebGL2Renderer<AppEvent> {
-    _size: Size
-    _cameras: Matrix3x3[]
+export interface Renderer<AppEvent> {
+    window: Window<AppEvent>
+    document: Document
+    canvas: Canvas
+    gl: WebGL2Context
+    program: ProgramData
+    textures: Texture[]
+    textMeasurementsCache: Map<string, TextMeasurements>
+    clickHandlers: ClickHandlers
+    clickTimeouts: ClickTimeouts
+    size: Size
+    cameras: Matrix3x3[]
+}
 
-    constructor(
-        public window: Window<AppEvent>,
-        public document: Document,
-        public canvas: Canvas,
-        public gl: WebGL2Context,
-        public program: ProgramData,
-        public textures: Texture[],
-        public textMeasurementsCache: Map<string, TextMeasurements>,
-        public clickHandlers: ClickHandlers,
-        public clickTimeouts: ClickTimeouts
-    ) {
-        this._size = { width: 0, height: 0 }
-        this._cameras = []
-    }
+export const clear = <AppEvent>({ gl }: Renderer<AppEvent>): void => {
+    gl.clear(gl.COLOR_BUFFER_BIT)
+}
 
-    clear = () => {
-        const { gl } = this
-        gl.clear(gl.COLOR_BUFFER_BIT)
-    }
+export const resize = <AppEvent>(
+    renderer: Renderer<AppEvent>,
+    size: Size
+): void => {
+    const { program, gl, window } = renderer
+    const { uniforms } = program
+    const { canvas } = gl
+    gl.uniformMatrix3fv(
+        uniforms.projection,
+        /*transpose*/ true,
+        projection(size)
+    )
+    canvas.width = size.width * window.devicePixelRatio
+    canvas.height = size.height * window.devicePixelRatio
+    canvas.style.width = `${size.width}px`
+    canvas.style.height = `${size.height}px`
+    canvas.style.display = "block"
+    gl.viewport(0, 0, canvas.width, canvas.height)
+    renderer.size = size
+}
 
-    set size(size: Size) {
-        const { gl, program, window } = this
-        const { uniforms } = program
-        const { canvas } = gl
-        gl.uniformMatrix3fv(
-            uniforms.projection,
-            /*transpose*/ true,
-            projection(size)
-        )
-        canvas.width = size.width * window.devicePixelRatio
-        canvas.height = size.height * window.devicePixelRatio
-        canvas.style.width = `${size.width}px`
-        canvas.style.height = `${size.height}px`
-        canvas.style.display = "block"
-        gl.viewport(0, 0, canvas.width, canvas.height)
-        this._size = size
-    }
+export const setCameras = <AppEvent>(
+    renderer: Renderer<AppEvent>,
+    cameras: Matrix3x3[]
+): void => {
+    const { gl, program } = renderer
+    const { uniforms } = program
+    const data: number[] = []
+    for (const camera of cameras) data.push(...camera)
+    gl.uniformMatrix3fv(uniforms.cameras, /*transpose*/ true, data)
+    renderer.cameras = cameras
+}
 
-    get size() {
-        return this._size
-    }
-
-    set cameras(cameras: Matrix3x3[]) {
-        const { gl, program } = this
-        const { uniforms } = program
-        const data: number[] = []
-        for (const camera of cameras) data.push(...camera)
-        gl.uniformMatrix3fv(uniforms.cameras, /*transpose*/ true, data)
-        this._cameras = cameras
-    }
-
-    get cameras() {
-        return this._cameras
-    }
-
-    draw = ({ triangles, lines }: Batch) => {
-        const { gl, program, textures } = this
-        const { attributes } = program
-        {
-            const {
-                vertices,
-                colors,
-                vertexIndices,
-                textureCoordinates,
-                textureIndex,
-                cameraIndex,
-            } = triangles
-            if (vertices.length !== 0) {
-                const texture = textures[textureIndex]
-                gl.bindTexture(gl.TEXTURE_2D, texture)
-                gl.bindBuffer(gl.ARRAY_BUFFER, attributes.vertices.buffer)
-                gl.bufferData(
-                    gl.ARRAY_BUFFER,
-                    new Float32Array(vertices),
-                    gl.STATIC_DRAW
-                )
-                gl.bindBuffer(gl.ARRAY_BUFFER, attributes.colors.buffer)
-                gl.bufferData(
-                    gl.ARRAY_BUFFER,
-                    new Float32Array(colors),
-                    gl.STATIC_DRAW
-                )
-                gl.bindBuffer(
-                    gl.ARRAY_BUFFER,
-                    attributes.textureCoordinates.buffer
-                )
-                gl.bufferData(
-                    gl.ARRAY_BUFFER,
-                    new Float32Array(textureCoordinates),
-                    gl.STATIC_DRAW
-                )
-                gl.bindBuffer(gl.ARRAY_BUFFER, attributes.cameraIndex.buffer)
-                gl.bufferData(
-                    gl.ARRAY_BUFFER,
-                    new Uint8Array(cameraIndex),
-                    gl.STATIC_DRAW
-                )
-                gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, attributes.vertexIndices)
-                gl.bufferData(
-                    gl.ELEMENT_ARRAY_BUFFER,
-                    new Uint16Array(vertexIndices),
-                    gl.STATIC_DRAW
-                )
-                gl.drawElements(
-                    gl.TRIANGLES,
-                    /*count*/ vertexIndices.length,
-                    /*type*/ gl.UNSIGNED_SHORT,
-                    /*offset*/ 0
-                )
-            }
-        }
-        {
-            const { vertices, colors } = lines
-            if (vertices.length !== 0) {
-                const texture = textures[0]
-                const count = vertices.length / 2
-                gl.bindTexture(gl.TEXTURE_2D, texture)
-                gl.bindBuffer(gl.ARRAY_BUFFER, attributes.vertices.buffer)
-                gl.bufferData(
-                    gl.ARRAY_BUFFER,
-                    new Float32Array(vertices),
-                    gl.STATIC_DRAW
-                )
-                gl.bindBuffer(gl.ARRAY_BUFFER, attributes.colors.buffer)
-                gl.bufferData(
-                    gl.ARRAY_BUFFER,
-                    new Float32Array(colors),
-                    gl.STATIC_DRAW
-                )
-                gl.bindBuffer(
-                    gl.ARRAY_BUFFER,
-                    attributes.textureCoordinates.buffer
-                )
-                gl.bufferData(
-                    gl.ARRAY_BUFFER,
-                    new Float32Array(Array(count * 2).fill(0)),
-                    gl.STATIC_DRAW
-                )
-                gl.bindBuffer(gl.ARRAY_BUFFER, attributes.cameraIndex.buffer)
-                gl.bufferData(
-                    gl.ARRAY_BUFFER,
-                    new Uint8Array(Array(count).fill(0)),
-                    gl.STATIC_DRAW
-                )
-                gl.drawArrays(gl.LINES, /*first*/ 0, count)
-            }
-        }
-    }
-
-    getTextureMeasurements = (font: Font, dpr: DevicePixelRatio) => {
-        const { document, gl } = this
-        const key = `${dpr} ${font.size} ${font.family}`
-        const measurements = this.textMeasurementsCache.get(key)
-        if (measurements) return measurements
-        const { texture, widths, textureCoordinates } = createTextMeasurements(
-            document,
-            gl,
-            font,
-            dpr
-        )
-        const textureIndex = this.textures.length
-        this.textures.push(texture)
-        const newMeasurements = { widths, textureIndex, textureCoordinates }
-        this.textMeasurementsCache.set(key, newMeasurements)
-        return newMeasurements
-    }
-
-    measureText = (font: Font, str: string) => {
-        const { window } = this
-        const dpr = window.devicePixelRatio
-        const { widths, textureIndex, textureCoordinates } =
-            this.getTextureMeasurements(font, dpr)
-        const indices = mapString(str, (c) => c.charCodeAt(0))
-        return {
-            widths: indices.map((i) => widths[i]),
+export const draw = <AppEvent>(
+    renderer: Renderer<AppEvent>,
+    batch: Batch
+): void => {
+    const { gl, program, textures } = renderer
+    const { triangles, lines } = batch
+    const { attributes } = program
+    {
+        const {
+            vertices,
+            colors,
+            vertexIndices,
+            textureCoordinates,
             textureIndex,
-            textureCoordinates: indices.map((i) => textureCoordinates[i]),
+            cameraIndex,
+        } = triangles
+        if (vertices.length !== 0) {
+            const texture = textures[textureIndex]
+            gl.bindTexture(gl.TEXTURE_2D, texture)
+            gl.bindBuffer(gl.ARRAY_BUFFER, attributes.vertices.buffer)
+            gl.bufferData(
+                gl.ARRAY_BUFFER,
+                new Float32Array(vertices),
+                gl.STATIC_DRAW
+            )
+            gl.bindBuffer(gl.ARRAY_BUFFER, attributes.colors.buffer)
+            gl.bufferData(
+                gl.ARRAY_BUFFER,
+                new Float32Array(colors),
+                gl.STATIC_DRAW
+            )
+            gl.bindBuffer(gl.ARRAY_BUFFER, attributes.textureCoordinates.buffer)
+            gl.bufferData(
+                gl.ARRAY_BUFFER,
+                new Float32Array(textureCoordinates),
+                gl.STATIC_DRAW
+            )
+            gl.bindBuffer(gl.ARRAY_BUFFER, attributes.cameraIndex.buffer)
+            gl.bufferData(
+                gl.ARRAY_BUFFER,
+                new Uint8Array(cameraIndex),
+                gl.STATIC_DRAW
+            )
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, attributes.vertexIndices)
+            gl.bufferData(
+                gl.ELEMENT_ARRAY_BUFFER,
+                new Uint16Array(vertexIndices),
+                gl.STATIC_DRAW
+            )
+            gl.drawElements(
+                gl.TRIANGLES,
+                /*count*/ vertexIndices.length,
+                /*type*/ gl.UNSIGNED_SHORT,
+                /*offset*/ 0
+            )
         }
+    }
+    {
+        const { vertices, colors } = lines
+        if (vertices.length !== 0) {
+            const texture = textures[0]
+            const count = vertices.length / 2
+            gl.bindTexture(gl.TEXTURE_2D, texture)
+            gl.bindBuffer(gl.ARRAY_BUFFER, attributes.vertices.buffer)
+            gl.bufferData(
+                gl.ARRAY_BUFFER,
+                new Float32Array(vertices),
+                gl.STATIC_DRAW
+            )
+            gl.bindBuffer(gl.ARRAY_BUFFER, attributes.colors.buffer)
+            gl.bufferData(
+                gl.ARRAY_BUFFER,
+                new Float32Array(colors),
+                gl.STATIC_DRAW
+            )
+            gl.bindBuffer(gl.ARRAY_BUFFER, attributes.textureCoordinates.buffer)
+            gl.bufferData(
+                gl.ARRAY_BUFFER,
+                new Float32Array(Array(count * 2).fill(0)),
+                gl.STATIC_DRAW
+            )
+            gl.bindBuffer(gl.ARRAY_BUFFER, attributes.cameraIndex.buffer)
+            gl.bufferData(
+                gl.ARRAY_BUFFER,
+                new Uint8Array(Array(count).fill(0)),
+                gl.STATIC_DRAW
+            )
+            gl.drawArrays(gl.LINES, /*first*/ 0, count)
+        }
+    }
+}
+
+export const getTextureMeasurements = <AppEvent>(
+    renderer: Renderer<AppEvent>,
+    font: Font,
+    dpr: DevicePixelRatio
+): TextMeasurements => {
+    const { document, gl } = renderer
+    const key = `${dpr} ${font.size} ${font.family}`
+    const measurements = renderer.textMeasurementsCache.get(key)
+    if (measurements) return measurements
+    const { texture, widths, textureCoordinates } = createTextMeasurements(
+        document,
+        gl,
+        font,
+        dpr
+    )
+    const textureIndex = renderer.textures.length
+    renderer.textures.push(texture)
+    const newMeasurements = { widths, textureIndex, textureCoordinates }
+    renderer.textMeasurementsCache.set(key, newMeasurements)
+    return newMeasurements
+}
+
+export const measureText = <AppEvent>(
+    renderer: Renderer<AppEvent>,
+    font: Font,
+    str: string
+): TextMeasurements => {
+    const { window } = renderer
+    const dpr = window.devicePixelRatio
+    const { widths, textureIndex, textureCoordinates } = getTextureMeasurements(
+        renderer,
+        font,
+        dpr
+    )
+    const indices = mapString(str, (c) => c.charCodeAt(0))
+    return {
+        widths: indices.map((i) => widths[i]),
+        textureIndex,
+        textureCoordinates: indices.map((i) => textureCoordinates[i]),
     }
 }
 
@@ -492,12 +492,12 @@ interface Parameters<AppEvent> {
     window: Window<AppEvent>
 }
 
-export const webGL2Renderer = <AppEvent>({
+export const makeRenderer = <AppEvent>({
     width,
     height,
     document,
     window,
-}: Parameters<AppEvent>): WebGL2Renderer<AppEvent> => {
+}: Parameters<AppEvent>): Renderer<AppEvent> => {
     const canvas = document.createElement("canvas")
     canvas.style.touchAction = "none"
     canvas.style.userSelect = "none"
@@ -522,17 +522,20 @@ export const webGL2Renderer = <AppEvent>({
         /*srcType*/ gl.UNSIGNED_BYTE,
         /*data*/ new Uint8Array([255, 255, 255, 255])
     )
-    const renderer = new WebGL2Renderer(
+    const size = { width, height }
+    const renderer: Renderer<AppEvent> = {
         window,
         document,
         canvas,
         gl,
         program,
-        [texture],
-        new Map(),
-        [],
-        {}
-    )
-    renderer.size = { width, height }
+        textures: [texture],
+        textMeasurementsCache: new Map(),
+        clickHandlers: [],
+        clickTimeouts: {},
+        size,
+        cameras: [],
+    }
+    resize(renderer, size)
     return renderer
 }

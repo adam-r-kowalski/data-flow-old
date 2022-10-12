@@ -5,13 +5,13 @@ import * as layerGeometry from "../../src/ui/layer_geometry"
 import * as reducer from "../../src/ui/reducer"
 import { reduce } from "../../src/ui/reduce"
 import { mockDocument, mockWindow } from "../../src/ui/mock"
-import { webGL2Renderer } from "../../src/ui/webgl2"
+import { makeRenderer, measureText } from "../../src/ui/renderer"
 
 const red = { red: 255, green: 0, blue: 0, alpha: 255 }
 const green = { red: 0, green: 255, blue: 0, alpha: 255 }
 
 const mockRenderer = () =>
-    webGL2Renderer({
+    makeRenderer({
         width: 500,
         height: 500,
         document: mockDocument(),
@@ -36,7 +36,7 @@ test("stack layout", () => {
         minHeight: 0,
         maxHeight: 100,
     }
-    const uiLayout = layout(ui, constraints, renderer.measureText)
+    const uiLayout = layout(ui, constraints, measureText.bind(null, renderer))
     const expectedLayout = {
         size: { width: 100, height: 100 },
         children: [
@@ -70,7 +70,7 @@ test("stack geometry", () => {
         minHeight: 0,
         maxHeight: 100,
     }
-    const uiLayout = layout(ui, constraints, renderer.measureText)
+    const uiLayout = layout(ui, constraints, measureText.bind(null, renderer))
     const offsets = { x: 0, y: 0 }
     const uiGeometry = geometry(ui, uiLayout, offsets, initCameraStack())
     const expectedGeometry = {
@@ -126,7 +126,7 @@ test("stack layers", () => {
         minHeight: 0,
         maxHeight: 100,
     }
-    const uiLayout = layout(ui, constraints, renderer.measureText)
+    const uiLayout = layout(ui, constraints, measureText.bind(null, renderer))
     const offsets = { x: 0, y: 0 }
     const uiGeometry = geometry(ui, uiLayout, offsets, initCameraStack())
     const layers = reduce(ui, uiLayout, uiGeometry, layerGeometry)
@@ -186,7 +186,7 @@ test("stack batches", () => {
         minHeight: 0,
         maxHeight: 100,
     }
-    const uiLayout = layout(ui, constraints, renderer.measureText)
+    const uiLayout = layout(ui, constraints, measureText.bind(null, renderer))
     const offsets = { x: 0, y: 0 }
     const uiGeometry = geometry(ui, uiLayout, offsets, initCameraStack())
     const { layers, connections, idToWorldSpace } = reduce(

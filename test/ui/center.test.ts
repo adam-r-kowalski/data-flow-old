@@ -1,5 +1,5 @@
 import { container, center, layout, geometry, UIKind } from "../../src/ui"
-import { webGL2Renderer } from "../../src/ui/webgl2"
+import { makeRenderer, measureText } from "../../src/ui/renderer"
 import { mockDocument, mockWindow } from "../../src/ui/mock"
 import { initCameraStack } from "../../src/ui/camera_stack"
 import * as layerGeometry from "../../src/ui/layer_geometry"
@@ -8,7 +8,7 @@ import { reduce } from "../../src/ui/reduce"
 const red = { red: 255, green: 0, blue: 0, alpha: 255 }
 
 const mockRenderer = () =>
-    webGL2Renderer({
+    makeRenderer({
         width: 500,
         height: 500,
         document: mockDocument(),
@@ -51,7 +51,7 @@ test("center layout", () => {
         minHeight: 0,
         maxHeight: 100,
     }
-    const uiLayout = layout(ui, constraints, renderer.measureText)
+    const uiLayout = layout(ui, constraints, measureText.bind(null, renderer))
     const expectedLayout = {
         size: { width: 100, height: 100 },
         child: {
@@ -76,7 +76,7 @@ test("center geometry", () => {
         minHeight: 0,
         maxHeight: 100,
     }
-    const uiLayout = layout(ui, constraints, renderer.measureText)
+    const uiLayout = layout(ui, constraints, measureText.bind(null, renderer))
     const offsets = { x: 0, y: 0 }
     const cameraStack = initCameraStack()
     const uiGeometry = geometry(ui, uiLayout, offsets, cameraStack)
@@ -112,7 +112,7 @@ test("center layers", () => {
         minHeight: 0,
         maxHeight: 100,
     }
-    const uiLayout = layout(ui, constraints, renderer.measureText)
+    const uiLayout = layout(ui, constraints, measureText.bind(null, renderer))
     const offsets = { x: 0, y: 0 }
     const uiGeometry = geometry(ui, uiLayout, offsets, initCameraStack())
     const layers = reduce(ui, uiLayout, uiGeometry, layerGeometry)

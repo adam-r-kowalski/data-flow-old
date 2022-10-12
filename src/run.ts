@@ -1,6 +1,6 @@
 import { pointerDown } from "./ui/pointer_down"
 import { render } from "./ui/render"
-import { webGL2Renderer } from "./ui/webgl2"
+import { makeRenderer, resize } from "./ui/renderer"
 import { Pointer, UI } from "./ui"
 import { Document, Window, PointerEvent } from "./ui/dom"
 import { CurrentTime } from "./effects"
@@ -43,7 +43,7 @@ export const run = <Model, AppEvent>(
         requestAnimationFrame,
         currentTime,
     } = properties
-    let renderer = webGL2Renderer({
+    const renderer = makeRenderer({
         width: window.innerWidth,
         height: window.innerHeight,
         window,
@@ -51,13 +51,12 @@ export const run = <Model, AppEvent>(
     })
     let renderQueued = false
     const scheduleRender = () => {
-        if (!renderQueued) {
-            renderQueued = true
-            requestAnimationFrame(() => {
-                renderer = render(renderer, view(model, dispatch))
-                renderQueued = false
-            })
-        }
+        if (renderQueued) return
+        renderQueued = true
+        requestAnimationFrame(() => {
+            render(renderer, view(model, dispatch))
+            renderQueued = false
+        })
     }
     window.addEventListener("message", (message) => {
         const newModel = update(model, message.data, dispatch)
@@ -70,13 +69,13 @@ export const run = <Model, AppEvent>(
     document.addEventListener("pointerdown", (p) => {
         const transformed = transformPointer(p)
         properties.pointerDown(dispatch, transformed)
-        renderer = pointerDown(renderer, transformed, currentTime())
+        pointerDown(renderer, transformed, currentTime())
     })
     window.addEventListener("resize", () => {
-        renderer.size = {
+        resize(renderer, {
             width: window.innerWidth,
             height: window.innerHeight,
-        }
+        })
         scheduleRender()
     })
     scheduleRender()

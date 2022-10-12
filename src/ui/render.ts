@@ -4,29 +4,30 @@ import { reduce } from "./reduce"
 import { UI, layout, geometry } from "."
 import * as reducer from "./reducer"
 import { Accumulator } from "./reducer"
-import { WebGL2Renderer } from "./webgl2"
+import { setCameras, Renderer, clear, draw, measureText } from "./renderer"
 
 export const render = <AppEvent>(
-    renderer: WebGL2Renderer<AppEvent>,
+    renderer: Renderer<AppEvent>,
     ui: UI
-): WebGL2Renderer<AppEvent> => {
+): void => {
     const { width, height } = renderer.size
-    renderer.clear()
+    clear(renderer)
     const constraints = {
         minWidth: 0,
         maxWidth: width,
         minHeight: 0,
         maxHeight: height,
     }
-    const uiLayout = layout(ui, constraints, renderer.measureText)
+    const uiLayout = layout(ui, constraints, (font, str) =>
+        measureText(renderer, font, str)
+    )
     const offsets = { x: 0, y: 0 }
     const cameraStack = initCameraStack()
     const uiGeometry = geometry(ui, uiLayout, offsets, cameraStack)
     const { layers, clickHandlers, connections, idToWorldSpace } =
         reduce<Accumulator>(ui, uiLayout, uiGeometry, reducer)
     const batches = batchGeometry(layers, connections, idToWorldSpace)
-    renderer.cameras = cameraStack.cameras
+    setCameras(renderer, cameraStack.cameras)
     renderer.clickHandlers = clickHandlers
-    for (const batch of batches) renderer.draw(batch)
-    return renderer
+    for (const batch of batches) draw(renderer, batch)
 }

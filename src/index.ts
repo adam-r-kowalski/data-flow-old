@@ -1,13 +1,14 @@
 import * as papa from "papaparse"
 
 import { update } from "./update"
-import { run, transformPointer } from "./run"
+import { run } from "./run"
 import { view } from "./view"
 import { Document } from "./ui/dom"
 import { Columns, Value } from "./model/table"
 import { EventKind } from "./event"
 import { makeEffects } from "./effects"
 import { emptyModel } from "./model/empty"
+import { Pointer } from "./ui"
 
 type Row = { [name: string]: Value }
 
@@ -21,7 +22,6 @@ const dispatch = run({
     window,
     document: doc,
     requestAnimationFrame,
-    currentTime: effects.currentTime,
     pointerDown: (dispatch, pointer) => {
         dispatch({
             kind: EventKind.POINTER_DOWN,
@@ -31,6 +31,11 @@ const dispatch = run({
 })
 
 dispatch({ kind: EventKind.LOAD_DEMO_MODEL })
+
+const transformPointer = (p: PointerEvent): Pointer => ({
+    id: p.pointerId,
+    position: { x: p.clientX, y: p.clientY },
+})
 
 if (typeof PointerEvent.prototype.getCoalescedEvents === "function") {
     document.addEventListener("pointermove", (e) => {

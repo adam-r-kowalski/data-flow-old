@@ -1,5 +1,5 @@
 import { Batch } from "./batch_geometry"
-import { Font, TextMeasurements, Size } from "."
+import { Font, TextMeasurements, Size, UI, layout, geometry } from "."
 import { Matrix3x3, projection } from "../linear_algebra/matrix3x3"
 import {
     Document,
@@ -13,6 +13,11 @@ import {
     Window,
 } from "./dom"
 import { ClickHandlers } from "./gather_on_click_handlers"
+import { initCameraStack } from "./camera_stack"
+import * as reducer from "./reducer"
+import { Accumulator } from "./reducer"
+import { reduce } from "./reduce"
+import { batchGeometry } from "./batch_geometry"
 
 interface Attribute {
     location: number
@@ -265,6 +270,32 @@ export const draw = <AppEvent>(
             gl.drawArrays(gl.LINES, /*first*/ 0, count)
         }
     }
+}
+
+export const render = <AppEvent>(
+    renderer: Renderer<AppEvent>,
+    ui: UI
+): void => {
+    const { width, height } = renderer.size
+    clear(renderer)
+    const constraints = {
+        minWidth: 0,
+        maxWidth: width,
+        minHeight: 0,
+        maxHeight: height,
+    }
+    const uiLayout = layout(ui, constraints, (font, str) =>
+        measureText(renderer, font, str)
+    )
+    const offsets = { x: 0, y: 0 }
+    const cameraStack = initCameraStack()
+    const uiGeometry = geometry(ui, uiLayout, offsets, cameraStack)
+    const { layers, clickHandlers, connections, idToWorldSpace } =
+        reduce<Accumulator>(ui, uiLayout, uiGeometry, reducer)
+    const batches = batchGeometry(layers, connections, idToWorldSpace)
+    setCameras(renderer, cameraStack.cameras)
+    renderer.clickHandlers = clickHandlers
+    for (const batch of batches) draw(renderer, batch)
 }
 
 export const getTextureMeasurements = <AppEvent>(

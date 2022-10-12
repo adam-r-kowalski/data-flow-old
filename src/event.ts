@@ -10,7 +10,6 @@ export enum EventKind {
     WHEEL,
     CLICKED_INPUT,
     CLICKED_OUTPUT,
-    OPEN_FINDER_TIMEOUT,
     KEYDOWN,
     KEYUP,
     CLICKED_FINDER_OPTION,
@@ -68,10 +67,6 @@ export interface ClickedOutput {
     readonly output: UUID
 }
 
-export interface OpenFinderTimeout {
-    readonly kind: EventKind.OPEN_FINDER_TIMEOUT
-}
-
 export interface KeyDown {
     readonly kind: EventKind.KEYDOWN
     readonly key: string
@@ -89,6 +84,8 @@ export interface ClickedBody {
 
 export interface ClickedBackground {
     readonly kind: EventKind.CLICKED_BACKGROUND
+    readonly count: number
+    readonly position: Position
 }
 
 export interface ChangeNode {
@@ -166,7 +163,6 @@ export type AppEvent =
     | Wheel
     | ClickedInput
     | ClickedOutput
-    | OpenFinderTimeout
     | KeyDown
     | KeyUp
     | ClickedBody

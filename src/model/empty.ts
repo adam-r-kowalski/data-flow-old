@@ -15,7 +15,6 @@ export const emptyModel = (window: Window): Model => ({
         pointerAction: { kind: PointerActionKind.NONE },
         quickSelect: { kind: QuickSelectKind.NONE },
     },
-    openFinderFirstClick: false,
     nodePlacementLocation: {
         x: window.width / 2,
         y: window.height / 2,

@@ -1,7 +1,6 @@
 import { container, Pointer, row, text } from "../src/ui"
 import { mockDocument, mockWindow } from "../src/ui/mock"
 import { Dispatch, run } from "../src/run"
-import { makeEffects } from "./mock_effects"
 
 const mockRequestAnimationFrame = (callback: () => void) => callback()
 
@@ -18,7 +17,6 @@ enum AppEvent {
 }
 
 test("if update does not modify model then view gets called once", () => {
-    const effects = makeEffects(mockDocument())
     let viewCallCount = 0
     const view = (_: Model) => {
         ++viewCallCount
@@ -34,7 +32,6 @@ test("if update does not modify model then view gets called once", () => {
         window: mockWindow<AppEvent>(),
         document: mockDocument(),
         requestAnimationFrame: mockRequestAnimationFrame,
-        currentTime: effects.currentTime,
         pointerDown: () => {},
     })
     dispatch(AppEvent.A)
@@ -42,7 +39,6 @@ test("if update does not modify model then view gets called once", () => {
 })
 
 test("if update modifies model view gets called again", () => {
-    const effects = makeEffects(mockDocument())
     let viewCallCount = 0
     const view = (_: Model) => {
         ++viewCallCount
@@ -64,7 +60,6 @@ test("if update modifies model view gets called again", () => {
         window: mockWindow<AppEvent>(),
         document: mockDocument(),
         requestAnimationFrame: mockRequestAnimationFrame,
-        currentTime: effects.currentTime,
         pointerDown: () => {},
     })
     dispatch(AppEvent.A)
@@ -72,7 +67,6 @@ test("if update modifies model view gets called again", () => {
 })
 
 test("update gets passed dispatch and can schedule events", () => {
-    const effects = makeEffects(mockDocument())
     const update = (
         model: Model,
         event: AppEvent,
@@ -96,7 +90,6 @@ test("update gets passed dispatch and can schedule events", () => {
         window,
         document: mockDocument(),
         requestAnimationFrame: mockRequestAnimationFrame,
-        currentTime: effects.currentTime,
         pointerDown: () => {},
     })
     expect(window.events).toEqual([])
@@ -105,7 +98,6 @@ test("update gets passed dispatch and can schedule events", () => {
 })
 
 test("pointer down events can lead to on click handlers firing", () => {
-    const effects = makeEffects(mockDocument())
     const view = (_: Model, dispatch: Dispatch<AppEvent>) =>
         row([
             container({
@@ -132,7 +124,6 @@ test("pointer down events can lead to on click handlers firing", () => {
         window,
         document,
         requestAnimationFrame: mockRequestAnimationFrame,
-        currentTime: effects.currentTime,
         pointerDown: (_, pointer) => {
             pointers.push(pointer)
         },
@@ -141,36 +132,41 @@ test("pointer down events can lead to on click handlers firing", () => {
         clientX: 0,
         clientY: 0,
         pointerId: 0,
+        detail: 1,
     })
     document.fireEvent("pointerdown", {
         clientX: 51,
         clientY: 0,
         pointerId: 0,
+        detail: 2,
     })
     document.fireEvent("pointerdown", {
         clientX: 200,
         clientY: 200,
         pointerId: 0,
+        detail: 3,
     })
     expect(window.events).toEqual([AppEvent.A, AppEvent.B])
     expect(pointers).toEqual([
         {
             id: 0,
             position: { x: 0, y: 0 },
+            count: 1,
         },
         {
             id: 0,
             position: { x: 51, y: 0 },
+            count: 2,
         },
         {
             id: 0,
             position: { x: 200, y: 200 },
+            count: 3,
         },
     ])
 })
 
 test("resize events trigger a rerender", () => {
-    const effects = makeEffects(mockDocument())
     let viewCallCount = 0
     const view = (_: Model) => {
         ++viewCallCount
@@ -185,7 +181,6 @@ test("resize events trigger a rerender", () => {
         window,
         document: mockDocument(),
         requestAnimationFrame: mockRequestAnimationFrame,
-        currentTime: effects.currentTime,
         pointerDown: () => {},
     })
     expect(viewCallCount).toEqual(1)

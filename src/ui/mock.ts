@@ -1,7 +1,7 @@
 import {
     Body,
     Canvas,
-    PointerEvent,
+    PointerDownEvent,
     CanvasStyle,
     TexImage2D,
     AddEventListener,
@@ -170,7 +170,7 @@ export class MockCanvas {
 }
 
 export const mockDocument = (simulate_failure: boolean = false) => {
-    const callbacks: ((p: PointerEvent) => void)[] = []
+    const callbacks: ((p: PointerDownEvent) => void)[] = []
     const body: Body = {
         appendChild: (canvas: Canvas) => {},
         style: {
@@ -181,12 +181,12 @@ export const mockDocument = (simulate_failure: boolean = false) => {
         createElement: (tagName: "canvas") => new MockCanvas(simulate_failure),
         addEventListener: (
             event: "pointerdown",
-            callback: (p: PointerEvent) => void
+            callback: (p: PointerDownEvent) => void
         ) => {
             callbacks.push(callback)
         },
         body,
-        fireEvent: (_: "pointerdown", p: PointerEvent) => {
+        fireEvent: (_: "pointerdown", p: PointerDownEvent) => {
             for (const callback of callbacks) {
                 callback(p)
             }

@@ -72,24 +72,8 @@ test("two pointers down on background starts zooming", () => {
         effects,
         model1,
         {
-            kind: EventKind.CLICKED_BACKGROUND,
-        },
-        dispatch
-    )
-    const model3 = update(
-        effects,
-        model2,
-        {
             kind: EventKind.POINTER_DOWN,
             pointer: pointer1,
-        },
-        dispatch
-    )
-    const model4 = update(
-        effects,
-        model3,
-        {
-            kind: EventKind.CLICKED_BACKGROUND,
         },
         dispatch
     )
@@ -106,76 +90,25 @@ test("two pointers down on background starts zooming", () => {
             quickSelect: { kind: QuickSelectKind.NONE },
         },
     }
-    expect(model4).toEqual(expectedModel)
+    expect(model2).toEqual(expectedModel)
 })
 
 test("double clicking background opens finder", () => {
-    let tracked = makeTracked()
-    const pointer: Pointer = {
-        id: 0,
-        position: { x: 0, y: 0 },
-    }
+    const effects = makeEffects(mockDocument())
+    const dispatch = () => {}
     const model1 = update(
-        tracked.effects,
+        effects,
         model,
         {
-            kind: EventKind.POINTER_DOWN,
-            pointer,
-        },
-        tracked.dispatch
-    )
-    expect(tracked.events).toEqual([])
-    expect(tracked.times).toEqual([])
-    tracked = resetTracked(tracked)
-    const model2 = update(
-        tracked.effects,
-        model1,
-        {
             kind: EventKind.CLICKED_BACKGROUND,
+            count: 2,
+            position: { x: 50, y: 50 },
         },
-        tracked.dispatch
+        dispatch
     )
-    expect(tracked.events).toEqual([{ kind: EventKind.OPEN_FINDER_TIMEOUT }])
-    expect(tracked.times).toEqual([300])
-    tracked = resetTracked(tracked)
-    const model3 = update(
-        tracked.effects,
-        model2,
-        {
-            kind: EventKind.POINTER_UP,
-            pointer,
-        },
-        tracked.dispatch
-    )
-    expect(tracked.events).toEqual([])
-    expect(tracked.times).toEqual([])
-    tracked = resetTracked(tracked)
-    const model4 = update(
-        tracked.effects,
-        model3,
-        {
-            kind: EventKind.POINTER_DOWN,
-            pointer,
-        },
-        tracked.dispatch
-    )
-    expect(tracked.events).toEqual([])
-    expect(tracked.times).toEqual([])
-    tracked = resetTracked(tracked)
-    const model5 = update(
-        tracked.effects,
-        model4,
-        {
-            kind: EventKind.CLICKED_BACKGROUND,
-        },
-        tracked.dispatch
-    )
-    expect(tracked.events).toEqual([])
-    expect(tracked.times).toEqual([])
-    tracked = resetTracked(tracked)
     const expectedModel: Model = {
         ...model,
-        pointers: [pointer],
+        pointers: [],
         focus: {
             kind: FocusKind.FINDER_INSERT,
             finder: {
@@ -186,111 +119,35 @@ test("double clicking background opens finder", () => {
             quickSelect: { kind: QuickSelectKind.NONE },
             uppercase: false,
         },
-        nodePlacementLocation: { x: 0, y: 0, show: false },
+        nodePlacementLocation: { x: 50, y: 50, show: false },
     }
-    expect(model5).toEqual(expectedModel)
+    expect(model1).toEqual(expectedModel)
 })
 
 test("clicking background then waiting too long cancels opens finder", () => {
-    let tracked = makeTracked()
-    const pointer: Pointer = {
-        id: 0,
-        position: { x: 0, y: 0 },
-    }
+    const effects = makeEffects(mockDocument())
+    const dispatch = () => {}
     const model1 = update(
-        tracked.effects,
+        effects,
         model,
         {
-            kind: EventKind.POINTER_DOWN,
-            pointer,
+            kind: EventKind.CLICKED_BACKGROUND,
+            count: 1,
+            position: { x: 0, y: 0 },
         },
-        tracked.dispatch
+        dispatch
     )
-    expect(tracked.events).toEqual([])
-    expect(tracked.times).toEqual([])
-    tracked = resetTracked(tracked)
     const model2 = update(
-        tracked.effects,
+        effects,
         model1,
         {
             kind: EventKind.CLICKED_BACKGROUND,
+            count: 1,
+            position: { x: 0, y: 0 },
         },
-        tracked.dispatch
+        dispatch
     )
-    expect(tracked.events).toEqual([{ kind: EventKind.OPEN_FINDER_TIMEOUT }])
-    expect(tracked.times).toEqual([300])
-    tracked = resetTracked(tracked)
-    const model3 = update(
-        tracked.effects,
-        model2,
-        {
-            kind: EventKind.POINTER_UP,
-            pointer,
-        },
-        tracked.dispatch
-    )
-    expect(tracked.events).toEqual([])
-    expect(tracked.times).toEqual([])
-    tracked = resetTracked(tracked)
-    const model4 = update(
-        tracked.effects,
-        model3,
-        {
-            kind: EventKind.OPEN_FINDER_TIMEOUT,
-        },
-        tracked.dispatch
-    )
-    expect(tracked.events).toEqual([])
-    expect(tracked.times).toEqual([])
-    expect(model4).toEqual(model)
-})
-
-test("clicking background triggers finder open timeout", () => {
-    let tracked = makeTracked()
-    const pointer: Pointer = {
-        id: 0,
-        position: { x: 0, y: 0 },
-    }
-    const model1 = update(
-        tracked.effects,
-        model,
-        {
-            kind: EventKind.POINTER_DOWN,
-            pointer,
-        },
-        tracked.dispatch
-    )
-    expect(tracked.events).toEqual([])
-    expect(tracked.times).toEqual([])
-    tracked = resetTracked(tracked)
-    const model2 = update(
-        tracked.effects,
-        model1,
-        {
-            kind: EventKind.CLICKED_BACKGROUND,
-        },
-        tracked.dispatch
-    )
-    expect(tracked.events).toEqual([{ kind: EventKind.OPEN_FINDER_TIMEOUT }])
-    expect(tracked.times).toEqual([300])
-    tracked = resetTracked(tracked)
-    const model3 = update(
-        tracked.effects,
-        model2,
-        {
-            kind: EventKind.POINTER_UP,
-            pointer,
-        },
-        tracked.dispatch
-    )
-    expect(tracked.events).toEqual([])
-    expect(tracked.times).toEqual([])
-    tracked = resetTracked(tracked)
-    const expectedModel: Model = {
-        ...model,
-        openFinderFirstClick: true,
-    }
-    expect(model3).toEqual(expectedModel)
+    expect(model2).toEqual(model)
 })
 
 test("two pointers down then up puts you in pan mode", () => {
@@ -1038,51 +895,9 @@ test("double click opens finder", () => {
         effects,
         model0,
         {
-            kind: EventKind.POINTER_DOWN,
-            pointer: {
-                id: 0,
-                position: { x: 0, y: 0 },
-            },
-        },
-        dispatch
-    )
-    const model2 = update(
-        effects,
-        model1,
-        {
             kind: EventKind.CLICKED_BACKGROUND,
-        },
-        dispatch
-    )
-    const model3 = update(
-        effects,
-        model2,
-        {
-            kind: EventKind.POINTER_UP,
-            pointer: {
-                id: 0,
-                position: { x: 0, y: 0 },
-            },
-        },
-        dispatch
-    )
-    const model4 = update(
-        effects,
-        model3,
-        {
-            kind: EventKind.POINTER_DOWN,
-            pointer: {
-                id: 0,
-                position: { x: 50, y: 50 },
-            },
-        },
-        dispatch
-    )
-    const model5 = update(
-        effects,
-        model4,
-        {
-            kind: EventKind.CLICKED_BACKGROUND,
+            count: 2,
+            position: { x: 50, y: 50 },
         },
         dispatch
     )
@@ -1099,14 +914,8 @@ test("double click opens finder", () => {
             uppercase: false,
         },
         nodePlacementLocation: { x: 50, y: 50, show: false },
-        pointers: [
-            {
-                id: 0,
-                position: { x: 50, y: 50 },
-            },
-        ],
     }
-    expect(model5).toEqual(expectedModel)
+    expect(model1).toEqual(expectedModel)
 })
 
 test("f key down when finder is not shown opens finder", () => {
@@ -1912,16 +1721,12 @@ test("clicking background when a number node is selected deselects it", () => {
         onTableUploaded,
     })
     const body = model0.graph.nodes[node].body!
-    const pointer: Pointer = {
-        id: 0,
-        position: { x: 0, y: 0 },
-    }
     const model1 = update(
         effects,
         model0,
         {
-            kind: EventKind.POINTER_DOWN,
-            pointer,
+            kind: EventKind.CLICKED_BODY,
+            body,
         },
         dispatch
     )
@@ -1929,34 +1734,9 @@ test("clicking background when a number node is selected deselects it", () => {
         effects,
         model1,
         {
-            kind: EventKind.CLICKED_BODY,
-            body,
-        },
-        dispatch
-    )
-    const model3 = update(
-        effects,
-        model2,
-        {
-            kind: EventKind.POINTER_UP,
-            pointer,
-        },
-        dispatch
-    )
-    const model4 = update(
-        effects,
-        model3,
-        {
-            kind: EventKind.POINTER_DOWN,
-            pointer,
-        },
-        dispatch
-    )
-    const model5 = update(
-        effects,
-        model4,
-        {
             kind: EventKind.CLICKED_BACKGROUND,
+            count: 1,
+            position: { x: 0, y: 0 },
         },
         dispatch
     )
@@ -1967,10 +1747,8 @@ test("clicking background when a number node is selected deselects it", () => {
             pointerAction: { kind: PointerActionKind.PAN },
             quickSelect: { kind: QuickSelectKind.NONE },
         },
-        openFinderFirstClick: true,
-        pointers: [pointer],
     }
-    expect(model5).toEqual(expectedModel)
+    expect(model2).toEqual(expectedModel)
 })
 
 test("pressing Escape when a number node is selected deselects it", () => {
@@ -2351,16 +2129,12 @@ test("clicking background when a node is selected deselects it", () => {
         effects,
         onTableUploaded,
     })
-    const pointer: Pointer = {
-        id: 0,
-        position: { x: 0, y: 0 },
-    }
     const model2 = update(
         effects,
         model1,
         {
-            kind: EventKind.POINTER_DOWN,
-            pointer,
+            kind: EventKind.CLICKED_NODE,
+            node,
         },
         dispatch
     )
@@ -2368,34 +2142,9 @@ test("clicking background when a node is selected deselects it", () => {
         effects,
         model2,
         {
-            kind: EventKind.CLICKED_NODE,
-            node,
-        },
-        dispatch
-    )
-    const model4 = update(
-        effects,
-        model3,
-        {
-            kind: EventKind.POINTER_UP,
-            pointer,
-        },
-        dispatch
-    )
-    const model5 = update(
-        effects,
-        model4,
-        {
-            kind: EventKind.POINTER_DOWN,
-            pointer,
-        },
-        dispatch
-    )
-    const model6 = update(
-        effects,
-        model5,
-        {
             kind: EventKind.CLICKED_BACKGROUND,
+            count: 1,
+            position: { x: 0, y: 0 },
         },
         dispatch
     )
@@ -2406,10 +2155,9 @@ test("clicking background when a node is selected deselects it", () => {
             pointerAction: { kind: PointerActionKind.PAN },
             quickSelect: { kind: QuickSelectKind.NONE },
         },
-        openFinderFirstClick: true,
-        pointers: [pointer],
+        pointers: [],
     }
-    expect(model6).toEqual(expectedModel)
+    expect(model3).toEqual(expectedModel)
 })
 
 test("pressing escape when a node is selected deselects it", () => {
@@ -2475,52 +2223,23 @@ test("clicking background when a input is selected deselects it", () => {
         effects,
         onTableUploaded,
     })
-    const pointer: Pointer = {
-        id: 0,
-        position: { x: 0, y: 0 },
-    }
+    const input = (model1.graph.nodes[node] as NodeTransform).inputs[0]
     const model2 = update(
         effects,
         model1,
-        {
-            kind: EventKind.POINTER_DOWN,
-            pointer,
-        },
-        dispatch
-    )
-    const input = (model2.graph.nodes[node] as NodeTransform).inputs[0]
-    const model3 = update(
-        effects,
-        model2,
         {
             kind: EventKind.CLICKED_INPUT,
             input,
         },
         dispatch
     )
-    const model4 = update(
+    const model3 = update(
         effects,
-        model3,
-        {
-            kind: EventKind.POINTER_UP,
-            pointer,
-        },
-        dispatch
-    )
-    const model5 = update(
-        effects,
-        model4,
-        {
-            kind: EventKind.POINTER_DOWN,
-            pointer,
-        },
-        dispatch
-    )
-    const model6 = update(
-        effects,
-        model5,
+        model2,
         {
             kind: EventKind.CLICKED_BACKGROUND,
+            count: 1,
+            position: { x: 0, y: 0 },
         },
         dispatch
     )
@@ -2531,10 +2250,8 @@ test("clicking background when a input is selected deselects it", () => {
             pointerAction: { kind: PointerActionKind.PAN },
             quickSelect: { kind: QuickSelectKind.NONE },
         },
-        openFinderFirstClick: true,
-        pointers: [pointer],
     }
-    expect(model6).toEqual(expectedModel)
+    expect(model3).toEqual(expectedModel)
 })
 
 test("pressing escape when a input is selected deselects it", () => {
@@ -2601,52 +2318,23 @@ test("clicking background when a output is selected deselects it", () => {
         effects,
         onTableUploaded,
     })
-    const pointer: Pointer = {
-        id: 0,
-        position: { x: 0, y: 0 },
-    }
+    const output = model1.graph.nodes[node].outputs[0]
     const model2 = update(
         effects,
         model1,
-        {
-            kind: EventKind.POINTER_DOWN,
-            pointer,
-        },
-        dispatch
-    )
-    const output = model2.graph.nodes[node].outputs[0]
-    const model3 = update(
-        effects,
-        model2,
         {
             kind: EventKind.CLICKED_OUTPUT,
             output,
         },
         dispatch
     )
-    const model4 = update(
+    const model3 = update(
         effects,
-        model3,
-        {
-            kind: EventKind.POINTER_UP,
-            pointer,
-        },
-        dispatch
-    )
-    const model5 = update(
-        effects,
-        model4,
-        {
-            kind: EventKind.POINTER_DOWN,
-            pointer,
-        },
-        dispatch
-    )
-    const model6 = update(
-        effects,
-        model5,
+        model2,
         {
             kind: EventKind.CLICKED_BACKGROUND,
+            count: 1,
+            position: { x: 0, y: 0 },
         },
         dispatch
     )
@@ -2657,10 +2345,8 @@ test("clicking background when a output is selected deselects it", () => {
             pointerAction: { kind: PointerActionKind.PAN },
             quickSelect: { kind: QuickSelectKind.NONE },
         },
-        openFinderFirstClick: true,
-        pointers: [pointer],
     }
-    expect(model6).toEqual(expectedModel)
+    expect(model3).toEqual(expectedModel)
 })
 
 test("pressing escape when a output is selected deselects it", () => {
@@ -3703,89 +3389,6 @@ test("pointer move when body selected updates node placement location", () => {
     expect(model4).toEqual(expectedModel)
 })
 
-test("pointer move when finder open only updates pointer state", () => {
-    const effects = makeEffects(mockDocument())
-    const dispatch = () => {}
-    const pointer0: Pointer = {
-        id: 0,
-        position: { x: 0, y: 0 },
-    }
-    const model1 = update(
-        effects,
-        model,
-        {
-            kind: EventKind.POINTER_DOWN,
-            pointer: pointer0,
-        },
-        dispatch
-    )
-    const model2 = update(
-        effects,
-        model1,
-        {
-            kind: EventKind.CLICKED_BACKGROUND,
-        },
-        dispatch
-    )
-    const model3 = update(
-        effects,
-        model2,
-        {
-            kind: EventKind.POINTER_UP,
-            pointer: pointer0,
-        },
-        dispatch
-    )
-    const pointer1: Pointer = {
-        id: 0,
-        position: { x: 0, y: 0 },
-    }
-    const model4 = update(
-        effects,
-        model3,
-        {
-            kind: EventKind.POINTER_DOWN,
-            pointer: pointer1,
-        },
-        dispatch
-    )
-    const model5 = update(
-        effects,
-        model4,
-        {
-            kind: EventKind.CLICKED_BACKGROUND,
-        },
-        dispatch
-    )
-    const model6 = update(
-        effects,
-        model5,
-        {
-            kind: EventKind.POINTER_UP,
-            pointer: pointer1,
-        },
-        dispatch
-    )
-    const pointer2: Pointer = {
-        id: 0,
-        position: { x: 50, y: 50 },
-    }
-    const model7 = update(
-        effects,
-        model6,
-        {
-            kind: EventKind.POINTER_MOVE,
-            pointer: pointer2,
-        },
-        dispatch
-    )
-    const expectedModel: Model = {
-        ...model6,
-        pointers: [],
-    }
-    expect(model7).toEqual(expectedModel)
-})
-
 test("pressing f with node selected opens finder", () => {
     const effects = makeEffects(mockDocument())
     const onTableUploaded = () => {}
@@ -4110,32 +3713,20 @@ test("clicking background with finder open closes it", () => {
         },
         dispatch
     )
-    const pointer: Pointer = {
-        id: 0,
-        position: { x: 0, y: 0 },
-    }
     const model2 = update(
         effects,
         model1,
         {
-            kind: EventKind.POINTER_DOWN,
-            pointer,
-        },
-        dispatch
-    )
-    const model3 = update(
-        effects,
-        model2,
-        {
             kind: EventKind.CLICKED_BACKGROUND,
+            count: 1,
+            position: { x: 0, y: 0 },
         },
         dispatch
     )
     const expectedModel: Model = {
         ...model,
-        pointers: [pointer],
     }
-    expect(model3).toEqual(expectedModel)
+    expect(model2).toEqual(expectedModel)
 })
 
 test("pointer move after moving with keyboard stops showing node placement location", () => {

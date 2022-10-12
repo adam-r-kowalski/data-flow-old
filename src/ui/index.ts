@@ -285,4 +285,10 @@ export interface Pointer {
     position: Position
 }
 
-export type OnClick = (count: number) => void
+export interface ClickEvent {
+    id: number
+    position: Position
+    count: number
+}
+
+export type OnClick = (event: ClickEvent) => void

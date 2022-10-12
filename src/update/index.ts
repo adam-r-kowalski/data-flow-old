@@ -57,6 +57,7 @@ import { maybeStartMoveNode, maybeStopMoveNode, moveNode } from "./move_node"
 import {
     AppEvent,
     ChangeNode,
+    ClickedBackground,
     ClickedBody,
     ClickedInput,
     ClickedNode,
@@ -97,7 +98,6 @@ const pointerDown = (model: Model, event: PointerDown): Model => {
                 : { kind: PointerActionKind.NONE }
         return {
             ...model,
-            openFinderFirstClick: false,
             focus: {
                 kind: FocusKind.NONE,
                 pointerAction,
@@ -329,11 +329,6 @@ const clickedOutput = (
     generateUUID: GenerateUUID
 ): Model => selectOutput(model, event.output, generateUUID)
 
-const openFinderTimeout = (model: Model): Model => ({
-    ...model,
-    openFinderFirstClick: false,
-})
-
 export const openFinderInsert = (model: Model): Model => ({
     ...model,
     focus: {
@@ -346,7 +341,6 @@ export const openFinderInsert = (model: Model): Model => ({
         quickSelect: { kind: QuickSelectKind.NONE },
         uppercase: false,
     },
-    openFinderFirstClick: false,
 })
 
 export const openFinderChange = (model: Model, node: UUID): Model => ({
@@ -362,7 +356,6 @@ export const openFinderChange = (model: Model, node: UUID): Model => ({
         node,
         uppercase: false,
     },
-    openFinderFirstClick: false,
 })
 
 export const updateNumberText = (
@@ -767,7 +760,7 @@ const clickedBody = (model: Model, { body }: ClickedBody): Model =>
 
 const clickedBackground = (
     model: Model,
-    openFinderTimeoutAfter: (ms: number) => void
+    { count, position: { x, y } }: ClickedBackground
 ): Model => {
     if (
         [FocusKind.FINDER_INSERT, FocusKind.FINDER_CHANGE].includes(
@@ -775,8 +768,7 @@ const clickedBackground = (
         )
     ) {
         return clearFocus(model)
-    } else if (model.openFinderFirstClick) {
-        const { x, y } = model.pointers[0].position
+    } else if (count === 2) {
         return openFinderInsert({
             ...model,
             nodePlacementLocation: { x, y, show: false },
@@ -790,10 +782,8 @@ const clickedBackground = (
                       pointerAction: { kind: PointerActionKind.PAN },
                       quickSelect: { kind: QuickSelectKind.NONE },
                   }
-        openFinderTimeoutAfter(300)
         return {
             ...model,
-            openFinderFirstClick: model.pointers.length == 1,
             focus,
         }
     }
@@ -1055,12 +1045,6 @@ export const update = (
     const moveNodeAfter = (ms: number) => {
         effects.setTimeout(() => dispatch({ kind: EventKind.MOVE_NODE }), ms)
     }
-    const openFinderTimeoutAfter = (ms: number) => {
-        effects.setTimeout(
-            () => dispatch({ kind: EventKind.OPEN_FINDER_TIMEOUT }),
-            ms
-        )
-    }
     const onTableUploaded = (table: Table, node: UUID) => {
         dispatch({ kind: EventKind.UPLOAD_CSV, table, node })
     }
@@ -1079,8 +1063,6 @@ export const update = (
             return clickedInput(model, event, effects.generateUUID)
         case EventKind.CLICKED_OUTPUT:
             return clickedOutput(model, event, effects.generateUUID)
-        case EventKind.OPEN_FINDER_TIMEOUT:
-            return openFinderTimeout(model)
         case EventKind.KEYDOWN:
             return keyDown({
                 model,
@@ -1100,7 +1082,7 @@ export const update = (
         case EventKind.CLICKED_BODY:
             return clickedBody(model, event)
         case EventKind.CLICKED_BACKGROUND:
-            return clickedBackground(model, openFinderTimeoutAfter)
+            return clickedBackground(model, event)
         case EventKind.CHANGE_NODE:
             return changeNode(model, event)
         case EventKind.DELETE_NODE:

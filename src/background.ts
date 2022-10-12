@@ -6,4 +6,4 @@ interface Properties {
 }
 
 export const view = ({ color, onClick }: Properties): UI =>
-    container({ id: "background", color, onClick })
+    container({ color, onClick })

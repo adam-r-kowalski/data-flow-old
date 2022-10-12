@@ -1,9 +1,8 @@
 import { identity, translate } from "../../src/linear_algebra/matrix3x3"
 import { mockDocument, mockWindow } from "../../src/ui/mock"
 import { pointerDown } from "../../src/ui/pointer_down"
-import { render } from "../../src/ui/render"
-import { makeRenderer } from "../../src/ui/renderer"
-import { container, scene } from "../../src/ui"
+import { makeRenderer, render } from "../../src/ui/renderer"
+import { ClickEvent, container, scene } from "../../src/ui"
 
 const red = { red: 255, green: 0, blue: 0, alpha: 255 }
 const green = { red: 0, green: 255, blue: 0, alpha: 255 }
@@ -66,14 +65,11 @@ test("click first container", () => {
         ],
     })
     render(renderer, ui)
-    pointerDown(
-        renderer,
-        {
-            position: { x: 125, y: 225 },
-            id: 0,
-        },
-        0
-    )
+    pointerDown(renderer, {
+        position: { x: 125, y: 225 },
+        id: 0,
+        count: 0,
+    })
     expect(model).toEqual({ a: 1, b: 0 })
 })
 
@@ -103,14 +99,11 @@ test("click second container", () => {
         ],
     })
     render(renderer, ui)
-    pointerDown(
-        renderer,
-        {
-            position: { x: 325, y: 275 },
-            id: 0,
-        },
-        0
-    )
+    pointerDown(renderer, {
+        position: { x: 325, y: 275 },
+        id: 0,
+        count: 0,
+    })
     expect(model).toEqual({ a: 0, b: 1 })
 })
 
@@ -140,14 +133,11 @@ test("click translated container", () => {
         ],
     })
     render(renderer, ui)
-    pointerDown(
-        renderer,
-        {
-            position: { x: 25, y: 225 },
-            id: 0,
-        },
-        0
-    )
+    pointerDown(renderer, {
+        position: { x: 25, y: 225 },
+        id: 0,
+        count: 0,
+    })
     expect(model).toEqual({ a: 1, b: 0 })
 })
 
@@ -161,9 +151,8 @@ test("renderer starts with identity camera", () => {
 test("double click", () => {
     const renderer = mockRenderer()
     let count = 0
-    const dispatch = (c: number) => (count = c)
+    const dispatch = (event: ClickEvent) => (count = event.count)
     const ui = container({
-        id: "id",
         width: 50,
         height: 50,
         color: red,
@@ -173,57 +162,16 @@ test("double click", () => {
     })
     render(renderer, ui)
     expect(count).toEqual(0)
-    pointerDown(
-        renderer,
-        {
-            position: { x: 125, y: 225 },
-            id: 0,
-        },
-        0
-    )
+    pointerDown(renderer, {
+        position: { x: 125, y: 225 },
+        id: 0,
+        count: 1,
+    })
     expect(count).toEqual(1)
-    pointerDown(
-        renderer,
-        {
-            position: { x: 125, y: 225 },
-            id: 0,
-        },
-        0
-    )
+    pointerDown(renderer, {
+        position: { x: 125, y: 225 },
+        id: 0,
+        count: 2,
+    })
     expect(count).toEqual(2)
-})
-
-test("double click after timeout", () => {
-    const renderer = mockRenderer()
-    let count = 0
-    const dispatch = (c: number) => (count = c)
-    const ui = container({
-        id: "id",
-        width: 50,
-        height: 50,
-        color: red,
-        x: 100,
-        y: 200,
-        onClick: dispatch,
-    })
-    render(renderer, ui)
-    expect(count).toEqual(0)
-    pointerDown(
-        renderer,
-        {
-            position: { x: 125, y: 225 },
-            id: 0,
-        },
-        0
-    )
-    expect(count).toEqual(1)
-    pointerDown(
-        renderer,
-        {
-            position: { x: 125, y: 225 },
-            id: 0,
-        },
-        260
-    )
-    expect(count).toEqual(1)
 })

@@ -2,11 +2,10 @@ import { container, scene, geometry, layout } from "../../src/ui"
 import { initCameraStack } from "../../src/ui/camera_stack"
 import { identity, translate } from "../../src/linear_algebra/matrix3x3"
 import { mockDocument, mockWindow } from "../../src/ui/mock"
-import { makeRenderer, measureText } from "../../src/ui/renderer"
+import { makeRenderer, measureText, render } from "../../src/ui/renderer"
 import { reduce } from "../../src/ui/reduce"
 import * as reducer from "../../src/ui/reducer"
 import { batchGeometry, cubicBezier } from "../../src/ui/batch_geometry"
-import { render } from "../../src/ui/render"
 
 const red = { red: 255, green: 0, blue: 0, alpha: 255 }
 const green = { red: 0, green: 255, blue: 0, alpha: 255 }

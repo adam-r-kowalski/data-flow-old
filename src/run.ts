@@ -1,14 +1,7 @@
 import { pointerDown } from "./ui/pointer_down"
-import { render } from "./ui/render"
-import { makeRenderer, resize } from "./ui/renderer"
+import { makeRenderer, resize, render } from "./ui/renderer"
 import { Pointer, UI } from "./ui"
-import { Document, Window, PointerEvent } from "./ui/dom"
-import { CurrentTime } from "./effects"
-
-export const transformPointer = (p: PointerEvent): Pointer => ({
-    id: p.pointerId,
-    position: { x: p.clientX, y: p.clientY },
-})
+import { Document, Window } from "./ui/dom"
 
 export type Dispatch<AppEvent> = (event: AppEvent) => void
 
@@ -27,22 +20,14 @@ interface Properties<Model, AppEvent> {
     window: Window<AppEvent>
     document: Document
     requestAnimationFrame: (callback: () => void) => void
-    currentTime: CurrentTime
     pointerDown: (dispatch: Dispatch<AppEvent>, pointer: Pointer) => void
 }
 
 export const run = <Model, AppEvent>(
     properties: Properties<Model, AppEvent>
 ): Dispatch<AppEvent> => {
-    let {
-        model,
-        view,
-        update,
-        window,
-        document,
-        requestAnimationFrame,
-        currentTime,
-    } = properties
+    let { model, view, update, window, document, requestAnimationFrame } =
+        properties
     const renderer = makeRenderer({
         width: window.innerWidth,
         height: window.innerHeight,
@@ -67,9 +52,14 @@ export const run = <Model, AppEvent>(
     const dispatch = (event: AppEvent): void => window.postMessage(event)
     document.body.appendChild(renderer.canvas)
     document.addEventListener("pointerdown", (p) => {
-        const transformed = transformPointer(p)
+        console.log(p.detail)
+        const transformed = {
+            id: p.pointerId,
+            count: p.detail,
+            position: { x: p.clientX, y: p.clientY },
+        }
         properties.pointerDown(dispatch, transformed)
-        pointerDown(renderer, transformed, currentTime())
+        pointerDown(renderer, transformed)
     })
     window.addEventListener("resize", () => {
         resize(renderer, {

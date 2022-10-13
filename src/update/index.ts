@@ -65,6 +65,7 @@ import {
     DeleteInputEdge,
     DeleteNode,
     DeleteOutputEdges,
+    DraggedBackground,
     EventKind,
     FinderChange,
     FinderInsert,
@@ -789,6 +790,11 @@ const clickedBackground = (
     }
 }
 
+const draggedBackground = (model: Model, event: DraggedBackground): Model => {
+    console.log(event)
+    return model
+}
+
 const changeNode = (model: Model, { node }: ChangeNode): Model =>
     openFinderChange(model, node)
 
@@ -1083,6 +1089,8 @@ export const update = (
             return clickedBody(model, event)
         case EventKind.CLICKED_BACKGROUND:
             return clickedBackground(model, event)
+        case EventKind.DRAGGED_BACKGROUND:
+            return draggedBackground(model, event)
         case EventKind.CHANGE_NODE:
             return changeNode(model, event)
         case EventKind.DELETE_NODE:

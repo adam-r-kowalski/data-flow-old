@@ -1200,6 +1200,7 @@ test("view with no nodes or edges", () => {
         container({
             color: model.theme.background,
             onClick: () => {},
+            onDrag: () => {},
         }),
         scene({ camera: model.camera, children: [], connections: [] }),
         contextMenu({
@@ -1258,6 +1259,7 @@ test("view with no nodes or edges but finder shown", () => {
         container({
             color: model.theme.background,
             onClick: () => {},
+            onDrag: () => {},
         }),
         scene({ camera: model.camera, children: [], connections: [] }),
         finder.view({
@@ -1316,6 +1318,7 @@ test("view with no nodes or edges but finder shown capitalized", () => {
         container({
             color: model.theme.background,
             onClick: () => {},
+            onDrag: () => {},
         }),
         scene({ camera: model.camera, children: [], connections: [] }),
         finder.view({
@@ -1385,6 +1388,7 @@ test("view with positive number", () => {
         container({
             color: model.theme.background,
             onClick: () => {},
+            onDrag: () => {},
         }),
         scene({
             camera: model.camera,
@@ -1464,6 +1468,7 @@ test("view with negative number", () => {
         container({
             color: model.theme.background,
             onClick: () => {},
+            onDrag: () => {},
         }),
         scene({
             camera: model.camera,
@@ -1543,6 +1548,7 @@ test("view with text", () => {
         container({
             color: model.theme.background,
             onClick: () => {},
+            onDrag: () => {},
         }),
         scene({
             camera: model.camera,
@@ -1652,6 +1658,7 @@ test("view with three nodes and no edges", () => {
         container({
             color: model.theme.background,
             onClick: () => {},
+            onDrag: () => {},
         }),
         scene({
             camera: model.camera,
@@ -1788,6 +1795,7 @@ test("view with three nodes and no edges", () => {
         container({
             color: model.theme.background,
             onClick: () => {},
+            onDrag: () => {},
         }),
         scene({
             camera: model.camera,
@@ -1947,6 +1955,7 @@ test("view with three nodes and one edges", () => {
         container({
             color: model.theme.background,
             onClick: () => {},
+            onDrag: () => {},
         }),
         scene({
             camera: model.camera,
@@ -2064,6 +2073,7 @@ test("view with body selected", () => {
         container({
             color: model.theme.background,
             onClick: () => {},
+            onDrag: () => {},
         }),
         scene({
             camera: model.camera,
@@ -2199,6 +2209,7 @@ test("view with input selected", () => {
         container({
             color: model.theme.background,
             onClick: () => {},
+            onDrag: () => {},
         }),
         scene({
             camera: model.camera,
@@ -2355,6 +2366,7 @@ test("view with output selected", () => {
         container({
             color: model.theme.background,
             onClick: () => {},
+            onDrag: () => {},
         }),
         scene({
             camera: model.camera,
@@ -2438,6 +2450,7 @@ test("view with node placement location shown", () => {
         container({
             color: model.theme.background,
             onClick: () => {},
+            onDrag: () => {},
         }),
         scene({ camera: model.camera, children: [], connections: [] }),
         scene({

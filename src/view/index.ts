@@ -12,6 +12,7 @@ import {
     Connection,
     UI,
     PointerDown,
+    PointerDrag,
 } from "../ui"
 import {
     BodyKind,
@@ -459,6 +460,8 @@ export const view = (model: Model, dispatch: Dispatch<AppEvent>): UI => {
         })
     const onClickBackground = ({ count, pointer: { position } }: PointerDown) =>
         dispatch({ kind: EventKind.CLICKED_BACKGROUND, count, position })
+    const onDragBackground = ({ x, y }: PointerDrag) =>
+        dispatch({ kind: EventKind.DRAGGED_BACKGROUND, x, y })
     const onFinderInsert = (option: string) =>
         dispatch({ kind: EventKind.FINDER_INSERT, option })
     const onFinderChange = (option: string, node: UUID) =>
@@ -497,6 +500,7 @@ export const view = (model: Model, dispatch: Dispatch<AppEvent>): UI => {
         background.view({
             color: model.theme.background,
             onClick: onClickBackground,
+            onDrag: onDragBackground,
         }),
         scene({ camera: model.camera, children: nodes, connections }),
     ]

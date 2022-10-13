@@ -41,7 +41,6 @@ export interface PointerMove {
 export interface PointerDown {
     readonly kind: EventKind.POINTER_DOWN
     readonly pointer: Pointer
-    readonly count: number
 }
 
 export interface PointerUp {

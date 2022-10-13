@@ -8,7 +8,6 @@ import { Columns, Value } from "./model/table"
 import { EventKind } from "./event"
 import { makeEffects } from "./effects"
 import { emptyModel } from "./model/empty"
-import { Pointer } from "./ui"
 
 type Row = { [name: string]: Value }
 
@@ -22,11 +21,10 @@ const dispatch = run({
     window,
     document: doc,
     requestAnimationFrame,
-    pointerDown: (dispatch, { pointer, count }) => {
+    pointerDown: (dispatch, pointer) => {
         dispatch({
             kind: EventKind.POINTER_DOWN,
             pointer,
-            count,
         })
     },
     pointerMove: (dispatch, pointer) => {
@@ -35,23 +33,17 @@ const dispatch = run({
             pointer,
         })
     },
+    pointerUp: (dispatch, pointer) => {
+        dispatch({
+            kind: EventKind.POINTER_UP,
+            pointer,
+        })
+    },
     supportsCoalesced:
         typeof PointerEvent.prototype.getCoalescedEvents === "function",
 })
 
 dispatch({ kind: EventKind.LOAD_DEMO_MODEL })
-
-const transformPointer = (p: PointerEvent): Pointer => ({
-    id: p.pointerId,
-    position: { x: p.clientX, y: p.clientY },
-})
-
-document.addEventListener("pointerup", (p) => {
-    dispatch({
-        kind: EventKind.POINTER_UP,
-        pointer: transformPointer(p),
-    })
-})
 
 document.addEventListener(
     "wheel",

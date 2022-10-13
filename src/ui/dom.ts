@@ -172,23 +172,18 @@ export interface Body {
     style: BodyStyle
 }
 
-export interface PointerDownEvent {
+export interface PointerEvent {
     clientX: number
     clientY: number
     pointerId: number
     detail: number
-}
-
-export interface PointerMoveEvent {
-    clientX: number
-    clientY: number
-    pointerId: number
-    getCoalescedEvents: () => PointerMoveEvent[]
+    getCoalescedEvents: () => PointerEvent[]
 }
 
 export type DocumentEventListener = {
-    (event: "pointerdown", callback: (p: PointerDownEvent) => void): void
-    (event: "pointermove", callback: (p: PointerMoveEvent) => void): void
+    (event: "pointerdown", callback: (p: PointerEvent) => void): void
+    (event: "pointermove", callback: (p: PointerEvent) => void): void
+    (event: "pointerup", callback: (p: PointerEvent) => void): void
 }
 
 export interface Document {

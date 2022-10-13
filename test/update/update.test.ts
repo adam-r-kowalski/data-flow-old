@@ -54,10 +54,12 @@ test("two pointers down on background starts zooming", () => {
     const pointer0: Pointer = {
         id: 0,
         position: { x: 0, y: 0 },
+        count: 1,
     }
     const pointer1: Pointer = {
         id: 1,
         position: { x: 0, y: 0 },
+        count: 1,
     }
     const model1 = update(
         effects,
@@ -65,7 +67,6 @@ test("two pointers down on background starts zooming", () => {
         {
             kind: EventKind.POINTER_DOWN,
             pointer: pointer0,
-            count: 0,
         },
         dispatch
     )
@@ -75,7 +76,6 @@ test("two pointers down on background starts zooming", () => {
         {
             kind: EventKind.POINTER_DOWN,
             pointer: pointer1,
-            count: 0,
         },
         dispatch
     )
@@ -158,10 +158,12 @@ test("two pointers down then up puts you in pan mode", () => {
     const pointer0: Pointer = {
         id: 0,
         position: { x: 0, y: 0 },
+        count: 1,
     }
     const pointer1: Pointer = {
         id: 1,
         position: { x: 0, y: 0 },
+        count: 1,
     }
     const model1 = update(
         effects,
@@ -169,7 +171,6 @@ test("two pointers down then up puts you in pan mode", () => {
         {
             kind: EventKind.POINTER_DOWN,
             pointer: pointer0,
-            count: 0,
         },
         dispatch
     )
@@ -179,7 +180,6 @@ test("two pointers down then up puts you in pan mode", () => {
         {
             kind: EventKind.POINTER_DOWN,
             pointer: pointer1,
-            count: 0,
         },
         dispatch
     )
@@ -208,9 +208,10 @@ test("pointer down when finder open tracks pointer", () => {
     const effects = makeEffects(mockDocument())
     const dispatch = () => {}
     const model0 = openFinderInsert(model)
-    const pointer = {
+    const pointer: Pointer = {
         id: 0,
         position: { x: 0, y: 0 },
+        count: 1,
     }
     const model1 = update(
         effects,
@@ -218,7 +219,6 @@ test("pointer down when finder open tracks pointer", () => {
         {
             kind: EventKind.POINTER_DOWN,
             pointer,
-            count: 0,
         },
         dispatch
     )
@@ -293,6 +293,7 @@ test("pointer move before pointer down changes node placement location", () => {
     const pointer: Pointer = {
         id: 0,
         position: { x: 0, y: 0 },
+        count: 1,
     }
     const model1 = update(
         effects,
@@ -321,8 +322,8 @@ test("pointer move after pointer down pans camera", () => {
             pointer: {
                 id: 0,
                 position: { x: 0, y: 0 },
+                count: 1,
             },
-            count: 0,
         },
         dispatch
     )
@@ -334,6 +335,7 @@ test("pointer move after pointer down pans camera", () => {
             pointer: {
                 id: 0,
                 position: { x: 50, y: 75 },
+                count: 1,
             },
         },
         dispatch
@@ -350,6 +352,7 @@ test("pointer move after pointer down pans camera", () => {
             {
                 id: 0,
                 position: { x: 50, y: 75 },
+                count: 1,
             },
         ],
     }
@@ -408,8 +411,8 @@ test("pointer move after clicking node pointer down drags node", () => {
             pointer: {
                 id: 0,
                 position: { x: 0, y: 0 },
+                count: 1,
             },
-            count: 0,
         },
         dispatch
     )
@@ -421,6 +424,7 @@ test("pointer move after clicking node pointer down drags node", () => {
             pointer: {
                 id: 0,
                 position: { x: 50, y: 75 },
+                count: 1,
             },
         },
         dispatch
@@ -431,6 +435,7 @@ test("pointer move after clicking node pointer down drags node", () => {
             {
                 id: 0,
                 position: { x: 50, y: 75 },
+                count: 1,
             },
         ],
         graph: changeNodePosition(model2.graph, node0, () => ({
@@ -487,8 +492,8 @@ test("pointer move after clicking node, pointer down, then pointer up", () => {
             pointer: {
                 id: 0,
                 position: { x: 0, y: 0 },
+                count: 1,
             },
-            count: 0,
         },
         dispatch
     )
@@ -500,6 +505,7 @@ test("pointer move after clicking node, pointer down, then pointer up", () => {
             pointer: {
                 id: 0,
                 position: { x: 0, y: 0 },
+                count: 1,
             },
         },
         dispatch
@@ -512,6 +518,7 @@ test("pointer move after clicking node, pointer down, then pointer up", () => {
             pointer: {
                 id: 0,
                 position: { x: 50, y: 75 },
+                count: 1,
             },
         },
         dispatch
@@ -1967,18 +1974,22 @@ test("zooming", () => {
     const pointer0: Pointer = {
         id: 0,
         position: { x: 0, y: 0 },
+        count: 1,
     }
     const pointer1: Pointer = {
         id: 1,
         position: { x: 10, y: 10 },
+        count: 1,
     }
     const pointer2: Pointer = {
         id: 1,
         position: { x: 20, y: 20 },
+        count: 1,
     }
     const pointer3: Pointer = {
         id: 1,
         position: { x: 30, y: 30 },
+        count: 1,
     }
     const model1 = update(
         effects,
@@ -1986,7 +1997,6 @@ test("zooming", () => {
         {
             kind: EventKind.POINTER_DOWN,
             pointer: pointer0,
-            count: 0,
         },
         dispatch
     )
@@ -2006,7 +2016,6 @@ test("zooming", () => {
         {
             kind: EventKind.POINTER_DOWN,
             pointer: pointer1,
-            count: 0,
         },
         dispatch
     )
@@ -3061,14 +3070,17 @@ test("three pointers down then one up doesn't change state", () => {
     const pointer0: Pointer = {
         id: 0,
         position: { x: 0, y: 0 },
+        count: 1,
     }
     const pointer1: Pointer = {
         id: 1,
         position: { x: 0, y: 0 },
+        count: 1,
     }
     const pointer2: Pointer = {
         id: 2,
         position: { x: 0, y: 0 },
+        count: 1,
     }
     const model1 = update(
         effects,
@@ -3076,7 +3088,6 @@ test("three pointers down then one up doesn't change state", () => {
         {
             kind: EventKind.POINTER_DOWN,
             pointer: pointer0,
-            count: 0,
         },
         dispatch
     )
@@ -3086,7 +3097,6 @@ test("three pointers down then one up doesn't change state", () => {
         {
             kind: EventKind.POINTER_DOWN,
             pointer: pointer1,
-            count: 0,
         },
         dispatch
     )
@@ -3096,7 +3106,6 @@ test("three pointers down then one up doesn't change state", () => {
         {
             kind: EventKind.POINTER_DOWN,
             pointer: pointer2,
-            count: 0,
         },
         dispatch
     )
@@ -3142,10 +3151,12 @@ test("three pointers down on node then one up keeps state dragging", () => {
     const pointer0: Pointer = {
         id: 0,
         position: { x: 0, y: 0 },
+        count: 1,
     }
     const pointer1: Pointer = {
         id: 1,
         position: { x: 0, y: 0 },
+        count: 1,
     }
     const model2 = update(
         effects,
@@ -3153,7 +3164,6 @@ test("three pointers down on node then one up keeps state dragging", () => {
         {
             kind: EventKind.POINTER_DOWN,
             pointer: pointer0,
-            count: 0,
         },
         dispatch
     )
@@ -3172,7 +3182,6 @@ test("three pointers down on node then one up keeps state dragging", () => {
         {
             kind: EventKind.POINTER_DOWN,
             pointer: pointer1,
-            count: 0,
         },
         dispatch
     )
@@ -3234,6 +3243,7 @@ test("pointer move when input selected updates node placement location", () => {
     const pointer0: Pointer = {
         id: 0,
         position: { x: 0, y: 0 },
+        count: 1,
     }
     const model2 = update(
         effects,
@@ -3241,7 +3251,6 @@ test("pointer move when input selected updates node placement location", () => {
         {
             kind: EventKind.POINTER_DOWN,
             pointer: pointer0,
-            count: 0,
         },
         dispatch
     )
@@ -3257,6 +3266,7 @@ test("pointer move when input selected updates node placement location", () => {
     const pointer1: Pointer = {
         id: 0,
         position: { x: 50, y: 50 },
+        count: 1,
     }
     const model4 = update(
         effects,
@@ -3301,6 +3311,7 @@ test("pointer move when output selected updates node placement location", () => 
     const pointer0: Pointer = {
         id: 0,
         position: { x: 0, y: 0 },
+        count: 1,
     }
     const model2 = update(
         effects,
@@ -3308,7 +3319,6 @@ test("pointer move when output selected updates node placement location", () => 
         {
             kind: EventKind.POINTER_DOWN,
             pointer: pointer0,
-            count: 0,
         },
         dispatch
     )
@@ -3324,6 +3334,7 @@ test("pointer move when output selected updates node placement location", () => 
     const pointer1: Pointer = {
         id: 0,
         position: { x: 50, y: 50 },
+        count: 1,
     }
     const model4 = update(
         effects,
@@ -3366,6 +3377,7 @@ test("pointer move when body selected updates node placement location", () => {
     const pointer0: Pointer = {
         id: 0,
         position: { x: 0, y: 0 },
+        count: 1,
     }
     const model2 = update(
         effects,
@@ -3373,7 +3385,6 @@ test("pointer move when body selected updates node placement location", () => {
         {
             kind: EventKind.POINTER_DOWN,
             pointer: pointer0,
-            count: 0,
         },
         dispatch
     )
@@ -3389,6 +3400,7 @@ test("pointer move when body selected updates node placement location", () => {
     const pointer1: Pointer = {
         id: 0,
         position: { x: 50, y: 50 },
+        count: 1,
     }
     const model4 = update(
         effects,
@@ -3433,6 +3445,7 @@ test("pressing f with node selected opens finder", () => {
     const pointer0: Pointer = {
         id: 0,
         position: { x: 0, y: 0 },
+        count: 1,
     }
     const model2 = update(
         effects,
@@ -3440,7 +3453,6 @@ test("pressing f with node selected opens finder", () => {
         {
             kind: EventKind.POINTER_DOWN,
             pointer: pointer0,
-            count: 0,
         },
         dispatch
     )
@@ -3513,6 +3525,7 @@ test("pressing f with input selected opens finder", () => {
     const pointer0: Pointer = {
         id: 0,
         position: { x: 0, y: 0 },
+        count: 1,
     }
     const model2 = update(
         effects,
@@ -3520,7 +3533,6 @@ test("pressing f with input selected opens finder", () => {
         {
             kind: EventKind.POINTER_DOWN,
             pointer: pointer0,
-            count: 0,
         },
         dispatch
     )
@@ -3593,6 +3605,7 @@ test("pressing f with output selected opens finder", () => {
     const pointer0: Pointer = {
         id: 0,
         position: { x: 0, y: 0 },
+        count: 1,
     }
     const model2 = update(
         effects,
@@ -3600,7 +3613,6 @@ test("pressing f with output selected opens finder", () => {
         {
             kind: EventKind.POINTER_DOWN,
             pointer: pointer0,
-            count: 0,
         },
         dispatch
     )
@@ -3673,6 +3685,7 @@ test("key up with input selected does nothing", () => {
     const pointer0: Pointer = {
         id: 0,
         position: { x: 0, y: 0 },
+        count: 1,
     }
     const model2 = update(
         effects,
@@ -3680,7 +3693,6 @@ test("key up with input selected does nothing", () => {
         {
             kind: EventKind.POINTER_DOWN,
             pointer: pointer0,
-            count: 0,
         },
         dispatch
     )
@@ -3771,6 +3783,7 @@ test("pointer move after moving with keyboard stops showing node placement locat
     const pointer: Pointer = {
         id: 0,
         position: { x: 0, y: 0 },
+        count: 1,
     }
     const model2 = update(
         effects,

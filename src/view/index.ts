@@ -11,7 +11,7 @@ import {
     column,
     Connection,
     UI,
-    PointerDown,
+    Pointer,
     PointerDrag,
 } from "../ui"
 import {
@@ -458,7 +458,7 @@ export const view = (model: Model, dispatch: Dispatch<AppEvent>): UI => {
             kind: EventKind.CLICKED_NODE,
             node,
         })
-    const onClickBackground = ({ count, pointer: { position } }: PointerDown) =>
+    const onClickBackground = ({ count, position }: Pointer) =>
         dispatch({ kind: EventKind.CLICKED_BACKGROUND, count, position })
     const onDragBackground = ({ x, y }: PointerDrag) =>
         dispatch({ kind: EventKind.DRAGGED_BACKGROUND, x, y })

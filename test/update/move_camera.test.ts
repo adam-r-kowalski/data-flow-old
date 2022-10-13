@@ -16,6 +16,7 @@ test("pointer down starts panning camera", () => {
     const pointer: Pointer = {
         id: 0,
         position: { x: 0, y: 0 },
+        count: 1,
     }
     const dispatch = () => {}
     const effects = makeEffects(mockDocument())
@@ -25,7 +26,6 @@ test("pointer down starts panning camera", () => {
         {
             kind: EventKind.POINTER_DOWN,
             pointer,
-            count: 1,
         },
         dispatch
     )

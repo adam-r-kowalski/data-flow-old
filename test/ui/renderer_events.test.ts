@@ -2,8 +2,9 @@ import { identity, translate } from "../../src/linear_algebra/matrix3x3"
 import { mockDocument, mockWindow } from "../../src/ui/mock"
 import { pointerDown } from "../../src/ui/pointer_down"
 import { pointerMove } from "../../src/ui/pointer_move"
+import { pointerUp } from "../../src/ui/pointer_up"
 import { makeRenderer, render } from "../../src/ui/renderer"
-import { PointerDown, container, PointerDrag, scene } from "../../src/ui"
+import { container, Pointer, PointerDrag, scene } from "../../src/ui"
 
 interface Model {
     a: number
@@ -62,10 +63,8 @@ test("click first container", () => {
     })
     render(renderer, ui)
     pointerDown(renderer, {
-        pointer: {
-            position: { x: 125, y: 225 },
-            id: 0,
-        },
+        position: { x: 125, y: 225 },
+        id: 0,
         count: 0,
     })
     expect(model).toEqual({ a: 1, b: 0 })
@@ -96,10 +95,8 @@ test("click second container", () => {
     })
     render(renderer, ui)
     pointerDown(renderer, {
-        pointer: {
-            position: { x: 325, y: 275 },
-            id: 0,
-        },
+        position: { x: 325, y: 275 },
+        id: 0,
         count: 0,
     })
     expect(model).toEqual({ a: 0, b: 1 })
@@ -130,10 +127,8 @@ test("click translated container", () => {
     })
     render(renderer, ui)
     pointerDown(renderer, {
-        pointer: {
-            position: { x: 25, y: 225 },
-            id: 0,
-        },
+        position: { x: 25, y: 225 },
+        id: 0,
         count: 0,
     })
     expect(model).toEqual({ a: 1, b: 0 })
@@ -149,7 +144,7 @@ test("renderer starts with identity camera", () => {
 test("double click", () => {
     const renderer = mockRenderer()
     let count = 0
-    const dispatch = (event: PointerDown) => (count = event.count)
+    const dispatch = (event: Pointer) => (count = event.count)
     const ui = container({
         width: 50,
         height: 50,
@@ -160,18 +155,14 @@ test("double click", () => {
     render(renderer, ui)
     expect(count).toEqual(0)
     pointerDown(renderer, {
-        pointer: {
-            position: { x: 125, y: 225 },
-            id: 0,
-        },
+        position: { x: 125, y: 225 },
+        id: 0,
         count: 1,
     })
     expect(count).toEqual(1)
     pointerDown(renderer, {
-        pointer: {
-            position: { x: 125, y: 225 },
-            id: 0,
-        },
+        position: { x: 125, y: 225 },
+        id: 0,
         count: 2,
     })
     expect(count).toEqual(2)
@@ -192,10 +183,8 @@ test("on drag", () => {
     expect(dragEvents).toEqual([])
     expect(renderer.onDrag).toBeUndefined()
     pointerDown(renderer, {
-        pointer: {
-            position: { x: 120, y: 210 },
-            id: 0,
-        },
+        position: { x: 120, y: 210 },
+        id: 0,
         count: 1,
     })
     expect(dragEvents).toEqual([])
@@ -203,7 +192,15 @@ test("on drag", () => {
     pointerMove(renderer, {
         position: { x: 150, y: 220 },
         id: 0,
+        count: 1,
     })
     expect(dragEvents).toEqual([{ x: 30, y: 10 }])
     expect(renderer.onDrag).toEqual(dispatch)
+    pointerUp(renderer, {
+        position: { x: 120, y: 210 },
+        id: 0,
+        count: 1,
+    })
+    expect(dragEvents).toEqual([{ x: 30, y: 10 }])
+    expect(renderer.onDrag).toBeUndefined()
 })

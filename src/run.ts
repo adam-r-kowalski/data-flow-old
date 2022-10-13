@@ -1,8 +1,9 @@
 import { pointerDown } from "./ui/pointer_down"
 import { makeRenderer, resize, render } from "./ui/renderer"
-import { Pointer, PointerDown, UI } from "./ui"
-import { Document, Window } from "./ui/dom"
+import { Pointer, UI } from "./ui"
+import { Document, PointerEvent, Window } from "./ui/dom"
 import { pointerMove } from "./ui/pointer_move"
+import { pointerUp } from "./ui/pointer_up"
 
 export type Dispatch<AppEvent> = (event: AppEvent) => void
 
@@ -21,10 +22,20 @@ interface Properties<Model, AppEvent> {
     window: Window<AppEvent>
     document: Document
     requestAnimationFrame: (callback: () => void) => void
-    pointerDown: (dispatch: Dispatch<AppEvent>, event: PointerDown) => void
+    pointerDown: (dispatch: Dispatch<AppEvent>, event: Pointer) => void
     pointerMove: (dispatch: Dispatch<AppEvent>, event: Pointer) => void
+    pointerUp: (dispatch: Dispatch<AppEvent>, event: Pointer) => void
     supportsCoalesced?: boolean
 }
+
+const transformPointer = (p: PointerEvent): Pointer => ({
+    id: p.pointerId,
+    position: {
+        x: p.clientX,
+        y: p.clientY,
+    },
+    count: p.detail,
+})
 
 const registerPointerMove = (
     supportsCoalesced: boolean,
@@ -34,14 +45,7 @@ const registerPointerMove = (
     if (supportsCoalesced) {
         document.addEventListener("pointermove", (e) => {
             e.getCoalescedEvents().forEach((p) => {
-                const event: Pointer = {
-                    id: p.pointerId,
-                    position: {
-                        x: p.clientX,
-                        y: p.clientY,
-                    },
-                }
-                cb(event)
+                cb(transformPointer(p))
             })
         })
     } else {
@@ -52,6 +56,7 @@ const registerPointerMove = (
                     x: p.clientX,
                     y: p.clientY,
                 },
+                count: p.detail,
             }
             cb(event)
         })
@@ -94,15 +99,14 @@ export const run = <Model, AppEvent>(
     const dispatch = (event: AppEvent): void => window.postMessage(event)
     document.body.appendChild(renderer.canvas)
     document.addEventListener("pointerdown", (p) => {
-        const event = {
-            pointer: {
-                id: p.pointerId,
-                position: { x: p.clientX, y: p.clientY },
-            },
-            count: p.detail,
-        }
-        properties.pointerDown(dispatch, event)
-        pointerDown(renderer, event)
+        const pointer = transformPointer(p)
+        properties.pointerDown(dispatch, pointer)
+        pointerDown(renderer, pointer)
+    })
+    document.addEventListener("pointerup", (p) => {
+        const pointer = transformPointer(p)
+        properties.pointerUp(dispatch, pointer)
+        pointerUp(renderer, pointer)
     })
     registerPointerMove(supportsCoalesced ?? false, document, (pointer) => {
         properties.pointerMove(dispatch, pointer)

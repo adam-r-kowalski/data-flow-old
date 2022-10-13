@@ -1,4 +1,4 @@
-import { PointerDown, Pointer, WorldSpace } from "."
+import { Pointer, WorldSpace } from "."
 import { Renderer } from "./renderer"
 
 const inWorldSpace = ({ x0, y0, x1, y1 }: WorldSpace, pointer: Pointer) =>
@@ -9,13 +9,12 @@ const inWorldSpace = ({ x0, y0, x1, y1 }: WorldSpace, pointer: Pointer) =>
 
 export const handleClick = <AppEvent>(
     renderer: Renderer<AppEvent>,
-    event: PointerDown
+    pointer: Pointer
 ): void => {
-    const pointer = event.pointer
     for (let i = renderer.clickHandlers.length; i > 0; --i) {
         for (const { onClick, worldSpace } of renderer.clickHandlers[i - 1]) {
             if (inWorldSpace(worldSpace, pointer)) {
-                onClick(event)
+                onClick(pointer)
                 return
             }
         }
@@ -24,9 +23,8 @@ export const handleClick = <AppEvent>(
 
 export const handleDrag = <AppEvent>(
     renderer: Renderer<AppEvent>,
-    event: PointerDown
+    pointer: Pointer
 ): void => {
-    const pointer = event.pointer
     for (let i = renderer.dragHandlers.length; i > 0; --i) {
         for (const { onDrag, worldSpace } of renderer.dragHandlers[i - 1]) {
             if (inWorldSpace(worldSpace, pointer)) {
@@ -39,9 +37,9 @@ export const handleDrag = <AppEvent>(
 
 export const pointerDown = <AppEvent>(
     renderer: Renderer<AppEvent>,
-    event: PointerDown
+    pointer: Pointer
 ): void => {
-    handleClick(renderer, event)
-    handleDrag(renderer, event)
-    renderer.pointers[event.pointer.id] = event.pointer
+    handleClick(renderer, pointer)
+    handleDrag(renderer, pointer)
+    renderer.pointers[pointer.id] = pointer
 }

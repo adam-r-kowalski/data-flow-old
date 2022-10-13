@@ -1,13 +1,12 @@
 import {
     Body,
     Canvas,
-    PointerDownEvent,
+    PointerEvent,
     CanvasStyle,
     TexImage2D,
     WindowEventListener,
     Message,
     DocumentEventListener,
-    PointerMoveEvent,
 } from "./dom"
 
 export class MockBuffer {}
@@ -173,15 +172,16 @@ export class MockCanvas {
 }
 
 export type FireEvent = {
-    (event: "pointerdown", p: PointerDownEvent): void
-    (event: "pointermove", p: PointerMoveEvent): void
+    (event: "pointerdown", p: PointerEvent): void
+    (event: "pointermove", p: PointerEvent): void
+    (event: "pointerup", p: PointerEvent): void
 }
 
 export const mockDocument = (simulate_failure: boolean = false) => {
-    type PointerDownCallback = (p: PointerDownEvent) => void
-    const pointerdownCallbacks: PointerDownCallback[] = []
-    type PointerMoveCallback = (p: PointerMoveEvent) => void
-    const pointermoveCallbacks: PointerMoveCallback[] = []
+    type Callback = (p: PointerEvent) => void
+    const pointerdownCallbacks: Callback[] = []
+    const pointermoveCallbacks: Callback[] = []
+    const pointerupCallbacks: Callback[] = []
     const body: Body = {
         appendChild: (canvas: Canvas) => {},
         style: {
@@ -191,24 +191,27 @@ export const mockDocument = (simulate_failure: boolean = false) => {
     const addEventListener: DocumentEventListener = (event, callback) => {
         switch (event) {
             case "pointerdown":
-                pointerdownCallbacks.push(callback as PointerDownCallback)
+                pointerdownCallbacks.push(callback)
                 break
             case "pointermove":
-                pointermoveCallbacks.push(callback as PointerMoveCallback)
+                pointermoveCallbacks.push(callback)
+                break
+            case "pointerup":
+                pointerupCallbacks.push(callback)
                 break
         }
     }
     const fireEvent: FireEvent = (event, p) => {
         switch (event) {
             case "pointerdown":
-                for (const callback of pointerdownCallbacks) {
-                    callback(p as PointerDownEvent)
-                }
+                for (const callback of pointerdownCallbacks) callback(p)
                 break
             case "pointermove":
-                for (const callback of pointermoveCallbacks) {
-                    callback(p as PointerMoveEvent)
-                }
+                for (const callback of pointermoveCallbacks) callback(p)
+                break
+            case "pointerup":
+                for (const callback of pointerupCallbacks) callback(p)
+                break
         }
     }
     return {

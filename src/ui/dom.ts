@@ -179,12 +179,21 @@ export interface PointerDownEvent {
     detail: number
 }
 
+export interface PointerMoveEvent {
+    clientX: number
+    clientY: number
+    pointerId: number
+    getCoalescedEvents: () => PointerMoveEvent[]
+}
+
+export type DocumentEventListener = {
+    (event: "pointerdown", callback: (p: PointerDownEvent) => void): void
+    (event: "pointermove", callback: (p: PointerMoveEvent) => void): void
+}
+
 export interface Document {
     createElement: (tagName: "canvas") => Canvas
-    addEventListener: (
-        event: "pointerdown",
-        callback: (p: PointerDownEvent) => void
-    ) => void
+    addEventListener: DocumentEventListener
     body: Body
 }
 
@@ -192,7 +201,7 @@ export interface Message<AppEvent> {
     data: AppEvent
 }
 
-export type AddEventListener<AppEvent> = {
+export type WindowEventListener<AppEvent> = {
     (event: "resize", callback: () => void): void
     (event: "message", callback: (message: Message<AppEvent>) => void): void
 }
@@ -201,6 +210,6 @@ export interface Window<AppEvent> {
     devicePixelRatio: number
     innerWidth: number
     innerHeight: number
-    addEventListener: AddEventListener<AppEvent>
+    addEventListener: WindowEventListener<AppEvent>
     postMessage: (event: AppEvent) => void
 }

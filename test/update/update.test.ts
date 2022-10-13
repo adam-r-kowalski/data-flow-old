@@ -537,8 +537,8 @@ test("mouse wheel zooms in camera relative to mouse position", () => {
         effects,
         model,
         {
-            kind: EventKind.WHEEL,
-            deltaY: 10,
+            kind: EventKind.WHEEL_ZOOM,
+            delta: 10,
             position: { x: 50, y: 100 },
         },
         dispatch

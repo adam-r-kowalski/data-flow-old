@@ -76,7 +76,8 @@ import {
     PointerUp,
     UploadCsv,
     UploadTable,
-    Wheel,
+    WheelPan,
+    WheelZoom,
 } from "../event"
 import * as finder from "../finder"
 import { Effects, GenerateUUID } from "../effects"
@@ -305,15 +306,23 @@ const clickedNode = (model: Model, event: ClickedNode): Model => {
     }
 }
 
-const wheel = (model: Model, event: Wheel): Model => {
+const wheelZoom = (model: Model, event: WheelZoom): Model => {
     const move = translate(event.position.x, event.position.y)
-    const zoom = Math.pow(2, event.deltaY * 0.01)
+    const zoom = Math.pow(2, event.delta * 0.01)
     const moveBack = translate(-event.position.x, -event.position.y)
     const camera = multiplyMatrices(
         model.camera,
         move,
         scale(zoom, zoom),
         moveBack
+    )
+    return { ...model, camera }
+}
+
+const wheelPan = (model: Model, event: WheelPan): Model => {
+    const camera = multiplyMatrices(
+        model.camera,
+        translate(event.deltaX, event.deltaY)
     )
     return { ...model, camera }
 }
@@ -1063,8 +1072,10 @@ export const update = (
             return pointerUp(model, event)
         case EventKind.CLICKED_NODE:
             return clickedNode(model, event)
-        case EventKind.WHEEL:
-            return wheel(model, event)
+        case EventKind.WHEEL_ZOOM:
+            return wheelZoom(model, event)
+        case EventKind.WHEEL_PAN:
+            return wheelPan(model, event)
         case EventKind.CLICKED_INPUT:
             return clickedInput(model, event, effects.generateUUID)
         case EventKind.CLICKED_OUTPUT:

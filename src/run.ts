@@ -23,13 +23,53 @@ interface Properties<Model, AppEvent> {
     requestAnimationFrame: (callback: () => void) => void
     pointerDown: (dispatch: Dispatch<AppEvent>, event: PointerDown) => void
     pointerMove: (dispatch: Dispatch<AppEvent>, event: Pointer) => void
+    supportsCoalesced?: boolean
+}
+
+const registerPointerMove = (
+    supportsCoalesced: boolean,
+    document: Document,
+    cb: (p: Pointer) => void
+): void => {
+    if (supportsCoalesced) {
+        document.addEventListener("pointermove", (e) => {
+            e.getCoalescedEvents().forEach((p) => {
+                const event: Pointer = {
+                    id: p.pointerId,
+                    position: {
+                        x: p.clientX,
+                        y: p.clientY,
+                    },
+                }
+                cb(event)
+            })
+        })
+    } else {
+        document.addEventListener("pointermove", (p) => {
+            const event: Pointer = {
+                id: p.pointerId,
+                position: {
+                    x: p.clientX,
+                    y: p.clientY,
+                },
+            }
+            cb(event)
+        })
+    }
 }
 
 export const run = <Model, AppEvent>(
     properties: Properties<Model, AppEvent>
 ): Dispatch<AppEvent> => {
-    let { model, view, update, window, document, requestAnimationFrame } =
-        properties
+    let {
+        model,
+        view,
+        update,
+        window,
+        document,
+        requestAnimationFrame,
+        supportsCoalesced,
+    } = properties
     const renderer = makeRenderer({
         width: window.innerWidth,
         height: window.innerHeight,
@@ -64,33 +104,10 @@ export const run = <Model, AppEvent>(
         properties.pointerDown(dispatch, event)
         pointerDown(renderer, event)
     })
-    if (typeof PointerEvent.prototype.getCoalescedEvents === "function") {
-        document.addEventListener("pointermove", (e) => {
-            e.getCoalescedEvents().forEach((p) => {
-                const event: Pointer = {
-                    id: p.pointerId,
-                    position: {
-                        x: p.clientX,
-                        y: p.clientY,
-                    },
-                }
-                properties.pointerMove(dispatch, event)
-                pointerMove(renderer, event)
-            })
-        })
-    } else {
-        document.addEventListener("pointermove", (p) => {
-            const event: Pointer = {
-                id: p.pointerId,
-                position: {
-                    x: p.clientX,
-                    y: p.clientY,
-                },
-            }
-            properties.pointerMove(dispatch, event)
-            pointerMove(renderer, event)
-        })
-    }
+    registerPointerMove(supportsCoalesced ?? false, document, (pointer) => {
+        properties.pointerMove(dispatch, pointer)
+        pointerMove(renderer, pointer)
+    })
     window.addEventListener("resize", () => {
         resize(renderer, {
             width: window.innerWidth,

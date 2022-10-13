@@ -35,6 +35,8 @@ const dispatch = run({
             pointer,
         })
     },
+    supportsCoalesced:
+        typeof PointerEvent.prototype.getCoalescedEvents === "function",
 })
 
 dispatch({ kind: EventKind.LOAD_DEMO_MODEL })
@@ -55,11 +57,19 @@ document.addEventListener(
     "wheel",
     (e) => {
         e.preventDefault()
-        dispatch({
-            kind: EventKind.WHEEL,
-            position: { x: e.clientX, y: e.clientY },
-            deltaY: e.deltaY,
-        })
+        if (e.ctrlKey) {
+            dispatch({
+                kind: EventKind.WHEEL_ZOOM,
+                position: { x: e.clientX, y: e.clientY },
+                delta: e.deltaY,
+            })
+        } else {
+            dispatch({
+                kind: EventKind.WHEEL_PAN,
+                deltaX: e.deltaX,
+                deltaY: e.deltaY,
+            })
+        }
     },
     { passive: false }
 )

@@ -4,8 +4,10 @@ import {
     PointerDownEvent,
     CanvasStyle,
     TexImage2D,
-    AddEventListener,
+    WindowEventListener,
     Message,
+    DocumentEventListener,
+    PointerMoveEvent,
 } from "./dom"
 
 export class MockBuffer {}
@@ -170,28 +172,50 @@ export class MockCanvas {
     }
 }
 
+export type FireEvent = {
+    (event: "pointerdown", p: PointerDownEvent): void
+    (event: "pointermove", p: PointerMoveEvent): void
+}
+
 export const mockDocument = (simulate_failure: boolean = false) => {
-    const callbacks: ((p: PointerDownEvent) => void)[] = []
+    type PointerDownCallback = (p: PointerDownEvent) => void
+    const pointerdownCallbacks: PointerDownCallback[] = []
+    type PointerMoveCallback = (p: PointerMoveEvent) => void
+    const pointermoveCallbacks: PointerMoveCallback[] = []
     const body: Body = {
         appendChild: (canvas: Canvas) => {},
         style: {
             cursor: "auto",
         },
     }
+    const addEventListener: DocumentEventListener = (event, callback) => {
+        switch (event) {
+            case "pointerdown":
+                pointerdownCallbacks.push(callback as PointerDownCallback)
+                break
+            case "pointermove":
+                pointermoveCallbacks.push(callback as PointerMoveCallback)
+                break
+        }
+    }
+    const fireEvent: FireEvent = (event, p) => {
+        switch (event) {
+            case "pointerdown":
+                for (const callback of pointerdownCallbacks) {
+                    callback(p as PointerDownEvent)
+                }
+                break
+            case "pointermove":
+                for (const callback of pointermoveCallbacks) {
+                    callback(p as PointerMoveEvent)
+                }
+        }
+    }
     return {
         createElement: (tagName: "canvas") => new MockCanvas(simulate_failure),
-        addEventListener: (
-            event: "pointerdown",
-            callback: (p: PointerDownEvent) => void
-        ) => {
-            callbacks.push(callback)
-        },
+        addEventListener,
         body,
-        fireEvent: (_: "pointerdown", p: PointerDownEvent) => {
-            for (const callback of callbacks) {
-                callback(p)
-            }
-        },
+        fireEvent,
     }
 }
 
@@ -201,7 +225,10 @@ export const mockWindow = <AppEvent>() => {
     type MessageCallback = (message: Message<AppEvent>) => void
     const messageCallbacks: MessageCallback[] = []
     const events: AppEvent[] = []
-    const addEventListener: AddEventListener<AppEvent> = (event, callback) => {
+    const addEventListener: WindowEventListener<AppEvent> = (
+        event,
+        callback
+    ) => {
         switch (event) {
             case "resize":
                 resizeCallbacks.push(callback as ResizeCallback)

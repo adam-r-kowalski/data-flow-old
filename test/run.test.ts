@@ -33,6 +33,7 @@ test("if update does not modify model then view gets called once", () => {
         document: mockDocument(),
         requestAnimationFrame: mockRequestAnimationFrame,
         pointerDown: () => {},
+        pointerMove: () => {},
     })
     dispatch(AppEvent.A)
     expect(viewCallCount).toEqual(1)
@@ -61,6 +62,7 @@ test("if update modifies model view gets called again", () => {
         document: mockDocument(),
         requestAnimationFrame: mockRequestAnimationFrame,
         pointerDown: () => {},
+        pointerMove: () => {},
     })
     dispatch(AppEvent.A)
     expect(viewCallCount).toEqual(2)
@@ -91,6 +93,7 @@ test("update gets passed dispatch and can schedule events", () => {
         document: mockDocument(),
         requestAnimationFrame: mockRequestAnimationFrame,
         pointerDown: () => {},
+        pointerMove: () => {},
     })
     expect(window.events).toEqual([])
     dispatch(AppEvent.A)
@@ -127,6 +130,7 @@ test("pointer down events can lead to on click handlers firing", () => {
         pointerDown: (_, pointer) => {
             pointers.push(pointer)
         },
+        pointerMove: () => {},
     })
     document.fireEvent("pointerdown", {
         clientX: 0,
@@ -188,6 +192,7 @@ test("resize events trigger a rerender", () => {
         document: mockDocument(),
         requestAnimationFrame: mockRequestAnimationFrame,
         pointerDown: () => {},
+        pointerMove: () => {},
     })
     expect(viewCallCount).toEqual(1)
     window.fireEvent("resize")

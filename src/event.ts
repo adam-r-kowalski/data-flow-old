@@ -7,7 +7,8 @@ export enum EventKind {
     POINTER_DOWN,
     POINTER_UP,
     CLICKED_NODE,
-    WHEEL,
+    WHEEL_ZOOM,
+    WHEEL_PAN,
     CLICKED_INPUT,
     CLICKED_OUTPUT,
     KEYDOWN,
@@ -53,9 +54,15 @@ export interface ClickedNode {
     readonly node: UUID
 }
 
-export interface Wheel {
-    readonly kind: EventKind.WHEEL
+export interface WheelZoom {
+    readonly kind: EventKind.WHEEL_ZOOM
     readonly position: Position
+    readonly delta: number
+}
+
+export interface WheelPan {
+    readonly kind: EventKind.WHEEL_PAN
+    readonly deltaX: number
     readonly deltaY: number
 }
 
@@ -168,7 +175,8 @@ export type AppEvent =
     | PointerDown
     | PointerUp
     | ClickedNode
-    | Wheel
+    | WheelZoom
+    | WheelPan
     | ClickedInput
     | ClickedOutput
     | KeyDown

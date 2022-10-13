@@ -123,8 +123,8 @@ export class MockWebGL2Context {
     texImage2D: TexImage2D = (...args: any[]): void => {}
 }
 
-export class MockTextMetrics {
-    constructor(public width: number) {}
+export interface MockTextMetrics {
+    width: number
 }
 
 export class MockCanvasContext {
@@ -137,8 +137,9 @@ export class MockCanvasContext {
 
     scale = (x: number, y: number): void => {}
     clearRect = (x: number, y: number, w: number, h: number): void => {}
-    measureText = (text: string): MockTextMetrics =>
-        new MockTextMetrics(24 * text.length)
+    measureText = (text: string): MockTextMetrics => ({
+        width: 24 * text.length,
+    })
     fillText = (text: string, x: number, y: number): void => {}
 }
 

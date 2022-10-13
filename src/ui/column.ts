@@ -13,6 +13,7 @@ import {
     UIKind,
     WorldSpace,
     OnClick,
+    OnDrag,
 } from "."
 import { MainAxisAlignment, CrossAxisAlignment } from "./alignment"
 import { CameraStack, transformWorldSpace } from "./camera_stack"
@@ -31,6 +32,7 @@ export interface ColumnGeometry {
 export interface Column {
     readonly id?: string
     readonly onClick?: OnClick
+    readonly onDrag?: OnDrag
     readonly kind: UIKind.COLUMN
     readonly mainAxisAlignment: MainAxisAlignment
     readonly crossAxisAlignment: CrossAxisAlignment

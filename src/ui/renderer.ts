@@ -1,5 +1,5 @@
 import { Batch } from "./batch_geometry"
-import { Font, TextMeasurements, Size, UI, layout, geometry } from "."
+import { Font, TextMeasurements, Size, UI, layout, geometry, OnDrag } from "."
 import { Matrix3x3, projection } from "../linear_algebra/matrix3x3"
 import {
     Document,
@@ -18,6 +18,7 @@ import * as reducer from "./reducer"
 import { Accumulator } from "./reducer"
 import { reduce } from "./reduce"
 import { batchGeometry } from "./batch_geometry"
+import { DragHandlers } from "./gather_on_drag_handlers"
 
 interface Attribute {
     location: number
@@ -122,13 +123,6 @@ const mapString = <T>(
     return result
 }
 
-export interface ClickTimeout {
-    count: number
-    now: number
-}
-
-export type ClickTimeouts = { [id: string]: ClickTimeout }
-
 export interface Renderer<AppEvent> {
     window: Window<AppEvent>
     document: Document
@@ -138,9 +132,10 @@ export interface Renderer<AppEvent> {
     textures: Texture[]
     textMeasurementsCache: Map<string, TextMeasurements>
     clickHandlers: ClickHandlers
-    clickTimeouts: ClickTimeouts
+    dragHandlers: DragHandlers
     size: Size
     cameras: Matrix3x3[]
+    onDrag?: OnDrag
 }
 
 export const clear = <AppEvent>({ gl }: Renderer<AppEvent>): void => {
@@ -290,11 +285,12 @@ export const render = <AppEvent>(
     const offsets = { x: 0, y: 0 }
     const cameraStack = initCameraStack()
     const uiGeometry = geometry(ui, uiLayout, offsets, cameraStack)
-    const { layers, clickHandlers, connections, idToWorldSpace } =
+    const { layers, clickHandlers, dragHandlers, connections, idToWorldSpace } =
         reduce<Accumulator>(ui, uiLayout, uiGeometry, reducer)
     const batches = batchGeometry(layers, connections, idToWorldSpace)
     setCameras(renderer, cameraStack.cameras)
     renderer.clickHandlers = clickHandlers
+    renderer.dragHandlers = dragHandlers
     for (const batch of batches) draw(renderer, batch)
 }
 
@@ -563,7 +559,7 @@ export const makeRenderer = <AppEvent>({
         textures: [texture],
         textMeasurementsCache: new Map(),
         clickHandlers: [],
-        clickTimeouts: {},
+        dragHandlers: [],
         size,
         cameras: [],
     }

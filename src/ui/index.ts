@@ -292,3 +292,10 @@ export interface ClickEvent {
 }
 
 export type OnClick = (event: ClickEvent) => void
+
+export interface DragEvent {
+    x: number
+    y: number
+}
+
+export type OnDrag = (event: DragEvent) => void

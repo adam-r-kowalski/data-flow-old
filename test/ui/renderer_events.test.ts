@@ -2,7 +2,7 @@ import { identity, translate } from "../../src/linear_algebra/matrix3x3"
 import { mockDocument, mockWindow } from "../../src/ui/mock"
 import { pointerDown } from "../../src/ui/pointer_down"
 import { makeRenderer, render } from "../../src/ui/renderer"
-import { ClickEvent, container, scene } from "../../src/ui"
+import { ClickEvent, container, DragEvent, scene } from "../../src/ui"
 
 const red = { red: 255, green: 0, blue: 0, alpha: 255 }
 const green = { red: 0, green: 255, blue: 0, alpha: 255 }
@@ -174,4 +174,27 @@ test("double click", () => {
         count: 2,
     })
     expect(count).toEqual(2)
+})
+
+test("on drag", () => {
+    const renderer = mockRenderer()
+    const dragEvents: DragEvent[] = []
+    const dispatch = (event: DragEvent) => dragEvents.push(event)
+    const ui = container({
+        width: 50,
+        height: 50,
+        x: 100,
+        y: 200,
+        onDrag: dispatch,
+    })
+    render(renderer, ui)
+    expect(dragEvents).toEqual([])
+    expect(renderer.onDrag).toBeUndefined()
+    pointerDown(renderer, {
+        position: { x: 120, y: 210 },
+        id: 0,
+        count: 1,
+    })
+    expect(dragEvents).toEqual([])
+    expect(renderer.onDrag).toEqual(dispatch)
 })

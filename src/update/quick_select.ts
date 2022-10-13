@@ -157,7 +157,6 @@ export const quickSelectNode = (
             focus: {
                 kind: FocusKind.NODE,
                 node,
-                drag: false,
                 move: {
                     left: false,
                     up: false,

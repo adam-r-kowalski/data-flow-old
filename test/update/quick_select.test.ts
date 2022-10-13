@@ -293,7 +293,6 @@ test("pressing i with node focused launches quick select for inputs", () => {
         focus: {
             kind: FocusKind.NODE,
             node,
-            drag: true,
             move: { left: false, up: false, down: false, right: false, now: 0 },
             quickSelect: {
                 kind: QuickSelectKind.INPUT,
@@ -634,7 +633,6 @@ test("pressing o with node focused launches quick select for outputs", () => {
         focus: {
             kind: FocusKind.NODE,
             node,
-            drag: true,
             move: { left: false, up: false, down: false, right: false, now: 0 },
             quickSelect: {
                 kind: QuickSelectKind.OUTPUT,
@@ -836,7 +834,6 @@ test("pressing hotkey with node quick select will select the node and disable qu
         focus: {
             kind: FocusKind.NODE,
             node,
-            drag: false,
             move: { left: false, up: false, down: false, right: false, now: 0 },
             quickSelect: { kind: QuickSelectKind.NONE },
         },

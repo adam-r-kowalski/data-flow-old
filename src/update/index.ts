@@ -109,7 +109,7 @@ const pointerDown = (model: Model, event: PointerDown): Model => {
             pointers,
         }
     } else {
-        return model
+        return { ...model, pointers }
     }
 }
 
@@ -132,13 +132,6 @@ const pointerUp = (model: Model, event: PointerUp): Model => {
                 default:
                     return { ...model, pointers }
             }
-        case FocusKind.NODE:
-            if (pointers.length === 0) {
-                const focus: Focus = { ...model.focus, drag: false }
-                return { ...model, pointers, focus }
-            } else {
-                return { ...model, pointers }
-            }
         default:
             return { ...model, pointers }
     }
@@ -157,7 +150,6 @@ const pointerMove = (
 ): Model => {
     showCursor()
     const index = model.pointers.findIndex((p) => p.id === event.pointer.id)
-    const pointer = model.pointers[index]
     const pointers =
         index === -1
             ? model.pointers
@@ -238,7 +230,6 @@ const clickedNode = (model: Model, event: ClickedNode): Model => {
         focus: {
             kind: FocusKind.NODE,
             node: event.node,
-            drag: true,
             quickSelect: { kind: QuickSelectKind.NONE },
             move: {
                 left: false,
@@ -727,11 +718,7 @@ const clickedBackground = (
     model: Model,
     { count, position: { x, y } }: ClickedBackground
 ): Model => {
-    if (
-        [FocusKind.FINDER_INSERT, FocusKind.FINDER_CHANGE].includes(
-            model.focus.kind
-        )
-    ) {
+    if (model.focus.kind !== FocusKind.NONE) {
         return clearFocus(model)
     } else if (count === 2) {
         return openFinderInsert({

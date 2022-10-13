@@ -25,7 +25,6 @@ export interface MoveNode {
 export interface FocusNode {
     readonly kind: FocusKind.NODE
     readonly node: UUID
-    readonly drag: boolean
     readonly move: MoveNode
     readonly quickSelect: QuickSelect
 }

@@ -32,12 +32,7 @@ import {
     UUID,
 } from "../../src/model/graph"
 import { column, TensorFunc, tensorFunc } from "../../src/model/operations"
-import { translate } from "../../src/linear_algebra/matrix3x3"
-import {
-    addEdge,
-    changeNodePosition,
-    OnTableUploaded,
-} from "../../src/update/graph"
+import { addEdge, OnTableUploaded } from "../../src/update/graph"
 import { Table } from "../../src/model/table"
 
 const addFunc = tensorFunc(tf.add)
@@ -152,58 +147,6 @@ test("clicking background then waiting too long cancels opens finder", () => {
     expect(model2).toEqual(model)
 })
 
-test("two pointers down then up puts you in pan mode", () => {
-    const effects = makeEffects(mockDocument())
-    const dispatch = () => {}
-    const pointer0: Pointer = {
-        id: 0,
-        position: { x: 0, y: 0 },
-        count: 1,
-    }
-    const pointer1: Pointer = {
-        id: 1,
-        position: { x: 0, y: 0 },
-        count: 1,
-    }
-    const model1 = update(
-        effects,
-        model,
-        {
-            kind: EventKind.POINTER_DOWN,
-            pointer: pointer0,
-        },
-        dispatch
-    )
-    const model2 = update(
-        effects,
-        model1,
-        {
-            kind: EventKind.POINTER_DOWN,
-            pointer: pointer1,
-        },
-        dispatch
-    )
-    const model3 = update(
-        effects,
-        model2,
-        {
-            kind: EventKind.POINTER_UP,
-            pointer: pointer0,
-        },
-        dispatch
-    )
-    const expectedModel: Model = {
-        ...model,
-        focus: {
-            kind: FocusKind.NONE,
-            pointerAction: { kind: PointerActionKind.PAN },
-            quickSelect: { kind: QuickSelectKind.NONE },
-        },
-        pointers: [pointer1],
-    }
-    expect(model3).toEqual(expectedModel)
-})
-
 test("pointer down when finder open tracks pointer", () => {
     const effects = makeEffects(mockDocument())
     const dispatch = () => {}
@@ -278,7 +221,6 @@ test("clicking node selects it and puts it on top of of the node order", () => {
         focus: {
             kind: FocusKind.NODE,
             node: node0,
-            drag: true,
             move: { left: false, up: false, down: false, right: false, now: 0 },
             quickSelect: { kind: QuickSelectKind.NONE },
         },
@@ -309,149 +251,6 @@ test("pointer move before pointer down changes node placement location", () => {
         nodePlacementLocation: { x: 0, y: 0, show: false },
     }
     expect(model1).toEqual(expectedModel)
-})
-
-test("pointer move after pointer down pans camera", () => {
-    const effects = makeEffects(mockDocument())
-    const dispatch = () => {}
-    const model1 = update(
-        effects,
-        model,
-        {
-            kind: EventKind.POINTER_DOWN,
-            pointer: {
-                id: 0,
-                position: { x: 0, y: 0 },
-                count: 1,
-            },
-        },
-        dispatch
-    )
-    const model2 = update(
-        effects,
-        model1,
-        {
-            kind: EventKind.POINTER_MOVE,
-            pointer: {
-                id: 0,
-                position: { x: 50, y: 75 },
-                count: 1,
-            },
-        },
-        dispatch
-    )
-    const expectedModel: Model = {
-        ...model,
-        camera: translate(-50, -75),
-        focus: {
-            kind: FocusKind.NONE,
-            pointerAction: { kind: PointerActionKind.PAN },
-            quickSelect: { kind: QuickSelectKind.NONE },
-        },
-        pointers: [
-            {
-                id: 0,
-                position: { x: 50, y: 75 },
-                count: 1,
-            },
-        ],
-    }
-    expect(model2).toEqual(expectedModel)
-})
-
-test("pointer move after clicking node pointer down drags node", () => {
-    const effects = makeEffects(mockDocument())
-    const dispatch = () => {}
-    const onTableUploaded = () => {}
-    const operations: Operations = {
-        Add: {
-            kind: OperationKind.TRANSFORM,
-            name: "Add",
-            inputs: ["x", "y"],
-            outputs: ["out"],
-            func: addFunc,
-        },
-        Sub: {
-            kind: OperationKind.TRANSFORM,
-            name: "Sub",
-            inputs: ["x", "y"],
-            outputs: ["out"],
-            func: subFunc,
-        },
-    }
-    const model0: Model = { ...model, operations }
-    const { model: model1, node: node0 } = addNodeToGraph({
-        model: model0,
-        operation: operations["Add"],
-        position: { x: 0, y: 0 },
-        effects,
-        onTableUploaded,
-    })
-    const { model: model2, node: node1 } = addNodeToGraph({
-        model: model1,
-        operation: operations["Sub"],
-        position: { x: 0, y: 0 },
-        effects,
-        onTableUploaded,
-    })
-    const model3 = update(
-        effects,
-        model2,
-        {
-            kind: EventKind.CLICKED_NODE,
-            node: node0,
-        },
-        dispatch
-    )
-    const model4 = update(
-        effects,
-        model3,
-        {
-            kind: EventKind.POINTER_DOWN,
-            pointer: {
-                id: 0,
-                position: { x: 0, y: 0 },
-                count: 1,
-            },
-        },
-        dispatch
-    )
-    const model5 = update(
-        effects,
-        model4,
-        {
-            kind: EventKind.POINTER_MOVE,
-            pointer: {
-                id: 0,
-                position: { x: 50, y: 75 },
-                count: 1,
-            },
-        },
-        dispatch
-    )
-    const expectedModel: Model = {
-        ...model2,
-        pointers: [
-            {
-                id: 0,
-                position: { x: 50, y: 75 },
-                count: 1,
-            },
-        ],
-        graph: changeNodePosition(model2.graph, node0, () => ({
-            x: 50,
-            y: 75,
-        })),
-        nodeOrder: [node1, node0],
-        focus: {
-            kind: FocusKind.NODE,
-            node: node0,
-            drag: true,
-            move: { left: false, up: false, down: false, right: false, now: 0 },
-            quickSelect: { kind: QuickSelectKind.NONE },
-        },
-    }
-    expect(model5).toEqual(expectedModel)
 })
 
 test("pointer move after clicking node, pointer down, then pointer up", () => {
@@ -529,7 +328,6 @@ test("pointer move after clicking node, pointer down, then pointer up", () => {
         focus: {
             kind: FocusKind.NODE,
             node: node0,
-            drag: false,
             move: { left: false, up: false, down: false, right: false, now: 0 },
             quickSelect: { kind: QuickSelectKind.NONE },
         },
@@ -1755,15 +1553,7 @@ test("clicking background when a number node is selected deselects it", () => {
         },
         dispatch
     )
-    const expectedModel: Model = {
-        ...model0,
-        focus: {
-            kind: FocusKind.NONE,
-            pointerAction: { kind: PointerActionKind.PAN },
-            quickSelect: { kind: QuickSelectKind.NONE },
-        },
-    }
-    expect(model2).toEqual(expectedModel)
+    expect(model2).toEqual(model0)
 })
 
 test("pressing Escape when a number node is selected deselects it", () => {
@@ -1960,7 +1750,6 @@ test("clicking node when a number node is selected deselects it and selects node
         focus: {
             kind: FocusKind.NODE,
             node,
-            drag: true,
             move: { left: false, up: false, down: false, right: false, now: 0 },
             quickSelect: { kind: QuickSelectKind.NONE },
         },
@@ -2000,16 +1789,8 @@ test("zooming", () => {
         },
         dispatch
     )
-    const expectedModel0: Model = {
-        ...model,
-        focus: {
-            kind: FocusKind.NONE,
-            pointerAction: { kind: PointerActionKind.PAN },
-            quickSelect: { kind: QuickSelectKind.NONE },
-        },
-        pointers: [pointer0],
-    }
-    expect(model1).toEqual(expectedModel0)
+    const expectedModel = { ...model, pointers: [pointer0] }
+    expect(model1).toEqual(expectedModel)
     const model2 = update(
         effects,
         model1,
@@ -2167,16 +1948,7 @@ test("clicking background when a node is selected deselects it", () => {
         },
         dispatch
     )
-    const expectedModel: Model = {
-        ...model1,
-        focus: {
-            kind: FocusKind.NONE,
-            pointerAction: { kind: PointerActionKind.PAN },
-            quickSelect: { kind: QuickSelectKind.NONE },
-        },
-        pointers: [],
-    }
-    expect(model3).toEqual(expectedModel)
+    expect(model3).toEqual(model1)
 })
 
 test("pressing escape when a node is selected deselects it", () => {
@@ -2262,15 +2034,7 @@ test("clicking background when a input is selected deselects it", () => {
         },
         dispatch
     )
-    const expectedModel: Model = {
-        ...model1,
-        focus: {
-            kind: FocusKind.NONE,
-            pointerAction: { kind: PointerActionKind.PAN },
-            quickSelect: { kind: QuickSelectKind.NONE },
-        },
-    }
-    expect(model3).toEqual(expectedModel)
+    expect(model3).toEqual(model1)
 })
 
 test("pressing escape when a input is selected deselects it", () => {
@@ -2357,15 +2121,7 @@ test("clicking background when a output is selected deselects it", () => {
         },
         dispatch
     )
-    const expectedModel: Model = {
-        ...model1,
-        focus: {
-            kind: FocusKind.NONE,
-            pointerAction: { kind: PointerActionKind.PAN },
-            quickSelect: { kind: QuickSelectKind.NONE },
-        },
-    }
-    expect(model3).toEqual(expectedModel)
+    expect(model3).toEqual(model1)
 })
 
 test("pressing escape when a output is selected deselects it", () => {
@@ -3064,67 +2820,6 @@ test("connecting input to output if input already has edge replaces it", () => {
     expect(model7).toEqual(expectedModel)
 })
 
-test("three pointers down then one up doesn't change state", () => {
-    const effects = makeEffects(mockDocument())
-    const dispatch = () => {}
-    const pointer0: Pointer = {
-        id: 0,
-        position: { x: 0, y: 0 },
-        count: 1,
-    }
-    const pointer1: Pointer = {
-        id: 1,
-        position: { x: 0, y: 0 },
-        count: 1,
-    }
-    const pointer2: Pointer = {
-        id: 2,
-        position: { x: 0, y: 0 },
-        count: 1,
-    }
-    const model1 = update(
-        effects,
-        model,
-        {
-            kind: EventKind.POINTER_DOWN,
-            pointer: pointer0,
-        },
-        dispatch
-    )
-    const model2 = update(
-        effects,
-        model1,
-        {
-            kind: EventKind.POINTER_DOWN,
-            pointer: pointer1,
-        },
-        dispatch
-    )
-    const model3 = update(
-        effects,
-        model2,
-        {
-            kind: EventKind.POINTER_DOWN,
-            pointer: pointer2,
-        },
-        dispatch
-    )
-    const model4 = update(
-        effects,
-        model3,
-        {
-            kind: EventKind.POINTER_UP,
-            pointer: pointer2,
-        },
-        dispatch
-    )
-    const expectedModel: Model = {
-        ...model,
-        pointers: [pointer0, pointer1],
-    }
-    expect(model4).toEqual(expectedModel)
-})
-
 test("three pointers down on node then one up keeps state dragging", () => {
     const onTableUploaded = () => {}
     const dispatch = () => {}
@@ -3208,7 +2903,6 @@ test("three pointers down on node then one up keeps state dragging", () => {
         focus: {
             kind: FocusKind.NODE,
             node,
-            drag: true,
             move: { left: false, up: false, down: false, right: false, now: 0 },
             quickSelect: { kind: QuickSelectKind.NONE },
         },

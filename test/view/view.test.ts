@@ -556,6 +556,7 @@ test("nodeUi no body 1 outputs", () => {
     const onClickBody = () => {}
     const onClickOutput = () => {}
     const onClickNode = () => {}
+    const onDragNode = () => {}
     const actual = nodeUi(
         theme,
         node.uuid,
@@ -564,7 +565,8 @@ test("nodeUi no body 1 outputs", () => {
         onClickInput,
         onClickBody,
         onClickOutput,
-        onClickNode
+        onClickNode,
+        onDragNode
     )
     const expected = container(
         {
@@ -573,6 +575,7 @@ test("nodeUi no body 1 outputs", () => {
             x: 0,
             y: 0,
             onClick: onClickNode,
+            onDrag: onDragNode,
         },
         column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             text("node"),
@@ -633,6 +636,7 @@ test("nodeUi 1 input, no body and 1 outputs", () => {
     const onClickBody = () => {}
     const onClickOutput = () => {}
     const onClickNode = () => {}
+    const onDragNode = () => {}
     const actual = nodeUi(
         theme,
         node.uuid,
@@ -641,7 +645,8 @@ test("nodeUi 1 input, no body and 1 outputs", () => {
         onClickInput,
         onClickBody,
         onClickOutput,
-        onClickNode
+        onClickNode,
+        onDragNode
     )
     const expected = container(
         {
@@ -650,6 +655,7 @@ test("nodeUi 1 input, no body and 1 outputs", () => {
             x: 0,
             y: 0,
             onClick: onClickNode,
+            onDrag: onDragNode,
         },
         column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             text("node"),
@@ -709,6 +715,7 @@ test("nodeUi 1 output, no body and no inputs", () => {
     const onClickBody = () => {}
     const onClickOutput = () => {}
     const onClickNode = () => {}
+    const onDragNode = () => {}
     const actual = nodeUi(
         theme,
         node.uuid,
@@ -717,7 +724,8 @@ test("nodeUi 1 output, no body and no inputs", () => {
         onClickInput,
         onClickBody,
         onClickOutput,
-        onClickNode
+        onClickNode,
+        onDragNode
     )
     const expected = container(
         {
@@ -726,6 +734,7 @@ test("nodeUi 1 output, no body and no inputs", () => {
             x: 0,
             y: 0,
             onClick: onClickNode,
+            onDrag: onDragNode,
         },
         column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             text("node"),
@@ -780,6 +789,7 @@ test("nodeUi no inputs 1 outputs but body defined", () => {
     const onClickBody = () => {}
     const onClickOutput = () => {}
     const onClickNode = () => {}
+    const onDragNode = () => {}
     const actual = nodeUi(
         theme,
         node.uuid,
@@ -788,7 +798,8 @@ test("nodeUi no inputs 1 outputs but body defined", () => {
         onClickInput,
         onClickBody,
         onClickOutput,
-        onClickNode
+        onClickNode,
+        onDragNode
     )
     const expected = container(
         {
@@ -797,6 +808,7 @@ test("nodeUi no inputs 1 outputs but body defined", () => {
             x: 0,
             y: 0,
             onClick: onClickNode,
+            onDrag: onDragNode,
         },
         column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             text("node"),
@@ -859,6 +871,7 @@ test("nodeUi 1 input and 1 output but no body", () => {
     const onClickBody = () => {}
     const onClickOutput = () => {}
     const onClickNode = () => {}
+    const onDragNode = () => {}
     const actual = nodeUi(
         theme,
         node.uuid,
@@ -867,7 +880,8 @@ test("nodeUi 1 input and 1 output but no body", () => {
         onClickInput,
         onClickBody,
         onClickOutput,
-        onClickNode
+        onClickNode,
+        onDragNode
     )
     const expected = container(
         {
@@ -876,6 +890,7 @@ test("nodeUi 1 input and 1 output but no body", () => {
             x: 0,
             y: 0,
             onClick: onClickNode,
+            onDrag: onDragNode,
         },
         column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             text("node"),
@@ -945,6 +960,7 @@ test("nodeUi 1 input body and output", () => {
     const onClickBody = () => {}
     const onClickOutput = () => {}
     const onClickNode = () => {}
+    const onDragNode = () => {}
     const actual = nodeUi(
         theme,
         node.uuid,
@@ -953,7 +969,8 @@ test("nodeUi 1 input body and output", () => {
         onClickInput,
         onClickBody,
         onClickOutput,
-        onClickNode
+        onClickNode,
+        onDragNode
     )
     const expected = container(
         {
@@ -962,6 +979,7 @@ test("nodeUi 1 input body and output", () => {
             x: 0,
             y: 0,
             onClick: onClickNode,
+            onDrag: onDragNode,
         },
         column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             text("node"),
@@ -1033,6 +1051,7 @@ test("nodeUi 1 input output body", () => {
     const onClickBody = () => {}
     const onClickOutput = () => {}
     const onClickNode = () => {}
+    const onDragNode = () => {}
     const actual = nodeUi(
         theme,
         node.uuid,
@@ -1041,7 +1060,8 @@ test("nodeUi 1 input output body", () => {
         onClickInput,
         onClickBody,
         onClickOutput,
-        onClickNode
+        onClickNode,
+        onDragNode
     )
     const expected = container(
         {
@@ -1050,6 +1070,7 @@ test("nodeUi 1 input output body", () => {
             x: 0,
             y: 0,
             onClick: onClickNode,
+            onDrag: onDragNode,
         },
         column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             text("node"),
@@ -1121,6 +1142,7 @@ test("nodeUi 1 input body and 1 output", () => {
     const onClickBody = () => {}
     const onClickOutput = () => {}
     const onClickNode = () => {}
+    const onDragNode = () => {}
     const actual = nodeUi(
         theme,
         node.uuid,
@@ -1129,7 +1151,8 @@ test("nodeUi 1 input body and 1 output", () => {
         onClickInput,
         onClickBody,
         onClickOutput,
-        onClickNode
+        onClickNode,
+        onDragNode
     )
     const expected = container(
         {
@@ -1138,6 +1161,7 @@ test("nodeUi 1 input body and 1 output", () => {
             x: 0,
             y: 0,
             onClick: onClickNode,
+            onDrag: onDragNode,
         },
         column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             text("node"),
@@ -1401,6 +1425,7 @@ test("view with positive number", () => {
                     () => {},
                     () => {},
                     () => {},
+                    () => {},
                     () => {}
                 ),
             ],
@@ -1481,6 +1506,7 @@ test("view with negative number", () => {
                     () => {},
                     () => {},
                     () => {},
+                    () => {},
                     () => {}
                 ),
             ],
@@ -1558,6 +1584,7 @@ test("view with text", () => {
                     "text",
                     model.graph,
                     model.focus,
+                    () => {},
                     () => {},
                     () => {},
                     () => {},
@@ -1671,6 +1698,7 @@ test("view with three nodes and no edges", () => {
                     () => {},
                     () => {},
                     () => {},
+                    () => {},
                     () => {}
                 ),
                 nodeUi(
@@ -1681,6 +1709,7 @@ test("view with three nodes and no edges", () => {
                     () => {},
                     () => {},
                     () => {},
+                    () => {},
                     () => {}
                 ),
                 nodeUi(
@@ -1688,6 +1717,7 @@ test("view with three nodes and no edges", () => {
                     "third",
                     model.graph,
                     model.focus,
+                    () => {},
                     () => {},
                     () => {},
                     () => {},
@@ -1773,7 +1803,6 @@ test("view with three nodes and no edges", () => {
         focus: {
             kind: FocusKind.NODE,
             node: "first",
-            drag: false,
             move: { left: false, up: false, down: false, right: false, now: 0 },
             quickSelect: { kind: QuickSelectKind.NONE },
         },
@@ -1808,6 +1837,7 @@ test("view with three nodes and no edges", () => {
                     () => {},
                     () => {},
                     () => {},
+                    () => {},
                     () => {}
                 ),
                 nodeUi(
@@ -1818,6 +1848,7 @@ test("view with three nodes and no edges", () => {
                     () => {},
                     () => {},
                     () => {},
+                    () => {},
                     () => {}
                 ),
                 nodeUi(
@@ -1825,6 +1856,7 @@ test("view with three nodes and no edges", () => {
                     "third",
                     model.graph,
                     model.focus,
+                    () => {},
                     () => {},
                     () => {},
                     () => {},
@@ -1968,6 +2000,7 @@ test("view with three nodes and one edges", () => {
                     () => {},
                     () => {},
                     () => {},
+                    () => {},
                     () => {}
                 ),
                 nodeUi(
@@ -1978,6 +2011,7 @@ test("view with three nodes and one edges", () => {
                     () => {},
                     () => {},
                     () => {},
+                    () => {},
                     () => {}
                 ),
                 nodeUi(
@@ -1985,6 +2019,7 @@ test("view with three nodes and one edges", () => {
                     "third",
                     model.graph,
                     model.focus,
+                    () => {},
                     () => {},
                     () => {},
                     () => {},
@@ -2083,6 +2118,7 @@ test("view with body selected", () => {
                     "number",
                     model.graph,
                     model.focus,
+                    () => {},
                     () => {},
                     () => {},
                     () => {},
@@ -2222,6 +2258,7 @@ test("view with input selected", () => {
                     () => {},
                     () => {},
                     () => {},
+                    () => {},
                     () => {}
                 ),
                 nodeUi(
@@ -2229,6 +2266,7 @@ test("view with input selected", () => {
                     "sub",
                     model.graph,
                     model.focus,
+                    () => {},
                     () => {},
                     () => {},
                     () => {},
@@ -2379,6 +2417,7 @@ test("view with output selected", () => {
                     () => {},
                     () => {},
                     () => {},
+                    () => {},
                     () => {}
                 ),
                 nodeUi(
@@ -2386,6 +2425,7 @@ test("view with output selected", () => {
                     "sub",
                     model.graph,
                     model.focus,
+                    () => {},
                     () => {},
                     () => {},
                     () => {},
@@ -2660,6 +2700,7 @@ test("nodeUi with text body", () => {
     const onClickBody = () => {}
     const onClickOutput = () => {}
     const onClickNode = () => {}
+    const onDragNode = () => {}
     const actual = nodeUi(
         theme,
         node.uuid,
@@ -2668,7 +2709,8 @@ test("nodeUi with text body", () => {
         onClickInput,
         onClickBody,
         onClickOutput,
-        onClickNode
+        onClickNode,
+        onDragNode
     )
     const expected = container(
         {
@@ -2677,6 +2719,7 @@ test("nodeUi with text body", () => {
             x: 0,
             y: 0,
             onClick: onClickNode,
+            onDrag: onDragNode,
         },
         column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             text("node"),
@@ -2738,6 +2781,7 @@ test("nodeUi with table body", () => {
     const onClickBody = () => {}
     const onClickOutput = () => {}
     const onClickNode = () => {}
+    const onDragNode = () => {}
     const actual = nodeUi(
         theme,
         node.uuid,
@@ -2746,7 +2790,8 @@ test("nodeUi with table body", () => {
         onClickInput,
         onClickBody,
         onClickOutput,
-        onClickNode
+        onClickNode,
+        onDragNode
     )
     const expected = container(
         {
@@ -2755,6 +2800,7 @@ test("nodeUi with table body", () => {
             x: 0,
             y: 0,
             onClick: onClickNode,
+            onDrag: onDragNode,
         },
         column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             text("node"),
@@ -2811,6 +2857,7 @@ test("nodeUi with column body", () => {
     const onClickBody = () => {}
     const onClickOutput = () => {}
     const onClickNode = () => {}
+    const onDragNode = () => {}
     const actual = nodeUi(
         theme,
         node.uuid,
@@ -2819,7 +2866,8 @@ test("nodeUi with column body", () => {
         onClickInput,
         onClickBody,
         onClickOutput,
-        onClickNode
+        onClickNode,
+        onDragNode
     )
     const expected = container(
         {
@@ -2828,6 +2876,7 @@ test("nodeUi with column body", () => {
             x: 0,
             y: 0,
             onClick: onClickNode,
+            onDrag: onDragNode,
         },
         column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             text("node"),
@@ -2885,6 +2934,7 @@ test("nodeUi with tensor body", () => {
     const onClickBody = () => {}
     const onClickOutput = () => {}
     const onClickNode = () => {}
+    const onDragNode = () => {}
     const actual = nodeUi(
         theme,
         node.uuid,
@@ -2893,7 +2943,8 @@ test("nodeUi with tensor body", () => {
         onClickInput,
         onClickBody,
         onClickOutput,
-        onClickNode
+        onClickNode,
+        onDragNode
     )
     const expected = container(
         {
@@ -2902,6 +2953,7 @@ test("nodeUi with tensor body", () => {
             x: 0,
             y: 0,
             onClick: onClickNode,
+            onDrag: onDragNode,
         },
         column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             text("node"),
@@ -2958,6 +3010,7 @@ test("nodeUi with scatter body", () => {
     const onClickBody = () => {}
     const onClickOutput = () => {}
     const onClickNode = () => {}
+    const onDragNode = () => {}
     const actual = nodeUi(
         theme,
         node.uuid,
@@ -2966,7 +3019,8 @@ test("nodeUi with scatter body", () => {
         onClickInput,
         onClickBody,
         onClickOutput,
-        onClickNode
+        onClickNode,
+        onDragNode
     )
     const expected = container(
         {
@@ -2975,6 +3029,7 @@ test("nodeUi with scatter body", () => {
             x: 0,
             y: 0,
             onClick: onClickNode,
+            onDrag: onDragNode,
         },
         column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             text("node"),
@@ -3029,6 +3084,7 @@ test("nodeUi with error body", () => {
     const onClickBody = () => {}
     const onClickOutput = () => {}
     const onClickNode = () => {}
+    const onDragNode = () => {}
     const actual = nodeUi(
         theme,
         node.uuid,
@@ -3037,7 +3093,8 @@ test("nodeUi with error body", () => {
         onClickInput,
         onClickBody,
         onClickOutput,
-        onClickNode
+        onClickNode,
+        onDragNode
     )
     const expected = container(
         {
@@ -3046,6 +3103,7 @@ test("nodeUi with error body", () => {
             x: 0,
             y: 0,
             onClick: onClickNode,
+            onDrag: onDragNode,
         },
         column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             text("node"),

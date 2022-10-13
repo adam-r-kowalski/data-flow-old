@@ -285,17 +285,16 @@ export interface Pointer {
     position: Position
 }
 
-export interface ClickEvent {
-    id: number
-    position: Position
+export interface PointerDown {
     count: number
+    pointer: Pointer
 }
 
-export type OnClick = (event: ClickEvent) => void
+export type OnClick = (event: PointerDown) => void
 
-export interface DragEvent {
+export interface PointerDrag {
     x: number
     y: number
 }
 
-export type OnDrag = (event: DragEvent) => void
+export type OnDrag = (event: PointerDrag) => void

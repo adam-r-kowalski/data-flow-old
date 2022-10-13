@@ -25,6 +25,7 @@ test("pointer down starts panning camera", () => {
         {
             kind: EventKind.POINTER_DOWN,
             pointer,
+            count: 1,
         },
         dispatch
     )

@@ -1,4 +1,4 @@
-import { container, Pointer, row, text } from "../src/ui"
+import { container, PointerDown, row, text } from "../src/ui"
 import { mockDocument, mockWindow } from "../src/ui/mock"
 import { Dispatch, run } from "../src/run"
 
@@ -115,7 +115,7 @@ test("pointer down events can lead to on click handlers firing", () => {
         return model
     }
     const document = mockDocument()
-    let pointers: Pointer[] = []
+    let pointers: PointerDown[] = []
     const window = mockWindow<AppEvent>()
     run({
         model,
@@ -149,18 +149,24 @@ test("pointer down events can lead to on click handlers firing", () => {
     expect(window.events).toEqual([AppEvent.A, AppEvent.B])
     expect(pointers).toEqual([
         {
-            id: 0,
-            position: { x: 0, y: 0 },
+            pointer: {
+                id: 0,
+                position: { x: 0, y: 0 },
+            },
             count: 1,
         },
         {
-            id: 0,
-            position: { x: 51, y: 0 },
+            pointer: {
+                id: 0,
+                position: { x: 51, y: 0 },
+            },
             count: 2,
         },
         {
-            id: 0,
-            position: { x: 200, y: 200 },
+            pointer: {
+                id: 0,
+                position: { x: 200, y: 200 },
+            },
             count: 3,
         },
     ])

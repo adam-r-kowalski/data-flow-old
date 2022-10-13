@@ -11,7 +11,7 @@ import {
     column,
     Connection,
     UI,
-    ClickEvent,
+    PointerDown,
 } from "../ui"
 import {
     BodyKind,
@@ -457,7 +457,7 @@ export const view = (model: Model, dispatch: Dispatch<AppEvent>): UI => {
             kind: EventKind.CLICKED_NODE,
             node,
         })
-    const onClickBackground = ({ count, position }: ClickEvent) =>
+    const onClickBackground = ({ count, pointer: { position } }: PointerDown) =>
         dispatch({ kind: EventKind.CLICKED_BACKGROUND, count, position })
     const onFinderInsert = (option: string) =>
         dispatch({ kind: EventKind.FINDER_INSERT, option })

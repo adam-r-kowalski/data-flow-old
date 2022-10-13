@@ -65,6 +65,7 @@ test("two pointers down on background starts zooming", () => {
         {
             kind: EventKind.POINTER_DOWN,
             pointer: pointer0,
+            count: 0,
         },
         dispatch
     )
@@ -74,6 +75,7 @@ test("two pointers down on background starts zooming", () => {
         {
             kind: EventKind.POINTER_DOWN,
             pointer: pointer1,
+            count: 0,
         },
         dispatch
     )
@@ -167,6 +169,7 @@ test("two pointers down then up puts you in pan mode", () => {
         {
             kind: EventKind.POINTER_DOWN,
             pointer: pointer0,
+            count: 0,
         },
         dispatch
     )
@@ -176,6 +179,7 @@ test("two pointers down then up puts you in pan mode", () => {
         {
             kind: EventKind.POINTER_DOWN,
             pointer: pointer1,
+            count: 0,
         },
         dispatch
     )
@@ -214,6 +218,7 @@ test("pointer down when finder open tracks pointer", () => {
         {
             kind: EventKind.POINTER_DOWN,
             pointer,
+            count: 0,
         },
         dispatch
     )
@@ -317,6 +322,7 @@ test("pointer move after pointer down pans camera", () => {
                 id: 0,
                 position: { x: 0, y: 0 },
             },
+            count: 0,
         },
         dispatch
     )
@@ -403,6 +409,7 @@ test("pointer move after clicking node pointer down drags node", () => {
                 id: 0,
                 position: { x: 0, y: 0 },
             },
+            count: 0,
         },
         dispatch
     )
@@ -481,6 +488,7 @@ test("pointer move after clicking node, pointer down, then pointer up", () => {
                 id: 0,
                 position: { x: 0, y: 0 },
             },
+            count: 0,
         },
         dispatch
     )
@@ -1978,6 +1986,7 @@ test("zooming", () => {
         {
             kind: EventKind.POINTER_DOWN,
             pointer: pointer0,
+            count: 0,
         },
         dispatch
     )
@@ -1997,6 +2006,7 @@ test("zooming", () => {
         {
             kind: EventKind.POINTER_DOWN,
             pointer: pointer1,
+            count: 0,
         },
         dispatch
     )
@@ -3066,6 +3076,7 @@ test("three pointers down then one up doesn't change state", () => {
         {
             kind: EventKind.POINTER_DOWN,
             pointer: pointer0,
+            count: 0,
         },
         dispatch
     )
@@ -3075,6 +3086,7 @@ test("three pointers down then one up doesn't change state", () => {
         {
             kind: EventKind.POINTER_DOWN,
             pointer: pointer1,
+            count: 0,
         },
         dispatch
     )
@@ -3084,6 +3096,7 @@ test("three pointers down then one up doesn't change state", () => {
         {
             kind: EventKind.POINTER_DOWN,
             pointer: pointer2,
+            count: 0,
         },
         dispatch
     )
@@ -3140,6 +3153,7 @@ test("three pointers down on node then one up keeps state dragging", () => {
         {
             kind: EventKind.POINTER_DOWN,
             pointer: pointer0,
+            count: 0,
         },
         dispatch
     )
@@ -3158,6 +3172,7 @@ test("three pointers down on node then one up keeps state dragging", () => {
         {
             kind: EventKind.POINTER_DOWN,
             pointer: pointer1,
+            count: 0,
         },
         dispatch
     )
@@ -3226,6 +3241,7 @@ test("pointer move when input selected updates node placement location", () => {
         {
             kind: EventKind.POINTER_DOWN,
             pointer: pointer0,
+            count: 0,
         },
         dispatch
     )
@@ -3292,6 +3308,7 @@ test("pointer move when output selected updates node placement location", () => 
         {
             kind: EventKind.POINTER_DOWN,
             pointer: pointer0,
+            count: 0,
         },
         dispatch
     )
@@ -3356,6 +3373,7 @@ test("pointer move when body selected updates node placement location", () => {
         {
             kind: EventKind.POINTER_DOWN,
             pointer: pointer0,
+            count: 0,
         },
         dispatch
     )
@@ -3422,6 +3440,7 @@ test("pressing f with node selected opens finder", () => {
         {
             kind: EventKind.POINTER_DOWN,
             pointer: pointer0,
+            count: 0,
         },
         dispatch
     )
@@ -3501,6 +3520,7 @@ test("pressing f with input selected opens finder", () => {
         {
             kind: EventKind.POINTER_DOWN,
             pointer: pointer0,
+            count: 0,
         },
         dispatch
     )
@@ -3580,6 +3600,7 @@ test("pressing f with output selected opens finder", () => {
         {
             kind: EventKind.POINTER_DOWN,
             pointer: pointer0,
+            count: 0,
         },
         dispatch
     )
@@ -3659,6 +3680,7 @@ test("key up with input selected does nothing", () => {
         {
             kind: EventKind.POINTER_DOWN,
             pointer: pointer0,
+            count: 0,
         },
         dispatch
     )

@@ -1,6 +1,6 @@
 import { pointerDown } from "./ui/pointer_down"
 import { makeRenderer, resize, render } from "./ui/renderer"
-import { Pointer, UI } from "./ui"
+import { PointerDown, UI } from "./ui"
 import { Document, Window } from "./ui/dom"
 
 export type Dispatch<AppEvent> = (event: AppEvent) => void
@@ -20,7 +20,7 @@ interface Properties<Model, AppEvent> {
     window: Window<AppEvent>
     document: Document
     requestAnimationFrame: (callback: () => void) => void
-    pointerDown: (dispatch: Dispatch<AppEvent>, pointer: Pointer) => void
+    pointerDown: (dispatch: Dispatch<AppEvent>, event: PointerDown) => void
 }
 
 export const run = <Model, AppEvent>(
@@ -52,13 +52,15 @@ export const run = <Model, AppEvent>(
     const dispatch = (event: AppEvent): void => window.postMessage(event)
     document.body.appendChild(renderer.canvas)
     document.addEventListener("pointerdown", (p) => {
-        const transformed = {
-            id: p.pointerId,
+        const event = {
+            pointer: {
+                id: p.pointerId,
+                position: { x: p.clientX, y: p.clientY },
+            },
             count: p.detail,
-            position: { x: p.clientX, y: p.clientY },
         }
-        properties.pointerDown(dispatch, transformed)
-        pointerDown(renderer, transformed)
+        properties.pointerDown(dispatch, event)
+        pointerDown(renderer, event)
     })
     window.addEventListener("resize", () => {
         resize(renderer, {

@@ -1,11 +1,9 @@
 import { identity, translate } from "../../src/linear_algebra/matrix3x3"
 import { mockDocument, mockWindow } from "../../src/ui/mock"
 import { pointerDown } from "../../src/ui/pointer_down"
+import { pointerMove } from "../../src/ui/pointer_move"
 import { makeRenderer, render } from "../../src/ui/renderer"
-import { ClickEvent, container, DragEvent, scene } from "../../src/ui"
-
-const red = { red: 255, green: 0, blue: 0, alpha: 255 }
-const green = { red: 0, green: 255, blue: 0, alpha: 255 }
+import { PointerDown, container, PointerDrag, scene } from "../../src/ui"
 
 interface Model {
     a: number
@@ -49,7 +47,6 @@ test("click first container", () => {
             container({
                 width: 50,
                 height: 50,
-                color: red,
                 x: 100,
                 y: 200,
                 onClick: () => dispatch(AppEvent.A),
@@ -57,7 +54,6 @@ test("click first container", () => {
             container({
                 width: 50,
                 height: 50,
-                color: green,
                 x: 300,
                 y: 250,
                 onClick: () => dispatch(AppEvent.B),
@@ -66,8 +62,10 @@ test("click first container", () => {
     })
     render(renderer, ui)
     pointerDown(renderer, {
-        position: { x: 125, y: 225 },
-        id: 0,
+        pointer: {
+            position: { x: 125, y: 225 },
+            id: 0,
+        },
         count: 0,
     })
     expect(model).toEqual({ a: 1, b: 0 })
@@ -83,7 +81,6 @@ test("click second container", () => {
             container({
                 width: 50,
                 height: 50,
-                color: red,
                 x: 100,
                 y: 200,
                 onClick: () => dispatch(AppEvent.A),
@@ -91,7 +88,6 @@ test("click second container", () => {
             container({
                 width: 50,
                 height: 50,
-                color: green,
                 x: 300,
                 y: 250,
                 onClick: () => dispatch(AppEvent.B),
@@ -100,8 +96,10 @@ test("click second container", () => {
     })
     render(renderer, ui)
     pointerDown(renderer, {
-        position: { x: 325, y: 275 },
-        id: 0,
+        pointer: {
+            position: { x: 325, y: 275 },
+            id: 0,
+        },
         count: 0,
     })
     expect(model).toEqual({ a: 0, b: 1 })
@@ -117,7 +115,6 @@ test("click translated container", () => {
             container({
                 width: 50,
                 height: 50,
-                color: red,
                 x: 100,
                 y: 200,
                 onClick: () => dispatch(AppEvent.A),
@@ -125,7 +122,6 @@ test("click translated container", () => {
             container({
                 width: 50,
                 height: 50,
-                color: green,
                 x: 300,
                 y: 250,
                 onClick: () => dispatch(AppEvent.B),
@@ -134,8 +130,10 @@ test("click translated container", () => {
     })
     render(renderer, ui)
     pointerDown(renderer, {
-        position: { x: 25, y: 225 },
-        id: 0,
+        pointer: {
+            position: { x: 25, y: 225 },
+            id: 0,
+        },
         count: 0,
     })
     expect(model).toEqual({ a: 1, b: 0 })
@@ -143,7 +141,7 @@ test("click translated container", () => {
 
 test("renderer starts with identity camera", () => {
     const renderer = mockRenderer()
-    const view = container({ width: 50, height: 50, color: red })
+    const view = container({})
     render(renderer, view)
     expect(renderer.cameras).toEqual([identity()])
 })
@@ -151,11 +149,10 @@ test("renderer starts with identity camera", () => {
 test("double click", () => {
     const renderer = mockRenderer()
     let count = 0
-    const dispatch = (event: ClickEvent) => (count = event.count)
+    const dispatch = (event: PointerDown) => (count = event.count)
     const ui = container({
         width: 50,
         height: 50,
-        color: red,
         x: 100,
         y: 200,
         onClick: dispatch,
@@ -163,14 +160,18 @@ test("double click", () => {
     render(renderer, ui)
     expect(count).toEqual(0)
     pointerDown(renderer, {
-        position: { x: 125, y: 225 },
-        id: 0,
+        pointer: {
+            position: { x: 125, y: 225 },
+            id: 0,
+        },
         count: 1,
     })
     expect(count).toEqual(1)
     pointerDown(renderer, {
-        position: { x: 125, y: 225 },
-        id: 0,
+        pointer: {
+            position: { x: 125, y: 225 },
+            id: 0,
+        },
         count: 2,
     })
     expect(count).toEqual(2)
@@ -178,8 +179,8 @@ test("double click", () => {
 
 test("on drag", () => {
     const renderer = mockRenderer()
-    const dragEvents: DragEvent[] = []
-    const dispatch = (event: DragEvent) => dragEvents.push(event)
+    const dragEvents: PointerDrag[] = []
+    const dispatch = (event: PointerDrag) => dragEvents.push(event)
     const ui = container({
         width: 50,
         height: 50,
@@ -191,10 +192,18 @@ test("on drag", () => {
     expect(dragEvents).toEqual([])
     expect(renderer.onDrag).toBeUndefined()
     pointerDown(renderer, {
-        position: { x: 120, y: 210 },
-        id: 0,
+        pointer: {
+            position: { x: 120, y: 210 },
+            id: 0,
+        },
         count: 1,
     })
     expect(dragEvents).toEqual([])
+    expect(renderer.onDrag).toEqual(dispatch)
+    pointerMove(renderer, {
+        position: { x: 150, y: 220 },
+        id: 0,
+    })
+    expect(dragEvents).toEqual([{ x: 30, y: 10 }])
     expect(renderer.onDrag).toEqual(dispatch)
 })

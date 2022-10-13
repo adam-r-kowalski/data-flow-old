@@ -1,5 +1,14 @@
 import { Batch } from "./batch_geometry"
-import { Font, TextMeasurements, Size, UI, layout, geometry, OnDrag } from "."
+import {
+    Font,
+    TextMeasurements,
+    Size,
+    UI,
+    layout,
+    geometry,
+    OnDrag,
+    Pointer,
+} from "."
 import { Matrix3x3, projection } from "../linear_algebra/matrix3x3"
 import {
     Document,
@@ -135,6 +144,7 @@ export interface Renderer<AppEvent> {
     dragHandlers: DragHandlers
     size: Size
     cameras: Matrix3x3[]
+    pointers: { [id: number]: Pointer }
     onDrag?: OnDrag
 }
 
@@ -562,6 +572,7 @@ export const makeRenderer = <AppEvent>({
         dragHandlers: [],
         size,
         cameras: [],
+        pointers: {},
     }
     resize(renderer, size)
     return renderer

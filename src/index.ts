@@ -22,10 +22,11 @@ const dispatch = run({
     window,
     document: doc,
     requestAnimationFrame,
-    pointerDown: (dispatch, pointer) => {
+    pointerDown: (dispatch, { pointer, count }) => {
         dispatch({
             kind: EventKind.POINTER_DOWN,
             pointer,
+            count,
         })
     },
 })

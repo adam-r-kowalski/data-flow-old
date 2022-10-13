@@ -108,15 +108,7 @@ const pointerDown = (model: Model, event: PointerDown): Model => {
             pointers,
         }
     } else {
-        return {
-            ...model,
-            focus: {
-                kind: FocusKind.NONE,
-                pointerAction: { kind: PointerActionKind.PAN },
-                quickSelect: { kind: QuickSelectKind.NONE },
-            },
-            pointers,
-        }
+        return model
     }
 }
 
@@ -126,15 +118,6 @@ const pointerUp = (model: Model, event: PointerUp): Model => {
         case FocusKind.NONE:
             switch (pointers.length) {
                 case 1:
-                    return {
-                        ...model,
-                        pointers,
-                        focus: {
-                            kind: FocusKind.NONE,
-                            pointerAction: { kind: PointerActionKind.PAN },
-                            quickSelect: { kind: QuickSelectKind.NONE },
-                        },
-                    }
                 case 0:
                     return {
                         ...model,
@@ -192,18 +175,6 @@ const pointerMove = (
                         ...model,
                         nodePlacementLocation,
                         pointers,
-                    }
-                case PointerActionKind.PAN:
-                    const dx = event.pointer.position.x - pointer.position.x
-                    const dy = event.pointer.position.y - pointer.position.y
-                    const camera = multiplyMatrices(
-                        model.camera,
-                        translate(-dx, -dy)
-                    )
-                    return {
-                        ...model,
-                        pointers,
-                        camera,
                     }
                 case PointerActionKind.ZOOM:
                     const [p0, p1] = [pointers[0], pointers[1]]
@@ -784,24 +755,13 @@ const clickedBackground = (
             nodePlacementLocation: { x, y, show: false },
         })
     } else {
-        const focus: Focus =
-            model.focus.kind === FocusKind.NONE
-                ? model.focus
-                : {
-                      kind: FocusKind.NONE,
-                      pointerAction: { kind: PointerActionKind.PAN },
-                      quickSelect: { kind: QuickSelectKind.NONE },
-                  }
-        return {
-            ...model,
-            focus,
-        }
+        return model
     }
 }
 
 const draggedBackground = (model: Model, event: DraggedBackground): Model => {
-    console.log(event)
-    return model
+    const camera = multiplyMatrices(model.camera, translate(-event.x, -event.y))
+    return { ...model, camera }
 }
 
 const changeNode = (model: Model, { node }: ChangeNode): Model =>

@@ -426,6 +426,7 @@ export const nodeUi = (
             x: node.position.x,
             y: node.position.y,
             onClick: () => onClickNode(node.uuid),
+            onDrag: () => {},
         },
         column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             text(name),

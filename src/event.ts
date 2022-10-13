@@ -7,7 +7,9 @@ export enum EventKind {
     POINTER_DOWN,
     POINTER_UP,
     CLICKED_NODE,
-    WHEEL,
+    DRAGGED_NODE,
+    WHEEL_ZOOM,
+    WHEEL_PAN,
     CLICKED_INPUT,
     CLICKED_OUTPUT,
     KEYDOWN,
@@ -15,6 +17,7 @@ export enum EventKind {
     CLICKED_FINDER_OPTION,
     CLICKED_BODY,
     CLICKED_BACKGROUND,
+    DRAGGED_BACKGROUND,
     CHANGE_NODE,
     DELETE_NODE,
     DELETE_INPUT_EDGE,
@@ -51,9 +54,22 @@ export interface ClickedNode {
     readonly node: UUID
 }
 
-export interface Wheel {
-    readonly kind: EventKind.WHEEL
+export interface DraggedNode {
+    readonly kind: EventKind.DRAGGED_NODE
+    readonly node: UUID
+    readonly x: number
+    readonly y: number
+}
+
+export interface WheelZoom {
+    readonly kind: EventKind.WHEEL_ZOOM
     readonly position: Position
+    readonly delta: number
+}
+
+export interface WheelPan {
+    readonly kind: EventKind.WHEEL_PAN
+    readonly deltaX: number
     readonly deltaY: number
 }
 
@@ -86,6 +102,12 @@ export interface ClickedBackground {
     readonly kind: EventKind.CLICKED_BACKGROUND
     readonly count: number
     readonly position: Position
+}
+
+export interface DraggedBackground {
+    readonly kind: EventKind.DRAGGED_BACKGROUND
+    readonly x: number
+    readonly y: number
 }
 
 export interface ChangeNode {
@@ -160,13 +182,16 @@ export type AppEvent =
     | PointerDown
     | PointerUp
     | ClickedNode
-    | Wheel
+    | DraggedNode
+    | WheelZoom
+    | WheelPan
     | ClickedInput
     | ClickedOutput
     | KeyDown
     | KeyUp
     | ClickedBody
     | ClickedBackground
+    | DraggedBackground
     | ChangeNode
     | DeleteNode
     | DeleteInputEdge

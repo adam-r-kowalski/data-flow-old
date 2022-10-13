@@ -13,6 +13,7 @@ import {
     WorldSpace,
     traverse,
     OnClick,
+    OnDrag,
 } from "."
 import { CameraStack, transformWorldSpace } from "./camera_stack"
 
@@ -29,6 +30,7 @@ export interface CenterGeometry {
 export interface Center {
     readonly id?: string
     readonly onClick?: OnClick
+    readonly onDrag?: OnDrag
     readonly kind: UIKind.CENTER
     readonly child: UI
 }

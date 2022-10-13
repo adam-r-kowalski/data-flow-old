@@ -10,6 +10,7 @@ import {
     UIKind,
     WorldSpace,
     OnClick,
+    OnDrag,
 } from "."
 import { activeCamera, CameraStack, transformWorldSpace } from "./camera_stack"
 
@@ -31,6 +32,7 @@ export interface TextGeometry {
 export interface Text {
     readonly id?: string
     readonly onClick?: OnClick
+    readonly onDrag?: OnDrag
     readonly kind: UIKind.TEXT
     readonly font: Font
     readonly color: Color

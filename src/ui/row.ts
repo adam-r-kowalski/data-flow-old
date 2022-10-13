@@ -13,6 +13,7 @@ import {
     Entry,
     traverse,
     OnClick,
+    OnDrag,
 } from "."
 import { CrossAxisAlignment, MainAxisAlignment } from "./alignment"
 import { CameraStack, transformWorldSpace } from "./camera_stack"
@@ -31,6 +32,7 @@ export interface RowGeometry {
 export interface Row {
     readonly id?: string
     readonly onClick?: OnClick
+    readonly onDrag?: OnDrag
     readonly kind: UIKind.ROW
     readonly mainAxisAlignment: MainAxisAlignment
     readonly crossAxisAlignment: CrossAxisAlignment

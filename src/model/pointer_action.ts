@@ -1,9 +1,9 @@
 import { Position } from "./graph"
 
-export enum PointerActionKind { PAN, ZOOM, NONE }
-
-export interface PointerActionPan {
-    readonly kind: PointerActionKind.PAN
+export enum PointerActionKind {
+    PAN,
+    ZOOM,
+    NONE,
 }
 
 export interface PointerActionZoom {
@@ -16,7 +16,4 @@ export interface PointerActionNone {
     readonly kind: PointerActionKind.NONE
 }
 
-export type PointerAction =
-    | PointerActionPan
-    | PointerActionZoom
-    | PointerActionNone
+export type PointerAction = PointerActionZoom | PointerActionNone

@@ -33,6 +33,8 @@ test("if update does not modify model then view gets called once", () => {
         document: mockDocument(),
         requestAnimationFrame: mockRequestAnimationFrame,
         pointerDown: () => {},
+        pointerMove: () => {},
+        pointerUp: () => {},
     })
     dispatch(AppEvent.A)
     expect(viewCallCount).toEqual(1)
@@ -61,6 +63,8 @@ test("if update modifies model view gets called again", () => {
         document: mockDocument(),
         requestAnimationFrame: mockRequestAnimationFrame,
         pointerDown: () => {},
+        pointerMove: () => {},
+        pointerUp: () => {},
     })
     dispatch(AppEvent.A)
     expect(viewCallCount).toEqual(2)
@@ -91,6 +95,8 @@ test("update gets passed dispatch and can schedule events", () => {
         document: mockDocument(),
         requestAnimationFrame: mockRequestAnimationFrame,
         pointerDown: () => {},
+        pointerMove: () => {},
+        pointerUp: () => {},
     })
     expect(window.events).toEqual([])
     dispatch(AppEvent.A)
@@ -124,27 +130,30 @@ test("pointer down events can lead to on click handlers firing", () => {
         window,
         document,
         requestAnimationFrame: mockRequestAnimationFrame,
-        pointerDown: (_, pointer) => {
-            pointers.push(pointer)
-        },
+        pointerDown: (_, pointer) => pointers.push(pointer),
+        pointerMove: () => {},
+        pointerUp: () => {},
     })
     document.fireEvent("pointerdown", {
         clientX: 0,
         clientY: 0,
         pointerId: 0,
         detail: 1,
+        getCoalescedEvents: () => [],
     })
     document.fireEvent("pointerdown", {
         clientX: 51,
         clientY: 0,
         pointerId: 0,
         detail: 2,
+        getCoalescedEvents: () => [],
     })
     document.fireEvent("pointerdown", {
         clientX: 200,
         clientY: 200,
         pointerId: 0,
         detail: 3,
+        getCoalescedEvents: () => [],
     })
     expect(window.events).toEqual([AppEvent.A, AppEvent.B])
     expect(pointers).toEqual([
@@ -182,6 +191,8 @@ test("resize events trigger a rerender", () => {
         document: mockDocument(),
         requestAnimationFrame: mockRequestAnimationFrame,
         pointerDown: () => {},
+        pointerMove: () => {},
+        pointerUp: () => {},
     })
     expect(viewCallCount).toEqual(1)
     window.fireEvent("resize")

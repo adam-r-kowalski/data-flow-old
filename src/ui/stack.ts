@@ -13,6 +13,7 @@ import {
     Entry,
     traverse,
     OnClick,
+    OnDrag,
 } from "."
 import { CameraStack, transformWorldSpace } from "./camera_stack"
 
@@ -29,6 +30,7 @@ export interface StackGeometry {
 export interface Stack {
     readonly id?: string
     readonly onClick?: OnClick
+    readonly onDrag?: OnDrag
     kind: UIKind.STACK
     children: UI[]
 }

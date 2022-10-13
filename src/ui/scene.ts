@@ -14,6 +14,7 @@ import {
     UIKind,
     WorldSpace,
     OnClick,
+    OnDrag,
 } from "."
 import { Matrix3x3 } from "../linear_algebra/matrix3x3"
 import {
@@ -36,6 +37,7 @@ export interface SceneGeometry {
 export interface Scene {
     readonly id?: string
     readonly onClick?: OnClick
+    readonly onDrag?: OnDrag
     readonly kind: UIKind.SCENE
     readonly camera: Matrix3x3
     readonly children: UI[]

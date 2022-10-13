@@ -8,7 +8,6 @@ import { Columns, Value } from "./model/table"
 import { EventKind } from "./event"
 import { makeEffects } from "./effects"
 import { emptyModel } from "./model/empty"
-import { Pointer } from "./ui"
 
 type Row = { [name: string]: Value }
 
@@ -28,49 +27,41 @@ const dispatch = run({
             pointer,
         })
     },
+    pointerMove: (dispatch, pointer) => {
+        dispatch({
+            kind: EventKind.POINTER_MOVE,
+            pointer,
+        })
+    },
+    pointerUp: (dispatch, pointer) => {
+        dispatch({
+            kind: EventKind.POINTER_UP,
+            pointer,
+        })
+    },
+    supportsCoalesced:
+        typeof PointerEvent.prototype.getCoalescedEvents === "function",
 })
 
 dispatch({ kind: EventKind.LOAD_DEMO_MODEL })
-
-const transformPointer = (p: PointerEvent): Pointer => ({
-    id: p.pointerId,
-    position: { x: p.clientX, y: p.clientY },
-})
-
-if (typeof PointerEvent.prototype.getCoalescedEvents === "function") {
-    document.addEventListener("pointermove", (e) => {
-        e.getCoalescedEvents().forEach((p) => {
-            dispatch({
-                kind: EventKind.POINTER_MOVE,
-                pointer: transformPointer(p),
-            })
-        })
-    })
-} else {
-    document.addEventListener("pointermove", (p) =>
-        dispatch({
-            kind: EventKind.POINTER_MOVE,
-            pointer: transformPointer(p),
-        })
-    )
-}
-
-document.addEventListener("pointerup", (p) => {
-    dispatch({
-        kind: EventKind.POINTER_UP,
-        pointer: transformPointer(p),
-    })
-})
 
 document.addEventListener(
     "wheel",
     (e) => {
         e.preventDefault()
-        dispatch({
-            kind: EventKind.WHEEL,
-            position: { x: e.clientX, y: e.clientY },
-            deltaY: e.deltaY,
-        })
+        if (e.ctrlKey) {
+            dispatch({
+                kind: EventKind.WHEEL_ZOOM,
+                position: { x: e.clientX, y: e.clientY },
+                delta: e.deltaY,
+            })
+        } else {
+            dispatch({
+                kind: EventKind.WHEEL_PAN,
+                deltaX: e.deltaX,
+                deltaY: e.deltaY,
+            })
+        }
     },
     { passive: false }
 )

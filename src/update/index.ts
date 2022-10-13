@@ -65,6 +65,8 @@ import {
     DeleteInputEdge,
     DeleteNode,
     DeleteOutputEdges,
+    DraggedBackground,
+    DraggedNode,
     EventKind,
     FinderChange,
     FinderInsert,
@@ -75,7 +77,8 @@ import {
     PointerUp,
     UploadCsv,
     UploadTable,
-    Wheel,
+    WheelPan,
+    WheelZoom,
 } from "../event"
 import * as finder from "../finder"
 import { Effects, GenerateUUID } from "../effects"
@@ -106,15 +109,7 @@ const pointerDown = (model: Model, event: PointerDown): Model => {
             pointers,
         }
     } else {
-        return {
-            ...model,
-            focus: {
-                kind: FocusKind.NONE,
-                pointerAction: { kind: PointerActionKind.PAN },
-                quickSelect: { kind: QuickSelectKind.NONE },
-            },
-            pointers,
-        }
+        return { ...model, pointers }
     }
 }
 
@@ -124,15 +119,6 @@ const pointerUp = (model: Model, event: PointerUp): Model => {
         case FocusKind.NONE:
             switch (pointers.length) {
                 case 1:
-                    return {
-                        ...model,
-                        pointers,
-                        focus: {
-                            kind: FocusKind.NONE,
-                            pointerAction: { kind: PointerActionKind.PAN },
-                            quickSelect: { kind: QuickSelectKind.NONE },
-                        },
-                    }
                 case 0:
                     return {
                         ...model,
@@ -145,13 +131,6 @@ const pointerUp = (model: Model, event: PointerUp): Model => {
                     }
                 default:
                     return { ...model, pointers }
-            }
-        case FocusKind.NODE:
-            if (pointers.length === 0) {
-                const focus: Focus = { ...model.focus, drag: false }
-                return { ...model, pointers, focus }
-            } else {
-                return { ...model, pointers }
             }
         default:
             return { ...model, pointers }
@@ -171,7 +150,6 @@ const pointerMove = (
 ): Model => {
     showCursor()
     const index = model.pointers.findIndex((p) => p.id === event.pointer.id)
-    const pointer = model.pointers[index]
     const pointers =
         index === -1
             ? model.pointers
@@ -190,18 +168,6 @@ const pointerMove = (
                         ...model,
                         nodePlacementLocation,
                         pointers,
-                    }
-                case PointerActionKind.PAN:
-                    const dx = event.pointer.position.x - pointer.position.x
-                    const dy = event.pointer.position.y - pointer.position.y
-                    const camera = multiplyMatrices(
-                        model.camera,
-                        translate(-dx, -dy)
-                    )
-                    return {
-                        ...model,
-                        pointers,
-                        camera,
                     }
                 case PointerActionKind.ZOOM:
                     const [p0, p1] = [pointers[0], pointers[1]]
@@ -245,32 +211,6 @@ const pointerMove = (
                     }
             }
         case FocusKind.NODE:
-            if (model.focus.drag) {
-                const dx = event.pointer.position.x - pointer.position.x
-                const dy = event.pointer.position.y - pointer.position.y
-                const scaling = length(
-                    multiplyMatrixVector(model.camera, [0, 1, 0])
-                )
-                const graph = changeNodePosition(
-                    model.graph,
-                    model.focus.node,
-                    (p) => ({
-                        x: p.x + dx * scaling,
-                        y: p.y + dy * scaling,
-                    })
-                )
-                return {
-                    ...model,
-                    pointers,
-                    graph,
-                }
-            } else {
-                return {
-                    ...model,
-                    pointers,
-                    nodePlacementLocation,
-                }
-            }
         case FocusKind.BODY_NUMBER:
         case FocusKind.BODY_TEXT:
         case FocusKind.INPUT:
@@ -290,7 +230,6 @@ const clickedNode = (model: Model, event: ClickedNode): Model => {
         focus: {
             kind: FocusKind.NODE,
             node: event.node,
-            drag: true,
             quickSelect: { kind: QuickSelectKind.NONE },
             move: {
                 left: false,
@@ -304,15 +243,32 @@ const clickedNode = (model: Model, event: ClickedNode): Model => {
     }
 }
 
-const wheel = (model: Model, event: Wheel): Model => {
+const draggedNode = (model: Model, { node, x, y }: DraggedNode): Model => {
+    const scaling = length(multiplyMatrixVector(model.camera, [0, 1, 0]))
+    const graph = changeNodePosition(model.graph, node, (p) => ({
+        x: p.x + x * scaling,
+        y: p.y + y * scaling,
+    }))
+    return { ...model, graph }
+}
+
+const wheelZoom = (model: Model, event: WheelZoom): Model => {
     const move = translate(event.position.x, event.position.y)
-    const zoom = Math.pow(2, event.deltaY * 0.01)
+    const zoom = Math.pow(2, event.delta * 0.01)
     const moveBack = translate(-event.position.x, -event.position.y)
     const camera = multiplyMatrices(
         model.camera,
         move,
         scale(zoom, zoom),
         moveBack
+    )
+    return { ...model, camera }
+}
+
+const wheelPan = (model: Model, event: WheelPan): Model => {
+    const camera = multiplyMatrices(
+        model.camera,
+        translate(event.deltaX, event.deltaY)
     )
     return { ...model, camera }
 }
@@ -762,11 +718,7 @@ const clickedBackground = (
     model: Model,
     { count, position: { x, y } }: ClickedBackground
 ): Model => {
-    if (
-        [FocusKind.FINDER_INSERT, FocusKind.FINDER_CHANGE].includes(
-            model.focus.kind
-        )
-    ) {
+    if (model.focus.kind !== FocusKind.NONE) {
         return clearFocus(model)
     } else if (count === 2) {
         return openFinderInsert({
@@ -774,19 +726,13 @@ const clickedBackground = (
             nodePlacementLocation: { x, y, show: false },
         })
     } else {
-        const focus: Focus =
-            model.focus.kind === FocusKind.NONE
-                ? model.focus
-                : {
-                      kind: FocusKind.NONE,
-                      pointerAction: { kind: PointerActionKind.PAN },
-                      quickSelect: { kind: QuickSelectKind.NONE },
-                  }
-        return {
-            ...model,
-            focus,
-        }
+        return model
     }
+}
+
+const draggedBackground = (model: Model, event: DraggedBackground): Model => {
+    const camera = multiplyMatrices(model.camera, translate(-event.x, -event.y))
+    return { ...model, camera }
 }
 
 const changeNode = (model: Model, { node }: ChangeNode): Model =>
@@ -1057,8 +1003,12 @@ export const update = (
             return pointerUp(model, event)
         case EventKind.CLICKED_NODE:
             return clickedNode(model, event)
-        case EventKind.WHEEL:
-            return wheel(model, event)
+        case EventKind.DRAGGED_NODE:
+            return draggedNode(model, event)
+        case EventKind.WHEEL_ZOOM:
+            return wheelZoom(model, event)
+        case EventKind.WHEEL_PAN:
+            return wheelPan(model, event)
         case EventKind.CLICKED_INPUT:
             return clickedInput(model, event, effects.generateUUID)
         case EventKind.CLICKED_OUTPUT:
@@ -1083,6 +1033,8 @@ export const update = (
             return clickedBody(model, event)
         case EventKind.CLICKED_BACKGROUND:
             return clickedBackground(model, event)
+        case EventKind.DRAGGED_BACKGROUND:
+            return draggedBackground(model, event)
         case EventKind.CHANGE_NODE:
             return changeNode(model, event)
         case EventKind.DELETE_NODE:

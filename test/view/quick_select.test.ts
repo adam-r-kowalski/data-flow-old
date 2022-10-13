@@ -159,6 +159,7 @@ test("nodeUi with quick select", () => {
         () => {},
         () => {},
         () => {},
+        () => {},
         () => {}
     )
     const expected = container(
@@ -168,6 +169,7 @@ test("nodeUi with quick select", () => {
             x: 0,
             y: 0,
             onClick: () => {},
+            onDrag: () => {},
         },
         column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             text("a"),

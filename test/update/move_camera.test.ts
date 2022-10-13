@@ -2,43 +2,11 @@ import { EventKind } from "../../src/event"
 import { identity, translate } from "../../src/linear_algebra/matrix3x3"
 import { Model } from "../../src/model"
 import { emptyModel } from "../../src/model/empty"
-import { FocusKind } from "../../src/model/focus"
-import { PointerActionKind } from "../../src/model/pointer_action"
-import { QuickSelectKind } from "../../src/model/quick_select"
-import { Pointer } from "../../src/ui"
 import { mockDocument } from "../../src/ui/mock"
 import { update } from "../../src/update"
 import { makeEffects, makeTracked, resetTracked } from "../mock_effects"
 
 const model: Model = emptyModel({ width: 500, height: 500 })
-
-test("pointer down starts panning camera", () => {
-    const pointer: Pointer = {
-        id: 0,
-        position: { x: 0, y: 0 },
-    }
-    const dispatch = () => {}
-    const effects = makeEffects(mockDocument())
-    const model1 = update(
-        effects,
-        model,
-        {
-            kind: EventKind.POINTER_DOWN,
-            pointer,
-        },
-        dispatch
-    )
-    const expectedModel: Model = {
-        ...model,
-        focus: {
-            kind: FocusKind.NONE,
-            pointerAction: { kind: PointerActionKind.PAN },
-            quickSelect: { kind: QuickSelectKind.NONE },
-        },
-        pointers: [pointer],
-    }
-    expect(model1).toEqual(expectedModel)
-})
 
 test("h when nothing focused pans camera left", () => {
     let tracked = makeTracked()

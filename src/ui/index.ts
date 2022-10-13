@@ -283,12 +283,14 @@ export interface Connection {
 export interface Pointer {
     id: number
     position: Position
-}
-
-export interface ClickEvent {
-    id: number
-    position: Position
     count: number
 }
 
-export type OnClick = (event: ClickEvent) => void
+export type OnClick = (event: Pointer) => void
+
+export interface PointerDrag {
+    x: number
+    y: number
+}
+
+export type OnDrag = (event: PointerDrag) => void

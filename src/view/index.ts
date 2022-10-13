@@ -358,7 +358,8 @@ export const nodeUi = (
     onClickInput: (uuid: UUID) => void,
     onClickBody: (uuid: UUID) => void,
     onClickOutput: (uuid: UUID) => void,
-    onClickNode: (uuid: UUID) => void
+    onClickNode: (uuid: UUID) => void,
+    onDragNode: (uuid: UUID, drag: PointerDrag) => void
 ) => {
     const node = graph.nodes[nodeUUID]
     const rowEntries: UI[] = []
@@ -426,7 +427,7 @@ export const nodeUi = (
             x: node.position.x,
             y: node.position.y,
             onClick: () => onClickNode(node.uuid),
-            onDrag: () => {},
+            onDrag: (event) => onDragNode(node.uuid, event),
         },
         column({ crossAxisAlignment: CrossAxisAlignment.CENTER }, [
             text(name),
@@ -459,6 +460,13 @@ export const view = (model: Model, dispatch: Dispatch<AppEvent>): UI => {
             kind: EventKind.CLICKED_NODE,
             node,
         })
+    const onDragNode = (node: UUID, { x, y }: PointerDrag) =>
+        dispatch({
+            kind: EventKind.DRAGGED_NODE,
+            node,
+            x,
+            y,
+        })
     const onClickBackground = ({ count, position }: Pointer) =>
         dispatch({ kind: EventKind.CLICKED_BACKGROUND, count, position })
     const onDragBackground = ({ x, y }: PointerDrag) =>
@@ -487,7 +495,8 @@ export const view = (model: Model, dispatch: Dispatch<AppEvent>): UI => {
             onClickInput,
             onClickBody,
             onClickOutput,
-            onClickNode
+            onClickNode,
+            onDragNode
         )
     )
     const connections: Connection[] = Object.values(model.graph.edges).map(

@@ -66,6 +66,7 @@ import {
     DeleteNode,
     DeleteOutputEdges,
     DraggedBackground,
+    DraggedNode,
     EventKind,
     FinderChange,
     FinderInsert,
@@ -218,32 +219,6 @@ const pointerMove = (
                     }
             }
         case FocusKind.NODE:
-            if (model.focus.drag) {
-                const dx = event.pointer.position.x - pointer.position.x
-                const dy = event.pointer.position.y - pointer.position.y
-                const scaling = length(
-                    multiplyMatrixVector(model.camera, [0, 1, 0])
-                )
-                const graph = changeNodePosition(
-                    model.graph,
-                    model.focus.node,
-                    (p) => ({
-                        x: p.x + dx * scaling,
-                        y: p.y + dy * scaling,
-                    })
-                )
-                return {
-                    ...model,
-                    pointers,
-                    graph,
-                }
-            } else {
-                return {
-                    ...model,
-                    pointers,
-                    nodePlacementLocation,
-                }
-            }
         case FocusKind.BODY_NUMBER:
         case FocusKind.BODY_TEXT:
         case FocusKind.INPUT:
@@ -275,6 +250,15 @@ const clickedNode = (model: Model, event: ClickedNode): Model => {
         },
         nodeOrder,
     }
+}
+
+const draggedNode = (model: Model, { node, x, y }: DraggedNode): Model => {
+    const scaling = length(multiplyMatrixVector(model.camera, [0, 1, 0]))
+    const graph = changeNodePosition(model.graph, node, (p) => ({
+        x: p.x + x * scaling,
+        y: p.y + y * scaling,
+    }))
+    return { ...model, graph }
 }
 
 const wheelZoom = (model: Model, event: WheelZoom): Model => {
@@ -1032,6 +1016,8 @@ export const update = (
             return pointerUp(model, event)
         case EventKind.CLICKED_NODE:
             return clickedNode(model, event)
+        case EventKind.DRAGGED_NODE:
+            return draggedNode(model, event)
         case EventKind.WHEEL_ZOOM:
             return wheelZoom(model, event)
         case EventKind.WHEEL_PAN:

@@ -1,7 +1,8 @@
 import { pointerDown } from "./ui/pointer_down"
 import { makeRenderer, resize, render } from "./ui/renderer"
-import { PointerDown, UI } from "./ui"
+import { Pointer, PointerDown, UI } from "./ui"
 import { Document, Window } from "./ui/dom"
+import { pointerMove } from "./ui/pointer_move"
 
 export type Dispatch<AppEvent> = (event: AppEvent) => void
 
@@ -21,6 +22,7 @@ interface Properties<Model, AppEvent> {
     document: Document
     requestAnimationFrame: (callback: () => void) => void
     pointerDown: (dispatch: Dispatch<AppEvent>, event: PointerDown) => void
+    pointerMove: (dispatch: Dispatch<AppEvent>, event: Pointer) => void
 }
 
 export const run = <Model, AppEvent>(
@@ -62,6 +64,33 @@ export const run = <Model, AppEvent>(
         properties.pointerDown(dispatch, event)
         pointerDown(renderer, event)
     })
+    if (typeof PointerEvent.prototype.getCoalescedEvents === "function") {
+        document.addEventListener("pointermove", (e) => {
+            e.getCoalescedEvents().forEach((p) => {
+                const event: Pointer = {
+                    id: p.pointerId,
+                    position: {
+                        x: p.clientX,
+                        y: p.clientY,
+                    },
+                }
+                properties.pointerMove(dispatch, event)
+                pointerMove(renderer, event)
+            })
+        })
+    } else {
+        document.addEventListener("pointermove", (p) => {
+            const event: Pointer = {
+                id: p.pointerId,
+                position: {
+                    x: p.clientX,
+                    y: p.clientY,
+                },
+            }
+            properties.pointerMove(dispatch, event)
+            pointerMove(renderer, event)
+        })
+    }
     window.addEventListener("resize", () => {
         resize(renderer, {
             width: window.innerWidth,

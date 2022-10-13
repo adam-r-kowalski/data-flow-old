@@ -29,6 +29,12 @@ const dispatch = run({
             count,
         })
     },
+    pointerMove: (dispatch, pointer) => {
+        dispatch({
+            kind: EventKind.POINTER_MOVE,
+            pointer,
+        })
+    },
 })
 
 dispatch({ kind: EventKind.LOAD_DEMO_MODEL })
@@ -37,24 +43,6 @@ const transformPointer = (p: PointerEvent): Pointer => ({
     id: p.pointerId,
     position: { x: p.clientX, y: p.clientY },
 })
-
-if (typeof PointerEvent.prototype.getCoalescedEvents === "function") {
-    document.addEventListener("pointermove", (e) => {
-        e.getCoalescedEvents().forEach((p) => {
-            dispatch({
-                kind: EventKind.POINTER_MOVE,
-                pointer: transformPointer(p),
-            })
-        })
-    })
-} else {
-    document.addEventListener("pointermove", (p) =>
-        dispatch({
-            kind: EventKind.POINTER_MOVE,
-            pointer: transformPointer(p),
-        })
-    )
-}
 
 document.addEventListener("pointerup", (p) => {
     dispatch({

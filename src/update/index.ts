@@ -57,7 +57,7 @@ import { maybeStartMoveNode, maybeStopMoveNode, moveNode } from "./move_node"
 import {
     AppEvent,
     ChangeNode,
-    ClickedBackground,
+    DoubleClickedBackground,
     ClickedBody,
     ClickedInput,
     ClickedNode,
@@ -714,20 +714,18 @@ export const focusBody = (model: Model, bodyUUID: UUID): Model => {
 const clickedBody = (model: Model, { body }: ClickedBody): Model =>
     focusBody(clearFocus(model), body)
 
-const clickedBackground = (
+const clickedBackground = (model: Model): Model =>
+    model.focus.kind !== FocusKind.NONE ? clearFocus(model) : model
+
+const doubleClickedBackground = (
     model: Model,
-    { count, position: { x, y } }: ClickedBackground
+    event: DoubleClickedBackground
 ): Model => {
-    if (model.focus.kind !== FocusKind.NONE) {
-        return clearFocus(model)
-    } else if (count === 2) {
-        return openFinderInsert({
-            ...model,
-            nodePlacementLocation: { x, y, show: false },
-        })
-    } else {
-        return model
-    }
+    const { x, y } = event.position
+    return openFinderInsert({
+        ...model,
+        nodePlacementLocation: { x, y, show: false },
+    })
 }
 
 const draggedBackground = (model: Model, event: DraggedBackground): Model => {
@@ -1032,7 +1030,9 @@ export const update = (
         case EventKind.CLICKED_BODY:
             return clickedBody(model, event)
         case EventKind.CLICKED_BACKGROUND:
-            return clickedBackground(model, event)
+            return clickedBackground(model)
+        case EventKind.DOUBLE_CLICKED_BACKGROUND:
+            return doubleClickedBackground(model, event)
         case EventKind.DRAGGED_BACKGROUND:
             return draggedBackground(model, event)
         case EventKind.CHANGE_NODE:

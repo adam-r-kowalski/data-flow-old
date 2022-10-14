@@ -4,6 +4,8 @@ import { Pointer, UI } from "./ui"
 import { Document, PointerEvent, Window } from "./ui/dom"
 import { pointerMove } from "./ui/pointer_move"
 import { pointerUp } from "./ui/pointer_up"
+import { onClick } from "./ui/on_click"
+import { onDoubleClick } from "./ui/on_double_click"
 
 export type Dispatch<AppEvent> = (event: AppEvent) => void
 
@@ -98,6 +100,12 @@ export const run = <Model, AppEvent>(
     })
     const dispatch = (event: AppEvent): void => window.postMessage(event)
     document.body.appendChild(renderer.canvas)
+    document.addEventListener("click", (e) => {
+        onClick(renderer, { x: e.clientX, y: e.clientY })
+    })
+    document.addEventListener("dblclick", (e) => {
+        onDoubleClick(renderer, { x: e.clientX, y: e.clientY })
+    })
     document.addEventListener("pointerdown", (p) => {
         const pointer = transformPointer(p)
         properties.pointerDown(dispatch, pointer)

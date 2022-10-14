@@ -22,6 +22,7 @@ import {
     NodeKind,
     NumberBody,
     Output,
+    Position,
     ScatterBody,
     TableBody,
     TensorBody,
@@ -467,8 +468,10 @@ export const view = (model: Model, dispatch: Dispatch<AppEvent>): UI => {
             x,
             y,
         })
-    const onClickBackground = ({ count, position }: Pointer) =>
-        dispatch({ kind: EventKind.CLICKED_BACKGROUND, count, position })
+    const onClickBackground = () =>
+        dispatch({ kind: EventKind.CLICKED_BACKGROUND })
+    const onDoubleClickBackground = (position: Position) =>
+        dispatch({ kind: EventKind.DOUBLE_CLICKED_BACKGROUND, position })
     const onDragBackground = ({ x, y }: PointerDrag) =>
         dispatch({ kind: EventKind.DRAGGED_BACKGROUND, x, y })
     const onFinderInsert = (option: string) =>
@@ -510,6 +513,7 @@ export const view = (model: Model, dispatch: Dispatch<AppEvent>): UI => {
         background.view({
             color: model.theme.background,
             onClick: onClickBackground,
+            onDoubleClick: onDoubleClickBackground,
             onDrag: onDragBackground,
         }),
         scene({ camera: model.camera, children: nodes, connections }),

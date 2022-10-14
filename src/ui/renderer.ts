@@ -28,6 +28,7 @@ import { Accumulator } from "./reducer"
 import { reduce } from "./reduce"
 import { batchGeometry } from "./batch_geometry"
 import { DragHandlers } from "./gather_on_drag_handlers"
+import { DoubleClickHandlers } from "./gather_on_double_click_handlers"
 
 interface Attribute {
     location: number
@@ -141,6 +142,7 @@ export interface Renderer<AppEvent> {
     textures: Texture[]
     textMeasurementsCache: Map<string, TextMeasurements>
     clickHandlers: ClickHandlers
+    doubleClickHandlers: DoubleClickHandlers
     dragHandlers: DragHandlers
     size: Size
     cameras: Matrix3x3[]
@@ -295,11 +297,18 @@ export const render = <AppEvent>(
     const offsets = { x: 0, y: 0 }
     const cameraStack = initCameraStack()
     const uiGeometry = geometry(ui, uiLayout, offsets, cameraStack)
-    const { layers, clickHandlers, dragHandlers, connections, idToWorldSpace } =
-        reduce<Accumulator>(ui, uiLayout, uiGeometry, reducer)
+    const {
+        layers,
+        clickHandlers,
+        doubleClickHandlers,
+        dragHandlers,
+        connections,
+        idToWorldSpace,
+    } = reduce<Accumulator>(ui, uiLayout, uiGeometry, reducer)
     const batches = batchGeometry(layers, connections, idToWorldSpace)
     setCameras(renderer, cameraStack.cameras)
     renderer.clickHandlers = clickHandlers
+    renderer.doubleClickHandlers = doubleClickHandlers
     renderer.dragHandlers = dragHandlers
     for (const batch of batches) draw(renderer, batch)
 }
@@ -569,6 +578,7 @@ export const makeRenderer = <AppEvent>({
         textures: [texture],
         textMeasurementsCache: new Map(),
         clickHandlers: [],
+        doubleClickHandlers: [],
         dragHandlers: [],
         size,
         cameras: [],

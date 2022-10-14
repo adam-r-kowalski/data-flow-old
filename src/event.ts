@@ -17,6 +17,7 @@ export enum EventKind {
     CLICKED_FINDER_OPTION,
     CLICKED_BODY,
     CLICKED_BACKGROUND,
+    DOUBLE_CLICKED_BACKGROUND,
     DRAGGED_BACKGROUND,
     CHANGE_NODE,
     DELETE_NODE,
@@ -100,7 +101,10 @@ export interface ClickedBody {
 
 export interface ClickedBackground {
     readonly kind: EventKind.CLICKED_BACKGROUND
-    readonly count: number
+}
+
+export interface DoubleClickedBackground {
+    readonly kind: EventKind.DOUBLE_CLICKED_BACKGROUND
     readonly position: Position
 }
 
@@ -191,6 +195,7 @@ export type AppEvent =
     | KeyUp
     | ClickedBody
     | ClickedBackground
+    | DoubleClickedBackground
     | DraggedBackground
     | ChangeNode
     | DeleteNode

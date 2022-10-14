@@ -286,7 +286,9 @@ export interface Pointer {
     count: number
 }
 
-export type OnClick = (event: Pointer) => void
+export type OnClick = (position: Position) => void
+
+export type OnDoubleClick = (position: Position) => void
 
 export interface PointerDrag {
     x: number

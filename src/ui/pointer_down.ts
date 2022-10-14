@@ -7,24 +7,11 @@ const inWorldSpace = ({ x0, y0, x1, y1 }: WorldSpace, pointer: Pointer) =>
     y0 <= pointer.position.y &&
     pointer.position.y <= y1
 
-export const handleClick = <AppEvent>(
+export const pointerDown = <AppEvent>(
     renderer: Renderer<AppEvent>,
     pointer: Pointer
 ): void => {
-    for (let i = renderer.clickHandlers.length; i > 0; --i) {
-        for (const { onClick, worldSpace } of renderer.clickHandlers[i - 1]) {
-            if (inWorldSpace(worldSpace, pointer)) {
-                onClick(pointer)
-                return
-            }
-        }
-    }
-}
-
-export const handleDrag = <AppEvent>(
-    renderer: Renderer<AppEvent>,
-    pointer: Pointer
-): void => {
+    renderer.pointers[pointer.id] = pointer
     for (let i = renderer.dragHandlers.length; i > 0; --i) {
         for (const { onDrag, worldSpace } of renderer.dragHandlers[i - 1]) {
             if (inWorldSpace(worldSpace, pointer)) {
@@ -33,13 +20,4 @@ export const handleDrag = <AppEvent>(
             }
         }
     }
-}
-
-export const pointerDown = <AppEvent>(
-    renderer: Renderer<AppEvent>,
-    pointer: Pointer
-): void => {
-    handleClick(renderer, pointer)
-    handleDrag(renderer, pointer)
-    renderer.pointers[pointer.id] = pointer
 }

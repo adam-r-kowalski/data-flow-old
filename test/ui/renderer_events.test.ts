@@ -1,10 +1,12 @@
 import { identity, translate } from "../../src/linear_algebra/matrix3x3"
 import { mockDocument, mockWindow } from "../../src/ui/mock"
-import { pointerDown } from "../../src/ui/pointer_down"
+import { onClick } from "../../src/ui/on_click"
 import { pointerMove } from "../../src/ui/pointer_move"
 import { pointerUp } from "../../src/ui/pointer_up"
 import { makeRenderer, render } from "../../src/ui/renderer"
-import { container, Pointer, PointerDrag, scene } from "../../src/ui"
+import { container, PointerDrag, scene } from "../../src/ui"
+import { pointerDown } from "../../src/ui/pointer_down"
+import { onDoubleClick } from "../../src/ui/on_double_click"
 
 interface Model {
     a: number
@@ -62,11 +64,7 @@ test("click first container", () => {
         ],
     })
     render(renderer, ui)
-    pointerDown(renderer, {
-        position: { x: 125, y: 225 },
-        id: 0,
-        count: 0,
-    })
+    onClick(renderer, { x: 125, y: 225 })
     expect(model).toEqual({ a: 1, b: 0 })
 })
 
@@ -94,11 +92,7 @@ test("click second container", () => {
         ],
     })
     render(renderer, ui)
-    pointerDown(renderer, {
-        position: { x: 325, y: 275 },
-        id: 0,
-        count: 0,
-    })
+    onClick(renderer, { x: 325, y: 275 })
     expect(model).toEqual({ a: 0, b: 1 })
 })
 
@@ -126,11 +120,7 @@ test("click translated container", () => {
         ],
     })
     render(renderer, ui)
-    pointerDown(renderer, {
-        position: { x: 25, y: 225 },
-        id: 0,
-        count: 0,
-    })
+    onClick(renderer, { x: 25, y: 225 })
     expect(model).toEqual({ a: 1, b: 0 })
 })
 
@@ -144,28 +134,17 @@ test("renderer starts with identity camera", () => {
 test("double click", () => {
     const renderer = mockRenderer()
     let count = 0
-    const dispatch = (event: Pointer) => (count = event.count)
+    const dispatch = () => ++count
     const ui = container({
         width: 50,
         height: 50,
         x: 100,
         y: 200,
-        onClick: dispatch,
+        onDoubleClick: dispatch,
     })
     render(renderer, ui)
-    expect(count).toEqual(0)
-    pointerDown(renderer, {
-        position: { x: 125, y: 225 },
-        id: 0,
-        count: 1,
-    })
+    onDoubleClick(renderer, { x: 125, y: 225 })
     expect(count).toEqual(1)
-    pointerDown(renderer, {
-        position: { x: 125, y: 225 },
-        id: 0,
-        count: 2,
-    })
-    expect(count).toEqual(2)
 })
 
 test("on drag", () => {

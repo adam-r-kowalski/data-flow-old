@@ -15,6 +15,7 @@ import {
     traverse,
     OnClick,
     OnDrag,
+    OnDoubleClick,
 } from "."
 import { CameraStack, transformWorldSpace, activeCamera } from "./camera_stack"
 
@@ -44,6 +45,7 @@ export interface Padding {
 export interface Container {
     readonly id?: string
     readonly onClick?: OnClick
+    readonly onDoubleClick?: OnDoubleClick
     readonly onDrag?: OnDrag
     readonly kind: UIKind.CONTAINER
     readonly padding: Padding
@@ -63,6 +65,7 @@ interface Properties {
     readonly y?: number
     readonly color?: Color
     readonly onClick?: OnClick
+    readonly onDoubleClick?: OnDoubleClick
     readonly onDrag?: OnDrag
     readonly id?: string
 }
@@ -85,7 +88,18 @@ const transformPadding = (padding?: number | Padding): Padding => {
 }
 
 export const container = (
-    { padding, width, height, color, x, y, onClick, onDrag, id }: Properties,
+    {
+        padding,
+        width,
+        height,
+        color,
+        x,
+        y,
+        onClick,
+        onDoubleClick,
+        onDrag,
+        id,
+    }: Properties,
     child?: UI
 ): Container => {
     return {
@@ -97,6 +111,7 @@ export const container = (
         y,
         color,
         onClick,
+        onDoubleClick,
         onDrag,
         id,
         child,

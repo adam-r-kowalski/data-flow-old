@@ -69,7 +69,7 @@ const uuidv4 = (): string => {
 }
 
 const generateUUID =
-    typeof crypto.randomUUID === "function" ? crypto.randomUUID : uuidv4
+    typeof crypto.randomUUID === "function" ? () => crypto.randomUUID() : uuidv4
 
 const currentTime = () => performance.now()
 export const showCursor = (document: Document, show: boolean) =>
